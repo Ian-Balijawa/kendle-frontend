@@ -33,6 +33,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useAuthStore } from "../../stores/authStore";
 import { usePostStore } from "../../stores/postStore";
 import { Comment, Post } from "../../types";
+import { CommentCard } from "./CommentCard";
 
 export function PostDetail() {
   const { postId } = useParams<{ postId: string }>();
@@ -40,7 +41,6 @@ export function PostDetail() {
   const { user, isAuthenticated } = useAuthStore();
   const {
     posts,
-    selectedPost,
     setSelectedPost,
     likePost,
     unlikePost,
@@ -49,6 +49,7 @@ export function PostDetail() {
     bookmarkPost,
     unbookmarkPost,
     sharePost,
+    addComment,
   } = usePostStore();
 
   const [post, setPost] = useState<Post | null>(null);
@@ -231,11 +232,15 @@ export function PostDetail() {
         },
       };
 
+      // Add comment to store
+      addComment(post.id, newComment);
+
+      // Update local state
       setPost((prev) =>
         prev
           ? {
               ...prev,
-              comments: [...prev.comments, newComment],
+              comments: [newComment, ...prev.comments],
               _count: { ...prev._count, comments: prev._count.comments + 1 },
             }
           : null
@@ -251,7 +256,7 @@ export function PostDetail() {
 
   if (!post) {
     return (
-      <Container size="md" py="xl">
+      <Container size="xl" py="xl">
         <LoadingOverlay visible={true} />
       </Container>
     );
@@ -260,7 +265,7 @@ export function PostDetail() {
   const isAuthor = user?.id === post.author.id;
 
   return (
-    <Container size="lg" py="md">
+    <Container size="xl" py="md">
       <Stack gap="md">
         <Button
           variant="subtle"
@@ -355,7 +360,7 @@ export function PostDetail() {
                   />
                 ) : (
                   <Group gap="xs">
-                    {post.media.map((media, index) => (
+                    {post.media.map((media) => (
                       <Box
                         key={media.id}
                         style={{ position: "relative", flex: 1 }}
@@ -490,36 +495,11 @@ export function PostDetail() {
             <Stack gap="md">
               {post.comments.length > 0 ? (
                 post.comments.map((comment) => (
-                  <Box key={comment.id}>
-                    <Group gap="sm" align="flex-start">
-                      <Avatar
-                        src={comment.author.avatar}
-                        alt={comment.author.firstName || "User"}
-                        size="sm"
-                        radius="xl"
-                      >
-                        {(comment.author.firstName || "U").charAt(0)}
-                      </Avatar>
-                      <Box style={{ flex: 1 }}>
-                        <Group gap="xs" align="center">
-                          <Text fw={500} size="sm">
-                            {comment.author.firstName} {comment.author.lastName}
-                          </Text>
-                          {comment.author.isVerified && (
-                            <Badge size="xs" color="blue" variant="light">
-                              Verified
-                            </Badge>
-                          )}
-                        </Group>
-                        <Text size="sm" mt={4}>
-                          {comment.content}
-                        </Text>
-                        <Text size="xs" c="dimmed" mt={4}>
-                          {formatDate(comment.createdAt)}
-                        </Text>
-                      </Box>
-                    </Group>
-                  </Box>
+                  <CommentCard
+                    key={comment.id}
+                    comment={comment}
+                    postId={post.id}
+                  />
                 ))
               ) : (
                 <Text c="dimmed" ta="center" py="md">

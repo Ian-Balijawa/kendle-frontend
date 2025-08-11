@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { Post } from "../types";
+import { Post, Comment } from "../types";
 
 interface PostStore {
   posts: Post[];
@@ -17,13 +17,21 @@ interface PostStore {
   bookmarkPost: (id: string) => void;
   unbookmarkPost: (id: string) => void;
   sharePost: (id: string) => void;
+  
+  // Comment actions
+  addComment: (postId: string, comment: Comment) => void;
+  updateComment: (postId: string, commentId: string, content: string) => void;
+  deleteComment: (postId: string, commentId: string) => void;
+  likeComment: (postId: string, commentId: string) => void;
+  unlikeComment: (postId: string, commentId: string) => void;
+  
   setSelectedPost: (post: Post | null) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   clearError: () => void;
 }
 
-export const usePostStore = create<PostStore>((set, get) => ({
+export const usePostStore = create<PostStore>((set) => ({
   posts: [],
   selectedPost: null,
   isLoading: false,
@@ -183,6 +191,171 @@ export const usePostStore = create<PostStore>((set, get) => ({
                 ...state.selectedPost._count,
                 shares: state.selectedPost._count.shares + 1,
               },
+            }
+          : state.selectedPost,
+    }));
+  },
+
+  // Comment actions
+  addComment: (postId: string, comment: Comment) => {
+    set((state) => ({
+      posts: state.posts.map((post) =>
+        post.id === postId
+          ? {
+              ...post,
+              comments: [comment, ...post.comments],
+              _count: {
+                ...post._count,
+                comments: post._count.comments + 1,
+              },
+            }
+          : post
+      ),
+      selectedPost:
+        state.selectedPost?.id === postId
+          ? {
+              ...state.selectedPost,
+              comments: [comment, ...state.selectedPost.comments],
+              _count: {
+                ...state.selectedPost._count,
+                comments: state.selectedPost._count.comments + 1,
+              },
+            }
+          : state.selectedPost,
+    }));
+  },
+
+  updateComment: (postId: string, commentId: string, content: string) => {
+    set((state) => ({
+      posts: state.posts.map((post) =>
+        post.id === postId
+          ? {
+              ...post,
+              comments: post.comments.map((comment) =>
+                comment.id === commentId
+                  ? { ...comment, content, updatedAt: new Date().toISOString() }
+                  : comment
+              ),
+            }
+          : post
+      ),
+      selectedPost:
+        state.selectedPost?.id === postId
+          ? {
+              ...state.selectedPost,
+              comments: state.selectedPost.comments.map((comment) =>
+                comment.id === commentId
+                  ? { ...comment, content, updatedAt: new Date().toISOString() }
+                  : comment
+              ),
+            }
+          : state.selectedPost,
+    }));
+  },
+
+  deleteComment: (postId: string, commentId: string) => {
+    set((state) => ({
+      posts: state.posts.map((post) =>
+        post.id === postId
+          ? {
+              ...post,
+              comments: post.comments.filter((comment) => comment.id !== commentId),
+              _count: {
+                ...post._count,
+                comments: Math.max(0, post._count.comments - 1),
+              },
+            }
+          : post
+      ),
+      selectedPost:
+        state.selectedPost?.id === postId
+          ? {
+              ...state.selectedPost,
+              comments: state.selectedPost.comments.filter((comment) => comment.id !== commentId),
+              _count: {
+                ...state.selectedPost._count,
+                comments: Math.max(0, state.selectedPost._count.comments - 1),
+              },
+            }
+          : state.selectedPost,
+    }));
+  },
+
+  likeComment: (postId: string, commentId: string) => {
+    set((state) => ({
+      posts: state.posts.map((post) =>
+        post.id === postId
+          ? {
+              ...post,
+              comments: post.comments.map((comment) =>
+                comment.id === commentId
+                  ? {
+                      ...comment,
+                      _count: {
+                        ...comment._count,
+                        likes: comment._count.likes + 1,
+                      },
+                    }
+                  : comment
+              ),
+            }
+          : post
+      ),
+      selectedPost:
+        state.selectedPost?.id === postId
+          ? {
+              ...state.selectedPost,
+              comments: state.selectedPost.comments.map((comment) =>
+                comment.id === commentId
+                  ? {
+                      ...comment,
+                      _count: {
+                        ...comment._count,
+                        likes: comment._count.likes + 1,
+                      },
+                    }
+                  : comment
+              ),
+            }
+          : state.selectedPost,
+    }));
+  },
+
+  unlikeComment: (postId: string, commentId: string) => {
+    set((state) => ({
+      posts: state.posts.map((post) =>
+        post.id === postId
+          ? {
+              ...post,
+              comments: post.comments.map((comment) =>
+                comment.id === commentId
+                  ? {
+                      ...comment,
+                      _count: {
+                        ...comment._count,
+                        likes: Math.max(0, comment._count.likes - 1),
+                      },
+                    }
+                  : comment
+              ),
+            }
+          : post
+      ),
+      selectedPost:
+        state.selectedPost?.id === postId
+          ? {
+              ...state.selectedPost,
+              comments: state.selectedPost.comments.map((comment) =>
+                comment.id === commentId
+                  ? {
+                      ...comment,
+                      _count: {
+                        ...comment._count,
+                        likes: Math.max(0, comment._count.likes - 1),
+                      },
+                    }
+                  : comment
+              ),
             }
           : state.selectedPost,
     }));

@@ -7,28 +7,33 @@ import {
   Card,
   Group,
   Image,
-  LoadingOverlay,
   Menu,
   Modal,
   Stack,
   Text,
   Textarea,
+  TextInput,
+  LoadingOverlay,
 } from "@mantine/core";
 import {
-  IconBookmark,
-  IconDotsVertical,
-  IconEdit,
-  IconFlag,
   IconHeart,
   IconMessageCircle,
   IconShare,
+  IconBookmark,
+  IconDotsVertical,
+  IconEdit,
   IconTrash,
+  IconFlag,
+  IconSend,
+  IconChevronDown,
+  IconChevronUp,
 } from "@tabler/icons-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuthStore } from "../../stores/authStore";
 import { usePostStore } from "../../stores/postStore";
-import { Post } from "../../types";
+import { useAuthStore } from "../../stores/authStore";
+import { Post, Comment } from "../../types";
+import { CommentCard } from "./CommentCard";
 
 interface PostCardProps {
   post: Post;
@@ -46,11 +51,16 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
     bookmarkPost,
     unbookmarkPost,
     sharePost,
+    addComment,
   } = usePostStore();
+
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(post.content);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showComments, setShowComments] = useState(false);
+  const [commentContent, setCommentContent] = useState("");
+  const [isCommenting, setIsCommenting] = useState(false);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -114,6 +124,9 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
     setIsSubmitting(true);
     try {
       updatePost(post.id, { content: editContent.trim() });
+      if (onUpdate) {
+        onUpdate({ ...post, content: editContent.trim() });
+      }
       setIsEditing(false);
     } catch (error) {
       console.error("Failed to update post:", error);
@@ -131,6 +144,59 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
       console.error("Failed to delete post:", error);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleComment = async () => {
+    if (!commentContent.trim()) {
+      return;
+    }
+
+    setIsCommenting(true);
+    try {
+      const newComment: Comment = {
+        id: Date.now().toString(),
+        content: commentContent.trim(),
+        author: {
+          id: user!.id,
+          phoneNumber: user!.phoneNumber,
+          username: user!.firstName?.toLowerCase(),
+          firstName: user!.firstName,
+          lastName: user!.lastName,
+          avatar: user!.avatar,
+          isVerified: user!.isVerified,
+          isProfileComplete: user!.isProfileComplete,
+          createdAt: user!.createdAt,
+          updatedAt: user!.updatedAt,
+          followersCount: user!.followersCount,
+          followingCount: user!.followingCount,
+          postsCount: user!.postsCount,
+        },
+        postId: post.id,
+        replies: [],
+        likes: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        _count: {
+          likes: 0,
+          replies: 0,
+        },
+      };
+
+      // Add comment to store
+      addComment(post.id, newComment);
+      
+      // Clear input
+      setCommentContent("");
+      
+      // Show comments if not already visible
+      if (!showComments) {
+        setShowComments(true);
+      }
+    } catch (error) {
+      console.error("Failed to post comment:", error);
+    } finally {
+      setIsCommenting(false);
     }
   };
 
@@ -331,9 +397,9 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
               <ActionIcon
                 variant="subtle"
                 color="gray"
+                onClick={() => setShowComments(!showComments)}
                 style={{
-                  cursor: isAuthenticated ? "pointer" : "not-allowed",
-                  opacity: isAuthenticated ? 1 : 0.6,
+                  cursor: "pointer",
                 }}
               >
                 <IconMessageCircle size={16} />
@@ -383,6 +449,70 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
               <Text size="xs" c="blue" ta="center">
                 Sign in to like, comment, and interact with posts
               </Text>
+            </Box>
+          )}
+
+          {/* Comment Input */}
+          {isAuthenticated && (
+            <Box>
+              <TextInput
+                placeholder="Add a comment..."
+                value={commentContent}
+                onChange={(e) => setCommentContent(e.currentTarget.value)}
+                rightSection={
+                  <ActionIcon
+                    onClick={handleComment}
+                    loading={isCommenting}
+                    disabled={!commentContent.trim()}
+                    color="blue"
+                  >
+                    <IconSend size={16} />
+                  </ActionIcon>
+                }
+                onKeyPress={(e) => e.key === "Enter" && handleComment()}
+              />
+            </Box>
+          )}
+
+          {/* Comments Section */}
+          {showComments && post.comments.length > 0 && (
+            <Box>
+              <Group justify="space-between" align="center" mb="sm">
+                <Text size="sm" fw={500}>
+                  Comments ({post.comments.length})
+                </Text>
+                <Button
+                  variant="subtle"
+                  size="xs"
+                  rightSection={
+                    showComments ? (
+                      <IconChevronUp size={14} />
+                    ) : (
+                      <IconChevronDown size={14} />
+                    )
+                  }
+                  onClick={() => setShowComments(!showComments)}
+                >
+                  {showComments ? "Hide" : "Show"}
+                </Button>
+              </Group>
+              
+              <Stack gap="sm">
+                {post.comments.slice(0, 3).map((comment) => (
+                  <CommentCard key={comment.id} comment={comment} postId={post.id} />
+                ))}
+                
+                {post.comments.length > 3 && (
+                  <Button
+                    variant="light"
+                    size="xs"
+                    onClick={handlePostClick}
+                    style={{ alignSelf: "center" }}
+                  >
+                    View all {post.comments.length} comments
+                  </Button>
+                )}
+              </Stack>
             </Box>
           )}
         </Stack>

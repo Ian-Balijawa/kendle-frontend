@@ -32,7 +32,7 @@ interface CreatePostProps {
 
 export function CreatePost({ opened, onClose }: CreatePostProps) {
   const { user } = useAuthStore();
-  const { addPost, isLoading } = usePostStore();
+  const { addPost } = usePostStore();
   const [content, setContent] = useState("");
   const [media, setMedia] = useState<File[]>([]);
   const [hashtags, setHashtags] = useState<string[]>([]);

@@ -1,111 +1,114 @@
-import { useState } from 'react'
 import {
-    Container,
-    Stack,
-    Title,
-    TextInput,
-    Group,
-    Text,
-    Card,
-    Avatar,
-    ActionIcon,
-    Badge,
-    Box,
-    Tabs,
-    Grid,
-} from '@mantine/core'
+  ActionIcon,
+  Avatar,
+  Badge,
+  Box,
+  Card,
+  Container,
+  Grid,
+  Group,
+  Stack,
+  Tabs,
+  Text,
+  TextInput,
+  Title,
+} from "@mantine/core";
 import {
-    IconSearch,
-    IconHeart,
-    IconMessageCircle,
-    IconShare,
-    IconTrendingUp,
-    IconUsers,
-    IconHash,
-} from '@tabler/icons-react'
+  IconHash,
+  IconHeart,
+  IconMessageCircle,
+  IconSearch,
+  IconShare,
+  IconTrendingUp,
+  IconUsers,
+} from "@tabler/icons-react";
+import { useState } from "react";
 
 // Mock data
 const mockTrendingPosts = [
   {
-    id: '1',
-    content: 'Amazing sunset at the beach today! 🌅 #Sunset #Beach #Nature',
+    id: "1",
+    content: "Amazing sunset at the beach today! 🌅 #Sunset #Beach #Nature",
     author: {
-      id: '1',
-      username: 'naturelover',
-      firstName: 'Sarah',
-      lastName: 'Wilson',
+      id: "1",
+      username: "naturelover",
+      firstName: "Sarah",
+      lastName: "Wilson",
       avatar: null,
     },
-    createdAt: '2024-01-15T08:30:00Z',
+    createdAt: "2024-01-15T08:30:00Z",
     _count: { likes: 156, comments: 23, shares: 12 },
   },
   {
-    id: '2',
-    content: 'Just finished reading this incredible book! Highly recommend. 📚 #Books #Reading',
+    id: "2",
+    content:
+      "Just finished reading this incredible book! Highly recommend. 📚 #Books #Reading",
     author: {
-      id: '2',
-      username: 'bookworm',
-      firstName: 'Mike',
-      lastName: 'Johnson',
+      id: "2",
+      username: "bookworm",
+      firstName: "Mike",
+      lastName: "Johnson",
       avatar: null,
     },
-    createdAt: '2024-01-15T07:15:00Z',
+    createdAt: "2024-01-15T07:15:00Z",
     _count: { likes: 89, comments: 15, shares: 8 },
   },
-]
+];
 
 const mockTrendingUsers = [
   {
-    id: '1',
-    username: 'techguru',
-    firstName: 'Alex',
-    lastName: 'Chen',
+    id: "1",
+    username: "techguru",
+    firstName: "Alex",
+    lastName: "Chen",
     avatar: null,
     followersCount: 15420,
     isFollowing: false,
   },
   {
-    id: '2',
-    username: 'travelbug',
-    firstName: 'Emma',
-    lastName: 'Davis',
+    id: "2",
+    username: "travelbug",
+    firstName: "Emma",
+    lastName: "Davis",
     avatar: null,
     followersCount: 8920,
     isFollowing: true,
   },
-]
+];
 
 const mockTrendingHashtags = [
-  { name: 'Kendle', postsCount: 15420 },
-  { name: 'SocialMedia', postsCount: 8920 },
-  { name: 'Innovation', postsCount: 6540 },
-  { name: 'Tech', postsCount: 5430 },
-  { name: 'Design', postsCount: 4320 },
-]
+  { name: "Kendle", postsCount: 15420 },
+  { name: "SocialMedia", postsCount: 8920 },
+  { name: "Innovation", postsCount: 6540 },
+  { name: "Tech", postsCount: 5430 },
+  { name: "Design", postsCount: 4320 },
+];
 
 export function ExplorePage() {
-  const [searchQuery, setSearchQuery] = useState('')
-  const [activeTab, setActiveTab] = useState('trending')
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState("trending");
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    const now = new Date()
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInHours = Math.floor(
+      (now.getTime() - date.getTime()) / (1000 * 60 * 60)
+    );
 
-    if (diffInHours < 1) return 'Just now'
-    if (diffInHours < 24) return `${diffInHours}h ago`
-    if (diffInHours < 168) return `${Math.floor(diffInHours / 24)}d ago`
-    return date.toLocaleDateString()
-  }
+    if (diffInHours < 1) return "Just now";
+    if (diffInHours < 24) return `${diffInHours}h ago`;
+    if (diffInHours < 168) return `${Math.floor(diffInHours / 24)}d ago`;
+    return date.toLocaleDateString();
+  };
 
   const formatNumber = (num: number) => {
-    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`
-    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`
-    return num.toString()
-  }
+    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
+    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
+    return num.toString();
+  };
 
   return (
-    <Container size="lg" py="md">
+    <Container size="xl" py="md">
       <Stack gap="lg">
         {/* Header */}
         <Box>
@@ -128,9 +131,15 @@ export function ExplorePage() {
         />
 
         {/* Tabs */}
-        <Tabs value={activeTab} onChange={(value) => setActiveTab(value || 'trending')}>
+        <Tabs
+          value={activeTab}
+          onChange={(value) => setActiveTab(value || "trending")}
+        >
           <Tabs.List>
-            <Tabs.Tab value="trending" leftSection={<IconTrendingUp size={16} />}>
+            <Tabs.Tab
+              value="trending"
+              leftSection={<IconTrendingUp size={16} />}
+            >
               Trending
             </Tabs.Tab>
             <Tabs.Tab value="people" leftSection={<IconUsers size={16} />}>
@@ -160,7 +169,8 @@ export function ExplorePage() {
                             {post.author.firstName} {post.author.lastName}
                           </Text>
                           <Text c="dimmed" size="xs">
-                            @{post.author.username} • {formatDate(post.createdAt)}
+                            @{post.author.username} •{" "}
+                            {formatDate(post.createdAt)}
                           </Text>
                         </Box>
                       </Group>
@@ -226,11 +236,11 @@ export function ExplorePage() {
                         </Text>
                       </Box>
                       <Badge
-                        variant={user.isFollowing ? 'filled' : 'light'}
-                        color={user.isFollowing ? 'gray' : 'blue'}
+                        variant={user.isFollowing ? "filled" : "light"}
+                        color={user.isFollowing ? "gray" : "blue"}
                         size="sm"
                       >
-                        {user.isFollowing ? 'Following' : 'Follow'}
+                        {user.isFollowing ? "Following" : "Follow"}
                       </Badge>
                     </Group>
                   </Card>
@@ -263,5 +273,5 @@ export function ExplorePage() {
         </Tabs>
       </Stack>
     </Container>
-  )
+  );
 }
