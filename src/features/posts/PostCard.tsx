@@ -14,7 +14,6 @@ import {
   Text,
   Textarea,
 } from "@mantine/core";
-import { notifications } from "@mantine/notifications";
 import {
   IconBookmark,
   IconDotsVertical,
@@ -68,11 +67,6 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
 
   const handleLike = () => {
     if (!isAuthenticated) {
-      notifications.show({
-        title: "Sign in required",
-        message: "Please sign in to like posts",
-        color: "blue",
-      });
       return;
     }
 
@@ -85,11 +79,6 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
 
   const handleBookmark = () => {
     if (!isAuthenticated) {
-      notifications.show({
-        title: "Sign in required",
-        message: "Please sign in to bookmark posts",
-        color: "blue",
-      });
       return;
     }
 
@@ -102,20 +91,10 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
 
   const handleShare = () => {
     if (!isAuthenticated) {
-      notifications.show({
-        title: "Sign in required",
-        message: "Please sign in to share posts",
-        color: "blue",
-      });
       return;
     }
 
     sharePost(post.id);
-    notifications.show({
-      title: "Post shared!",
-      message: "Your post has been shared successfully",
-      color: "green",
-    });
   };
 
   const handlePostClick = () => {
@@ -129,29 +108,15 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
 
   const handleSaveEdit = async () => {
     if (!editContent.trim()) {
-      notifications.show({
-        title: "Empty content",
-        message: "Post content cannot be empty",
-        color: "red",
-      });
       return;
     }
 
     setIsSubmitting(true);
     try {
       updatePost(post.id, { content: editContent.trim() });
-      notifications.show({
-        title: "Post updated",
-        message: "Your post has been updated successfully",
-        color: "green",
-      });
       setIsEditing(false);
     } catch (error) {
-      notifications.show({
-        title: "Error",
-        message: "Failed to update post",
-        color: "red",
-      });
+      console.error("Failed to update post:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -161,18 +126,9 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
     setIsSubmitting(true);
     try {
       deletePost(post.id);
-      notifications.show({
-        title: "Post deleted",
-        message: "Your post has been deleted successfully",
-        color: "green",
-      });
       setShowDeleteConfirm(false);
     } catch (error) {
-      notifications.show({
-        title: "Error",
-        message: "Failed to delete post",
-        color: "red",
-      });
+      console.error("Failed to delete post:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -184,7 +140,6 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
     <>
       <Card withBorder p="md" radius="md">
         <Stack gap="md">
-          {/* Post Header */}
           <Group justify="space-between">
             <Group>
               <Avatar
@@ -214,7 +169,6 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
               </Box>
             </Group>
 
-            {/* Post Actions Menu */}
             {isAuthenticated && (
               <Menu shadow="md" width={200} position="bottom-end">
                 <Menu.Target>
@@ -253,7 +207,6 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
             )}
           </Group>
 
-          {/* Post Content */}
           <Text
             size="sm"
             style={{
@@ -275,7 +228,6 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
             {post.content}
           </Text>
 
-          {/* Media Display */}
           {post.media && post.media.length > 0 && (
             <Box>
               {post.media.length === 1 ? (
@@ -349,7 +301,6 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
             </Box>
           )}
 
-          {/* Hashtags */}
           {post.hashtags && post.hashtags.length > 0 && (
             <Group gap="xs">
               {post.hashtags.map((hashtag: string) => (
@@ -360,7 +311,6 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
             </Group>
           )}
 
-          {/* Post Actions */}
           <Group justify="space-between">
             <Group gap="xs">
               <ActionIcon
@@ -421,7 +371,6 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
             </ActionIcon>
           </Group>
 
-          {/* Sign in prompt for unauthenticated users */}
           {!isAuthenticated && (
             <Box
               p="sm"
@@ -439,7 +388,6 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
         </Stack>
       </Card>
 
-      {/* Edit Modal */}
       <Modal
         opened={isEditing}
         onClose={() => setIsEditing(false)}
@@ -467,7 +415,6 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
         </Stack>
       </Modal>
 
-      {/* Delete Confirmation Modal */}
       <Modal
         opened={showDeleteConfirm}
         onClose={() => setShowDeleteConfirm(false)}

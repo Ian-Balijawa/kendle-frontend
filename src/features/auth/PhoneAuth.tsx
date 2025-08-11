@@ -12,7 +12,6 @@ import {
   Title,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { notifications } from "@mantine/notifications";
 import {
   IconAlertCircle,
   IconBrandTwitter,
@@ -51,21 +50,12 @@ export function PhoneAuth() {
 
     try {
       await sendOTP(values);
-      notifications.show({
-        title: "OTP Sent!",
-        message: "We've sent a verification code to your phone number.",
-        color: "green",
-      });
       navigate("/verify-otp", {
         state: { phoneNumber: values.phoneNumber },
         replace: true,
       });
     } catch (err) {
-      notifications.show({
-        title: "Failed to send OTP",
-        message: "Please check your phone number and try again.",
-        color: "red",
-      });
+      console.error("Failed to send OTP:", err);
     } finally {
       setIsSubmitting(false);
     }
@@ -77,7 +67,6 @@ export function PhoneAuth() {
         <Paper className="auth-paper" p="xl" withBorder>
           <LoadingOverlay visible={isSubmitting} />
 
-          {/* Decorative background elements */}
           <Box
             className="auth-decoration"
             style={{

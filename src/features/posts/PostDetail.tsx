@@ -16,7 +16,6 @@ import {
   Textarea,
   TextInput,
 } from "@mantine/core";
-import { notifications } from "@mantine/notifications";
 import {
   IconArrowLeft,
   IconBookmark,
@@ -67,11 +66,6 @@ export function PostDetail() {
         setPost(foundPost);
         setSelectedPost(foundPost);
       } else {
-        notifications.show({
-          title: "Post not found",
-          message: "The post you're looking for doesn't exist",
-          color: "red",
-        });
         navigate("/dashboard");
       }
     }
@@ -92,11 +86,6 @@ export function PostDetail() {
 
   const handleLike = () => {
     if (!isAuthenticated) {
-      notifications.show({
-        title: "Sign in required",
-        message: "Please sign in to like posts",
-        color: "blue",
-      });
       return;
     }
 
@@ -130,11 +119,6 @@ export function PostDetail() {
 
   const handleBookmark = () => {
     if (!isAuthenticated) {
-      notifications.show({
-        title: "Sign in required",
-        message: "Please sign in to bookmark posts",
-        color: "blue",
-      });
       return;
     }
 
@@ -149,11 +133,6 @@ export function PostDetail() {
 
   const handleShare = () => {
     if (!isAuthenticated) {
-      notifications.show({
-        title: "Sign in required",
-        message: "Please sign in to share posts",
-        color: "blue",
-      });
       return;
     }
 
@@ -167,11 +146,6 @@ export function PostDetail() {
           }
         : null
     );
-    notifications.show({
-      title: "Post shared!",
-      message: "Your post has been shared successfully",
-      color: "green",
-    });
   };
 
   const handleEdit = () => {
@@ -183,11 +157,6 @@ export function PostDetail() {
 
   const handleSaveEdit = async () => {
     if (!editContent.trim() || !post) {
-      notifications.show({
-        title: "Empty content",
-        message: "Post content cannot be empty",
-        color: "red",
-      });
       return;
     }
 
@@ -203,18 +172,9 @@ export function PostDetail() {
             }
           : null
       );
-      notifications.show({
-        title: "Post updated",
-        message: "Your post has been updated successfully",
-        color: "green",
-      });
       setIsEditing(false);
     } catch (error) {
-      notifications.show({
-        title: "Error",
-        message: "Failed to update post",
-        color: "red",
-      });
+      console.error("Failed to update post:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -226,19 +186,10 @@ export function PostDetail() {
     setIsSubmitting(true);
     try {
       deletePost(post.id);
-      notifications.show({
-        title: "Post deleted",
-        message: "Your post has been deleted successfully",
-        color: "green",
-      });
       setShowDeleteConfirm(false);
       navigate("/dashboard");
     } catch (error) {
-      notifications.show({
-        title: "Error",
-        message: "Failed to delete post",
-        color: "red",
-      });
+      console.error("Failed to delete post:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -291,17 +242,8 @@ export function PostDetail() {
       );
 
       setCommentContent("");
-      notifications.show({
-        title: "Comment added!",
-        message: "Your comment has been posted successfully",
-        color: "green",
-      });
     } catch (error) {
-      notifications.show({
-        title: "Error",
-        message: "Failed to post comment",
-        color: "red",
-      });
+      console.error("Failed to post comment:", error);
     } finally {
       setIsCommenting(false);
     }

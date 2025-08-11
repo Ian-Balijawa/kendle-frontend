@@ -13,14 +13,12 @@ import {
   Title,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { notifications } from "@mantine/notifications";
 import {
   IconAlertCircle,
   IconBrandInstagram,
   IconBrandTiktok,
   IconBrandTwitter,
   IconBrandWhatsapp,
-  IconCheck,
   IconMail,
   IconUser,
 } from "@tabler/icons-react";
@@ -87,20 +85,10 @@ export function ProfileCompletion() {
 
     try {
       await completeProfile(values);
-      notifications.show({
-        title: "Profile completed!",
-        message:
-          "Welcome to Kendle! Your profile has been set up successfully.",
-        color: "green",
-        icon: <IconCheck size={16} />,
-      });
+      console.log("Profile completed!");
       navigate("/dashboard", { replace: true });
     } catch (err) {
-      notifications.show({
-        title: "Profile completion failed",
-        message: "Please check your information and try again.",
-        color: "red",
-      });
+      console.error("Profile completion failed:", err);
     } finally {
       setIsSubmitting(false);
     }
@@ -117,7 +105,6 @@ export function ProfileCompletion() {
         <Paper className="auth-paper" p="xl" withBorder>
           <LoadingOverlay visible={isSubmitting} />
 
-          {/* Decorative background elements */}
           <Box
             className="auth-decoration"
             style={{

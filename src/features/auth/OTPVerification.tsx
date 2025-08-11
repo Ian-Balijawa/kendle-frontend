@@ -13,7 +13,6 @@ import {
   Title,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { notifications } from "@mantine/notifications";
 import {
   IconAlertCircle,
   IconArrowLeft,
@@ -95,18 +94,8 @@ export function OTPVerification() {
       } else {
         navigate("/", { replace: true });
       }
-
-      notifications.show({
-        title: "Welcome back!",
-        message: "You have successfully signed in.",
-        color: "green",
-      });
     } catch (err) {
-      notifications.show({
-        title: "Verification failed",
-        message: "Please check your OTP and try again.",
-        color: "red",
-      });
+      console.error("Verification failed:", err);
     } finally {
       setIsSubmitting(false);
     }
@@ -117,17 +106,8 @@ export function OTPVerification() {
       await useAuthStore.getState().sendOTP({ phoneNumber });
       setCountdown(300);
       setCanResend(false);
-      notifications.show({
-        title: "OTP Resent!",
-        message: "A new verification code has been sent to your phone.",
-        color: "green",
-      });
     } catch (err) {
-      notifications.show({
-        title: "Failed to resend OTP",
-        message: "Please try again later.",
-        color: "red",
-      });
+      console.error("Failed to resend OTP:", err);
     }
   };
 
