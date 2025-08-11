@@ -1,6 +1,4 @@
 import {
-  ActionIcon,
-  Avatar,
   Badge,
   Box,
   Button,
@@ -11,87 +9,103 @@ import {
   Text,
   Title,
 } from "@mantine/core";
-import {
-  IconBookmark,
-  IconHeart,
-  IconMessageCircle,
-  IconPlus,
-  IconShare,
-  IconTrendingUp,
-} from "@tabler/icons-react";
-import { useState } from "react";
+import { IconPlus, IconTrendingUp } from "@tabler/icons-react";
+import { useEffect, useState } from "react";
 import { useAuthStore } from "../../stores/authStore";
 import { usePostStore } from "../../stores/postStore";
-
-// Mock data for demonstration
-const mockPosts = [
-  {
-    id: "1",
-    content:
-      "Just launched our new social media platform! 🚀 Excited to see how it helps people connect and share their stories. #Kendle #SocialMedia #Innovation",
-    author: {
-      id: "1",
-      username: "johndoe",
-      firstName: "John",
-      lastName: "Doe",
-      avatar: null,
-    },
-    createdAt: "2024-01-15T10:30:00Z",
-    _count: {
-      likes: 42,
-      comments: 12,
-      shares: 5,
-    },
-    isLiked: false,
-    isShared: false,
-    isBookmarked: false,
-  },
-  {
-    id: "2",
-    content: "Beautiful sunset today! Nature never fails to amaze me. 🌅",
-    author: {
-      id: "2",
-      username: "janedoe",
-      firstName: "Jane",
-      lastName: "Doe",
-      avatar: null,
-    },
-    createdAt: "2024-01-15T09:15:00Z",
-    _count: {
-      likes: 28,
-      comments: 8,
-      shares: 3,
-    },
-    isLiked: true,
-    isShared: false,
-    isBookmarked: true,
-  },
-];
+import { CreatePost } from "./CreatePost";
+import { PostCard } from "./PostCard";
 
 export function HomePage() {
-  const { user } = useAuthStore();
-  const { likePost, unlikePost } = usePostStore();
-  const [posts] = useState(mockPosts);
+  const { user, isAuthenticated } = useAuthStore();
+  const { posts, setPosts, isLoading } = usePostStore();
+  const [createPostOpened, setCreatePostOpened] = useState(false);
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInHours = Math.floor(
-      (now.getTime() - date.getTime()) / (1000 * 60 * 60)
-    );
-
-    if (diffInHours < 1) return "Just now";
-    if (diffInHours < 24) return `${diffInHours}h ago`;
-    if (diffInHours < 168) return `${Math.floor(diffInHours / 24)}d ago`;
-    return date.toLocaleDateString();
-  };
-
-  const handleLike = (postId: string, isLiked: boolean) => {
-    if (isLiked) {
-      unlikePost(postId);
-    } else {
-      likePost(postId);
+  // Load initial posts on component mount
+  useEffect(() => {
+    if (posts.length === 0) {
+      // Load mock posts if none exist
+      const mockPosts = [
+        {
+          id: "1",
+          content:
+            "Just launched our new social media platform! 🚀 Excited to see how it helps people connect and share their stories. #Kendle #SocialMedia #Innovation",
+          author: {
+            id: "1",
+            phoneNumber: "+1234567890",
+            username: "johndoe",
+            firstName: "John",
+            lastName: "Doe",
+            avatar: undefined,
+            isVerified: true,
+            isProfileComplete: true,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            followersCount: 42,
+            followingCount: 38,
+            postsCount: 15,
+          },
+          media: [],
+          hashtags: ["Kendle", "SocialMedia", "Innovation"],
+          likes: [],
+          comments: [],
+          shares: [],
+          isLiked: false,
+          isShared: false,
+          isBookmarked: false,
+          createdAt: "2024-01-15T10:30:00Z",
+          updatedAt: "2024-01-15T10:30:00Z",
+          _count: {
+            likes: 42,
+            comments: 12,
+            shares: 5,
+          },
+        },
+        {
+          id: "2",
+          content: "Beautiful sunset today! Nature never fails to amaze me. 🌅",
+          author: {
+            id: "2",
+            phoneNumber: "+1987654321",
+            username: "janedoe",
+            firstName: "Jane",
+            lastName: "Doe",
+            avatar: undefined,
+            isVerified: false,
+            isProfileComplete: true,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            followersCount: 28,
+            followingCount: 45,
+            postsCount: 8,
+          },
+          media: [],
+          hashtags: [],
+          likes: [],
+          comments: [],
+          shares: [],
+          isLiked: true,
+          isShared: false,
+          isBookmarked: true,
+          createdAt: "2024-01-15T09:15:00Z",
+          updatedAt: "2024-01-15T09:15:00Z",
+          _count: {
+            likes: 28,
+            comments: 8,
+            shares: 3,
+          },
+        },
+      ];
+      setPosts(mockPosts);
     }
+  }, [posts.length, setPosts]);
+
+  const handleCreatePost = () => {
+    if (!isAuthenticated) {
+      // Redirect to sign in
+      return;
+    }
+    setCreatePostOpened(true);
   };
 
   return (
@@ -104,17 +118,19 @@ export function HomePage() {
               Home
             </Title>
             <Text c="dimmed" size="sm">
-              Welcome back, {user?.firstName}! 👋
+              {isAuthenticated
+                ? `Welcome back, ${user?.firstName}! 👋`
+                : "Welcome to Kendle! Sign in to interact with posts 👋"}
             </Text>
           </Box>
-          <Button
-            leftSection={<IconPlus size={16} />}
-            onClick={() => {
-              /* TODO: Open create post modal */
-            }}
-          >
-            Create Post
-          </Button>
+          {isAuthenticated && (
+            <Button
+              leftSection={<IconPlus size={16} />}
+              onClick={handleCreatePost}
+            >
+              Create Post
+            </Button>
+          )}
         </Group>
 
         {/* Trending Section */}
@@ -142,82 +158,49 @@ export function HomePage() {
         {/* Posts Feed */}
         <Stack gap="md">
           {posts.map((post) => (
-            <Card key={post.id} withBorder p="md">
+            <PostCard key={post.id} post={post} />
+          ))}
+
+          {posts.length === 0 && !isLoading && (
+            <Card withBorder p="xl" ta="center">
               <Stack gap="md">
-                {/* Post Header */}
-                <Group justify="space-between">
-                  <Group>
-                    <Avatar
-                      src={post.author.avatar}
-                      alt={post.author.firstName}
-                      size="md"
-                    >
-                      {post.author.firstName.charAt(0)}
-                    </Avatar>
-                    <Box>
-                      <Text fw={500} size="sm">
-                        {post.author.firstName} {post.author.lastName}
-                      </Text>
-                      <Text c="dimmed" size="xs">
-                        @{post.author.username} • {formatDate(post.createdAt)}
-                      </Text>
-                    </Box>
-                  </Group>
-                </Group>
-
-                {/* Post Content */}
-                <Text size="sm" style={{ lineHeight: 1.6 }}>
-                  {post.content}
+                <Text size="lg" fw={500} c="dimmed">
+                  No posts yet
                 </Text>
-
-                {/* Post Actions */}
-                <Group justify="space-between">
-                  <Group gap="xs">
-                    <ActionIcon
-                      variant={post.isLiked ? "filled" : "subtle"}
-                      color={post.isLiked ? "red" : "gray"}
-                      onClick={() => handleLike(post.id, post.isLiked)}
-                    >
-                      <IconHeart size={16} />
-                    </ActionIcon>
-                    <Text size="xs" c="dimmed">
-                      {post._count.likes}
-                    </Text>
-
-                    <ActionIcon variant="subtle" color="gray">
-                      <IconMessageCircle size={16} />
-                    </ActionIcon>
-                    <Text size="xs" c="dimmed">
-                      {post._count.comments}
-                    </Text>
-
-                    <ActionIcon variant="subtle" color="gray">
-                      <IconShare size={16} />
-                    </ActionIcon>
-                    <Text size="xs" c="dimmed">
-                      {post._count.shares}
-                    </Text>
-                  </Group>
-
-                  <ActionIcon
-                    variant={post.isBookmarked ? "filled" : "subtle"}
-                    color={post.isBookmarked ? "yellow" : "gray"}
+                <Text size="sm" c="dimmed">
+                  {isAuthenticated
+                    ? "Be the first to share something amazing!"
+                    : "Sign in to create the first post!"}
+                </Text>
+                {isAuthenticated && (
+                  <Button
+                    leftSection={<IconPlus size={16} />}
+                    onClick={() => setCreatePostOpened(true)}
+                    variant="light"
                   >
-                    <IconBookmark size={16} />
-                  </ActionIcon>
-                </Group>
+                    Create First Post
+                  </Button>
+                )}
               </Stack>
             </Card>
-          ))}
+          )}
         </Stack>
 
         {/* Load More */}
-        <Box ta="center" py="lg">
-          <Button variant="light" size="sm">
-            Load More Posts
-          </Button>
-        </Box>
+        {posts.length > 0 && (
+          <Box ta="center" py="lg">
+            <Button variant="light" size="sm">
+              Load More Posts
+            </Button>
+          </Box>
+        )}
       </Stack>
+
+      {/* Create Post Modal */}
+      <CreatePost
+        opened={createPostOpened}
+        onClose={() => setCreatePostOpened(false)}
+      />
     </Container>
   );
 }

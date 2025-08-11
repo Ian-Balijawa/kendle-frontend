@@ -1,16 +1,12 @@
 import {
   Alert,
-  Anchor,
   Box,
   Button,
   Center,
   Container,
-  Divider,
   Grid,
-  Group,
   LoadingOverlay,
   Paper,
-  PasswordInput,
   Stack,
   Text,
   TextInput,
@@ -20,54 +16,88 @@ import { useForm } from "@mantine/form";
 import { notifications } from "@mantine/notifications";
 import {
   IconAlertCircle,
+  IconBrandInstagram,
+  IconBrandTiktok,
   IconBrandTwitter,
+  IconBrandWhatsapp,
   IconCheck,
-  IconLock,
   IconMail,
-  IconPhone,
   IconUser,
 } from "@tabler/icons-react";
 import { zodResolver } from "mantine-form-zod-resolver";
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { RegisterFormData, registerSchema } from "../../lib/schemas";
+import { useNavigate } from "react-router-dom";
+import { z } from "zod";
 import { useAuthStore } from "../../stores/authStore";
+import { ProfileCompletionData } from "../../types";
 
-export function RegisterForm() {
+const profileSchema = z
+  .object({
+    username: z.string().min(2, "Username must be at least 2 characters"),
+    email: z.string().email("Please enter a valid email address"),
+    whatsapp: z
+      .string()
+      .regex(/^\+?[1-9]\d{1,14}$/, "Please enter a valid WhatsApp number"),
+    twitterLink: z
+      .string()
+      .regex(
+        /^https?:\/\/(www\.)?twitter\.com\/\w+/,
+        "Please enter a valid Twitter profile URL"
+      ),
+    tiktokLink: z
+      .string()
+      .regex(
+        /^https?:\/\/(www\.)?tiktok\.com\/@\w+/,
+        "Please enter a valid TikTok profile URL"
+      ),
+    instagramLink: z
+      .string()
+      .regex(
+        /^https?:\/\/(www\.)?instagram\.com\/\w+/,
+        "Please enter a valid Instagram profile URL"
+      ),
+  })
+  .refine((data) => data.username, {
+    message: "Username is required",
+    path: ["username"],
+  });
+
+export function ProfileCompletion() {
   const navigate = useNavigate();
-  const { register, isLoading, error, clearError } = useAuthStore();
+  const { completeProfile, user, isLoading, error, clearError } =
+    useAuthStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const form = useForm<RegisterFormData>({
+  const form = useForm<ProfileCompletionData>({
     mode: "uncontrolled",
     initialValues: {
       username: "",
       email: "",
-      phoneNumber: "",
-      password: "",
-      firstName: "",
-      lastName: "",
+      whatsapp: "",
+      twitterLink: "",
+      tiktokLink: "",
+      instagramLink: "",
     },
-    validate: zodResolver(registerSchema),
+    validate: zodResolver(profileSchema) as any,
   });
 
-  const handleSubmit = async (values: RegisterFormData) => {
+  const handleSubmit = async (values: ProfileCompletionData) => {
     setIsSubmitting(true);
     clearError();
 
     try {
-      await register(values);
+      await completeProfile(values);
       notifications.show({
-        title: "Account created!",
+        title: "Profile completed!",
         message:
-          "Welcome to Kendle! Your account has been created successfully.",
+          "Welcome to Kendle! Your profile has been set up successfully.",
         color: "green",
         icon: <IconCheck size={16} />,
       });
-      navigate("/", { replace: true });
+      navigate("/dashboard", { replace: true });
     } catch (err) {
       notifications.show({
-        title: "Registration failed",
+        title: "Profile completion failed",
         message: "Please check your information and try again.",
         color: "red",
       });
@@ -76,9 +106,14 @@ export function RegisterForm() {
     }
   };
 
+  if (!user || user.isProfileComplete) {
+    navigate("/", { replace: true });
+    return null;
+  }
+
   return (
     <Box className="auth-container">
-      <Container size="sm" style={{ width: "100%", maxWidth: "500px" }}>
+      <Container size="sm" style={{ width: "100%", maxWidth: "600px" }}>
         <Paper className="auth-paper" p="xl" withBorder>
           <LoadingOverlay visible={isSubmitting} />
 
@@ -124,17 +159,17 @@ export function RegisterForm() {
                 className="text-gradient"
                 style={{ marginBottom: "var(--mantine-spacing-xs)" }}
               >
-                Join Kendle
+                Complete Your Profile
               </Title>
               <Text c="dimmed" size="sm">
-                Create your account to get started
+                Help us personalize your Kendle experience
               </Text>
             </div>
 
             {error && (
               <Alert
                 icon={<IconAlertCircle size={16} />}
-                title="Registration Error"
+                title="Profile Error"
                 color="red"
                 variant="light"
                 radius="md"
@@ -143,13 +178,12 @@ export function RegisterForm() {
               </Alert>
             )}
 
-            <form onSubmit={form.onSubmit(handleSubmit)}>
+            <form onSubmit={form.onSubmit(handleSubmit as any)}>
               <Stack gap="lg">
                 <Grid>
-                  <Grid.Col span={6}>
+                  <Grid.Col span={12}>
                     <TextInput
-                      label="First Name"
-                      placeholder="John"
+                      placeholder="Enter your username"
                       leftSection={<IconUser size={18} />}
                       required
                       size="md"
@@ -158,45 +192,14 @@ export function RegisterForm() {
                         input: "auth-input",
                         label: "auth-label",
                       }}
-                      {...form.getInputProps("firstName")}
-                    />
-                  </Grid.Col>
-                  <Grid.Col span={6}>
-                    <TextInput
-                      label="Last Name"
-                      placeholder="Doe"
-                      leftSection={<IconUser size={18} />}
-                      required
-                      size="md"
-                      radius="md"
-                      classNames={{
-                        input: "auth-input",
-                        label: "auth-label",
-                      }}
-                      {...form.getInputProps("lastName")}
+                      {...form.getInputProps("username")}
                     />
                   </Grid.Col>
                 </Grid>
 
                 <TextInput
-                  label="Username"
-                  placeholder="johndoe"
-                  leftSection={<IconUser size={18} />}
-                  required
-                  size="md"
-                  radius="md"
-                  classNames={{
-                    input: "auth-input",
-                    label: "auth-label",
-                  }}
-                  {...form.getInputProps("username")}
-                />
-
-                <TextInput
-                  label="Email Address"
-                  placeholder="your@email.com"
+                  placeholder="Enter your email address"
                   leftSection={<IconMail size={18} />}
-                  required
                   size="md"
                   radius="md"
                   classNames={{
@@ -207,44 +210,52 @@ export function RegisterForm() {
                 />
 
                 <TextInput
-                  label="Phone Number"
-                  placeholder="+1234567890"
-                  leftSection={<IconPhone size={18} />}
-                  required
+                  placeholder="Enter your WhatsApp number"
+                  leftSection={<IconBrandWhatsapp size={18} />}
                   size="md"
                   radius="md"
                   classNames={{
                     input: "auth-input",
                     label: "auth-label",
                   }}
-                  {...form.getInputProps("phoneNumber")}
+                  {...form.getInputProps("whatsapp")}
                 />
 
-                <PasswordInput
-                  label="Password"
-                  placeholder="Create a strong password"
-                  leftSection={<IconLock size={18} />}
-                  required
+                <TextInput
+                  placeholder="Enter your Twitter profile URL"
+                  leftSection={<IconBrandTwitter size={18} />}
                   size="md"
                   radius="md"
                   classNames={{
                     input: "auth-input",
                     label: "auth-label",
                   }}
-                  {...form.getInputProps("password")}
+                  {...form.getInputProps("twitterLink")}
                 />
 
-                <Alert
-                  color="blue"
-                  variant="light"
+                <TextInput
+                  placeholder="Enter your TikTok profile URL"
+                  leftSection={<IconBrandTiktok size={18} />}
+                  size="md"
                   radius="md"
-                  icon={<IconCheck size={16} />}
-                >
-                  <Text size="xs">
-                    Password must be at least 8 characters long and contain
-                    uppercase, lowercase, and numbers.
-                  </Text>
-                </Alert>
+                  classNames={{
+                    input: "auth-input",
+                    label: "auth-label",
+                  }}
+                  {...form.getInputProps("tiktokLink")}
+                />
+
+                <TextInput
+                  placeholder="Enter your Instagram profile URL"
+                  leftSection={<IconBrandInstagram size={18} />}
+                  size="md"
+                  radius="md"
+                  classNames={{
+                    input: "auth-input",
+                    label: "auth-label",
+                  }}
+                  {...form.getInputProps("instagramLink")}
+                />
 
                 <Button
                   type="submit"
@@ -254,33 +265,14 @@ export function RegisterForm() {
                   disabled={isLoading}
                   className="auth-button"
                 >
-                  Create Account
+                  Complete Profile
                 </Button>
               </Stack>
             </form>
 
-            <Divider
-              label="or"
-              labelPosition="center"
-              style={{
-                borderColor: "var(--mantine-color-gray-3)",
-                "--divider-color": "var(--mantine-color-gray-3)",
-              }}
-            />
-
-            <Group justify="center" gap="xs">
-              <Text size="sm" c="dimmed">
-                Already have an account?
-              </Text>
-              <Anchor
-                component={Link}
-                to="/login"
-                size="sm"
-                className="auth-link"
-              >
-                Sign in
-              </Anchor>
-            </Group>
+            <Text size="xs" c="dimmed" ta="center">
+              You can update these details later in your profile settings
+            </Text>
           </Stack>
         </Paper>
       </Container>

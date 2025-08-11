@@ -35,16 +35,16 @@ import { useAuthStore } from "../../stores/authStore";
 import { useUIStore } from "../../stores/uiStore";
 
 const navigationItems = [
-  { label: "Home", icon: IconHome, path: "/" },
-  { label: "Explore", icon: IconExplore, path: "/explore" },
-  { label: "Trending", icon: IconTrendingUp, path: "/trending" },
-  { label: "Chat", icon: IconMessageCircle, path: "/chat" },
+  { label: "Home", icon: IconHome, path: "/dashboard" },
+  { label: "Explore", icon: IconExplore, path: "/dashboard/explore" },
+  { label: "Trending", icon: IconTrendingUp, path: "/dashboard/trending" },
+  { label: "Chat", icon: IconMessageCircle, path: "/dashboard/chat" },
 ];
 
 export function HeaderContent() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, logout } = useAuthStore();
+  const { user, logout, isAuthenticated } = useAuthStore();
   const { unreadCount } = useUIStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [mobileMenuOpened, setMobileMenuOpened] = useState(false);
@@ -52,20 +52,27 @@ export function HeaderContent() {
   const handleSearch = (event: React.FormEvent) => {
     event.preventDefault();
     if (searchQuery.trim()) {
-      navigate(`/explore?q=${encodeURIComponent(searchQuery.trim())}`);
+      navigate(
+        `/dashboard/explore?q=${encodeURIComponent(searchQuery.trim())}`
+      );
       setMobileMenuOpened(false);
     }
   };
 
   const handleLogout = () => {
     logout();
-    navigate("/login");
+    navigate("/", { replace: true });
+    setMobileMenuOpened(false);
+  };
+
+  const handleSignIn = () => {
+    navigate("/", { replace: true });
     setMobileMenuOpened(false);
   };
 
   const isActive = (path: string) => {
-    if (path === "/") {
-      return location.pathname === "/";
+    if (path === "/dashboard") {
+      return location.pathname === "/dashboard";
     }
     return location.pathname.startsWith(path);
   };
@@ -90,7 +97,7 @@ export function HeaderContent() {
               />
             </Box>
 
-            <UnstyledButton onClick={() => navigate("/")}>
+            <UnstyledButton onClick={() => navigate("/dashboard")}>
               <Text
                 size="xl"
                 fw={700}
@@ -119,83 +126,101 @@ export function HeaderContent() {
 
           {/* Right Section - Actions and User Menu */}
           <Group gap="sm">
-            {/* Create Post Button - Desktop */}
-            <Box className="desktop-create-post">
+            {/* Create Post Button - Desktop (Only for authenticated users) */}
+            {isAuthenticated && (
+              <Box className="desktop-create-post">
+                <Button
+                  leftSection={<IconPlus size={16} />}
+                  size="sm"
+                  onClick={() => navigate("/protected/create-post")}
+                  variant="filled"
+                  radius="xl"
+                >
+                  Create Post
+                </Button>
+              </Box>
+            )}
+
+            {/* Sign In Button - For unauthenticated users */}
+            {!isAuthenticated && (
               <Button
-                leftSection={<IconPlus size={16} />}
+                variant="outline"
                 size="sm"
-                onClick={() => navigate("/create-post")}
-                variant="filled"
+                onClick={handleSignIn}
                 radius="xl"
               >
-                Create Post
+                Sign In
               </Button>
-            </Box>
+            )}
 
-            {/* Notifications */}
-            <ActionIcon
-              variant="subtle"
-              size="lg"
-              onClick={() => navigate("/notifications")}
-              style={{ position: "relative" }}
-            >
-              <IconBell size={20} />
-              {unreadCount > 0 && (
-                <Badge
-                  size="xs"
-                  color="red"
-                  style={{
-                    position: "absolute",
-                    top: -5,
-                    right: -5,
-                    minWidth: 18,
-                    height: 18,
-                    fontSize: 10,
-                  }}
-                >
-                  {unreadCount > 99 ? "99+" : unreadCount}
-                </Badge>
-              )}
-            </ActionIcon>
-
-            {/* User Menu */}
-            <Menu shadow="md" width={200} position="bottom-end">
-              <Menu.Target>
-                <UnstyledButton>
-                  <Avatar
-                    src={user?.avatar}
-                    alt={user?.firstName}
-                    size="md"
-                    style={{ cursor: "pointer" }}
+            {/* Notifications - Only for authenticated users */}
+            {isAuthenticated && (
+              <ActionIcon
+                variant="subtle"
+                size="lg"
+                onClick={() => navigate("/dashboard/notifications")}
+                style={{ position: "relative" }}
+              >
+                <IconBell size={20} />
+                {unreadCount > 0 && (
+                  <Badge
+                    size="xs"
+                    color="red"
+                    style={{
+                      position: "absolute",
+                      top: -5,
+                      right: -5,
+                      minWidth: 18,
+                      height: 18,
+                      fontSize: 10,
+                    }}
                   >
-                    {user?.firstName?.charAt(0)}
-                  </Avatar>
-                </UnstyledButton>
-              </Menu.Target>
+                    {unreadCount > 99 ? "99+" : unreadCount}
+                  </Badge>
+                )}
+              </ActionIcon>
+            )}
 
-              <Menu.Dropdown>
-                <Menu.Item
-                  leftSection={<IconUser size={14} />}
-                  onClick={() => navigate("/profile")}
-                >
-                  Profile
-                </Menu.Item>
-                <Menu.Item
-                  leftSection={<IconSettings size={14} />}
-                  onClick={() => navigate("/settings")}
-                >
-                  Settings
-                </Menu.Item>
-                <Menu.Divider />
-                <Menu.Item
-                  leftSection={<IconLogout size={14} />}
-                  color="red"
-                  onClick={handleLogout}
-                >
-                  Logout
-                </Menu.Item>
-              </Menu.Dropdown>
-            </Menu>
+            {/* User Menu - Only for authenticated users */}
+            {isAuthenticated && user && (
+              <Menu shadow="md" width={200} position="bottom-end">
+                <Menu.Target>
+                  <UnstyledButton>
+                    <Avatar
+                      src={user?.avatar}
+                      alt={user?.firstName}
+                      size="md"
+                      style={{ cursor: "pointer" }}
+                    >
+                      {user?.firstName?.charAt(0)}
+                    </Avatar>
+                  </UnstyledButton>
+                </Menu.Target>
+
+                <Menu.Dropdown>
+                  <Menu.Item
+                    leftSection={<IconUser size={14} />}
+                    onClick={() => navigate("/dashboard/profile")}
+                  >
+                    Profile
+                  </Menu.Item>
+                  <Menu.Item
+                    leftSection={<IconSettings size={14} />}
+                    onClick={() => navigate("/protected/edit-profile")}
+                  >
+                    Settings
+                  </Menu.Item>
+                  <Menu.Divider />
+                  <Menu.Item
+                    leftSection={<IconLogout size={14} />}
+                    color="red"
+                    onClick={handleLogout}
+                  >
+                    Logout
+                  </Menu.Item>
+                </Menu.Dropdown>
+              </Menu>
+            )}
           </Group>
         </Group>
       </Container>
@@ -230,30 +255,49 @@ export function HeaderContent() {
         }}
       >
         <Stack gap={0} h="100%">
-          {/* User Profile Section */}
-          <Box
-            p="lg"
-            style={{ borderBottom: "1px solid var(--mantine-color-gray-3)" }}
-          >
-            <Group>
-              <Avatar
-                src={user?.avatar}
-                alt={user?.firstName}
-                size="lg"
-                radius="xl"
-              >
-                {user?.firstName?.charAt(0)}
-              </Avatar>
-              <Box style={{ flex: 1 }}>
-                <Text size="sm" fw={500}>
-                  {user?.firstName} {user?.lastName}
+          {/* User Profile Section - Only for authenticated users */}
+          {isAuthenticated && user && (
+            <Box
+              p="lg"
+              style={{ borderBottom: "1px solid var(--mantine-color-gray-3)" }}
+            >
+              <Group>
+                <Avatar
+                  src={user?.avatar}
+                  alt={user?.firstName}
+                  size="lg"
+                  radius="xl"
+                >
+                  {user?.firstName?.charAt(0)}
+                </Avatar>
+                <Box style={{ flex: 1 }}>
+                  <Text size="sm" fw={500}>
+                    {user?.firstName} {user?.lastName}
+                  </Text>
+                  <Text size="xs" c="dimmed">
+                    {user?.phoneNumber}
+                  </Text>
+                </Box>
+              </Group>
+            </Box>
+          )}
+
+          {/* Sign In Section - For unauthenticated users */}
+          {!isAuthenticated && (
+            <Box
+              p="lg"
+              style={{ borderBottom: "1px solid var(--mantine-color-gray-3)" }}
+            >
+              <Stack gap="md">
+                <Text size="sm" fw={500} ta="center">
+                  Welcome to Kendle
                 </Text>
-                <Text size="xs" c="dimmed">
-                  @{user?.username}
-                </Text>
-              </Box>
-            </Group>
-          </Box>
+                <Button fullWidth onClick={handleSignIn} variant="filled">
+                  Sign In to Continue
+                </Button>
+              </Stack>
+            </Box>
+          )}
 
           {/* Search Bar */}
           <Box
@@ -272,20 +316,22 @@ export function HeaderContent() {
             </form>
           </Box>
 
-          {/* Create Post Button */}
-          <Box
-            p="lg"
-            style={{ borderBottom: "1px solid var(--mantine-color-gray-3)" }}
-          >
-            <Button
-              leftSection={<IconPlus size={16} />}
-              fullWidth
-              size="md"
-              onClick={() => handleNavigation("/create-post")}
+          {/* Create Post Button - Only for authenticated users */}
+          {isAuthenticated && (
+            <Box
+              p="lg"
+              style={{ borderBottom: "1px solid var(--mantine-color-gray-3)" }}
             >
-              Create Post
-            </Button>
-          </Box>
+              <Button
+                leftSection={<IconPlus size={16} />}
+                fullWidth
+                size="md"
+                onClick={() => handleNavigation("/protected/create-post")}
+              >
+                Create Post
+              </Button>
+            </Box>
+          )}
 
           {/* Navigation Links */}
           <Box p="lg" style={{ flex: 1 }}>
@@ -306,34 +352,36 @@ export function HeaderContent() {
             </Stack>
           </Box>
 
-          {/* Bottom Section */}
-          <Box
-            p="lg"
-            style={{ borderTop: "1px solid var(--mantine-color-gray-3)" }}
-          >
-            <Stack gap="xs">
-              <NavLink
-                label="Profile"
-                leftSection={<IconUser size={18} />}
-                onClick={() => handleNavigation("/profile")}
-                variant="subtle"
-              />
-              <NavLink
-                label="Settings"
-                leftSection={<IconSettings size={18} />}
-                onClick={() => handleNavigation("/settings")}
-                variant="subtle"
-              />
-              <Divider />
-              <NavLink
-                label="Logout"
-                leftSection={<IconLogout size={18} />}
-                onClick={handleLogout}
-                variant="subtle"
-                color="red"
-              />
-            </Stack>
-          </Box>
+          {/* Bottom Section - Only for authenticated users */}
+          {isAuthenticated && (
+            <Box
+              p="lg"
+              style={{ borderTop: "1px solid var(--mantine-color-gray-3)" }}
+            >
+              <Stack gap="xs">
+                <NavLink
+                  label="Profile"
+                  leftSection={<IconUser size={18} />}
+                  onClick={() => handleNavigation("/dashboard/profile")}
+                  variant="subtle"
+                />
+                <NavLink
+                  label="Settings"
+                  leftSection={<IconSettings size={18} />}
+                  onClick={() => handleNavigation("/protected/edit-profile")}
+                  variant="subtle"
+                />
+                <Divider />
+                <NavLink
+                  label="Logout"
+                  leftSection={<IconLogout size={18} />}
+                  onClick={handleLogout}
+                  variant="subtle"
+                  color="red"
+                />
+              </Stack>
+            </Box>
+          )}
         </Stack>
       </Drawer>
     </>

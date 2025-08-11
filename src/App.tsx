@@ -1,33 +1,35 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
-import { MantineProvider } from '@mantine/core'
-import { QueryClientProvider } from '@tanstack/react-query'
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import { Notifications } from '@mantine/notifications'
-import { theme } from './theme'
-import { queryClient } from './lib/queryClient'
-import { useAuthStore } from './stores/authStore'
+import { MantineProvider } from "@mantine/core";
+import { Notifications } from "@mantine/notifications";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import {
+  Navigate,
+  Route,
+  BrowserRouter as Router,
+  Routes,
+} from "react-router-dom";
+import { queryClient } from "./lib/queryClient";
+import { useAuthStore } from "./stores/authStore";
+import { theme } from "./theme";
 
-// Layout components
-import { AppShell } from './components/layout/AppShell'
+import { AppShell } from "./components/layout/AppShell";
 
-// Auth components
-import { LoginForm } from './features/auth/LoginForm'
-import { RegisterForm } from './features/auth/RegisterForm'
-import { ForgotPassword } from './features/auth/ForgotPassword'
-import { AuthGuard } from './features/auth/AuthGuard'
+import { AuthGuard } from "./features/auth/AuthGuard";
+import { OTPVerification } from "./features/auth/OTPVerification";
+import { PhoneAuth } from "./features/auth/PhoneAuth";
+import { ProfileCompletion } from "./features/auth/ProfileCompletion";
 
-// Feature components
-import { HomePage } from './features/posts/HomePage'
-import { ExplorePage } from './features/search/ExplorePage'
-import { ProfilePage } from './features/profile/ProfilePage'
-import { ChatPage } from './features/chat/ChatPage'
-import { NotificationsPage } from './features/notifications/NotificationsPage'
+import { ChatPage } from "./features/chat/ChatPage";
+import { NotificationsPage } from "./features/notifications/NotificationsPage";
+import { HomePage } from "./features/posts/HomePage";
+import { PostDetail } from "./features/posts/PostDetail";
+import { ProfilePage } from "./features/profile/ProfilePage";
+import { ExplorePage } from "./features/search/ExplorePage";
 
-// Global styles
-import './styles/globals.css'
+import "./styles/globals.css";
 
 function App() {
-  const { isAuthenticated } = useAuthStore()
+  const { isAuthenticated, user } = useAuthStore();
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -35,40 +37,77 @@ function App() {
         <Notifications position="top-right" />
         <Router>
           <Routes>
-            {/* Public routes */}
+            {/* Public routes - Phone Authentication Flow */}
             <Route
-              path="/login"
+              path="/"
               element={
-                isAuthenticated ? <Navigate to="/" replace /> : <LoginForm />
+                isAuthenticated ? (
+                  user?.isProfileComplete ? (
+                    <Navigate to="/dashboard" replace />
+                  ) : (
+                    <Navigate to="/complete-profile" replace />
+                  )
+                ) : (
+                  <PhoneAuth />
+                )
               }
             />
             <Route
-              path="/register"
+              path="/verify-otp"
               element={
-                isAuthenticated ? <Navigate to="/" replace /> : <RegisterForm />
+                isAuthenticated ? (
+                  user?.isProfileComplete ? (
+                    <Navigate to="/dashboard" replace />
+                  ) : (
+                    <Navigate to="/complete-profile" replace />
+                  )
+                ) : (
+                  <OTPVerification />
+                )
               }
             />
             <Route
-              path="/forgot-password"
+              path="/complete-profile"
               element={
-                isAuthenticated ? <Navigate to="/" replace /> : <ForgotPassword />
+                isAuthenticated ? (
+                  user?.isProfileComplete ? (
+                    <Navigate to="/dashboard" replace />
+                  ) : (
+                    <ProfileCompletion />
+                  )
+                ) : (
+                  <Navigate to="/" replace />
+                )
               }
             />
 
-            {/* Protected routes */}
+            {/* Public Dashboard - Accessible to all users */}
+            <Route path="/dashboard" element={<AppShell />}>
+              <Route index element={<HomePage />} />
+              <Route path="explore" element={<ExplorePage />} />
+              <Route path="chat" element={<ChatPage />} />
+              <Route path="notifications" element={<NotificationsPage />} />
+              <Route path="profile" element={<ProfilePage />} />
+              <Route path="post/:postId" element={<PostDetail />} />
+            </Route>
+
+            {/* Protected routes - Require authentication */}
             <Route
-              path="/"
+              path="/protected"
               element={
                 <AuthGuard>
                   <AppShell />
                 </AuthGuard>
               }
             >
-              <Route index element={<HomePage />} />
-              <Route path="explore" element={<ExplorePage />} />
-              <Route path="profile/:userId?" element={<ProfilePage />} />
-              <Route path="chat" element={<ChatPage />} />
-              <Route path="notifications" element={<NotificationsPage />} />
+              <Route
+                path="create-post"
+                element={<div>Create Post (Protected)</div>}
+              />
+              <Route
+                path="edit-profile"
+                element={<div>Edit Profile (Protected)</div>}
+              />
             </Route>
 
             {/* Catch all route */}
@@ -78,7 +117,7 @@ function App() {
       </MantineProvider>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
-  )
+  );
 }
 
-export default App
+export default App;

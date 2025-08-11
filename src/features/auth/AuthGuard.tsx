@@ -8,7 +8,7 @@ interface AuthGuardProps {
 }
 
 export function AuthGuard({ children }: AuthGuardProps) {
-  const { isAuthenticated, isLoading } = useAuthStore()
+  const { isAuthenticated, isLoading, user } = useAuthStore()
   const location = useLocation()
 
   // Show loading state while checking authentication
@@ -50,9 +50,14 @@ export function AuthGuard({ children }: AuthGuardProps) {
     )
   }
 
-  // Redirect to login if not authenticated
+  // Redirect to phone auth if not authenticated
   if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location }} replace />
+    return <Navigate to="/" state={{ from: location }} replace />
+  }
+
+  // If user is authenticated but profile is incomplete, redirect to profile completion
+  if (user && !user.isProfileComplete) {
+    return <Navigate to="/complete-profile" replace />
   }
 
   return <>{children}</>

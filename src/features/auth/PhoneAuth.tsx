@@ -1,0 +1,179 @@
+import {
+  Alert,
+  Box,
+  Button,
+  Center,
+  Container,
+  LoadingOverlay,
+  Paper,
+  Stack,
+  Text,
+  TextInput,
+  Title,
+} from "@mantine/core";
+import { useForm } from "@mantine/form";
+import { notifications } from "@mantine/notifications";
+import {
+  IconAlertCircle,
+  IconBrandTwitter,
+  IconPhone,
+} from "@tabler/icons-react";
+import { zodResolver } from "mantine-form-zod-resolver";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { z } from "zod";
+import { useAuthStore } from "../../stores/authStore";
+
+interface PhoneAuthFormData {
+  phoneNumber: string;
+}
+
+const phoneSchema = z.object({
+  phoneNumber: z.string().min(1, "Phone number is required"),
+});
+
+export function PhoneAuth() {
+  const navigate = useNavigate();
+  const { sendOTP, isLoading, error, clearError } = useAuthStore();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const form = useForm<PhoneAuthFormData>({
+    mode: "uncontrolled",
+    initialValues: {
+      phoneNumber: "",
+    },
+    validate: zodResolver(phoneSchema) as any,
+  });
+
+  const handleSubmit = async (values: PhoneAuthFormData) => {
+    setIsSubmitting(true);
+    clearError();
+
+    try {
+      await sendOTP(values);
+      notifications.show({
+        title: "OTP Sent!",
+        message: "We've sent a verification code to your phone number.",
+        color: "green",
+      });
+      navigate("/verify-otp", {
+        state: { phoneNumber: values.phoneNumber },
+        replace: true,
+      });
+    } catch (err) {
+      notifications.show({
+        title: "Failed to send OTP",
+        message: "Please check your phone number and try again.",
+        color: "red",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <Box className="auth-container">
+      <Container size="xs" style={{ width: "100%", maxWidth: "400px" }}>
+        <Paper className="auth-paper" p="xl" withBorder>
+          <LoadingOverlay visible={isSubmitting} />
+
+          {/* Decorative background elements */}
+          <Box
+            className="auth-decoration"
+            style={{
+              top: "-50px",
+              right: "-50px",
+              width: "100px",
+              height: "100px",
+              background:
+                "linear-gradient(135deg, var(--mantine-color-primary-2), var(--mantine-color-primary-3))",
+            }}
+          />
+          <Box
+            className="auth-decoration"
+            style={{
+              bottom: "-30px",
+              left: "-30px",
+              width: "60px",
+              height: "60px",
+              background:
+                "linear-gradient(135deg, var(--mantine-color-secondary-2), var(--mantine-color-secondary-3))",
+            }}
+          />
+
+          <Stack
+            gap="xl"
+            style={{ position: "relative", zIndex: 1 }}
+            className="auth-form"
+          >
+            <Center>
+              <Box className="auth-logo">
+                <IconBrandTwitter size={32} color="white" />
+              </Box>
+            </Center>
+
+            <div style={{ textAlign: "center" }}>
+              <Title
+                order={1}
+                size="h2"
+                className="text-gradient"
+                style={{ marginBottom: "var(--mantine-spacing-xs)" }}
+              >
+                Welcome to Kendle
+              </Title>
+              <Text c="dimmed" size="sm">
+                Enter your phone number to get started
+              </Text>
+            </div>
+
+            {error && (
+              <Alert
+                icon={<IconAlertCircle size={16} />}
+                title="Authentication Error"
+                color="red"
+                variant="light"
+                radius="md"
+              >
+                {error}
+              </Alert>
+            )}
+
+            <form onSubmit={form.onSubmit(handleSubmit)}>
+              <Stack gap="lg">
+                <TextInput
+                  label="Phone Number"
+                  placeholder="0770000000"
+                  leftSection={<IconPhone size={18} />}
+                  required
+                  size="md"
+                  radius="md"
+                  classNames={{
+                    input: "auth-input",
+                    label: "auth-label",
+                  }}
+                  {...form.getInputProps("phoneNumber")}
+                />
+
+                <Button
+                  type="submit"
+                  fullWidth
+                  size="lg"
+                  loading={isSubmitting}
+                  disabled={isLoading}
+                  className="auth-button"
+                >
+                  Send Verification Code
+                </Button>
+              </Stack>
+            </form>
+
+            <Text size="xs" c="dimmed" ta="center">
+              By continuing, you agree to our Terms of Service and Privacy
+              Policy
+            </Text>
+          </Stack>
+        </Paper>
+      </Container>
+    </Box>
+  );
+}

@@ -5,11 +5,8 @@ import {
   Button,
   Center,
   Container,
-  Divider,
-  Group,
   LoadingOverlay,
   Paper,
-  PasswordInput,
   Stack,
   Text,
   TextInput,
@@ -19,56 +16,124 @@ import { useForm } from "@mantine/form";
 import { notifications } from "@mantine/notifications";
 import {
   IconAlertCircle,
+  IconArrowLeft,
   IconBrandTwitter,
-  IconLock,
-  IconMail,
+  IconKey,
 } from "@tabler/icons-react";
 import { zodResolver } from "mantine-form-zod-resolver";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { LoginFormData, loginSchema } from "../../lib/schemas";
+import { z } from "zod";
 import { useAuthStore } from "../../stores/authStore";
 
-export function LoginForm() {
+interface OTPVerificationFormData {
+  otp: string;
+}
+
+const otpSchema = z.object({
+  otp: z
+    .string()
+    .min(1, "OTP is required")
+    .regex(/^\d{6}$/, "Please enter a valid 6-digit OTP"),
+});
+
+export function OTPVerification() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, isLoading, error, clearError } = useAuthStore();
+  const { verifyOTP, isLoading, error, clearError } = useAuthStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [countdown, setCountdown] = useState(300); // 5 minutes
+  const [canResend, setCanResend] = useState(false);
 
-  const form = useForm<LoginFormData>({
+  const phoneNumber = location.state?.phoneNumber;
+
+  useEffect(() => {
+    if (!phoneNumber) {
+      navigate("/", { replace: true });
+      return;
+    }
+
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          setCanResend(true);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [phoneNumber, navigate]);
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  const form = useForm<OTPVerificationFormData>({
     mode: "uncontrolled",
     initialValues: {
-      email: "",
-      password: "",
+      otp: "",
     },
-    validate: zodResolver(loginSchema),
+    validate: zodResolver(otpSchema) as any,
   });
 
-  const handleSubmit = async (values: LoginFormData) => {
+  const handleSubmit = async (values: OTPVerificationFormData) => {
     setIsSubmitting(true);
     clearError();
 
     try {
-      await login(values);
-      notifications.show({
-        title: "Welcome back!",
-        message: "You have successfully logged in.",
-        color: "green",
+      const response = await verifyOTP({
+        phoneNumber,
+        otp: values.otp,
       });
 
-      // Redirect to the page they were trying to access or home
-      const from = location.state?.from?.pathname || "/";
-      navigate(from, { replace: true });
+      if (response.isNewUser) {
+        navigate("/complete-profile", { replace: true });
+      } else {
+        navigate("/", { replace: true });
+      }
+
+      notifications.show({
+        title: "Welcome back!",
+        message: "You have successfully signed in.",
+        color: "green",
+      });
     } catch (err) {
       notifications.show({
-        title: "Login failed",
-        message: "Please check your credentials and try again.",
+        title: "Verification failed",
+        message: "Please check your OTP and try again.",
         color: "red",
       });
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const handleResendOTP = async () => {
+    try {
+      await useAuthStore.getState().sendOTP({ phoneNumber });
+      setCountdown(300);
+      setCanResend(false);
+      notifications.show({
+        title: "OTP Resent!",
+        message: "A new verification code has been sent to your phone.",
+        color: "green",
+      });
+    } catch (err) {
+      notifications.show({
+        title: "Failed to resend OTP",
+        message: "Please try again later.",
+        color: "red",
+      });
+    }
+  };
+
+  if (!phoneNumber) {
+    return null;
+  }
 
   return (
     <Box className="auth-container">
@@ -118,17 +183,17 @@ export function LoginForm() {
                 className="text-gradient"
                 style={{ marginBottom: "var(--mantine-spacing-xs)" }}
               >
-                Welcome Back
+                Enter Verification Code
               </Title>
               <Text c="dimmed" size="sm">
-                Sign in to your Kendle account to continue
+                We've sent a 6-digit code to {phoneNumber}
               </Text>
             </div>
 
             {error && (
               <Alert
                 icon={<IconAlertCircle size={16} />}
-                title="Authentication Error"
+                title="Verification Error"
                 color="red"
                 variant="light"
                 radius="md"
@@ -140,31 +205,18 @@ export function LoginForm() {
             <form onSubmit={form.onSubmit(handleSubmit)}>
               <Stack gap="lg">
                 <TextInput
-                  label="Email Address"
-                  placeholder="your@email.com"
-                  leftSection={<IconMail size={18} />}
+                  label="Verification Code"
+                  placeholder="123456"
+                  leftSection={<IconKey size={18} />}
                   required
                   size="md"
                   radius="md"
+                  maxLength={6}
                   classNames={{
                     input: "auth-input",
                     label: "auth-label",
                   }}
-                  {...form.getInputProps("email")}
-                />
-
-                <PasswordInput
-                  label="Password"
-                  placeholder="Enter your password"
-                  leftSection={<IconLock size={18} />}
-                  required
-                  size="md"
-                  radius="md"
-                  classNames={{
-                    input: "auth-input",
-                    label: "auth-label",
-                  }}
-                  {...form.getInputProps("password")}
+                  {...form.getInputProps("otp")}
                 />
 
                 <Button
@@ -175,52 +227,45 @@ export function LoginForm() {
                   disabled={isLoading}
                   className="auth-button"
                 >
-                  Sign In
+                  Verify Code
                 </Button>
               </Stack>
             </form>
 
-            <Divider
-              label="or"
-              labelPosition="center"
-              style={{
-                borderColor: "var(--mantine-color-gray-3)",
-                "--divider-color": "var(--mantine-color-gray-3)",
-              }}
-            />
+            <Stack gap="md" align="center">
+              <Text size="sm" c="dimmed" ta="center">
+                Didn't receive the code?
+              </Text>
 
-            <Stack gap="md">
-              <Group justify="center" gap="xs">
-                <Text size="sm" c="dimmed">
-                  Don't have an account?
-                </Text>
-                <Anchor
-                  component={Link}
-                  to="/register"
+              {canResend ? (
+                <Button
+                  variant="subtle"
                   size="sm"
+                  onClick={handleResendOTP}
                   className="auth-link"
                 >
-                  Create account
-                </Anchor>
-              </Group>
+                  Resend Code
+                </Button>
+              ) : (
+                <Text size="sm" c="dimmed">
+                  Resend available in {formatTime(countdown)}
+                </Text>
+              )}
 
-              <Center>
-                <Anchor
-                  component={Link}
-                  to="/forgot-password"
-                  size="sm"
-                  style={{
-                    color: "var(--mantine-color-gray-6)",
-                    textDecoration: "none",
-                    "&:hover": {
-                      color: "var(--mantine-color-gray-8)",
-                      textDecoration: "underline",
-                    },
-                  }}
-                >
-                  Forgot your password?
-                </Anchor>
-              </Center>
+              <Anchor
+                component={Link}
+                to="/"
+                size="sm"
+                className="auth-link"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "var(--mantine-spacing-xs)",
+                }}
+              >
+                <IconArrowLeft size={16} />
+                Back to phone input
+              </Anchor>
             </Stack>
           </Stack>
         </Paper>
