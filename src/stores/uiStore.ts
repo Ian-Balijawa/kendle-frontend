@@ -3,14 +3,11 @@ import { persist } from 'zustand/middleware'
 import { Notification } from '../types'
 
 interface UIStore {
-    sidebarOpen: boolean
     theme: 'light' | 'dark'
     notifications: Notification[]
     unreadCount: number
 
     // Actions
-    toggleSidebar: () => void
-    setSidebarOpen: ( open: boolean ) => void
     setTheme: ( theme: 'light' | 'dark' ) => void
     addNotification: ( notification: Notification ) => void
     markNotificationAsRead: ( id: string ) => void
@@ -22,18 +19,9 @@ interface UIStore {
 export const useUIStore = create<UIStore>()(
     persist(
         ( set ) => ( {
-            sidebarOpen: false,
             theme: 'light',
             notifications: [],
             unreadCount: 0,
-
-            toggleSidebar: () => {
-                set( ( state ) => ( { sidebarOpen: !state.sidebarOpen } ) )
-            },
-
-            setSidebarOpen: ( open: boolean ) => {
-                set( { sidebarOpen: open } )
-            },
 
             setTheme: ( theme: 'light' | 'dark' ) => {
                 set( { theme } )
@@ -87,7 +75,6 @@ export const useUIStore = create<UIStore>()(
             name: 'ui-storage',
             partialize: ( state ) => ( {
                 theme: state.theme,
-                sidebarOpen: state.sidebarOpen,
             } ),
         }
     )

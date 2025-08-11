@@ -1,164 +1,341 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import {
-  Group, Container,
-  Burger,
-  TextInput,
   ActionIcon,
   Avatar,
-  Menu,
   Badge,
   Box,
-  Text
-} from '@mantine/core'
+  Burger,
+  Button,
+  Container,
+  Divider,
+  Drawer,
+  Group,
+  Menu,
+  NavLink,
+  Stack,
+  Text,
+  TextInput,
+  UnstyledButton,
+} from "@mantine/core";
 import {
-  IconSearch,
   IconBell,
-  IconSettings,
+  IconSearch as IconExplore,
+  IconHome,
   IconLogout,
-  IconUser
-} from '@tabler/icons-react'
-import { useAuthStore } from '../../stores/authStore'
-import { useUIStore } from '../../stores/uiStore'
+  IconMessageCircle,
+  IconPlus,
+  IconSearch,
+  IconSettings,
+  IconTrendingUp,
+  IconUser,
+  IconX,
+} from "@tabler/icons-react";
+import { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useAuthStore } from "../../stores/authStore";
+import { useUIStore } from "../../stores/uiStore";
 
-interface HeaderContentProps {
-  opened: boolean
-  setOpened: (opened: boolean) => void
-  sidebarOpen: boolean
-  setSidebarOpen: (open: boolean) => void
-}
+const navigationItems = [
+  { label: "Home", icon: IconHome, path: "/" },
+  { label: "Explore", icon: IconExplore, path: "/explore" },
+  { label: "Trending", icon: IconTrendingUp, path: "/trending" },
+  { label: "Chat", icon: IconMessageCircle, path: "/chat" },
+];
 
-export function HeaderContent({
-  opened,
-  setOpened,
-  sidebarOpen,
-  setSidebarOpen,
-}: HeaderContentProps) {
-  const navigate = useNavigate()
-  const { user, logout } = useAuthStore()
-  const { unreadCount } = useUIStore()
-  const [searchQuery, setSearchQuery] = useState('')
+export function HeaderContent() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { user, logout } = useAuthStore();
+  const { unreadCount } = useUIStore();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [mobileMenuOpened, setMobileMenuOpened] = useState(false);
 
   const handleSearch = (event: React.FormEvent) => {
-    event.preventDefault()
+    event.preventDefault();
     if (searchQuery.trim()) {
-      navigate(`/explore?q=${encodeURIComponent(searchQuery.trim())}`)
+      navigate(`/explore?q=${encodeURIComponent(searchQuery.trim())}`);
+      setMobileMenuOpened(false);
     }
-  }
+  };
 
   const handleLogout = () => {
-    logout()
-    navigate('/login')
-  }
+    logout();
+    navigate("/login");
+    setMobileMenuOpened(false);
+  };
+
+  const isActive = (path: string) => {
+    if (path === "/") {
+      return location.pathname === "/";
+    }
+    return location.pathname.startsWith(path);
+  };
+
+  const handleNavigation = (path: string) => {
+    navigate(path);
+    setMobileMenuOpened(false);
+  };
 
   return (
-    <Container size="xl" h="100%">
-      <Group justify="space-between" h="100%">
-        <Group>
-          <Burger
-            opened={opened}
-            onClick={() => setOpened(!opened)}
-            size="sm"
-            color="var(--mantine-color-text)"
-            hiddenFrom="sm"
-          />
+    <>
+      <Container size="xl" h="100%">
+        <Group justify="space-between" h="100%" gap="md">
+          {/* Left Section - Logo and Mobile Menu */}
+          <Group gap="md">
+            <Box className="mobile-menu-button">
+              <Burger
+                opened={mobileMenuOpened}
+                onClick={() => setMobileMenuOpened(true)}
+                size="sm"
+                color="var(--mantine-color-text)"
+              />
+            </Box>
 
-          <Burger
-            opened={sidebarOpen}
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            size="sm"
-            color="var(--mantine-color-text)"
-            visibleFrom="sm"
-          />
-
-          <Text
-            size="xl"
-            fw={700}
-            className="text-gradient"
-            style={{ cursor: 'pointer' }}
-            onClick={() => navigate('/')}
-          >
-            Kendle
-          </Text>
-        </Group>
-
-        <Box style={{ flex: 1 }} mx="xl" visibleFrom="md">
-          <form onSubmit={handleSearch}>
-            <TextInput
-              placeholder="Search posts, people, or hashtags..."
-              value={searchQuery}
-              onChange={(event) => setSearchQuery(event.currentTarget.value)}
-              leftSection={<IconSearch size={16} />}
-              size="sm"
-              radius="xl"
-              style={{ maxWidth: 400 }}
-            />
-          </form>
-        </Box>
-
-        <Group>
-          <ActionIcon
-            variant="subtle"
-            size="lg"
-            onClick={() => navigate('/notifications')}
-            style={{ position: 'relative' }}
-          >
-            <IconBell size={20} />
-            {unreadCount > 0 && (
-              <Badge
-                size="xs"
-                color="red"
-                style={{
-                  position: 'absolute',
-                  top: -5,
-                  right: -5,
-                  minWidth: 18,
-                  height: 18,
-                  fontSize: 10,
-                }}
+            <UnstyledButton onClick={() => navigate("/")}>
+              <Text
+                size="xl"
+                fw={700}
+                className="text-gradient"
+                style={{ cursor: "pointer" }}
               >
-                {unreadCount > 99 ? '99+' : unreadCount}
-              </Badge>
-            )}
-          </ActionIcon>
+                Kendle
+              </Text>
+            </UnstyledButton>
+          </Group>
 
-          <Menu shadow="md" width={200} position="bottom-end">
-            <Menu.Target>
+          {/* Center Section - Search Bar (Desktop) */}
+          <Box className="desktop-search" style={{ flex: 1 }} mx="xl">
+            <form onSubmit={handleSearch}>
+              <TextInput
+                placeholder="Search posts, people, or hashtags..."
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.currentTarget.value)}
+                leftSection={<IconSearch size={16} />}
+                size="sm"
+                radius="xl"
+                style={{ maxWidth: 400 }}
+              />
+            </form>
+          </Box>
+
+          {/* Right Section - Actions and User Menu */}
+          <Group gap="sm">
+            {/* Create Post Button - Desktop */}
+            <Box className="desktop-create-post">
+              <Button
+                leftSection={<IconPlus size={16} />}
+                size="sm"
+                onClick={() => navigate("/create-post")}
+                variant="filled"
+                radius="xl"
+              >
+                Create Post
+              </Button>
+            </Box>
+
+            {/* Notifications */}
+            <ActionIcon
+              variant="subtle"
+              size="lg"
+              onClick={() => navigate("/notifications")}
+              style={{ position: "relative" }}
+            >
+              <IconBell size={20} />
+              {unreadCount > 0 && (
+                <Badge
+                  size="xs"
+                  color="red"
+                  style={{
+                    position: "absolute",
+                    top: -5,
+                    right: -5,
+                    minWidth: 18,
+                    height: 18,
+                    fontSize: 10,
+                  }}
+                >
+                  {unreadCount > 99 ? "99+" : unreadCount}
+                </Badge>
+              )}
+            </ActionIcon>
+
+            {/* User Menu */}
+            <Menu shadow="md" width={200} position="bottom-end">
+              <Menu.Target>
+                <UnstyledButton>
+                  <Avatar
+                    src={user?.avatar}
+                    alt={user?.firstName}
+                    size="md"
+                    style={{ cursor: "pointer" }}
+                  >
+                    {user?.firstName?.charAt(0)}
+                  </Avatar>
+                </UnstyledButton>
+              </Menu.Target>
+
+              <Menu.Dropdown>
+                <Menu.Item
+                  leftSection={<IconUser size={14} />}
+                  onClick={() => navigate("/profile")}
+                >
+                  Profile
+                </Menu.Item>
+                <Menu.Item
+                  leftSection={<IconSettings size={14} />}
+                  onClick={() => navigate("/settings")}
+                >
+                  Settings
+                </Menu.Item>
+                <Menu.Divider />
+                <Menu.Item
+                  leftSection={<IconLogout size={14} />}
+                  color="red"
+                  onClick={handleLogout}
+                >
+                  Logout
+                </Menu.Item>
+              </Menu.Dropdown>
+            </Menu>
+          </Group>
+        </Group>
+      </Container>
+
+      {/* Mobile Navigation Drawer */}
+      <Drawer
+        opened={mobileMenuOpened}
+        onClose={() => setMobileMenuOpened(false)}
+        size="100%"
+        position="left"
+        title={
+          <Group justify="space-between" w="100%">
+            <Text size="lg" fw={600}>
+              Menu
+            </Text>
+            <ActionIcon
+              variant="subtle"
+              onClick={() => setMobileMenuOpened(false)}
+            >
+              <IconX size={20} />
+            </ActionIcon>
+          </Group>
+        }
+        styles={{
+          header: {
+            borderBottom: "1px solid var(--mantine-color-gray-3)",
+            padding: "var(--mantine-spacing-md)",
+          },
+          body: {
+            padding: 0,
+          },
+        }}
+      >
+        <Stack gap={0} h="100%">
+          {/* User Profile Section */}
+          <Box
+            p="lg"
+            style={{ borderBottom: "1px solid var(--mantine-color-gray-3)" }}
+          >
+            <Group>
               <Avatar
                 src={user?.avatar}
                 alt={user?.firstName}
-                size="md"
-                style={{ cursor: 'pointer' }}
+                size="lg"
+                radius="xl"
               >
                 {user?.firstName?.charAt(0)}
               </Avatar>
-            </Menu.Target>
+              <Box style={{ flex: 1 }}>
+                <Text size="sm" fw={500}>
+                  {user?.firstName} {user?.lastName}
+                </Text>
+                <Text size="xs" c="dimmed">
+                  @{user?.username}
+                </Text>
+              </Box>
+            </Group>
+          </Box>
 
-            <Menu.Dropdown>
-              <Menu.Item
-                leftSection={<IconUser size={14} />}
-                onClick={() => navigate('/profile')}
-              >
-                Profile
-              </Menu.Item>
-              <Menu.Item
-                leftSection={<IconSettings size={14} />}
-                onClick={() => navigate('/settings')}
-              >
-                Settings
-              </Menu.Item>
-              <Menu.Divider />
-              <Menu.Item
-                leftSection={<IconLogout size={14} />}
-                color="red"
+          {/* Search Bar */}
+          <Box
+            p="lg"
+            style={{ borderBottom: "1px solid var(--mantine-color-gray-3)" }}
+          >
+            <form onSubmit={handleSearch}>
+              <TextInput
+                placeholder="Search posts, people, or hashtags..."
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.currentTarget.value)}
+                leftSection={<IconSearch size={16} />}
+                size="md"
+                radius="md"
+              />
+            </form>
+          </Box>
+
+          {/* Create Post Button */}
+          <Box
+            p="lg"
+            style={{ borderBottom: "1px solid var(--mantine-color-gray-3)" }}
+          >
+            <Button
+              leftSection={<IconPlus size={16} />}
+              fullWidth
+              size="md"
+              onClick={() => handleNavigation("/create-post")}
+            >
+              Create Post
+            </Button>
+          </Box>
+
+          {/* Navigation Links */}
+          <Box p="lg" style={{ flex: 1 }}>
+            <Stack gap="xs">
+              {navigationItems.map((item) => (
+                <NavLink
+                  key={item.path}
+                  label={item.label}
+                  leftSection={<item.icon size={18} />}
+                  active={isActive(item.path)}
+                  onClick={() => handleNavigation(item.path)}
+                  variant="filled"
+                  style={{
+                    borderRadius: "var(--mantine-radius-md)",
+                  }}
+                />
+              ))}
+            </Stack>
+          </Box>
+
+          {/* Bottom Section */}
+          <Box
+            p="lg"
+            style={{ borderTop: "1px solid var(--mantine-color-gray-3)" }}
+          >
+            <Stack gap="xs">
+              <NavLink
+                label="Profile"
+                leftSection={<IconUser size={18} />}
+                onClick={() => handleNavigation("/profile")}
+                variant="subtle"
+              />
+              <NavLink
+                label="Settings"
+                leftSection={<IconSettings size={18} />}
+                onClick={() => handleNavigation("/settings")}
+                variant="subtle"
+              />
+              <Divider />
+              <NavLink
+                label="Logout"
+                leftSection={<IconLogout size={18} />}
                 onClick={handleLogout}
-              >
-                Logout
-              </Menu.Item>
-            </Menu.Dropdown>
-          </Menu>
-        </Group>
-      </Group>
-    </Container>
-  )
+                variant="subtle"
+                color="red"
+              />
+            </Stack>
+          </Box>
+        </Stack>
+      </Drawer>
+    </>
+  );
 }

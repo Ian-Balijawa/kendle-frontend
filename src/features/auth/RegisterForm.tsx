@@ -1,234 +1,289 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
 import {
-    Container,
-    Paper,
-    Title,
-    TextInput,
-    PasswordInput,
-    Button,
-    Text,
-    Anchor,
-    Stack,
-    Divider,
-    Group,
-    Alert,
-    LoadingOverlay,
-    Stepper,
-    Grid,
-} from '@mantine/core'
+  Alert,
+  Anchor,
+  Box,
+  Button,
+  Center,
+  Container,
+  Divider,
+  Grid,
+  Group,
+  LoadingOverlay,
+  Paper,
+  PasswordInput,
+  Stack,
+  Text,
+  TextInput,
+  Title,
+} from "@mantine/core";
+import { useForm } from "@mantine/form";
+import { notifications } from "@mantine/notifications";
 import {
-    IconMail,
-    IconLock,
-    IconUser,
-    IconPhone,
-    IconAlertCircle,
-    IconCheck,
-} from '@tabler/icons-react'
-import { useForm } from '@mantine/form'
-import { zodResolver } from 'mantine-form-zod-resolver'
-import { notifications } from '@mantine/notifications'
-import { useAuthStore } from '../../stores/authStore'
-import { registerSchema, RegisterFormData } from '../../lib/schemas'
+  IconAlertCircle,
+  IconBrandTwitter,
+  IconCheck,
+  IconLock,
+  IconMail,
+  IconPhone,
+  IconUser,
+} from "@tabler/icons-react";
+import { zodResolver } from "mantine-form-zod-resolver";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { RegisterFormData, registerSchema } from "../../lib/schemas";
+import { useAuthStore } from "../../stores/authStore";
 
 export function RegisterForm() {
-  const navigate = useNavigate()
-  const { register, isLoading, error, clearError } = useAuthStore()
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [activeStep, setActiveStep] = useState(0)
+  const navigate = useNavigate();
+  const { register, isLoading, error, clearError } = useAuthStore();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<RegisterFormData>({
-    mode: 'uncontrolled',
+    mode: "uncontrolled",
     initialValues: {
-      username: '',
-      email: '',
-      phoneNumber: '',
-      password: '',
-      firstName: '',
-      lastName: '',
+      username: "",
+      email: "",
+      phoneNumber: "",
+      password: "",
+      firstName: "",
+      lastName: "",
     },
     validate: zodResolver(registerSchema),
-  })
+  });
 
   const handleSubmit = async (values: RegisterFormData) => {
-    setIsSubmitting(true)
-    clearError()
+    setIsSubmitting(true);
+    clearError();
 
     try {
-      await register(values)
+      await register(values);
       notifications.show({
-        title: 'Account created!',
-        message: 'Welcome to Kendle! Your account has been created successfully.',
-        color: 'green',
+        title: "Account created!",
+        message:
+          "Welcome to Kendle! Your account has been created successfully.",
+        color: "green",
         icon: <IconCheck size={16} />,
-      })
-      navigate('/', { replace: true })
+      });
+      navigate("/", { replace: true });
     } catch (err) {
       notifications.show({
-        title: 'Registration failed',
-        message: 'Please check your information and try again.',
-        color: 'red',
-      })
+        title: "Registration failed",
+        message: "Please check your information and try again.",
+        color: "red",
+      });
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
-
-  const nextStep = () => {
-    const validation = form.validate()
-
-    if (!validation.hasErrors) {
-      setActiveStep((current) => (current < 2 ? current + 1 : current))
-    }
-  }
-
-  const prevStep = () => {
-    setActiveStep((current) => (current > 0 ? current - 1 : current))
-  }
+  };
 
   return (
-    <Container size="sm" py="xl">
-      <Paper
-        radius="lg"
-        p="xl"
-        withBorder
-        style={{
-          background: 'var(--mantine-color-white)',
-          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-        }}
-      >
-        <LoadingOverlay visible={isSubmitting} />
+    <Box className="auth-container">
+      <Container size="sm" style={{ width: "100%", maxWidth: "500px" }}>
+        <Paper className="auth-paper" p="xl" withBorder>
+          <LoadingOverlay visible={isSubmitting} />
 
-        <Stack gap="lg">
-          <div style={{ textAlign: 'center' }}>
-            <Title order={1} size="h2" className="text-gradient">
-              Join Kendle
-            </Title>
-            <Text c="dimmed" size="sm" mt="xs">
-              Create your account to get started
-            </Text>
-          </div>
+          {/* Decorative background elements */}
+          <Box
+            className="auth-decoration"
+            style={{
+              top: "-50px",
+              right: "-50px",
+              width: "100px",
+              height: "100px",
+              background:
+                "linear-gradient(135deg, var(--mantine-color-primary-2), var(--mantine-color-primary-3))",
+            }}
+          />
+          <Box
+            className="auth-decoration"
+            style={{
+              bottom: "-30px",
+              left: "-30px",
+              width: "60px",
+              height: "60px",
+              background:
+                "linear-gradient(135deg, var(--mantine-color-secondary-2), var(--mantine-color-secondary-3))",
+            }}
+          />
 
-          <Stepper
-            active={activeStep}
-            onStepClick={setActiveStep}
-            allowNextStepsSelect={false}
-            size="sm"
+          <Stack
+            gap="xl"
+            style={{ position: "relative", zIndex: 1 }}
+            className="auth-form"
           >
-            <Stepper.Step label="Personal Info" description="Basic information">
-              <Stack gap="md" mt="lg">
+            <Center>
+              <Box className="auth-logo">
+                <IconBrandTwitter size={32} color="white" />
+              </Box>
+            </Center>
+
+            <div style={{ textAlign: "center" }}>
+              <Title
+                order={1}
+                size="h2"
+                className="text-gradient"
+                style={{ marginBottom: "var(--mantine-spacing-xs)" }}
+              >
+                Join Kendle
+              </Title>
+              <Text c="dimmed" size="sm">
+                Create your account to get started
+              </Text>
+            </div>
+
+            {error && (
+              <Alert
+                icon={<IconAlertCircle size={16} />}
+                title="Registration Error"
+                color="red"
+                variant="light"
+                radius="md"
+              >
+                {error}
+              </Alert>
+            )}
+
+            <form onSubmit={form.onSubmit(handleSubmit)}>
+              <Stack gap="lg">
                 <Grid>
                   <Grid.Col span={6}>
                     <TextInput
                       label="First Name"
                       placeholder="John"
-                      leftSection={<IconUser size={16} />}
+                      leftSection={<IconUser size={18} />}
                       required
-                      {...form.getInputProps('firstName')}
+                      size="md"
+                      radius="md"
+                      classNames={{
+                        input: "auth-input",
+                        label: "auth-label",
+                      }}
+                      {...form.getInputProps("firstName")}
                     />
                   </Grid.Col>
                   <Grid.Col span={6}>
                     <TextInput
                       label="Last Name"
                       placeholder="Doe"
-                      leftSection={<IconUser size={16} />}
+                      leftSection={<IconUser size={18} />}
                       required
-                      {...form.getInputProps('lastName')}
+                      size="md"
+                      radius="md"
+                      classNames={{
+                        input: "auth-input",
+                        label: "auth-label",
+                      }}
+                      {...form.getInputProps("lastName")}
                     />
                   </Grid.Col>
                 </Grid>
-              </Stack>
-            </Stepper.Step>
 
-            <Stepper.Step label="Account Details" description="Username & contact">
-              <Stack gap="md" mt="lg">
                 <TextInput
                   label="Username"
                   placeholder="johndoe"
-                  leftSection={<IconUser size={16} />}
+                  leftSection={<IconUser size={18} />}
                   required
-                  {...form.getInputProps('username')}
+                  size="md"
+                  radius="md"
+                  classNames={{
+                    input: "auth-input",
+                    label: "auth-label",
+                  }}
+                  {...form.getInputProps("username")}
                 />
+
                 <TextInput
-                  label="Email"
+                  label="Email Address"
                   placeholder="your@email.com"
-                  leftSection={<IconMail size={16} />}
+                  leftSection={<IconMail size={18} />}
                   required
-                  {...form.getInputProps('email')}
+                  size="md"
+                  radius="md"
+                  classNames={{
+                    input: "auth-input",
+                    label: "auth-label",
+                  }}
+                  {...form.getInputProps("email")}
                 />
+
                 <TextInput
                   label="Phone Number"
                   placeholder="+1234567890"
-                  leftSection={<IconPhone size={16} />}
+                  leftSection={<IconPhone size={18} />}
                   required
-                  {...form.getInputProps('phoneNumber')}
+                  size="md"
+                  radius="md"
+                  classNames={{
+                    input: "auth-input",
+                    label: "auth-label",
+                  }}
+                  {...form.getInputProps("phoneNumber")}
                 />
-              </Stack>
-            </Stepper.Step>
 
-            <Stepper.Step label="Security" description="Password setup">
-              <Stack gap="md" mt="lg">
                 <PasswordInput
                   label="Password"
                   placeholder="Create a strong password"
-                  leftSection={<IconLock size={16} />}
+                  leftSection={<IconLock size={18} />}
                   required
-                  {...form.getInputProps('password')}
+                  size="md"
+                  radius="md"
+                  classNames={{
+                    input: "auth-input",
+                    label: "auth-label",
+                  }}
+                  {...form.getInputProps("password")}
                 />
-                <Text size="xs" c="dimmed">
-                  Password must be at least 8 characters long and contain uppercase, lowercase, and numbers.
-                </Text>
+
+                <Alert
+                  color="blue"
+                  variant="light"
+                  radius="md"
+                  icon={<IconCheck size={16} />}
+                >
+                  <Text size="xs">
+                    Password must be at least 8 characters long and contain
+                    uppercase, lowercase, and numbers.
+                  </Text>
+                </Alert>
+
+                <Button
+                  type="submit"
+                  fullWidth
+                  size="lg"
+                  loading={isSubmitting}
+                  disabled={isLoading}
+                  className="auth-button"
+                >
+                  Create Account
+                </Button>
               </Stack>
-            </Stepper.Step>
-          </Stepper>
+            </form>
 
-          {error && (
-            <Alert
-              icon={<IconAlertCircle size={16} />}
-              title="Registration Error"
-              color="red"
-              variant="light"
-            >
-              {error}
-            </Alert>
-          )}
+            <Divider
+              label="or"
+              labelPosition="center"
+              style={{
+                borderColor: "var(--mantine-color-gray-3)",
+                "--divider-color": "var(--mantine-color-gray-3)",
+              }}
+            />
 
-          <Group justify="space-between" mt="xl">
-            <Button
-              variant="default"
-              onClick={prevStep}
-              disabled={activeStep === 0}
-            >
-              Back
-            </Button>
-
-            {activeStep === 2 ? (
-              <Button
-                onClick={() => form.onSubmit(handleSubmit)()}
-                loading={isSubmitting}
-                disabled={isLoading}
+            <Group justify="center" gap="xs">
+              <Text size="sm" c="dimmed">
+                Already have an account?
+              </Text>
+              <Anchor
+                component={Link}
+                to="/login"
+                size="sm"
+                className="auth-link"
               >
-                Create Account
-              </Button>
-            ) : (
-              <Button onClick={nextStep}>
-                Next
-              </Button>
-            )}
-          </Group>
-
-          <Divider label="or" labelPosition="center" />
-
-          <Group justify="center" gap="xs">
-            <Text size="sm" c="dimmed">
-              Already have an account?
-            </Text>
-            <Anchor component={Link} to="/login" size="sm">
-              Sign in
-            </Anchor>
-          </Group>
-        </Stack>
-      </Paper>
-    </Container>
-  )
+                Sign in
+              </Anchor>
+            </Group>
+          </Stack>
+        </Paper>
+      </Container>
+    </Box>
+  );
 }
