@@ -5,7 +5,6 @@ import {
   Box,
   Button,
   Card,
-  Container,
   Group,
   Image,
   LoadingOverlay,
@@ -17,7 +16,9 @@ import {
   TextInput,
 } from "@mantine/core";
 import {
+  IconArrowDown,
   IconArrowLeft,
+  IconArrowUp,
   IconBookmark,
   IconDotsVertical,
   IconEdit,
@@ -50,6 +51,9 @@ export function PostDetail() {
     unbookmarkPost,
     sharePost,
     addComment,
+    upvotePost,
+    downvotePost,
+    removeVote,
   } = usePostStore();
 
   const [post, setPost] = useState<Post | null>(null);
@@ -147,6 +151,86 @@ export function PostDetail() {
           }
         : null
     );
+  };
+
+  const handleUpvote = () => {
+    if (!isAuthenticated || !post) {
+      return;
+    }
+
+    if (post.isUpvoted) {
+      removeVote(post.id);
+      setPost((prev) =>
+        prev
+          ? {
+              ...prev,
+              isUpvoted: false,
+              _count: {
+                ...prev._count,
+                upvotes: Math.max(0, prev._count.upvotes - 1),
+              },
+            }
+          : null
+      );
+    } else {
+      upvotePost(post.id);
+      setPost((prev) =>
+        prev
+          ? {
+              ...prev,
+              isUpvoted: true,
+              isDownvoted: false,
+              _count: {
+                ...prev._count,
+                upvotes: prev._count.upvotes + 1,
+                downvotes: prev.isDownvoted
+                  ? Math.max(0, prev._count.downvotes - 1)
+                  : prev._count.downvotes,
+              },
+            }
+          : null
+      );
+    }
+  };
+
+  const handleDownvote = () => {
+    if (!isAuthenticated || !post) {
+      return;
+    }
+
+    if (post.isDownvoted) {
+      removeVote(post.id);
+      setPost((prev) =>
+        prev
+          ? {
+              ...prev,
+              isDownvoted: false,
+              _count: {
+                ...prev._count,
+                downvotes: Math.max(0, prev._count.downvotes - 1),
+              },
+            }
+          : null
+      );
+    } else {
+      downvotePost(post.id);
+      setPost((prev) =>
+        prev
+          ? {
+              ...prev,
+              isDownvoted: true,
+              isUpvoted: false,
+              _count: {
+                ...prev._count,
+                downvotes: prev._count.downvotes + 1,
+                upvotes: prev.isUpvoted
+                  ? Math.max(0, prev._count.upvotes - 1)
+                  : prev._count.upvotes,
+              },
+            }
+          : null
+      );
+    }
   };
 
   const handleEdit = () => {
@@ -255,17 +339,13 @@ export function PostDetail() {
   };
 
   if (!post) {
-    return (
-      <Container size="xl" py="xl">
-        <LoadingOverlay visible={true} />
-      </Container>
-    );
+    return <LoadingOverlay visible={true} />;
   }
 
   const isAuthor = user?.id === post.author.id;
 
   return (
-    <Container size="xl" py="md">
+    <>
       <Stack gap="md">
         <Button
           variant="subtle"
@@ -390,6 +470,42 @@ export function PostDetail() {
 
             <Group justify="space-between">
               <Group gap="xs">
+                {/* Upvote/Downvote Section */}
+                <Group gap={2}>
+                  <ActionIcon
+                    variant={post.isUpvoted ? "filled" : "subtle"}
+                    color={post.isUpvoted ? "green" : "gray"}
+                    onClick={handleUpvote}
+                    size="sm"
+                    style={{
+                      cursor: isAuthenticated ? "pointer" : "not-allowed",
+                      opacity: isAuthenticated ? 1 : 0.6,
+                    }}
+                  >
+                    <IconArrowUp size={14} />
+                  </ActionIcon>
+                  <Text
+                    size="xs"
+                    c="dimmed"
+                    fw={500}
+                    style={{ minWidth: "20px", textAlign: "center" }}
+                  >
+                    {post._count.upvotes - post._count.downvotes}
+                  </Text>
+                  <ActionIcon
+                    variant={post.isDownvoted ? "filled" : "subtle"}
+                    color={post.isDownvoted ? "red" : "gray"}
+                    onClick={handleDownvote}
+                    size="sm"
+                    style={{
+                      cursor: isAuthenticated ? "pointer" : "not-allowed",
+                      opacity: isAuthenticated ? 1 : 0.6,
+                    }}
+                  >
+                    <IconArrowDown size={14} />
+                  </ActionIcon>
+                </Group>
+
                 <ActionIcon
                   variant={post.isLiked ? "filled" : "subtle"}
                   color={post.isLiked ? "red" : "gray"}
@@ -560,6 +676,6 @@ export function PostDetail() {
           </Group>
         </Stack>
       </Modal>
-    </Container>
+    </>
   );
 }

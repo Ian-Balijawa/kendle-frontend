@@ -9,15 +9,21 @@ export interface Post {
   likes: Like[];
   comments: Comment[];
   shares: Share[];
+  upvotes: Vote[];
+  downvotes: Vote[];
   isLiked: boolean;
   isShared: boolean;
   isBookmarked: boolean;
+  isUpvoted: boolean;
+  isDownvoted: boolean;
   createdAt: string;
   updatedAt: string;
   _count: {
     likes: number;
     comments: number;
     shares: number;
+    upvotes: number;
+    downvotes: number;
   };
 }
 
@@ -63,6 +69,14 @@ export interface Share {
   id: string;
   userId: string;
   postId: string;
+  createdAt: string;
+}
+
+export interface Vote {
+  id: string;
+  userId: string;
+  postId: string;
+  type: "upvote" | "downvote";
   createdAt: string;
 }
 

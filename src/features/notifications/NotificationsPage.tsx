@@ -4,7 +4,6 @@ import {
   Box,
   Button,
   Card,
-  Container,
   Group,
   Stack,
   Text,
@@ -22,7 +21,6 @@ import {
 } from "@tabler/icons-react";
 import { useState } from "react";
 
-// Mock notifications data
 const mockNotifications = [
   {
     id: "1",
@@ -183,9 +181,8 @@ export function NotificationsPage() {
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   return (
-    <Container size="xl" py="md">
+    <>
       <Stack gap="lg">
-        {/* Header */}
         <Group justify="space-between" align="center">
           <Box>
             <Title order={1} size="h2">
@@ -202,7 +199,6 @@ export function NotificationsPage() {
           )}
         </Group>
 
-        {/* Notifications List */}
         <Stack gap="md">
           {notifications.length === 0 ? (
             <Card withBorder p="xl">
@@ -280,7 +276,6 @@ export function NotificationsPage() {
                       </Group>
                     </Group>
 
-                    {/* Action Buttons for Follow Notifications */}
                     {notification.type === "follow" && !notification.isRead && (
                       <Group mt="sm">
                         <Button size="xs" variant="filled">
@@ -298,7 +293,6 @@ export function NotificationsPage() {
           )}
         </Stack>
 
-        {/* Load More */}
         {notifications.length > 0 && (
           <Box ta="center" py="lg">
             <Button variant="light" size="sm">
@@ -307,6 +301,6 @@ export function NotificationsPage() {
           </Box>
         )}
       </Stack>
-    </Container>
+    </>
   );
 }

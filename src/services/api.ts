@@ -4,12 +4,9 @@ import { useAuthStore } from "../stores/authStore";
 import {
   ApiResponse,
   AuthResponse,
-  Chat,
   Comment,
   CommentsResponse,
-  CreateMessageData,
   CreatePostData,
-  Message,
   Notification,
   Post,
   PostsResponse,
@@ -200,42 +197,6 @@ class ApiService {
 
   async unfollowUser(userId: string): Promise<void> {
     await this.api.delete(`/users/${userId}/follow`);
-  }
-
-  async getChats(): Promise<Chat[]> {
-    const response: AxiosResponse<ApiResponse<Chat[]>> =
-      await this.api.get("/chats");
-    return response.data.data;
-  }
-
-  async getMessages(chatId: string, page = 1, limit = 50): Promise<Message[]> {
-    const response: AxiosResponse<ApiResponse<Message[]>> = await this.api.get(
-      `/chats/${chatId}/messages?page=${page}&limit=${limit}`
-    );
-    return response.data.data;
-  }
-
-  async sendMessage(data: CreateMessageData): Promise<Message> {
-    const formData = new FormData();
-    formData.append("content", data.content);
-    formData.append("chatId", data.chatId);
-
-    if (data.media) {
-      data.media.forEach((file) => {
-        formData.append("media", file);
-      });
-    }
-
-    const response: AxiosResponse<ApiResponse<Message>> = await this.api.post(
-      "/messages",
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      }
-    );
-    return response.data.data;
   }
 
   async getNotifications(page = 1, limit = 20): Promise<Notification[]> {

@@ -5,7 +5,6 @@ import {
   Box,
   Button,
   Card,
-  Container,
   Group,
   Stack,
   Tabs,
@@ -25,7 +24,6 @@ import {
 } from "@tabler/icons-react";
 import { useState } from "react";
 
-// Mock user data
 const mockUser = {
   id: "1",
   username: "johndoe",
@@ -64,8 +62,6 @@ const mockPosts = [
 ];
 
 export function ProfilePage() {
-  // const { userId } = useParams()
-  // const { user: currentUser } = useAuthStore()
   const [user] = useState(mockUser);
   const [posts] = useState(mockPosts);
   const [activeTab, setActiveTab] = useState("posts");
@@ -86,17 +82,14 @@ export function ProfilePage() {
   };
 
   const handleFollow = () => {
-    // TODO: Implement follow/unfollow functionality
     console.log("Follow/Unfollow user");
   };
 
   return (
-    <Container size="xl" py="md">
+    <>
       <Stack gap="lg">
-        {/* Profile Header */}
         <Card withBorder p="xl">
           <Stack gap="lg">
-            {/* Profile Info */}
             <Group justify="space-between" align="flex-start">
               <Group>
                 <Avatar
@@ -155,7 +148,6 @@ export function ProfilePage() {
               </Group>
             </Group>
 
-            {/* Stats */}
             <Group gap="xl">
               <Box ta="center">
                 <Text fw={700} size="lg">
@@ -183,7 +175,6 @@ export function ProfilePage() {
               </Box>
             </Group>
 
-            {/* Additional Info */}
             <Group gap="lg">
               {user.location && (
                 <Group gap="xs">
@@ -212,7 +203,6 @@ export function ProfilePage() {
           </Stack>
         </Card>
 
-        {/* Tabs */}
         <Tabs
           value={activeTab}
           onChange={(value) => setActiveTab(value || "posts")}
@@ -284,6 +274,6 @@ export function ProfilePage() {
           </Tabs.Panel>
         </Tabs>
       </Stack>
-    </Container>
+    </>
   );
 }

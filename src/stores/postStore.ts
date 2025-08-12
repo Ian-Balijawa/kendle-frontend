@@ -17,6 +17,9 @@ interface PostStore {
   bookmarkPost: (id: string) => void;
   unbookmarkPost: (id: string) => void;
   sharePost: (id: string) => void;
+  upvotePost: (id: string) => void;
+  downvotePost: (id: string) => void;
+  removeVote: (id: string) => void;
   
   // Comment actions
   addComment: (postId: string, comment: Comment) => void;
@@ -375,5 +378,101 @@ export const usePostStore = create<PostStore>((set) => ({
 
   clearError: () => {
     set({ error: null });
+  },
+
+  upvotePost: (id: string) => {
+    set((state) => ({
+      posts: state.posts.map((post) =>
+        post.id === id
+          ? {
+              ...post,
+              isUpvoted: true,
+              isDownvoted: false,
+              _count: {
+                ...post._count,
+                upvotes: post._count.upvotes + 1,
+                downvotes: post.isDownvoted ? Math.max(0, post._count.downvotes - 1) : post._count.downvotes,
+              },
+            }
+          : post
+      ),
+      selectedPost:
+        state.selectedPost?.id === id
+          ? {
+              ...state.selectedPost,
+              isUpvoted: true,
+              isDownvoted: false,
+              _count: {
+                ...state.selectedPost._count,
+                upvotes: state.selectedPost._count.upvotes + 1,
+                downvotes: state.selectedPost.isDownvoted ? Math.max(0, state.selectedPost._count.downvotes - 1) : state.selectedPost._count.downvotes,
+              },
+            }
+          : state.selectedPost,
+    }));
+  },
+
+  downvotePost: (id: string) => {
+    set((state) => ({
+      posts: state.posts.map((post) =>
+        post.id === id
+          ? {
+              ...post,
+              isDownvoted: true,
+              isUpvoted: false,
+              _count: {
+                ...post._count,
+                downvotes: post._count.downvotes + 1,
+                upvotes: post.isUpvoted ? Math.max(0, post._count.upvotes - 1) : post._count.upvotes,
+              },
+            }
+          : post
+      ),
+      selectedPost:
+        state.selectedPost?.id === id
+          ? {
+              ...state.selectedPost,
+              isDownvoted: true,
+              isUpvoted: false,
+              _count: {
+                ...state.selectedPost._count,
+                downvotes: state.selectedPost._count.downvotes + 1,
+                upvotes: state.selectedPost.isUpvoted ? Math.max(0, state.selectedPost._count.upvotes - 1) : state.selectedPost._count.upvotes,
+              },
+            }
+          : state.selectedPost,
+    }));
+  },
+
+  removeVote: (id: string) => {
+    set((state) => ({
+      posts: state.posts.map((post) =>
+        post.id === id
+          ? {
+              ...post,
+              isUpvoted: false,
+              isDownvoted: false,
+              _count: {
+                ...post._count,
+                upvotes: post.isUpvoted ? Math.max(0, post._count.upvotes - 1) : post._count.upvotes,
+                downvotes: post.isDownvoted ? Math.max(0, post._count.downvotes - 1) : post._count.downvotes,
+              },
+            }
+          : post
+      ),
+      selectedPost:
+        state.selectedPost?.id === id
+          ? {
+              ...state.selectedPost,
+              isUpvoted: false,
+              isDownvoted: false,
+              _count: {
+                ...state.selectedPost._count,
+                upvotes: state.selectedPost.isUpvoted ? Math.max(0, state.selectedPost._count.upvotes - 1) : state.selectedPost._count.upvotes,
+                downvotes: state.selectedPost.isDownvoted ? Math.max(0, state.selectedPost._count.downvotes - 1) : state.selectedPost._count.downvotes,
+              },
+            }
+          : state.selectedPost,
+    }));
   },
 }));

@@ -377,3 +377,190 @@ body {
     transform: translateY(0);
   }
 }
+
+/* Modern UI Styles for Kendle Social Network */
+
+/* Logo hover effect */
+.logo-hover:hover {
+  background-color: var(--mantine-color-blue-0) !important;
+  transform: translateY(-1px);
+}
+
+/* Avatar hover effect */
+.avatar-hover:hover {
+  transform: scale(1.05);
+}
+
+/* Mobile responsive breakpoints */
+@media (max-width: 768px) {
+  .desktop-nav {
+    display: none !important;
+  }
+
+  .mobile-menu-button {
+    display: block !important;
+  }
+}
+
+@media (min-width: 769px) {
+  .desktop-nav {
+    display: flex !important;
+  }
+
+  .mobile-menu-button {
+    display: none !important;
+  }
+}
+
+/* Search bar enhancements */
+.search-input:focus-within {
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+/* Navigation item hover effects */
+.nav-item {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nav-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Footer navigation smooth animations */
+.footer-nav-item {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.footer-nav-item.active {
+  transform: translateY(-3px) scale(1.05);
+}
+
+/* Create button special effects */
+.create-button {
+  animation: pulse-glow 2s infinite;
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+  }
+  50% {
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+  }
+}
+
+/* Backdrop blur support */
+@supports (backdrop-filter: blur(10px)) {
+  .backdrop-blur {
+    backdrop-filter: blur(10px);
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .backdrop-blur {
+    background: rgba(26, 27, 30, 0.95) !important;
+  }
+
+  .logo-hover:hover {
+    background-color: rgba(59, 130, 246, 0.1) !important;
+  }
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--mantine-color-blue-4);
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--mantine-color-blue-6);
+}
+
+/* Loading states */
+.loading-shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Responsive containers */
+.responsive-container {
+  max-width: min(100vw - 2rem, 1200px);
+  margin: 0 auto;
+}
+
+/* Focus styles for accessibility */
+.focus-ring:focus-visible {
+  outline: 2px solid var(--mantine-color-blue-6);
+  outline-offset: 2px;
+}
+
+/* Micro-interactions */
+.interactive-element {
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.interactive-element:active {
+  transform: scale(0.98);
+}
+
+/* Status indicators */
+.status-online {
+  position: relative;
+}
+
+.status-online::after {
+  content: "";
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 8px;
+  height: 8px;
+  background: #10b981;
+  border: 2px solid white;
+  border-radius: 50%;
+}
+
+/* Notification dots */
+.notification-dot {
+  animation: notification-pulse 2s infinite;
+}
+
+@keyframes notification-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.1);
+  }
+}

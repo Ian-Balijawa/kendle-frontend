@@ -27,6 +27,8 @@ import {
   IconSend,
   IconChevronDown,
   IconChevronUp,
+  IconArrowUp,
+  IconArrowDown,
 } from "@tabler/icons-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -52,6 +54,9 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
     unbookmarkPost,
     sharePost,
     addComment,
+    upvotePost,
+    downvotePost,
+    removeVote,
   } = usePostStore();
 
   const [isEditing, setIsEditing] = useState(false);
@@ -105,6 +110,30 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
     }
 
     sharePost(post.id);
+  };
+
+  const handleUpvote = () => {
+    if (!isAuthenticated) {
+      return;
+    }
+
+    if (post.isUpvoted) {
+      removeVote(post.id);
+    } else {
+      upvotePost(post.id);
+    }
+  };
+
+  const handleDownvote = () => {
+    if (!isAuthenticated) {
+      return;
+    }
+
+    if (post.isDownvoted) {
+      removeVote(post.id);
+    } else {
+      downvotePost(post.id);
+    }
   };
 
   const handlePostClick = () => {
@@ -379,6 +408,37 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
 
           <Group justify="space-between">
             <Group gap="xs">
+              {/* Upvote/Downvote Section */}
+              <Group gap={2}>
+                <ActionIcon
+                  variant={post.isUpvoted ? "filled" : "subtle"}
+                  color={post.isUpvoted ? "green" : "gray"}
+                  onClick={handleUpvote}
+                  size="sm"
+                  style={{
+                    cursor: isAuthenticated ? "pointer" : "not-allowed",
+                    opacity: isAuthenticated ? 1 : 0.6,
+                  }}
+                >
+                  <IconArrowUp size={14} />
+                </ActionIcon>
+                <Text size="xs" c="dimmed" fw={500} style={{ minWidth: "20px", textAlign: "center" }}>
+                  {post._count.upvotes - post._count.downvotes}
+                </Text>
+                <ActionIcon
+                  variant={post.isDownvoted ? "filled" : "subtle"}
+                  color={post.isDownvoted ? "red" : "gray"}
+                  onClick={handleDownvote}
+                  size="sm"
+                  style={{
+                    cursor: isAuthenticated ? "pointer" : "not-allowed",
+                    opacity: isAuthenticated ? 1 : 0.6,
+                  }}
+                >
+                  <IconArrowDown size={14} />
+                </ActionIcon>
+              </Group>
+
               <ActionIcon
                 variant={post.isLiked ? "filled" : "subtle"}
                 color={post.isLiked ? "red" : "gray"}

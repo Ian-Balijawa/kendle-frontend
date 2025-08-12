@@ -122,15 +122,21 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
         likes: [],
         comments: [],
         shares: [],
+        upvotes: [],
+        downvotes: [],
         isLiked: false,
         isShared: false,
         isBookmarked: false,
+        isUpvoted: false,
+        isDownvoted: false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         _count: {
           likes: 0,
           comments: 0,
           shares: 0,
+          upvotes: 0,
+          downvotes: 0,
         },
       };
 

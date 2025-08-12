@@ -3,7 +3,6 @@ import {
   Box,
   Button,
   Card,
-  Container,
   Group,
   Stack,
   Text,
@@ -48,6 +47,8 @@ export function HomePage() {
           media: [],
           hashtags: ["Kendle", "SocialMedia", "Innovation"],
           likes: [],
+          upvotes: [],
+          downvotes: [],
           comments: [
             {
               id: "comment1",
@@ -110,12 +111,16 @@ export function HomePage() {
           isLiked: false,
           isShared: false,
           isBookmarked: false,
+          isUpvoted: false,
+          isDownvoted: false,
           createdAt: "2024-01-15T10:30:00Z",
           updatedAt: "2024-01-15T10:30:00Z",
           _count: {
             likes: 42,
             comments: 12,
             shares: 5,
+            upvotes: 28,
+            downvotes: 3,
           },
         },
         {
@@ -139,6 +144,8 @@ export function HomePage() {
           media: [],
           hashtags: [],
           likes: [],
+          upvotes: [],
+          downvotes: [],
           comments: [
             {
               id: "comment3",
@@ -173,12 +180,16 @@ export function HomePage() {
           isLiked: true,
           isShared: false,
           isBookmarked: true,
+          isUpvoted: true,
+          isDownvoted: false,
           createdAt: "2024-01-15T09:15:00Z",
           updatedAt: "2024-01-15T09:15:00Z",
           _count: {
             likes: 28,
             comments: 8,
             shares: 3,
+            upvotes: 35,
+            downvotes: 1,
           },
         },
       ];
@@ -195,7 +206,7 @@ export function HomePage() {
   };
 
   return (
-    <Container size="xl" py="md">
+    <>
       <Stack gap="lg">
         {/* Header */}
         <Group justify="space-between" align="center">
@@ -287,6 +298,6 @@ export function HomePage() {
         opened={createPostOpened}
         onClose={() => setCreatePostOpened(false)}
       />
-    </Container>
+    </>
   );
 }

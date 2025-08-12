@@ -4,7 +4,6 @@ import {
   Badge,
   Box,
   Card,
-  Container,
   Grid,
   Group,
   Stack,
@@ -24,7 +23,6 @@ import {
 } from "@tabler/icons-react";
 import { useState } from "react";
 
-// Mock data
 const mockTrendingPosts = [
   {
     id: "1",
@@ -108,9 +106,8 @@ export function ExplorePage() {
   };
 
   return (
-    <Container size="xl" py="md">
+    <>
       <Stack gap="lg">
-        {/* Header */}
         <Box>
           <Title order={1} size="h2">
             Explore
@@ -120,7 +117,6 @@ export function ExplorePage() {
           </Text>
         </Box>
 
-        {/* Search Bar */}
         <TextInput
           placeholder="Search posts, people, or hashtags..."
           value={searchQuery}
@@ -130,7 +126,6 @@ export function ExplorePage() {
           radius="xl"
         />
 
-        {/* Tabs */}
         <Tabs
           value={activeTab}
           onChange={(value) => setActiveTab(value || "trending")}
@@ -272,6 +267,6 @@ export function ExplorePage() {
           </Tabs.Panel>
         </Tabs>
       </Stack>
-    </Container>
+    </>
   );
 }
