@@ -1,6 +1,5 @@
 import { z } from "zod";
 
-// Post schemas
 export const postSchema = z.object({
   content: z
     .string()
@@ -19,7 +18,6 @@ export const commentSchema = z.object({
   parentId: z.string().optional(),
 });
 
-// Profile schemas
 export const profileSchema = z.object({
   username: z.string().min(1, "Username is required"),
   email: z.string().email("Invalid email format").optional(),
@@ -34,7 +32,6 @@ export const profileSchema = z.object({
   avatar: z.instanceof(File).optional(),
 });
 
-// Message schemas
 export const messageSchema = z.object({
   content: z
     .string()
@@ -43,13 +40,11 @@ export const messageSchema = z.object({
   media: z.array(z.instanceof(File)).optional(),
 });
 
-// Search schemas
 export const searchSchema = z.object({
   query: z.string().min(1, "Search query is required"),
   type: z.enum(["users", "posts", "all"]).default("all"),
 });
 
-// Export types
 export type PostFormData = z.infer<typeof postSchema>;
 export type CommentFormData = z.infer<typeof commentSchema>;
 export type ProfileFormData = z.infer<typeof profileSchema>;
