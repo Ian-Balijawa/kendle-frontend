@@ -146,7 +146,7 @@ export function PhoneAuth() {
                 <Button
                   type="submit"
                   fullWidth
-                  size="lg"
+                  size="sm"
                   loading={isSubmitting}
                   disabled={isLoading}
                   className="auth-button"
