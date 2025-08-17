@@ -2,7 +2,6 @@ import {
   ActionIcon,
   Avatar,
   Box,
-  FileInput,
   Group,
   Loader,
   Menu,
@@ -47,11 +46,11 @@ export function ChatWindow({ conversation, onBack }: ChatWindowProps) {
   const [isTyping, setIsTyping] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showAttachmentMenu, setShowAttachmentMenu] = useState(false);
-  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
+  const [isLoadingMessages] = useState(false);
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const messageInputRef = useRef<HTMLInputElement>(null);
-  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const participant = conversation.participants[0];
@@ -377,10 +376,11 @@ export function ChatWindow({ conversation, onBack }: ChatWindowProps) {
               </ActionIcon>
             </Menu.Target>
             <Menu.Dropdown>
-              <FileInput
+              <input
                 ref={fileInputRef}
+                type="file"
                 accept="image/*"
-                onChange={handleFileUpload}
+                onChange={(e) => handleFileUpload(e.target.files?.[0] || null)}
                 style={{ display: "none" }}
               />
               <Menu.Item
@@ -462,7 +462,7 @@ export function ChatWindow({ conversation, onBack }: ChatWindowProps) {
         </Group>
       </Box>
 
-      <style jsx>{`
+      <style>{`
         @keyframes typing-dots {
           0%,
           60%,

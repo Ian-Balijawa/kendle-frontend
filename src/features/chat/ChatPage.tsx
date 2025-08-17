@@ -39,7 +39,6 @@ export function InboxPage() {
     initializeInbox,
     connectWebSocket,
     isConnected,
-    isLoading,
   } = useInboxStore();
 
   const [isMobileView, setIsMobileView] = useState(false);
