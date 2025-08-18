@@ -23,50 +23,50 @@ interface InboxStore {
   chatSettings: ChatSettings;
 
   // Actions
-  setConversations: (conversations: Conversation[]) => void;
-  addConversation: (conversation: Conversation) => void;
-  updateConversation: (id: string, updates: Partial<Conversation>) => void;
-  deleteConversation: (id: string) => void;
+  setConversations: ( conversations: Conversation[] ) => void;
+  addConversation: ( conversation: Conversation ) => void;
+  updateConversation: ( id: string, updates: Partial<Conversation> ) => void;
+  deleteConversation: ( id: string ) => void;
 
-  setMessages: (conversationId: string, messages: Message[]) => void;
-  addMessage: (message: Message) => void;
-  updateMessage: (messageId: string, updates: Partial<Message>) => void;
-  deleteMessage: (messageId: string) => void;
-  markMessageAsRead: (messageId: string) => void;
-  markConversationAsRead: (conversationId: string) => void;
+  setMessages: ( conversationId: string, messages: Message[] ) => void;
+  addMessage: ( message: Message ) => void;
+  updateMessage: ( messageId: string, updates: Partial<Message> ) => void;
+  deleteMessage: ( messageId: string ) => void;
+  markMessageAsRead: ( messageId: string ) => void;
+  markConversationAsRead: ( conversationId: string ) => void;
 
-  setSelectedConversationId: (id: string | null) => void;
+  setSelectedConversationId: ( id: string | null ) => void;
 
   sendMessage: (
     conversationId: string,
     receiverId: string,
     content: string
   ) => void;
-  sendTypingIndicator: (conversationId: string, isTyping: boolean) => void;
+  sendTypingIndicator: ( conversationId: string, isTyping: boolean ) => void;
 
-  setTypingIndicator: (indicator: TypingIndicator) => void;
-  removeTypingIndicator: (userId: string, conversationId: string) => void;
+  setTypingIndicator: ( indicator: TypingIndicator ) => void;
+  removeTypingIndicator: ( userId: string, conversationId: string ) => void;
 
-  setOnlineStatus: (status: OnlineStatus) => void;
+  setOnlineStatus: ( status: OnlineStatus ) => void;
 
-  setConnected: (connected: boolean) => void;
-  setLoading: (loading: boolean) => void;
-  setError: (error: string | null) => void;
+  setConnected: ( connected: boolean ) => void;
+  setLoading: ( loading: boolean ) => void;
+  setError: ( error: string | null ) => void;
   clearError: () => void;
 
-  setSearchQuery: (query: string) => void;
-  setChatSettings: (settings: Partial<ChatSettings>) => void;
+  setSearchQuery: ( query: string ) => void;
+  setChatSettings: ( settings: Partial<ChatSettings> ) => void;
 
-  connectWebSocket: (userId: string) => Promise<void>;
+  connectWebSocket: ( userId: string ) => Promise<void>;
   disconnectWebSocket: () => void;
 
   initializeInbox: () => void;
   getFilteredConversations: () => Conversation[];
   getUnreadCount: () => number;
-  createOrGetConversation: (participantId: string) => Promise<Conversation>;
+  createOrGetConversation: ( participantId: string ) => Promise<Conversation>;
 }
 
-export const useInboxStore = create<InboxStore>((set, get) => ({
+export const useInboxStore = create<InboxStore>( ( set, get ) => ( {
   // Initial state
   conversations: [],
   messages: {},
@@ -86,58 +86,61 @@ export const useInboxStore = create<InboxStore>((set, get) => ({
   },
 
   // Actions
-  setConversations: (conversations) => {
-    set({ conversations });
+  setConversations: ( conversations ) => {
+    set( { conversations } );
   },
 
-  addConversation: (conversation) => {
-    set((state) => ({
+  addConversation: ( conversation ) => {
+    set( ( state ) => ( {
       conversations: [
         conversation,
-        ...state.conversations.filter((c) => c.id !== conversation.id),
+        ...state.conversations.filter( ( c ) => c.id !== conversation.id ),
       ],
-    }));
+    } ) );
   },
 
-  updateConversation: (id, updates) => {
-    set((state) => ({
-      conversations: state.conversations.map((conv) =>
+  updateConversation: ( id, updates ) => {
+    set( ( state ) => ( {
+      conversations: state.conversations.map( ( conv ) =>
         conv.id === id ? { ...conv, ...updates } : conv
       ),
-    }));
+    } ) );
   },
 
-  deleteConversation: (id) => {
-    set((state) => ({
-      conversations: state.conversations.filter((conv) => conv.id !== id),
-      messages: { ...state.messages, [id]: undefined },
+  deleteConversation: ( id ) => {
+    set( ( state ) => ( {
+      conversations: state.conversations.filter( ( conv ) => conv.id !== id ),
+      messages: { ...state.messages, [id]: [] },
       selectedConversationId:
         state.selectedConversationId === id
           ? null
           : state.selectedConversationId,
-    }));
+      typingIndicators: state.typingIndicators.filter(
+        ( ti ) => ti.conversationId !== id
+      ),
+    } ) );
   },
 
-  setMessages: (conversationId, messages) => {
-    set((state) => ({
+  setMessages: ( conversationId, messages ) => {
+    set( ( state ) => ( {
       messages: {
         ...state.messages,
         [conversationId]: messages,
       },
-    }));
+    } ) );
   },
 
-  addMessage: (message) => {
-    set((state) => {
+  addMessage: ( message ) => {
+    set( ( state ) => {
       const conversationMessages = state.messages[message.conversationId] || [];
       const updatedMessages = [
         message,
-        ...conversationMessages.filter((m) => m.id !== message.id),
+        ...conversationMessages.filter( ( m ) => m.id !== message.id ),
       ];
 
       // Update conversation's last message and unread count
-      const updatedConversations = state.conversations.map((conv) => {
-        if (conv.id === message.conversationId) {
+      const updatedConversations = state.conversations.map( ( conv ) => {
+        if ( conv.id === message.conversationId ) {
           return {
             ...conv,
             lastMessage: message,
@@ -149,7 +152,7 @@ export const useInboxStore = create<InboxStore>((set, get) => ({
           };
         }
         return conv;
-      });
+      } );
 
       return {
         messages: {
@@ -158,54 +161,54 @@ export const useInboxStore = create<InboxStore>((set, get) => ({
         },
         conversations: updatedConversations,
       };
-    });
+    } );
   },
 
-  updateMessage: (messageId, updates) => {
-    set((state) => {
+  updateMessage: ( messageId, updates ) => {
+    set( ( state ) => {
       const newMessages = { ...state.messages };
 
-      Object.keys(newMessages).forEach((conversationId) => {
-        newMessages[conversationId] = newMessages[conversationId].map((msg) =>
+      Object.keys( newMessages ).forEach( ( conversationId ) => {
+        newMessages[conversationId] = newMessages[conversationId].map( ( msg ) =>
           msg.id === messageId ? { ...msg, ...updates } : msg
         );
-      });
+      } );
 
       return { messages: newMessages };
-    });
+    } );
   },
 
-  deleteMessage: (messageId) => {
-    set((state) => {
+  deleteMessage: ( messageId ) => {
+    set( ( state ) => {
       const newMessages = { ...state.messages };
 
-      Object.keys(newMessages).forEach((conversationId) => {
+      Object.keys( newMessages ).forEach( ( conversationId ) => {
         newMessages[conversationId] = newMessages[conversationId].filter(
-          (msg) => msg.id !== messageId
+          ( msg ) => msg.id !== messageId
         );
-      });
+      } );
 
       return { messages: newMessages };
-    });
+    } );
   },
 
-  markMessageAsRead: (messageId) => {
-    get().updateMessage(messageId, { isRead: true });
+  markMessageAsRead: ( messageId ) => {
+    get().updateMessage( messageId, { isRead: true } );
     chatService.markMessageAsRead(
       messageId,
       get().selectedConversationId || ""
     );
   },
 
-  markConversationAsRead: (conversationId) => {
-    set((state) => {
+  markConversationAsRead: ( conversationId ) => {
+    set( ( state ) => {
       const conversationMessages = state.messages[conversationId] || [];
-      const updatedMessages = conversationMessages.map((msg) => ({
+      const updatedMessages = conversationMessages.map( ( msg ) => ( {
         ...msg,
         isRead: true,
-      }));
+      } ) );
 
-      const updatedConversations = state.conversations.map((conv) =>
+      const updatedConversations = state.conversations.map( ( conv ) =>
         conv.id === conversationId ? { ...conv, unreadCount: 0 } : conv
       );
 
@@ -216,17 +219,17 @@ export const useInboxStore = create<InboxStore>((set, get) => ({
         },
         conversations: updatedConversations,
       };
-    });
+    } );
   },
 
-  setSelectedConversationId: (id) => {
-    set({ selectedConversationId: id });
-    if (id) {
-      get().markConversationAsRead(id);
+  setSelectedConversationId: ( id ) => {
+    set( { selectedConversationId: id } );
+    if ( id ) {
+      get().markConversationAsRead( id );
     }
   },
 
-  sendMessage: (conversationId, receiverId, content) => {
+  sendMessage: ( conversationId, receiverId, content ) => {
     const tempMessage: Message = {
       id: `temp-${Date.now()}`,
       content,
@@ -243,20 +246,20 @@ export const useInboxStore = create<InboxStore>((set, get) => ({
     };
 
     // Add temporary message immediately for optimistic UI
-    get().addMessage(tempMessage);
+    get().addMessage( tempMessage );
 
     // Send via WebSocket
-    chatService.sendTextMessage(conversationId, receiverId, content);
+    chatService.sendTextMessage( conversationId, receiverId, content );
   },
 
-  sendTypingIndicator: (conversationId, isTyping) => {
-    chatService.sendTypingIndicator(conversationId, isTyping);
+  sendTypingIndicator: ( conversationId, isTyping ) => {
+    chatService.sendTypingIndicator( conversationId, isTyping );
   },
 
-  setTypingIndicator: (indicator) => {
-    set((state) => {
+  setTypingIndicator: ( indicator ) => {
+    set( ( state ) => {
       const filteredIndicators = state.typingIndicators.filter(
-        (ti) =>
+        ( ti ) =>
           !(
             ti.userId === indicator.userId &&
             ti.conversationId === indicator.conversationId
@@ -268,79 +271,79 @@ export const useInboxStore = create<InboxStore>((set, get) => ({
           ? [...filteredIndicators, indicator]
           : filteredIndicators,
       };
-    });
+    } );
   },
 
-  removeTypingIndicator: (userId, conversationId) => {
-    set((state) => ({
+  removeTypingIndicator: ( userId, conversationId ) => {
+    set( ( state ) => ( {
       typingIndicators: state.typingIndicators.filter(
-        (ti) => !(ti.userId === userId && ti.conversationId === conversationId)
+        ( ti ) => !( ti.userId === userId && ti.conversationId === conversationId )
       ),
-    }));
+    } ) );
   },
 
-  setOnlineStatus: (status) => {
-    set((state) => ({
+  setOnlineStatus: ( status ) => {
+    set( ( state ) => ( {
       onlineStatuses: {
         ...state.onlineStatuses,
         [status.userId]: status,
       },
-    }));
+    } ) );
   },
 
-  setConnected: (connected) => {
-    set({ isConnected: connected });
+  setConnected: ( connected ) => {
+    set( { isConnected: connected } );
   },
 
-  setLoading: (loading) => {
-    set({ isLoading: loading });
+  setLoading: ( loading ) => {
+    set( { isLoading: loading } );
   },
 
-  setError: (error) => {
-    set({ error });
+  setError: ( error ) => {
+    set( { error } );
   },
 
   clearError: () => {
-    set({ error: null });
+    set( { error: null } );
   },
 
-  setSearchQuery: (query) => {
-    set({ searchQuery: query });
+  setSearchQuery: ( query ) => {
+    set( { searchQuery: query } );
   },
 
-  setChatSettings: (settings) => {
-    set((state) => ({
+  setChatSettings: ( settings ) => {
+    set( ( state ) => ( {
       chatSettings: { ...state.chatSettings, ...settings },
-    }));
+    } ) );
   },
 
-  connectWebSocket: async (userId) => {
+  connectWebSocket: async ( userId ) => {
     try {
-      set({ isLoading: true, error: null });
-      await chatService.connect(userId);
-      set({ isConnected: true, isLoading: false });
+      set( { isLoading: true, error: null } );
+      await chatService.connect( userId );
+      set( { isConnected: true, isLoading: false } );
 
       // Set up event listeners
-      const handleWebSocketEvent = (event: WebSocketEvent) => {
+      const handleWebSocketEvent = ( event: WebSocketEvent ) => {
         const store = get();
 
-        switch (event.type) {
+        switch ( event.type ) {
           case "message_received":
-            store.addMessage(event.data);
+            store.addMessage( event.data );
             break;
           case "message_read":
-            store.updateMessage(event.data.messageId, { isRead: true });
+            store.updateMessage( event.data.messageId, { isRead: true } );
             break;
           case "message_delivered":
-            store.updateMessage(event.data.messageId, { isDelivered: true });
+            store.updateMessage( event.data.messageId, { isDelivered: true } );
             break;
           case "typing_start":
-            store.setTypingIndicator({
+            store.setTypingIndicator( {
               userId: event.data.userId,
               conversationId: event.data.conversationId,
               isTyping: true,
               timestamp: event.timestamp,
-            });
+            } );
             break;
           case "typing_stop":
             store.removeTypingIndicator(
@@ -349,21 +352,21 @@ export const useInboxStore = create<InboxStore>((set, get) => ({
             );
             break;
           case "user_online":
-            store.setOnlineStatus({
+            store.setOnlineStatus( {
               userId: event.data.userId,
               isOnline: true,
               lastSeen: event.timestamp,
-            });
+            } );
             break;
           case "user_offline":
-            store.setOnlineStatus({
+            store.setOnlineStatus( {
               userId: event.data.userId,
               isOnline: false,
               lastSeen: event.timestamp,
-            });
+            } );
             break;
           case "conversation_created":
-            store.addConversation(event.data);
+            store.addConversation( event.data );
             break;
         }
       };
@@ -380,21 +383,21 @@ export const useInboxStore = create<InboxStore>((set, get) => ({
         "conversation_created",
       ];
 
-      eventTypes.forEach((eventType) => {
-        chatService.on(eventType as any, handleWebSocketEvent);
-      });
-    } catch (error) {
-      set({
+      eventTypes.forEach( ( eventType ) => {
+        chatService.on( eventType as any, handleWebSocketEvent );
+      } );
+    } catch ( error ) {
+      set( {
         error: "Failed to connect to chat service",
         isLoading: false,
         isConnected: false,
-      });
+      } );
     }
   },
 
   disconnectWebSocket: () => {
     chatService.disconnect();
-    set({ isConnected: false });
+    set( { isConnected: false } );
   },
 
   initializeInbox: () => {
@@ -430,15 +433,15 @@ export const useInboxStore = create<InboxStore>((set, get) => ({
           isDelivered: true,
           isEdited: false,
           reactions: [],
-          createdAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(), // 30 minutes ago
-          updatedAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+          createdAt: new Date( Date.now() - 30 * 60 * 1000 ).toISOString(), // 30 minutes ago
+          updatedAt: new Date( Date.now() - 30 * 60 * 1000 ).toISOString(),
         },
         unreadCount: 2,
         isArchived: false,
         isMuted: false,
         isPinned: false,
-        createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days ago
-        updatedAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+        createdAt: new Date( Date.now() - 2 * 24 * 60 * 60 * 1000 ).toISOString(), // 2 days ago
+        updatedAt: new Date( Date.now() - 30 * 60 * 1000 ).toISOString(),
       },
       {
         id: "2",
@@ -470,15 +473,15 @@ export const useInboxStore = create<InboxStore>((set, get) => ({
           isDelivered: true,
           isEdited: false,
           reactions: [],
-          createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
-          updatedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+          createdAt: new Date( Date.now() - 2 * 60 * 60 * 1000 ).toISOString(), // 2 hours ago
+          updatedAt: new Date( Date.now() - 2 * 60 * 60 * 1000 ).toISOString(),
         },
         unreadCount: 0,
         isArchived: false,
         isMuted: false,
         isPinned: true,
-        createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 days ago
-        updatedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+        createdAt: new Date( Date.now() - 5 * 24 * 60 * 60 * 1000 ).toISOString(), // 5 days ago
+        updatedAt: new Date( Date.now() - 2 * 60 * 60 * 1000 ).toISOString(),
       },
     ];
 
@@ -495,8 +498,8 @@ export const useInboxStore = create<InboxStore>((set, get) => ({
           isDelivered: true,
           isEdited: false,
           reactions: [],
-          createdAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-          updatedAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+          createdAt: new Date( Date.now() - 30 * 60 * 1000 ).toISOString(),
+          updatedAt: new Date( Date.now() - 30 * 60 * 1000 ).toISOString(),
         },
         {
           id: "2",
@@ -509,8 +512,8 @@ export const useInboxStore = create<InboxStore>((set, get) => ({
           isDelivered: true,
           isEdited: false,
           reactions: [],
-          createdAt: new Date(Date.now() - 25 * 60 * 1000).toISOString(),
-          updatedAt: new Date(Date.now() - 25 * 60 * 1000).toISOString(),
+          createdAt: new Date( Date.now() - 25 * 60 * 1000 ).toISOString(),
+          updatedAt: new Date( Date.now() - 25 * 60 * 1000 ).toISOString(),
         },
         {
           id: "3",
@@ -523,8 +526,8 @@ export const useInboxStore = create<InboxStore>((set, get) => ({
           isDelivered: true,
           isEdited: false,
           reactions: [],
-          createdAt: new Date(Date.now() - 20 * 60 * 1000).toISOString(),
-          updatedAt: new Date(Date.now() - 20 * 60 * 1000).toISOString(),
+          createdAt: new Date( Date.now() - 20 * 60 * 1000 ).toISOString(),
+          updatedAt: new Date( Date.now() - 20 * 60 * 1000 ).toISOString(),
         },
       ],
       "2": [
@@ -539,8 +542,8 @@ export const useInboxStore = create<InboxStore>((set, get) => ({
           isDelivered: true,
           isEdited: false,
           reactions: [],
-          createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
-          updatedAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
+          createdAt: new Date( Date.now() - 3 * 60 * 60 * 1000 ).toISOString(),
+          updatedAt: new Date( Date.now() - 3 * 60 * 60 * 1000 ).toISOString(),
         },
         {
           id: "5",
@@ -553,8 +556,8 @@ export const useInboxStore = create<InboxStore>((set, get) => ({
           isDelivered: true,
           isEdited: false,
           reactions: [],
-          createdAt: new Date(Date.now() - 2.5 * 60 * 60 * 1000).toISOString(),
-          updatedAt: new Date(Date.now() - 2.5 * 60 * 60 * 1000).toISOString(),
+          createdAt: new Date( Date.now() - 2.5 * 60 * 60 * 1000 ).toISOString(),
+          updatedAt: new Date( Date.now() - 2.5 * 60 * 60 * 1000 ).toISOString(),
         },
         {
           id: "6",
@@ -567,37 +570,37 @@ export const useInboxStore = create<InboxStore>((set, get) => ({
           isDelivered: true,
           isEdited: false,
           reactions: [],
-          createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-          updatedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+          createdAt: new Date( Date.now() - 2 * 60 * 60 * 1000 ).toISOString(),
+          updatedAt: new Date( Date.now() - 2 * 60 * 60 * 1000 ).toISOString(),
         },
       ],
     };
 
-    set({
+    set( {
       conversations: mockConversations,
       messages: mockMessages,
-    });
+    } );
   },
 
   getFilteredConversations: () => {
     const { conversations, searchQuery } = get();
 
-    if (!searchQuery.trim()) {
-      return conversations.sort((a, b) => {
+    if ( !searchQuery.trim() ) {
+      return conversations.sort( ( a, b ) => {
         // Pinned conversations first
-        if (a.isPinned && !b.isPinned) return -1;
-        if (!a.isPinned && b.isPinned) return 1;
+        if ( a.isPinned && !b.isPinned ) return -1;
+        if ( !a.isPinned && b.isPinned ) return 1;
 
         // Then by last update time
         return (
-          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+          new Date( b.updatedAt ).getTime() - new Date( a.updatedAt ).getTime()
         );
-      });
+      } );
     }
 
     const query = searchQuery.toLowerCase();
     return conversations
-      .filter((conv) => {
+      .filter( ( conv ) => {
         const participant = conv.participants[0];
         const participantName =
           `${participant.firstName} ${participant.lastName}`.toLowerCase();
@@ -605,18 +608,18 @@ export const useInboxStore = create<InboxStore>((set, get) => ({
           conv.lastMessage?.content.toLowerCase() || "";
 
         return (
-          participantName.includes(query) || lastMessageContent.includes(query)
+          participantName.includes( query ) || lastMessageContent.includes( query )
         );
-      })
+      } )
       .sort(
-        (a, b) =>
-          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+        ( a, b ) =>
+          new Date( b.updatedAt ).getTime() - new Date( a.updatedAt ).getTime()
       );
   },
 
   getUnreadCount: () => {
     const { conversations } = get();
-    return conversations.reduce((total, conv) => total + conv.unreadCount, 0);
+    return conversations.reduce( ( total, conv ) => total + conv.unreadCount, 0 );
   },
 
   createOrGetConversation: async (
@@ -625,11 +628,11 @@ export const useInboxStore = create<InboxStore>((set, get) => ({
     const { conversations } = get();
 
     // Check if conversation already exists
-    const existingConv = conversations.find((conv) =>
-      conv.participants.some((p) => p.id === participantId)
+    const existingConv = conversations.find( ( conv ) =>
+      conv.participants.some( ( p ) => p.id === participantId )
     );
 
-    if (existingConv) {
+    if ( existingConv ) {
       return existingConv;
     }
 
@@ -662,7 +665,7 @@ export const useInboxStore = create<InboxStore>((set, get) => ({
       updatedAt: new Date().toISOString(),
     };
 
-    get().addConversation(newConversation);
+    get().addConversation( newConversation );
     return newConversation;
   },
-}));
+} ) );

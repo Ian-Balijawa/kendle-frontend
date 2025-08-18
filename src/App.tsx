@@ -56,8 +56,8 @@ function App() {
             <Route
               path="/verify-otp"
               element={
-                isAuthenticated ? (
-                  user?.isProfileComplete ? (
+                !isAuthenticated ? (
+                  !user?.isProfileComplete ? (
                     <Navigate to="/dashboard" replace />
                   ) : (
                     <Navigate to="/complete-profile" replace />

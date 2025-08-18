@@ -22,7 +22,6 @@ import {
   IconTrash,
 } from "@tabler/icons-react";
 import { useState } from "react";
-import { useAuthStore } from "../../stores/authStore";
 import { useInboxStore } from "../../stores/inboxStore";
 import { Message } from "../../types/chat";
 
@@ -41,7 +40,7 @@ export function MessageCard({
   previousMessage,
   nextMessage,
 }: MessageCardProps) {
-  const { user } = useAuthStore();
+  // const { user } = useAuthStore();
   const { updateMessage, deleteMessage } = useInboxStore();
   const [showMenu, setShowMenu] = useState(false);
   const [isEditing, setIsEditing] = useState(false);

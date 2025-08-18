@@ -13,15 +13,15 @@ class WebSocketService {
     WebSocketEventType,
     WebSocketEventHandler[]
   >();
-  private heartbeatInterval: NodeJS.Timeout | null = null;
+  private heartbeatInterval: number | null = null;
   private userId: string | null = null;
 
   constructor() {
     // In a real app, this would come from environment variables
-    this.url =
-      process.env.NODE_ENV === "production"
-        ? "wss://your-production-websocket-url.com/ws"
-        : "ws://localhost:8080/ws";
+    const isProd = import.meta.env.MODE === "production";
+    this.url = isProd
+      ? "wss://your-production-websocket-url.com/ws"
+      : "ws://localhost:8080/ws";
   }
 
   connect( userId: string ): Promise<void> {
@@ -177,7 +177,7 @@ class WebSocketService {
   }
 
   private startHeartbeat(): void {
-    this.heartbeatInterval = setInterval( () => {
+    this.heartbeatInterval = window.setInterval( () => {
       if ( this.ws && this.ws.readyState === WebSocket.OPEN ) {
         this.ws.send( JSON.stringify( { type: "ping" } ) );
       }
@@ -186,7 +186,7 @@ class WebSocketService {
 
   private stopHeartbeat(): void {
     if ( this.heartbeatInterval ) {
-      clearInterval( this.heartbeatInterval );
+      window.clearInterval( this.heartbeatInterval );
       this.heartbeatInterval = null;
     }
   }
@@ -233,23 +233,22 @@ class WebSocketService {
 // Create a singleton instance
 export const webSocketService = new WebSocketService();
 
-// Mock WebSocket for development (when real WebSocket server is not available)
 export class MockWebSocketService {
   private eventHandlers = new Map<
     WebSocketEventType,
     WebSocketEventHandler[]
   >();
-  private isConnected = false;
+  private connected = false;
 
   async connect( userId: string ): Promise<void> {
     console.log( "Mock WebSocket connected for user:", userId );
-    this.isConnected = true;
+    this.connected = true;
     return Promise.resolve();
   }
 
   disconnect(): void {
     console.log( "Mock WebSocket disconnected" );
-    this.isConnected = false;
+    this.connected = false;
   }
 
   sendMessage( type: WebSocketEventType, data: any ): void {
@@ -335,16 +334,16 @@ export class MockWebSocketService {
   }
 
   get isConnected(): boolean {
-    return this.isConnected;
+    return this.connected;
   }
 
   get connectionState(): string {
-    return this.isConnected ? "connected" : "disconnected";
+    return this.connected ? "connected" : "disconnected";
   }
 }
 
 // Export the appropriate service based on environment
 export const chatService =
-  process.env.NODE_ENV === "development"
+  import.meta.env.DEV
     ? new MockWebSocketService()
     : webSocketService;
