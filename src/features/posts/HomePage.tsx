@@ -1,14 +1,14 @@
 import {
-    Badge,
-    Box,
-    Button,
-    Card,
-    Group,
-    Stack,
-    Text,
-    Title,
-    Loader,
-    Center,
+  Badge,
+  Box,
+  Button,
+  Card,
+  Group,
+  Stack,
+  Text,
+  Title,
+  Loader,
+  Center,
 } from "@mantine/core";
 import { IconPlus, IconTrendingUp } from "@tabler/icons-react";
 import { useState } from "react";
@@ -19,7 +19,7 @@ import { useInfinitePosts } from "../../hooks/usePosts";
 import { useIntersection } from "@mantine/hooks";
 
 export function HomePage() {
-  const { user, isAuthenticated } = useAuthStore();
+    const {   isAuthenticated } = useAuthStore();
   const [createPostOpened, setCreatePostOpened] = useState(false);
 
   // Use infinite posts query

@@ -18,6 +18,10 @@ export interface User {
   followersCount: number;
   followingCount: number;
   postsCount: number;
+  // Optional fields for when viewing other users
+  isFollowing?: boolean;
+  isBlocked?: boolean;
+  isBlockedBy?: boolean;
 }
 
 export interface PhoneAuthData {

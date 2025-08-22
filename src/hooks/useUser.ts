@@ -85,7 +85,7 @@ export function useUpdateProfile() {
 
             return { previousUser };
         },
-        onError: ( error: any, _, context ) => {
+        onError: ( _error: any, _variables, context ) => {
             // Revert the optimistic update
             if ( context?.previousUser ) {
                 queryClient.setQueryData( userKeys.profile(), context.previousUser );
@@ -142,7 +142,7 @@ export function useCompleteUserProfile() {
 
             return { previousUser };
         },
-        onError: ( error: any, _, context ) => {
+        onError: ( _error: any, _variables, context ) => {
             // Revert the optimistic update
             if ( context?.previousUser ) {
                 queryClient.setQueryData( userKeys.profile(), context.previousUser );

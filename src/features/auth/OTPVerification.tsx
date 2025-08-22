@@ -24,6 +24,8 @@ import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { useAuthStore } from "../../stores/authStore";
+import { useVerifyOTP, useResendOTP } from "../../hooks/useAuth";
+import { VerifyOTPRequest } from "../../services/api";
 
 interface OTPVerificationFormData {
   otp: string;
@@ -39,8 +41,13 @@ const otpSchema = z.object({
 export function OTPVerification() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { verifyOTP, isLoading, error, clearError } = useAuthStore();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { error, clearError } = useAuthStore();
+
+  // React Query mutations
+  const verifyOTPMutation = useVerifyOTP();
+  const resendOTPMutation = useResendOTP();
+
+  const isSubmitting = verifyOTPMutation.isPending;
   const [countdown, setCountdown] = useState(300); // 5 minutes
   const [canResend, setCanResend] = useState(false);
 
@@ -48,7 +55,7 @@ export function OTPVerification() {
 
   useEffect(() => {
     if (!phoneNumber) {
-      navigate("/", { replace: true });
+      navigate("/dashboard", { replace: true });
       return;
     }
 
@@ -80,35 +87,44 @@ export function OTPVerification() {
   });
 
   const handleSubmit = async (values: OTPVerificationFormData) => {
-    setIsSubmitting(true);
+    if (!phoneNumber) return;
+
     clearError();
 
-    try {
-      const response = await verifyOTP({
-        phoneNumber,
-        otp: values.otp,
-      });
+    const verifyData: VerifyOTPRequest = {
+      identifier: phoneNumber,
+      otp: values.otp,
+    };
 
-      if (response.isNewUser) {
-        navigate("/complete-profile", { replace: true });
-      } else {
-        navigate("/", { replace: true });
-      }
-    } catch (err) {
-      console.error("Verification failed:", err);
-    } finally {
-      setIsSubmitting(false);
-    }
+    verifyOTPMutation.mutate(verifyData, {
+      onSuccess: (response) => {
+        if (response.user.isProfileComplete) {
+          navigate("/dashboard", { replace: true });
+        } else {
+          navigate("/complete-profile", { replace: true });
+        }
+      },
+      onError: (err) => {
+        console.error("OTP verification failed:", err);
+      },
+    });
   };
 
   const handleResendOTP = async () => {
-    try {
-      await useAuthStore.getState().sendOTP({ phoneNumber });
-      setCountdown(300);
-      setCanResend(false);
-    } catch (err) {
-      console.error("Failed to resend OTP:", err);
-    }
+    if (!phoneNumber) return;
+
+    resendOTPMutation.mutate(
+      { identifier: phoneNumber },
+      {
+        onSuccess: () => {
+          setCountdown(300);
+          setCanResend(false);
+        },
+        onError: (err) => {
+          console.error("Failed to resend OTP:", err);
+        },
+      }
+    );
   };
 
   if (!phoneNumber) {
@@ -204,7 +220,7 @@ export function OTPVerification() {
                   fullWidth
                   size="lg"
                   loading={isSubmitting}
-                  disabled={isLoading}
+                  disabled={isSubmitting}
                   className="auth-button"
                 >
                   Verify Code

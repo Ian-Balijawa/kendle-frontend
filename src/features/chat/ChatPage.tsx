@@ -1,34 +1,34 @@
 import {
-    ActionIcon,
-    Avatar,
-    Box,
-    Button,
-    Card,
-    Drawer,
-    Group,
-    Modal,
-    ScrollArea,
-    Stack,
-    Text,
-    TextInput,
-    Title,
-    Loader,
-    Center,
+  ActionIcon,
+  Avatar,
+  Box,
+  Button,
+  Card,
+  Drawer,
+  Group,
+  Modal,
+  ScrollArea,
+  Stack,
+  Text,
+  TextInput,
+  Title,
+  Loader,
+  Center,
 } from "@mantine/core";
 import {
-    IconArchive,
-    IconMenu2,
-    IconPlus,
-    IconSearch,
-    IconSettings,
+  IconArchive,
+  IconMenu2,
+  IconPlus,
+  IconSearch,
+  IconSettings,
 } from "@tabler/icons-react";
 import { useState, useMemo, useEffect } from "react";
 import { useAuthStore } from "../../stores/authStore";
 import { ChatWindow } from "./ChatWindow";
 import { ConversationCard } from "./ConversationCard";
 import {
-    useConversations,
-    useUnreadCount,
+  useConversations,
+  useUnreadCount,
 
 } from "../../hooks/useChat";
 import { useWebSocketIntegration } from "../../hooks/useWebSocket";
@@ -117,7 +117,7 @@ export function ChatPage() {
   const handleBackToConversations = () => {
     if (isMobileView) {
       setShowConversations(true);
-      setSelectedConversationId(null);
+    setSelectedConversationId(null);
     }
   };
 
@@ -131,14 +131,14 @@ export function ChatPage() {
     return (
       <Card withBorder p="xl" radius="md">
         <Stack align="center" gap="md">
-          <Text size="lg" fw={500}>
+            <Text size="lg" fw={500}>
             Authentication Required
-          </Text>
+            </Text>
           <Text c="dimmed" ta="center">
             Please sign in to access your messages.
-          </Text>
-        </Stack>
-      </Card>
+            </Text>
+          </Stack>
+        </Card>
     );
   }
 
@@ -146,8 +146,8 @@ export function ChatPage() {
     <Box style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
       {/* Header */}
       <Card withBorder p="md" style={{ borderRadius: 0, borderTop: 0 }}>
-        <Group justify="space-between">
-          <Group>
+                  <Group justify="space-between">
+                    <Group>
             {isMobileView && !showConversations && (
               <ActionIcon
                 variant="subtle"
@@ -162,26 +162,26 @@ export function ChatPage() {
                    `${selectedConversation.participants[0]?.firstName} ${selectedConversation.participants[0]?.lastName}`)
                 : "Messages"
               }
-            </Title>
-            {unreadCount > 0 && (
-              <Text size="sm" c="blue" fw={500}>
-                ({unreadCount} unread)
-              </Text>
-            )}
-          </Group>
+                      </Title>
+                      {unreadCount > 0 && (
+                        <Text size="sm" c="blue" fw={500}>
+                          ({unreadCount} unread)
+                        </Text>
+                      )}
+                    </Group>
 
-          <Group>
+                    <Group>
             <Text size="xs" c={isConnected ? "green" : "red"}>
               {connectionState}
             </Text>
             <ActionIcon variant="subtle" onClick={handleNewChat}>
               <IconPlus size={20} />
-            </ActionIcon>
+                      </ActionIcon>
             <ActionIcon variant="subtle">
               <IconSettings size={20} />
-            </ActionIcon>
-          </Group>
-        </Group>
+                      </ActionIcon>
+                    </Group>
+                  </Group>
       </Card>
 
       <Box style={{ flex: 1, display: "flex", overflow: "hidden" }}>
@@ -199,16 +199,16 @@ export function ChatPage() {
               flexDirection: "column",
             }}
           >
-            {/* Search */}
+                {/* Search */}
             <Box p="md" style={{ borderBottom: "1px solid var(--mantine-color-gray-2)" }}>
-              <TextInput
-                placeholder="Search conversations..."
+                  <TextInput
+                    placeholder="Search conversations..."
                 leftSection={<IconSearch size={16} />}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.currentTarget.value)}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.currentTarget.value)}
                 size="sm"
-              />
-            </Box>
+                  />
+                </Box>
 
             {/* Conversations */}
             <ScrollArea style={{ flex: 1 }}>
@@ -223,37 +223,37 @@ export function ChatPage() {
                 <Card p="md">
                   <Text c="red" size="sm" ta="center">
                     Failed to load conversations
-                  </Text>
-                </Card>
+                      </Text>
+                    </Card>
               ) : filteredConversations.length === 0 ? (
                 <Stack align="center" gap="md" p="xl">
                   <Text size="lg" fw={500} c="dimmed">
-                    No conversations yet
-                  </Text>
+                          No conversations yet
+                        </Text>
                   <Text size="sm" c="dimmed" ta="center">
                     Start a new conversation to begin messaging
                   </Text>
-                  <Button
-                    leftSection={<IconPlus size={16} />}
+                        <Button
+                          leftSection={<IconPlus size={16} />}
                     onClick={handleNewChat}
-                    variant="light"
-                  >
+                          variant="light"
+                        >
                     New Chat
-                  </Button>
-                </Stack>
-              ) : (
+                        </Button>
+                      </Stack>
+                    ) : (
                 <Stack gap={0}>
                   {filteredConversations.map((conversation) => (
-                    <ConversationCard
-                      key={conversation.id}
-                      conversation={conversation}
+                        <ConversationCard
+                          key={conversation.id}
+                          conversation={conversation}
                       isSelected={conversation.id === selectedConversationId}
                       onClick={() => handleConversationSelect(conversation.id)}
                     />
                   ))}
                 </Stack>
               )}
-            </ScrollArea>
+                </ScrollArea>
           </Card>
         )}
 
@@ -261,14 +261,14 @@ export function ChatPage() {
         {(!isMobileView || !showConversations) && (
           <Box style={{ flex: 1, display: "flex", flexDirection: "column" }}>
             {selectedConversation ? (
-              <ChatWindow
-                conversation={selectedConversation}
-                onBack={handleBackToConversations}
+                <ChatWindow
+                  conversation={selectedConversation}
+                  onBack={handleBackToConversations}
                 showBackButton={isMobileView}
               />
             ) : (
               <Card
-                style={{
+              style={{
                   flex: 1,
                   borderRadius: 0,
                   borderTop: 0,
@@ -287,21 +287,21 @@ export function ChatPage() {
                   </Avatar>
                   <Text size="lg" fw={500} c="dimmed">
                     Select a conversation
-                  </Text>
+                    </Text>
                   <Text size="sm" c="dimmed" ta="center">
                     Choose a conversation from the sidebar to start messaging
-                  </Text>
-                  <Button
-                    leftSection={<IconPlus size={16} />}
+                    </Text>
+                    <Button
+                      leftSection={<IconPlus size={16} />}
                     onClick={handleNewChat}
-                    variant="light"
-                  >
+                      variant="light"
+                    >
                     Start New Chat
-                  </Button>
-                </Stack>
+                    </Button>
+                  </Stack>
               </Card>
-            )}
-          </Box>
+              )}
+            </Box>
         )}
       </Box>
 
@@ -326,7 +326,7 @@ export function ChatPage() {
           <Stack gap="xs">
             <Text size="xs" c="dimmed">
               Recent contacts will appear here
-            </Text>
+          </Text>
           </Stack>
         </Stack>
       </Modal>

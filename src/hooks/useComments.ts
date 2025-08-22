@@ -236,7 +236,7 @@ export function useCreateComment() {
 
             return { optimisticComment };
         },
-        onError: ( err, { postId }, context ) => {
+        onError: ( _err, { postId }, context ) => {
             // Revert the optimistic updates
             if ( context?.optimisticComment ) {
                 queryClient.setQueriesData(
@@ -394,7 +394,7 @@ export function useUpdateComment() {
 
             return { previousComment };
         },
-        onError: ( err, { id }, context ) => {
+        onError: ( _err, { id }, context ) => {
             // Revert the optimistic updates
             if ( context?.previousComment ) {
                 queryClient.setQueryData( commentKeys.detail( id ), context.previousComment );
@@ -423,7 +423,7 @@ export function useDeleteComment() {
             let postId: string | null = null;
             const commentQueries = queryClient.getQueriesData( { queryKey: commentKeys.lists() } );
 
-            for ( const [queryKey, data] of commentQueries ) {
+            for ( const [_queryKey, data] of commentQueries ) {
                 if ( data && typeof data === 'object' ) {
                     const queryData = data as any;
                     const pages = queryData.pages || [queryData];
@@ -517,7 +517,7 @@ export function useDeleteComment() {
 
             return { previousData, postId };
         },
-        onError: ( err, id, context ) => {
+        onError: ( _err, _id, context ) => {
             // Revert the optimistic updates
             if ( context?.previousData ) {
                 context.previousData.forEach( ( [queryKey, data] ) => {
@@ -598,7 +598,7 @@ export function useLikeComment() {
                 }
             );
         },
-        onError: ( err, id ) => {
+        onError: ( _err, id ) => {
             // Revert the optimistic updates
             queryClient.invalidateQueries( { queryKey: commentKeys.detail( id ) } );
             queryClient.invalidateQueries( { queryKey: commentKeys.lists() } );
@@ -661,9 +661,9 @@ export function useUnlikeComment() {
                 }
             );
         },
-        onError: ( err, id ) => {
+        onError: ( _err, _id ) => {
             // Revert the optimistic updates
-            queryClient.invalidateQueries( { queryKey: commentKeys.detail( id ) } );
+            queryClient.invalidateQueries( { queryKey: commentKeys.detail( _id ) } );
             queryClient.invalidateQueries( { queryKey: commentKeys.lists() } );
         },
     } );

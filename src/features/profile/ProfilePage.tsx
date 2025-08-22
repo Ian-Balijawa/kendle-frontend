@@ -1,23 +1,23 @@
 import {
-    Avatar,
-    Badge,
-    Box,
-    Button,
-    Card,
-    Group,
-    Stack,
-    Tabs,
-    Text,
-    Title,
-    Loader,
-    Center,
-    Modal,
-    TextInput,
-    Textarea
+  Avatar,
+  Badge,
+  Box,
+  Button,
+  Card,
+  Group,
+  Stack,
+  Tabs,
+  Text,
+  Title,
+  Loader,
+  Center,
+  Modal,
+  TextInput,
+  Textarea
 } from "@mantine/core";
 import {
-    IconCalendar, IconLink, IconSettings, IconUserMinus,
-    IconUserPlus
+  IconCalendar, IconLink, IconSettings, IconUserMinus,
+  IconUserPlus
 } from "@tabler/icons-react";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
@@ -27,44 +27,6 @@ import { useUserPosts } from "../../hooks/usePosts";
 import { PostCard } from "../posts/PostCard";
 import { UpdateProfileRequest } from "../../services/api";
 import { useForm } from "@mantine/form";
-
-// Keep mock data as fallback
-const mockUser = {
-  id: "1",
-  username: "johndoe",
-  email: "john@example.com",
-  firstName: "John",
-  lastName: "Doe",
-  avatar: null,
-  bio: "Software developer passionate about creating amazing user experiences. Building the future of social media with Kendle! 🚀",
-  isVerified: true,
-  createdAt: "2023-01-15T00:00:00Z",
-  followersCount: 1247,
-  followingCount: 892,
-  postsCount: 156,
-  location: "San Francisco, CA",
-  website: "https://johndoe.dev",
-  isFollowing: false,
-  isOwnProfile: true,
-};
-
-const mockPosts = [
-  {
-    id: "1",
-    content:
-      "Just launched our new social media platform! 🚀 Excited to see how it helps people connect and share their stories. #Kendle #SocialMedia #Innovation",
-    createdAt: "2024-01-15T10:30:00Z",
-    _count: { likes: 42, comments: 12, shares: 5 },
-    isLiked: false,
-  },
-  {
-    id: "2",
-    content: "Beautiful sunset today! Nature never fails to amaze me. 🌅",
-    createdAt: "2024-01-14T18:15:00Z",
-    _count: { likes: 28, comments: 8, shares: 3 },
-    isLiked: true,
-  },
-];
 
 export function ProfilePage() {
   const { userId } = useParams<{ userId?: string }>();
@@ -195,7 +157,7 @@ export function ProfilePage() {
                   size="xl"
                   radius="xl"
                 >
-                  {user.firstName.charAt(0)}
+                  {user.firstName?.charAt(0)}
                 </Avatar>
                 <Box>
                   <Group gap="xs" align="center">
@@ -230,9 +192,9 @@ export function ProfilePage() {
                   </Button>
                 ) : (
                   <Button
-                    variant={user.isFollowing ? "outline" : "filled"}
+                    variant={user?.isFollowing ? "outline" : "filled"}
                     leftSection={
-                      user.isFollowing ? (
+                      user?.isFollowing ? (
                         <IconUserMinus size={16} />
                       ) : (
                         <IconUserPlus size={16} />
@@ -240,7 +202,7 @@ export function ProfilePage() {
                     }
                     onClick={handleFollow}
                   >
-                    {user.isFollowing ? "Unfollow" : "Follow"}
+                    {user?.isFollowing ? "Unfollow" : "Follow"}
                   </Button>
                 )}
               </Group>

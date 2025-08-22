@@ -1,30 +1,30 @@
 import {
-    ActionIcon,
-    Avatar,
-    Badge,
-    Box,
-    Button,
-    Group,
-    Menu,
-    Stack,
-    Text,
-    Textarea,
+  ActionIcon,
+  Avatar,
+  Badge,
+  Box,
+  Button,
+  Group,
+  Menu,
+  Stack,
+  Text,
+  Textarea
 } from "@mantine/core";
 import {
-    IconDotsVertical,
-    IconEdit,
-    IconFlag,
-    IconHeart,
-    IconTrash,
+  IconDotsVertical,
+  IconEdit,
+  IconFlag,
+  IconHeart,
+  IconTrash
 } from "@tabler/icons-react";
 import { useState } from "react";
 import { useAuthStore } from "../../stores/authStore";
 import { Comment } from "../../types";
 import {
-    useUpdateComment,
-    useDeleteComment,
-    useLikeComment,
-    useUnlikeComment,
+  useUpdateComment,
+  useDeleteComment,
+  useLikeComment,
+  useUnlikeComment,
 } from "../../hooks/useComments";
 import { UpdateCommentRequest } from "../../services/api";
 
@@ -33,7 +33,7 @@ interface CommentCardProps {
   postId: string;
 }
 
-export function CommentCard({ comment, postId }: CommentCardProps) {
+export function CommentCard({ comment }: CommentCardProps) {
   const { user, isAuthenticated } = useAuthStore();
 
   // React Query mutations

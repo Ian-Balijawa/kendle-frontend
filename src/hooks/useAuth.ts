@@ -40,12 +40,12 @@ export function useSendOTP() {
             setLoading( true );
             setError( null );
         },
-        onSuccess: ( response, variables ) => {
+        onSuccess: ( _response, variables ) => {
             setOTPSent( true );
             setPhoneNumber( variables.phoneNumber );
             setLoading( false );
         },
-        onError: ( error: any ) => {
+        onError: ( error: any, _variables ) => {
             const errorMessage = error.response?.data?.message || error.message || 'Failed to send OTP';
             setError( errorMessage );
             setLoading( false );
@@ -79,7 +79,7 @@ export function useVerifyOTP() {
             setLoading( false );
             return response;
         },
-        onError: ( error: any ) => {
+        onError: ( error: any, _variables ) => {
             const errorMessage = error.response?.data?.message || error.message || 'OTP verification failed';
             setError( errorMessage );
             setLoading( false );
@@ -100,7 +100,7 @@ export function useResendOTP() {
         onSuccess: () => {
             setLoading( false );
         },
-        onError: ( error: any ) => {
+        onError: ( error: any, _variables ) => {
             const errorMessage = error.response?.data?.message || error.message || 'Failed to resend OTP';
             setError( errorMessage );
             setLoading( false );
@@ -134,7 +134,7 @@ export function useLogin() {
             setLoading( false );
             return response;
         },
-        onError: ( error: any ) => {
+        onError: ( error: any, _variables ) => {
             const errorMessage = error.response?.data?.message || error.message || 'Login failed';
             setError( errorMessage );
             setLoading( false );
@@ -174,14 +174,14 @@ export function useCompleteProfile() {
 
             return { previousUser };
         },
-        onError: ( error: any, _, context ) => {
+        onError: ( _error: any, _variables, context ) => {
             // Revert the optimistic update
             if ( context?.previousUser ) {
                 queryClient.setQueryData( authKeys.me(), context.previousUser );
                 updateProfile( { user: context.previousUser as User } );
             }
 
-            const errorMessage = error.response?.data?.message || error.message || 'Profile completion failed';
+            const errorMessage = _error.response?.data?.message || _error.message || 'Profile completion failed';
             setError( errorMessage );
             setLoading( false );
         },
