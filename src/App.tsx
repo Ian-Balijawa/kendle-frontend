@@ -19,13 +19,13 @@ import { OTPVerification } from "./features/auth/OTPVerification";
 import { PhoneAuth } from "./features/auth/PhoneAuth";
 import { ProfileCompletion } from "./features/auth/ProfileCompletion";
 
-import { InboxPage } from "./features/chat/ChatPage";
 import { NotificationsPage } from "./features/notifications/NotificationsPage";
 import { HomePage } from "./features/posts/HomePage";
 import { PostDetail } from "./features/posts/PostDetail";
 import { ProfilePage } from "./features/profile/ProfilePage";
 import { ExplorePage } from "./features/search/ExplorePage";
 import { StatusesPage } from "./features/statuses/StatusesPage";
+import { ChatPage } from "./features/chat/ChatPage";
 
 import "./styles/globals.css";
 
@@ -87,7 +87,7 @@ function App() {
               <Route index element={<HomePage />} />
               <Route path="explore" element={<ExplorePage />} />
               <Route path="statuses" element={<StatusesPage />} />
-              <Route path="chat" element={<InboxPage />} />
+              <Route path="chat" element={<ChatPage />} />
               <Route path="notifications" element={<NotificationsPage />} />
               <Route path="profile" element={<ProfilePage />} />
               <Route path="post/:postId" element={<PostDetail />} />

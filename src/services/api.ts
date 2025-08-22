@@ -5,9 +5,13 @@ import {
   ApiResponse,
   AuthResponse,
   Comment,
-  CommentsResponse, Notification,
+  CommentsResponse,
+  Conversation,
+  Message,
+  Notification,
   Post,
-  PostsResponse, UpdateUserData,
+  PostsResponse,
+  UpdateUserData,
   User,
   UsersResponse
 } from "../types";
@@ -227,12 +231,54 @@ export interface UserProfileCompleteRequest {
   instagramLink: string;
 }
 
+// Chat request/response types
+export interface CreateConversationRequest {
+  participantIds: string[];
+  name?: string;
+  description?: string;
+}
+
+export interface UpdateConversationRequest {
+  isArchived?: boolean;
+  isMuted?: boolean;
+  isPinned?: boolean;
+  name?: string;
+  description?: string;
+}
+
+export interface SendMessageRequest {
+  content: string;
+  receiverId: string;
+  conversationId: string;
+  messageType?: 'text' | 'image' | 'video' | 'audio' | 'file';
+  replyToId?: string;
+  metadata?: any;
+}
+
+export interface UpdateMessageRequest {
+  content: string;
+}
+
+export interface AddReactionRequest {
+  emoji: string;
+  messageId: string;
+}
+
+export interface GetMessagesParams {
+  limit?: number;
+  offset?: number;
+}
+
+export interface UnreadCountResponse {
+  count: number;
+}
+
 class ApiService {
   private api: AxiosInstance;
 
   constructor() {
     this.api = axios.create( {
-      baseURL: import.meta.env.VITE_API_URL || "http://localhost:3001/api",
+      baseURL: import.meta.env.VITE_API_URL,
       timeout: 10000,
       headers: {
         "Content-Type": "application/json",
@@ -271,37 +317,37 @@ class ApiService {
   // Authentication API methods
   async sendOTP( data: SendOTPRequest ): Promise<any> {
     const response: AxiosResponse<ApiResponse<any>> =
-      await this.api.post( "/v1/auth/send-otp", data );
+      await this.api.post( "/auth/send-otp", data );
     return response.data.data;
   }
 
   async verifyOTP( data: VerifyOTPRequest ): Promise<AuthResponse> {
     const response: AxiosResponse<ApiResponse<AuthResponse>> =
-      await this.api.post( "/v1/auth/verify-otp", data );
+      await this.api.post( "/auth/verify-otp", data );
     return response.data.data;
   }
 
   async resendOTP( data: ResendOTPRequest ): Promise<any> {
     const response: AxiosResponse<ApiResponse<any>> =
-      await this.api.post( "/v1/auth/resend-otp", data );
+      await this.api.post( "/auth/resend-otp", data );
     return response.data.data;
   }
 
   async login( data: LoginRequest ): Promise<AuthResponse> {
     const response: AxiosResponse<ApiResponse<AuthResponse>> =
-      await this.api.post( "/v1/auth/login", data );
+      await this.api.post( "/auth/login", data );
     return response.data.data;
   }
 
   async completeProfile( data: CompleteProfileRequest ): Promise<User> {
     const response: AxiosResponse<ApiResponse<User>> =
-      await this.api.post( "/v1/auth/complete-profile", data );
+      await this.api.post( "/auth/complete-profile", data );
     return response.data.data;
   }
 
   async getCurrentUser(): Promise<User> {
     const response: AxiosResponse<ApiResponse<User>> =
-      await this.api.get( "/v1/auth/me" );
+      await this.api.get( "/auth/me" );
     return response.data.data;
   }
 
@@ -315,20 +361,20 @@ class ApiService {
     } );
 
     const response: AxiosResponse<ApiResponse<PostsResponse>> =
-      await this.api.get( `/v1/posts?${searchParams.toString()}` );
+      await this.api.get( `/posts?${searchParams.toString()}` );
     return response.data.data;
   }
 
   async getPost( id: string ): Promise<Post> {
     const response: AxiosResponse<ApiResponse<Post>> = await this.api.get(
-      `/v1/posts/${id}`
+      `/posts/${id}`
     );
     return response.data.data;
   }
 
   async createPost( data: CreatePostRequest ): Promise<Post> {
     const response: AxiosResponse<ApiResponse<Post>> = await this.api.post(
-      "/v1/posts",
+      "/posts",
       data
     );
     return response.data.data;
@@ -336,42 +382,42 @@ class ApiService {
 
   async updatePost( id: string, data: UpdatePostRequest ): Promise<Post> {
     const response: AxiosResponse<ApiResponse<Post>> = await this.api.put(
-      `/v1/posts/${id}`,
+      `/posts/${id}`,
       data
     );
     return response.data.data;
   }
 
   async deletePost( id: string ): Promise<void> {
-    await this.api.delete( `/v1/posts/${id}` );
+    await this.api.delete( `/posts/${id}` );
   }
 
   async likePost( id: string ): Promise<void> {
-    await this.api.post( `/v1/posts/${id}/like` );
+    await this.api.post( `/posts/${id}/like` );
   }
 
   async unlikePost( id: string ): Promise<void> {
-    await this.api.delete( `/v1/posts/${id}/like` );
+    await this.api.delete( `/posts/${id}/like` );
   }
 
   async bookmarkPost( id: string, data?: BookmarkRequest ): Promise<void> {
-    await this.api.post( `/v1/posts/${id}/bookmark`, data );
+    await this.api.post( `/posts/${id}/bookmark`, data );
   }
 
   async unbookmarkPost( id: string ): Promise<void> {
-    await this.api.delete( `/v1/posts/${id}/bookmark` );
+    await this.api.delete( `/posts/${id}/bookmark` );
   }
 
   async votePost( id: string, data: VoteRequest ): Promise<void> {
-    await this.api.post( `/v1/posts/${id}/vote`, data );
+    await this.api.post( `/posts/${id}/vote`, data );
   }
 
   async removeVotePost( id: string ): Promise<void> {
-    await this.api.delete( `/v1/posts/${id}/vote` );
+    await this.api.delete( `/posts/${id}/vote` );
   }
 
   async sharePost( id: string, data?: ShareRequest ): Promise<void> {
-    await this.api.post( `/v1/posts/${id}/share`, data );
+    await this.api.post( `/posts/${id}/share`, data );
   }
 
   async getUserPosts( userId: string, params: { page?: number; limit?: number } = {} ): Promise<PostsResponse> {
@@ -383,7 +429,7 @@ class ApiService {
     } );
 
     const response: AxiosResponse<ApiResponse<PostsResponse>> =
-      await this.api.get( `/v1/posts/user/${userId}?${searchParams.toString()}` );
+      await this.api.get( `/posts/user/${userId}?${searchParams.toString()}` );
     return response.data.data;
   }
 
@@ -396,7 +442,7 @@ class ApiService {
     } );
 
     const response: AxiosResponse<ApiResponse<PostsResponse>> =
-      await this.api.get( `/v1/posts/user/liked?${searchParams.toString()}` );
+      await this.api.get( `/posts/user/liked?${searchParams.toString()}` );
     return response.data.data;
   }
 
@@ -409,7 +455,7 @@ class ApiService {
     } );
 
     const response: AxiosResponse<ApiResponse<PostsResponse>> =
-      await this.api.get( `/v1/posts/user/bookmarked?${searchParams.toString()}` );
+      await this.api.get( `/posts/user/bookmarked?${searchParams.toString()}` );
     return response.data.data;
   }
 
@@ -422,7 +468,7 @@ class ApiService {
     } );
 
     const response: AxiosResponse<ApiResponse<PostsResponse>> =
-      await this.api.get( `/v1/posts/user/me?${searchParams.toString()}` );
+      await this.api.get( `/posts/user/me?${searchParams.toString()}` );
     return response.data.data;
   }
 
@@ -436,20 +482,20 @@ class ApiService {
     } );
 
     const response: AxiosResponse<ApiResponse<CommentsResponse>> =
-      await this.api.get( `/v1/comments/post/${postId}?${searchParams.toString()}` );
+      await this.api.get( `/comments/post/${postId}?${searchParams.toString()}` );
     return response.data.data;
   }
 
   async getComment( id: string ): Promise<Comment> {
     const response: AxiosResponse<ApiResponse<Comment>> = await this.api.get(
-      `/v1/comments/${id}`
+      `/comments/${id}`
     );
     return response.data.data;
   }
 
   async createComment( postId: string, data: CreateCommentRequest ): Promise<Comment> {
     const response: AxiosResponse<ApiResponse<Comment>> = await this.api.post(
-      `/v1/comments/post/${postId}`,
+      `/comments/post/${postId}`,
       data
     );
     return response.data.data;
@@ -457,22 +503,22 @@ class ApiService {
 
   async updateComment( id: string, data: UpdateCommentRequest ): Promise<Comment> {
     const response: AxiosResponse<ApiResponse<Comment>> = await this.api.put(
-      `/v1/comments/${id}`,
+      `/comments/${id}`,
       data
     );
     return response.data.data;
   }
 
   async deleteComment( commentId: string ): Promise<void> {
-    await this.api.delete( `/v1/comments/${commentId}` );
+    await this.api.delete( `/comments/${commentId}` );
   }
 
   async likeComment( id: string ): Promise<void> {
-    await this.api.post( `/v1/comments/${id}/like` );
+    await this.api.post( `/comments/${id}/like` );
   }
 
   async unlikeComment( id: string ): Promise<void> {
-    await this.api.delete( `/v1/comments/${id}/like` );
+    await this.api.delete( `/comments/${id}/like` );
   }
 
   async getMyComments( params: { page?: number; limit?: number } = {} ): Promise<CommentsResponse> {
@@ -484,7 +530,7 @@ class ApiService {
     } );
 
     const response: AxiosResponse<ApiResponse<CommentsResponse>> =
-      await this.api.get( `/v1/comments/user/me?${searchParams.toString()}` );
+      await this.api.get( `/comments/user/me?${searchParams.toString()}` );
     return response.data.data;
   }
 
@@ -497,7 +543,7 @@ class ApiService {
     } );
 
     const response: AxiosResponse<ApiResponse<CommentsResponse>> =
-      await this.api.get( `/v1/comments/user/${userId}?${searchParams.toString()}` );
+      await this.api.get( `/comments/user/${userId}?${searchParams.toString()}` );
     return response.data.data;
   }
 
@@ -510,7 +556,7 @@ class ApiService {
     } );
 
     const response: AxiosResponse<ApiResponse<CommentsResponse>> =
-      await this.api.get( `/v1/comments/user/liked?${searchParams.toString()}` );
+      await this.api.get( `/comments/user/liked?${searchParams.toString()}` );
     return response.data.data;
   }
 
@@ -523,36 +569,116 @@ class ApiService {
     } );
 
     const response: AxiosResponse<ApiResponse<CommentsResponse>> =
-      await this.api.get( `/v1/comments/search?${searchParams.toString()}` );
+      await this.api.get( `/comments/search?${searchParams.toString()}` );
     return response.data.data;
   }
 
   async getCommentStats( postId: string ): Promise<any> {
     const response: AxiosResponse<ApiResponse<any>> = await this.api.get(
-      `/v1/comments/stats/post/${postId}`
+      `/comments/stats/post/${postId}`
     );
     return response.data.data;
   }
 
   async hideComment( id: string, reason?: string ): Promise<void> {
-    await this.api.post( `/v1/comments/${id}/hide`, { reason } );
+    await this.api.post( `/comments/${id}/hide`, { reason } );
   }
 
   async unhideComment( id: string ): Promise<void> {
-    await this.api.post( `/v1/comments/${id}/unhide` );
+    await this.api.post( `/comments/${id}/unhide` );
+  }
+
+  // Chat API methods
+  async getConversations(): Promise<Conversation[]> {
+    const response: AxiosResponse<ApiResponse<Conversation[]>> =
+      await this.api.get( '/chat/conversations' );
+    return response.data.data;
+  }
+
+  async getConversation( id: string ): Promise<Conversation> {
+    const response: AxiosResponse<ApiResponse<Conversation>> =
+      await this.api.get( `/chat/conversations/${id}` );
+    return response.data.data;
+  }
+
+  async createConversation( data: CreateConversationRequest ): Promise<Conversation> {
+    const response: AxiosResponse<ApiResponse<Conversation>> =
+      await this.api.post( '/chat/conversations', data );
+    return response.data.data;
+  }
+
+  async updateConversation( id: string, data: UpdateConversationRequest ): Promise<Conversation> {
+    const response: AxiosResponse<ApiResponse<Conversation>> =
+      await this.api.put( `/chat/conversations/${id}`, data );
+    return response.data.data;
+  }
+
+  async getMessages( conversationId: string, params: GetMessagesParams = {} ): Promise<Message[]> {
+    const searchParams = new URLSearchParams();
+    Object.entries( params ).forEach( ( [key, value] ) => {
+      if ( value !== undefined && value !== null ) {
+        searchParams.append( key, String( value ) );
+      }
+    } );
+
+    const response: AxiosResponse<ApiResponse<Message[]>> =
+      await this.api.get( `/chat/conversations/${conversationId}/messages?${searchParams.toString()}` );
+    return response.data.data;
+  }
+
+  async sendMessage( conversationId: string, data: SendMessageRequest ): Promise<Message> {
+    const response: AxiosResponse<ApiResponse<Message>> =
+      await this.api.post( `/chat/conversations/${conversationId}/messages`, data );
+    return response.data.data;
+  }
+
+  async updateMessage( id: string, data: UpdateMessageRequest ): Promise<Message> {
+    const response: AxiosResponse<ApiResponse<Message>> =
+      await this.api.put( `/chat/messages/${id}`, data );
+    return response.data.data;
+  }
+
+  async deleteMessage( id: string ): Promise<void> {
+    await this.api.delete( `/chat/messages/${id}` );
+  }
+
+  async markMessageAsRead( id: string ): Promise<Message> {
+    const response: AxiosResponse<ApiResponse<Message>> =
+      await this.api.put( `/chat/messages/${id}/read` );
+    return response.data.data;
+  }
+
+  async markConversationAsRead( id: string ): Promise<void> {
+    await this.api.put( `/chat/conversations/${id}/read` );
+  }
+
+  async addMessageReaction( id: string, data: AddReactionRequest ): Promise<void> {
+    await this.api.post( `/chat/messages/${id}/reactions`, data );
+  }
+
+  async getUnreadCount(): Promise<UnreadCountResponse> {
+    const response: AxiosResponse<ApiResponse<UnreadCountResponse>> =
+      await this.api.get( '/chat/unread-count' );
+    return response.data.data;
+  }
+
+  async findOrCreateDirectConversation( participantId: string ): Promise<Conversation> {
+    const response: AxiosResponse<ApiResponse<Conversation>> =
+      await this.api.post( '/chat/conversations/direct', { participantId } );
+    return response.data.data;
   }
 
   // User API methods
   async getCurrentUserProfile(): Promise<User> {
     const response: AxiosResponse<ApiResponse<User>> = await this.api.get(
-      "/v1/user/profile"
+      "/user/profile"
     );
     return response.data.data;
   }
 
   async updateUserProfile( data: UpdateProfileRequest ): Promise<User> {
     const response: AxiosResponse<ApiResponse<User>> = await this.api.put(
-      "/v1/user/profile",
+      "/user/profile",
       data
     );
     return response.data.data;
@@ -560,7 +686,7 @@ class ApiService {
 
   async completeUserProfile( data: UserProfileCompleteRequest ): Promise<User> {
     const response: AxiosResponse<ApiResponse<User>> = await this.api.post(
-      "/v1/user/profile/complete",
+      "/user/profile/complete",
       data
     );
     return response.data.data;
@@ -568,14 +694,14 @@ class ApiService {
 
   async getUser( id: string ): Promise<User> {
     const response: AxiosResponse<ApiResponse<User>> = await this.api.get(
-      `/v1/user/${id}`
+      `/user/${id}`
     );
     return response.data.data;
   }
 
   async getUserByUsername( username: string ): Promise<User> {
     const response: AxiosResponse<ApiResponse<User>> = await this.api.get(
-      `/v1/user/username/${username}`
+      `/user/username/${username}`
     );
     return response.data.data;
   }

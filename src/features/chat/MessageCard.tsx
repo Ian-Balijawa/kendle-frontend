@@ -1,29 +1,35 @@
 import {
-  ActionIcon,
-  Avatar,
-  Box,
-  Button,
-  Group,
-  Image,
-  Menu,
-  Modal,
-  Stack,
-  Text,
-  Textarea,
+    ActionIcon,
+    Avatar,
+    Box,
+    Button,
+    Group,
+    Image,
+    Menu, Stack,
+    Text,
+    Textarea
 } from "@mantine/core";
 import {
-  IconCheck,
-  IconChecks,
-  IconCopy,
-  IconDotsVertical,
-  IconEdit,
-  IconMessageReply,
-  IconMoodSmile,
-  IconTrash,
+    IconCheck,
+    IconChecks,
+    IconCopy,
+    IconDotsVertical,
+    IconEdit,
+    IconMessageReply,
+    IconMoodSmile,
+    IconTrash,
+    IconAlertCircle,
 } from "@tabler/icons-react";
-import { useState } from "react";
-import { useInboxStore } from "../../stores/inboxStore";
+import { useEffect, useState } from "react";
 import { Message } from "../../types/chat";
+import {
+    useUpdateMessage,
+    useDeleteMessage,
+    useAddMessageReaction,
+    useMarkMessageAsRead
+} from "../../hooks/useChat";
+import { useAuthStore } from "../../stores/authStore";
+import { UpdateMessageRequest } from "../../services/api";
 
 interface MessageCardProps {
   message: Message;
@@ -40,8 +46,14 @@ export function MessageCard({
   previousMessage,
   nextMessage,
 }: MessageCardProps) {
-  // const { user } = useAuthStore();
-  const { updateMessage, deleteMessage } = useInboxStore();
+  const { user } = useAuthStore();
+
+  // React Query mutations
+  const updateMessageMutation = useUpdateMessage();
+  const deleteMessageMutation = useDeleteMessage();
+  const addReactionMutation = useAddMessageReaction();
+  const markAsReadMutation = useMarkMessageAsRead();
+
   const [showMenu, setShowMenu] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(message.content);
@@ -52,73 +64,55 @@ export function MessageCard({
     previousMessage.senderId === message.senderId &&
     new Date(message.createdAt).getTime() -
       new Date(previousMessage.createdAt).getTime() <
-      5 * 60 * 1000;
+      5 * 60 * 1000; // 5 minutes
 
   const isGroupedWithNext =
     nextMessage &&
     nextMessage.senderId === message.senderId &&
     new Date(nextMessage.createdAt).getTime() -
       new Date(message.createdAt).getTime() <
-      5 * 60 * 1000;
+      5 * 60 * 1000; // 5 minutes
 
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
-  const formatDetailedTime = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const isToday = date.toDateString() === now.toDateString();
-
-    if (isToday) {
-      return `Today at ${formatTime(dateString)}`;
-    }
-
-    const yesterday = new Date(now);
-    yesterday.setDate(yesterday.getDate() - 1);
-    const isYesterday = date.toDateString() === yesterday.toDateString();
-
-    if (isYesterday) {
-      return `Yesterday at ${formatTime(dateString)}`;
-    }
-
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
   const handleEdit = () => {
+    setEditContent(message.content);
     setIsEditing(true);
     setShowMenu(false);
   };
 
   const handleSaveEdit = () => {
-    if (editContent.trim() && editContent !== message.content) {
-      updateMessage(message.id, {
-        content: editContent.trim(),
-        isEdited: true,
-        editedAt: new Date().toISOString(),
-      });
+    if (!editContent.trim() || editContent === message.content) {
+      setIsEditing(false);
+      return;
     }
-    setIsEditing(false);
-  };
 
-  const handleCancelEdit = () => {
-    setEditContent(message.content);
-    setIsEditing(false);
+    const updateData: UpdateMessageRequest = {
+      content: editContent.trim(),
+    };
+
+    updateMessageMutation.mutate(
+      { id: message.id, data: updateData },
+      {
+        onSuccess: () => {
+          setIsEditing(false);
+        },
+        onError: (error) => {
+          console.error('Failed to update message:', error);
+        },
+      }
+    );
   };
 
   const handleDelete = () => {
-    if (window.confirm("Are you sure you want to delete this message?")) {
-      deleteMessage(message.id);
-    }
+    deleteMessageMutation.mutate(message.id, {
+      onError: (error) => {
+        console.error('Failed to delete message:', error);
+      },
+    });
     setShowMenu(false);
   };
 
@@ -127,291 +121,336 @@ export function MessageCard({
     setShowMenu(false);
   };
 
+  const handleReply = () => {
+    // TODO: Implement reply functionality
+    console.log("Reply to message:", message.id);
+    setShowMenu(false);
+  };
+
   const handleReaction = (emoji: string) => {
-    console.log("Add reaction:", emoji, "to message:", message.id);
+    addReactionMutation.mutate({
+      id: message.id,
+      data: { emoji, messageId: message.id },
+    });
     setShowReactions(false);
   };
 
-  const getDeliveryIcon = () => {
-    if (!isOwn) return null;
-
-    if (message.isRead) {
-      return <IconChecks size={12} color="var(--mantine-color-blue-6)" />;
-    } else if (message.isDelivered) {
-      return <IconChecks size={12} color="var(--mantine-color-gray-6)" />;
-    } else {
-      return <IconCheck size={12} color="var(--mantine-color-gray-6)" />;
+  const handleMarkAsRead = () => {
+    if (!message.isRead && !isOwn) {
+      markAsReadMutation.mutate(message.id);
     }
   };
 
-  const messageTimestamp = (
-    <Text
-      size="xs"
-      c="dimmed"
-      style={{ marginTop: 2 }}
-      title={formatDetailedTime(message.createdAt)}
-    >
-      {formatTime(message.createdAt)}
-      {message.isEdited && " (edited)"}
-    </Text>
-  );
+  // Auto-mark as read when message comes into view
+  useEffect(() => {
+    if (!message.isRead && !isOwn) {
+      const timer = setTimeout(() => {
+        handleMarkAsRead();
+      }, 1000);
 
-  const reactionEmojis = ["👍", "❤️", "😂", "😮", "😢", "😡"];
+      return () => clearTimeout(timer);
+    }
+  });
 
-  return (
-    <Box
-      style={{
-        marginBottom: isGroupedWithNext ? 2 : 8,
-        marginTop: isGroupedWithPrevious ? 2 : 8,
-      }}
-    >
+  const getStatusIcon = () => {
+    if (!isOwn) return null;
+
+    switch (message.status) {
+      case 'sending':
+        return <IconCheck size={12} color="var(--mantine-color-gray-5)" />;
+      case 'delivered':
+        return <IconCheck size={12} color="var(--mantine-color-gray-6)" />;
+      case 'read':
+        return <IconChecks size={12} color="var(--mantine-color-blue-6)" />;
+      case 'failed':
+        return <IconAlertCircle size={12} color="var(--mantine-color-red-6)" />;
+      default:
+        return <IconCheck size={12} color="var(--mantine-color-gray-5)" />;
+    }
+  };
+
+  if (isEditing) {
+    return (
       <Group
         justify={isOwn ? "flex-end" : "flex-start"}
         align="flex-start"
         gap="sm"
-        wrap="nowrap"
+        style={{ width: "100%" }}
       >
-        {!isOwn && showAvatar && !isGroupedWithNext && (
+        {!isOwn && showAvatar && !isGroupedWithPrevious && (
           <Avatar size="sm" radius="xl">
-            {message.senderId}
+            {(user?.firstName || "U").charAt(0)}
           </Avatar>
-        )}
-
-        {!isOwn && (!showAvatar || isGroupedWithNext) && (
-          <Box style={{ width: 32 }} />
         )}
 
         <Box
           style={{
             maxWidth: "70%",
-            minWidth: 120,
+            backgroundColor: isOwn
+              ? "var(--mantine-color-blue-6)"
+              : "var(--mantine-color-gray-1)",
+            borderRadius: "var(--mantine-radius-md)",
+            padding: "var(--mantine-spacing-sm)",
           }}
         >
-          {message.replyToMessage && (
-            <Box
-              mb="xs"
-              p="xs"
-              style={{
-                backgroundColor: "var(--mantine-color-gray-1)",
-                borderRadius: "var(--mantine-radius-sm)",
-                borderLeft: `3px solid ${
-                  isOwn
-                    ? "var(--mantine-color-blue-6)"
-                    : "var(--mantine-color-gray-4)"
-                }`,
-              }}
-            >
-              <Text size="xs" c="dimmed" fw={500}>
-                Replying to {message.replyToMessage.senderId}
-              </Text>
-              <Text size="xs" c="dimmed" lineClamp={2}>
-                {message.replyToMessage.content}
-              </Text>
+          <Stack gap="xs">
+            <Textarea
+              value={editContent}
+              onChange={(e) => setEditContent(e.currentTarget.value)}
+              autosize
+              minRows={1}
+              maxRows={4}
+              size="sm"
+            />
+            <Group gap="xs" justify="flex-end">
+              <Button
+                size="xs"
+                variant="light"
+                onClick={() => setIsEditing(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                size="xs"
+                onClick={handleSaveEdit}
+                loading={updateMessageMutation.isPending}
+              >
+                Save
+              </Button>
+            </Group>
+          </Stack>
+        </Box>
+      </Group>
+    );
+  }
+
+  return (
+    <Group
+      justify={isOwn ? "flex-end" : "flex-start"}
+      align="flex-start"
+      gap="sm"
+      style={{ width: "100%" }}
+    >
+      {!isOwn && showAvatar && !isGroupedWithPrevious && (
+        <Avatar size="sm" radius="xl">
+          {(user?.firstName || "U").charAt(0)}
+        </Avatar>
+      )}
+
+      {!isOwn && (!showAvatar || isGroupedWithPrevious) && (
+        <Box style={{ width: 32 }} /> // Spacer for alignment
+      )}
+
+      <Box style={{ maxWidth: "70%" }}>
+        {/* Reply Reference */}
+        {message.replyToId && (
+          <Box
+            mb="xs"
+            p="xs"
+            style={{
+              backgroundColor: "var(--mantine-color-gray-0)",
+              borderLeft: "3px solid var(--mantine-color-blue-6)",
+              borderRadius: "var(--mantine-radius-sm)",
+            }}
+          >
+            <Text size="xs" c="dimmed">
+              Replying to a message
+            </Text>
+          </Box>
+        )}
+
+        <Box
+          style={{
+            backgroundColor: isOwn
+              ? "var(--mantine-color-blue-6)"
+              : "var(--mantine-color-gray-1)",
+            color: isOwn ? "white" : "var(--mantine-color-dark-7)",
+            borderRadius: "var(--mantine-radius-md)",
+            padding: "var(--mantine-spacing-sm)",
+            position: "relative",
+            borderTopLeftRadius: !isOwn && isGroupedWithPrevious ? 4 : undefined,
+            borderTopRightRadius: isOwn && isGroupedWithPrevious ? 4 : undefined,
+            borderBottomLeftRadius: !isOwn && isGroupedWithNext ? 4 : undefined,
+            borderBottomRightRadius: isOwn && isGroupedWithNext ? 4 : undefined,
+          }}
+          onMouseEnter={(e) => {
+            const menu = e.currentTarget.querySelector('.message-menu') as HTMLElement;
+            if (menu) menu.style.opacity = '1';
+          }}
+          onMouseLeave={(e) => {
+            const menu = e.currentTarget.querySelector('.message-menu') as HTMLElement;
+            if (menu) menu.style.opacity = '0';
+          }}
+        >
+          {/* Message Content */}
+          {message.messageType === "text" ? (
+            <Text size="sm" style={{ lineHeight: 1.4, wordBreak: "break-word" }}>
+              {message.content}
+            </Text>
+          ) : (
+            <Box>
+              {message.messageType === "image" && message.mediaUrl && (
+                <Image
+                  src={message.mediaUrl}
+                  alt="Shared image"
+                  radius="sm"
+                  style={{ maxWidth: 200, maxHeight: 200 }}
+                />
+              )}
+              {message.content && (
+                <Text size="sm" mt="xs" style={{ lineHeight: 1.4 }}>
+                  {message.content}
+                </Text>
+              )}
             </Box>
           )}
 
-          <Box
-            style={{
-              position: "relative",
-              backgroundColor: isOwn
-                ? "var(--mantine-color-blue-6)"
-                : "var(--mantine-color-gray-2)",
-              color: isOwn ? "white" : "inherit",
-              padding: "8px 12px",
-              borderRadius: "var(--mantine-radius-md)",
-              borderTopLeftRadius:
-                !isOwn && isGroupedWithPrevious ? 4 : undefined,
-              borderTopRightRadius:
-                isOwn && isGroupedWithPrevious ? 4 : undefined,
-              borderBottomLeftRadius:
-                !isOwn && isGroupedWithNext ? 4 : undefined,
-              borderBottomRightRadius:
-                isOwn && isGroupedWithNext ? 4 : undefined,
-              wordBreak: "break-word",
-            }}
-            onContextMenu={(e) => {
-              e.preventDefault();
-              setShowMenu(true);
-            }}
-          >
-            {isEditing ? (
-              <Stack gap="xs">
-                <Textarea
-                  value={editContent}
-                  onChange={(e) => setEditContent(e.currentTarget.value)}
-                  autosize
-                  minRows={1}
-                  maxRows={4}
-                  size="sm"
-                  styles={{
-                    input: {
-                      backgroundColor: "transparent",
-                      border: "1px solid rgba(255, 255, 255, 0.3)",
-                      color: isOwn ? "white" : "inherit",
-                    },
+          {/* Reactions */}
+          {message.reactions.length > 0 && (
+            <Group gap="xs" mt="xs">
+              {message.reactions.map((reaction) => (
+                <Box
+                  key={reaction.id}
+                  style={{
+                    backgroundColor: "rgba(255, 255, 255, 0.2)",
+                    borderRadius: "var(--mantine-radius-sm)",
+                    padding: "2px 6px",
+                    fontSize: "12px",
                   }}
-                />
-                <Group gap="xs" justify="flex-end">
-                  <Button
-                    size="xs"
-                    variant="subtle"
-                    color={isOwn ? "white" : "gray"}
-                    onClick={handleCancelEdit}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    size="xs"
-                    variant={isOwn ? "white" : "filled"}
-                    onClick={handleSaveEdit}
-                  >
-                    Save
-                  </Button>
-                </Group>
-              </Stack>
-            ) : (
-              <>
-                {message.messageType === "image" && message.mediaUrl && (
-                  <Box mb="xs">
-                    <Image
-                      src={message.mediaUrl}
-                      alt="Shared image"
-                      style={{
-                        maxWidth: 200,
-                        maxHeight: 200,
-                        borderRadius: "var(--mantine-radius-sm)",
-                      }}
-                    />
-                  </Box>
-                )}
-
-                <Text size="sm" style={{ lineHeight: 1.4 }}>
-                  {message.content}
-                </Text>
-
-                {message.reactions.length > 0 && (
-                  <Group gap={4} mt="xs">
-                    {message.reactions.map((reaction) => (
-                      <Box
-                        key={reaction.id}
-                        style={{
-                          backgroundColor: "rgba(255, 255, 255, 0.2)",
-                          borderRadius: "12px",
-                          padding: "2px 6px",
-                          fontSize: "12px",
-                        }}
-                      >
-                        {reaction.emoji}
-                      </Box>
-                    ))}
-                  </Group>
-                )}
-
-                <Menu
-                  opened={showMenu}
-                  onClose={() => setShowMenu(false)}
-                  shadow="md"
-                  width={180}
-                  position={isOwn ? "left-start" : "right-start"}
                 >
-                  <Menu.Target>
-                    <ActionIcon
-                      variant="subtle"
-                      size="xs"
-                      style={{
-                        position: "absolute",
-                        top: -8,
-                        [isOwn ? "left" : "right"]: -8,
-                        opacity: showMenu ? 1 : 0,
-                        transition: "opacity 0.2s ease",
-                        backgroundColor: "var(--mantine-color-gray-6)",
-                        color: "white",
-                      }}
-                    >
-                      <IconDotsVertical size={12} />
-                    </ActionIcon>
-                  </Menu.Target>
-
-                  <Menu.Dropdown>
-                    <Menu.Item
-                      leftSection={<IconMessageReply size={14} />}
-                      onClick={() => {
-                        setShowMenu(false);
-                      }}
-                    >
-                      Reply
-                    </Menu.Item>
-
-                    <Menu.Item
-                      leftSection={<IconMoodSmile size={14} />}
-                      onClick={() => {
-                        setShowReactions(true);
-                        setShowMenu(false);
-                      }}
-                    >
-                      React
-                    </Menu.Item>
-
-                    <Menu.Item
-                      leftSection={<IconCopy size={14} />}
-                      onClick={handleCopy}
-                    >
-                      Copy Text
-                    </Menu.Item>
-
-                    {isOwn && (
-                      <>
-                        <Menu.Divider />
-                        <Menu.Item
-                          leftSection={<IconEdit size={14} />}
-                          onClick={handleEdit}
-                        >
-                          Edit
-                        </Menu.Item>
-                        <Menu.Item
-                          leftSection={<IconTrash size={14} />}
-                          color="red"
-                          onClick={handleDelete}
-                        >
-                          Delete
-                        </Menu.Item>
-                      </>
-                    )}
-                  </Menu.Dropdown>
-                </Menu>
-              </>
-            )}
-          </Box>
-
-          {!isGroupedWithNext && (
-            <Group justify={isOwn ? "flex-end" : "flex-start"} gap="xs" mt={4}>
-              {messageTimestamp}
-              {getDeliveryIcon()}
+                  {reaction.emoji}
+                </Box>
+              ))}
             </Group>
           )}
-        </Box>
-      </Group>
 
-      <Modal
-        opened={showReactions}
-        onClose={() => setShowReactions(false)}
-        title="React to message"
-        size="sm"
-      >
-        <Group gap="md" justify="center">
-          {reactionEmojis.map((emoji) => (
-            <ActionIcon
-              key={emoji}
-              size="xl"
-              variant="subtle"
-              onClick={() => handleReaction(emoji)}
-              style={{ fontSize: "24px" }}
-            >
-              {emoji}
-            </ActionIcon>
-          ))}
-        </Group>
-      </Modal>
-    </Box>
+          {/* Message Menu */}
+          <Box
+            className="message-menu"
+            style={{
+              position: "absolute",
+              top: -10,
+              right: isOwn ? undefined : -10,
+              left: isOwn ? -10 : undefined,
+              opacity: 0,
+              transition: "opacity 0.2s ease",
+            }}
+          >
+            <Group gap="xs">
+              <ActionIcon
+                size="sm"
+                variant="filled"
+                color="gray"
+                onClick={() => setShowReactions(!showReactions)}
+              >
+                <IconMoodSmile size={12} />
+              </ActionIcon>
+
+              <Menu
+                opened={showMenu}
+                onChange={setShowMenu}
+                position="bottom"
+                shadow="md"
+                width={150}
+              >
+                <Menu.Target>
+                  <ActionIcon
+                    size="sm"
+                    variant="filled"
+                    color="gray"
+                    onClick={() => setShowMenu(!showMenu)}
+                  >
+                    <IconDotsVertical size={12} />
+                  </ActionIcon>
+                </Menu.Target>
+
+                <Menu.Dropdown>
+                  <Menu.Item
+                    leftSection={<IconMessageReply size={14} />}
+                    onClick={handleReply}
+                  >
+                    Reply
+                  </Menu.Item>
+
+                  <Menu.Item
+                    leftSection={<IconCopy size={14} />}
+                    onClick={handleCopy}
+                  >
+                    Copy
+                  </Menu.Item>
+
+                  {isOwn && (
+                    <>
+                      <Menu.Divider />
+                      <Menu.Item
+                        leftSection={<IconEdit size={14} />}
+                        onClick={handleEdit}
+                      >
+                        Edit
+                      </Menu.Item>
+                      <Menu.Item
+                        leftSection={<IconTrash size={14} />}
+                        color="red"
+                        onClick={handleDelete}
+                      >
+                        Delete
+                      </Menu.Item>
+                    </>
+                  )}
+                </Menu.Dropdown>
+              </Menu>
+            </Group>
+          </Box>
+        </Box>
+
+        {/* Reaction Picker */}
+        {showReactions && (
+          <Box
+            mt="xs"
+            p="xs"
+            style={{
+              backgroundColor: "white",
+              border: "1px solid var(--mantine-color-gray-3)",
+              borderRadius: "var(--mantine-radius-md)",
+              boxShadow: "var(--mantine-shadow-sm)",
+            }}
+          >
+            <Group gap="xs">
+              {["❤️", "👍", "👎", "😂", "😮", "😢", "😡"].map((emoji) => (
+                <ActionIcon
+                  key={emoji}
+                  variant="subtle"
+                  onClick={() => handleReaction(emoji)}
+                  loading={addReactionMutation.isPending}
+                >
+                  <Text>{emoji}</Text>
+                </ActionIcon>
+              ))}
+            </Group>
+          </Box>
+        )}
+
+        {/* Message Info */}
+        {!isGroupedWithNext && (
+          <Group
+            gap="xs"
+            justify={isOwn ? "flex-end" : "flex-start"}
+            mt={4}
+          >
+            <Text size="xs" c="dimmed">
+              {formatTime(message.createdAt)}
+            </Text>
+
+            {message.isEdited && (
+              <Text size="xs" c="dimmed">
+                (edited)
+              </Text>
+            )}
+
+            {getStatusIcon()}
+          </Group>
+        )}
+      </Box>
+    </Group>
   );
 }

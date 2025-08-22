@@ -1,391 +1,333 @@
 import {
-  ActionIcon,
-  Avatar,
-  Box,
-  Button,
-  Card,
-  Drawer,
-  Group,
-  Modal,
-  ScrollArea,
-  Stack,
-  Text,
-  TextInput,
-  Title,
+    ActionIcon,
+    Avatar,
+    Box,
+    Button,
+    Card,
+    Drawer,
+    Group,
+    Modal,
+    ScrollArea,
+    Stack,
+    Text,
+    TextInput,
+    Title,
+    Loader,
+    Center,
 } from "@mantine/core";
 import {
-  IconArchive,
-  IconMenu2,
-  IconPlus,
-  IconSearch,
-  IconSettings,
+    IconArchive,
+    IconMenu2,
+    IconPlus,
+    IconSearch,
+    IconSettings,
 } from "@tabler/icons-react";
-import { useEffect, useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useAuthStore } from "../../stores/authStore";
-import { useInboxStore } from "../../stores/inboxStore";
 import { ChatWindow } from "./ChatWindow";
 import { ConversationCard } from "./ConversationCard";
+import {
+    useConversations,
+    useUnreadCount,
 
-export function InboxPage() {
-  const { user, isAuthenticated } = useAuthStore();
-  const {
-    conversations,
-    selectedConversationId,
-    setSelectedConversationId,
-    searchQuery,
-    setSearchQuery,
-    getFilteredConversations,
-    getUnreadCount,
-    initializeInbox,
-    connectWebSocket,
-    isConnected,
-  } = useInboxStore();
+} from "../../hooks/useChat";
+import { useWebSocketIntegration } from "../../hooks/useWebSocket";
 
+
+export function ChatPage() {
+  const { isAuthenticated } = useAuthStore();
+
+  // React Query hooks
+  const { data: conversations = [], isLoading: conversationsLoading, error: conversationsError } = useConversations();
+  const { data: unreadData } = useUnreadCount();
+
+
+  // WebSocket integration
+  const { isConnected, connectionState } = useWebSocketIntegration();
+
+  const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   const [isMobileView, setIsMobileView] = useState(false);
   const [showConversations, setShowConversations] = useState(true);
   const [showNewChatModal, setShowNewChatModal] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredConversations = getFilteredConversations();
+  // Filter conversations based on search query
+  const filteredConversations = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return conversations.sort((a, b) => {
+        // Pinned conversations first
+        if (a.isPinned && !b.isPinned) return -1;
+        if (!a.isPinned && b.isPinned) return 1;
+
+        // Then by last update time
+        return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+      });
+    }
+
+    const query = searchQuery.toLowerCase();
+    return conversations
+      .filter((conv) => {
+        const participant = conv.participants[0];
+        const participantName = `${participant.firstName} ${participant.lastName}`.toLowerCase();
+        const lastMessageContent = conv.lastMessage?.content.toLowerCase() || "";
+        const conversationName = conv.name?.toLowerCase() || "";
+
+        return (
+          participantName.includes(query) ||
+          lastMessageContent.includes(query) ||
+          conversationName.includes(query)
+        );
+      })
+      .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+  }, [conversations, searchQuery]);
+
   const selectedConversation = conversations.find(
-    (c) => c.id === selectedConversationId
+    (conv) => conv.id === selectedConversationId
   );
-  const unreadCount = getUnreadCount();
 
-  // Check if mobile view
+  const unreadCount = unreadData?.count || 0;
+
+  // Handle responsive design
   useEffect(() => {
-    const checkMobileView = () => {
-      setIsMobileView(window.innerWidth <= 768);
+    const handleResize = () => {
+      const isMobile = window.innerWidth < 768;
+      setIsMobileView(isMobile);
+
+      if (isMobile && selectedConversationId) {
+        setShowConversations(false);
+      } else if (!isMobile) {
+        setShowConversations(true);
+      }
     };
 
-    checkMobileView();
-    window.addEventListener("resize", checkMobileView);
-    return () => window.removeEventListener("resize", checkMobileView);
-  }, []);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  });
 
-  // Initialize inbox and connect WebSocket
-  useEffect(() => {
-    initializeInbox();
-
-    if (isAuthenticated && user) {
-      connectWebSocket(user.id);
-    }
-  }, [isAuthenticated, user, initializeInbox, connectWebSocket]);
-
-  // Handle conversation selection
   const handleConversationSelect = (conversationId: string) => {
     setSelectedConversationId(conversationId);
 
-    // On mobile, hide conversation list when selecting a chat
     if (isMobileView) {
       setShowConversations(false);
     }
   };
 
-  // Handle back to conversations (mobile)
   const handleBackToConversations = () => {
-    setSelectedConversationId(null);
-    setShowConversations(true);
+    if (isMobileView) {
+      setShowConversations(true);
+      setSelectedConversationId(null);
+    }
   };
+
+  const handleNewChat = () => {
+    setShowNewChatModal(true);
+  };
+
+
 
   if (!isAuthenticated) {
     return (
-      <>
-        <Card withBorder p="xl" ta="center">
-          <Stack gap="md">
-            <Text size="lg" fw={500}>
-              Sign in to access your inbox
-            </Text>
-            <Text c="dimmed">
-              Connect with other users and start conversations
-            </Text>
-          </Stack>
-        </Card>
-      </>
+      <Card withBorder p="xl" radius="md">
+        <Stack align="center" gap="md">
+          <Text size="lg" fw={500}>
+            Authentication Required
+          </Text>
+          <Text c="dimmed" ta="center">
+            Please sign in to access your messages.
+          </Text>
+        </Stack>
+      </Card>
     );
   }
 
   return (
-    <>
-      <Card withBorder h="100%" style={{ overflow: "hidden" }}>
-        {/* Mobile Layout */}
-        {isMobileView ? (
-          <Stack h="100%" gap={0}>
-            {showConversations ? (
-              // Conversations List (Mobile)
-              <Stack h="100%" gap={0}>
-                {/* Mobile Header */}
-                <Box
-                  p="md"
-                  style={{
-                    borderBottom: "1px solid var(--mantine-color-gray-3)",
-                    backgroundColor: "var(--mantine-color-white)",
-                  }}
-                >
-                  <Group justify="space-between">
-                    <Group>
-                      <Title order={2} size="h3">
-                        Inbox
-                      </Title>
-                      {unreadCount > 0 && (
-                        <Text size="sm" c="blue" fw={500}>
-                          ({unreadCount} unread)
-                        </Text>
-                      )}
-                    </Group>
-                    <Group>
-                      <ActionIcon
-                        variant="subtle"
-                        size="lg"
-                        onClick={() => setShowNewChatModal(true)}
-                      >
-                        <IconPlus size={18} />
-                      </ActionIcon>
-                      <ActionIcon
-                        variant="subtle"
-                        size="lg"
-                        onClick={() => setShowMobileMenu(true)}
-                      >
-                        <IconMenu2 size={18} />
-                      </ActionIcon>
-                    </Group>
-                  </Group>
-                </Box>
-
-                {/* Search */}
-                <Box p="md" pb="sm">
-                  <TextInput
-                    placeholder="Search conversations..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.currentTarget.value)}
-                    leftSection={<IconSearch size={16} />}
-                    size="md"
-                    radius="xl"
-                  />
-                </Box>
-
-                {/* Connection Status */}
-                {!isConnected && (
-                  <Box px="md" pb="sm">
-                    <Card withBorder p="xs" bg="yellow.0" c="yellow.9">
-                      <Text size="xs" ta="center">
-                        Connecting to chat service...
-                      </Text>
-                    </Card>
-                  </Box>
-                )}
-
-                {/* Conversations List */}
-                <ScrollArea style={{ flex: 1 }} px="md">
-                  <Stack gap="xs" pb="md">
-                    {filteredConversations.length === 0 ? (
-                      <Stack align="center" py="xl" gap="md">
-                        <Text size="lg" c="dimmed" ta="center">
-                          No conversations yet
-                        </Text>
-                        <Button
-                          leftSection={<IconPlus size={16} />}
-                          onClick={() => setShowNewChatModal(true)}
-                          variant="light"
-                        >
-                          Start a Conversation
-                        </Button>
-                      </Stack>
-                    ) : (
-                      filteredConversations.map((conversation) => (
-                        <ConversationCard
-                          key={conversation.id}
-                          conversation={conversation}
-                          isSelected={
-                            selectedConversationId === conversation.id
-                          }
-                          onClick={() =>
-                            handleConversationSelect(conversation.id)
-                          }
-                        />
-                      ))
-                    )}
-                  </Stack>
-                </ScrollArea>
-              </Stack>
-            ) : (
-              // Chat Window (Mobile)
-              selectedConversation && (
-                <ChatWindow
-                  conversation={selectedConversation}
-                  onBack={handleBackToConversations}
-                />
-              )
+    <Box style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
+      {/* Header */}
+      <Card withBorder p="md" style={{ borderRadius: 0, borderTop: 0 }}>
+        <Group justify="space-between">
+          <Group>
+            {isMobileView && !showConversations && (
+              <ActionIcon
+                variant="subtle"
+                onClick={handleBackToConversations}
+              >
+                <IconMenu2 size={20} />
+              </ActionIcon>
             )}
-          </Stack>
-        ) : (
-          // Desktop Layout
-          <Group h="100%" gap={0} wrap="nowrap">
-            {/* Conversations Sidebar */}
-            <Box
-              w={360}
-              h="100%"
-              style={{
-                borderRight: "1px solid var(--mantine-color-gray-3)",
-                flexShrink: 0,
-              }}
-            >
-              <Stack h="100%" gap={0}>
-                {/* Header */}
-                <Box
-                  p="md"
-                  style={{
-                    borderBottom: "1px solid var(--mantine-color-gray-3)",
-                  }}
-                >
-                  <Group justify="space-between" mb="sm">
-                    <Title order={2} size="h3">
-                      Inbox
-                    </Title>
-                    <Group>
-                      <ActionIcon
-                        variant="subtle"
-                        size="lg"
-                        onClick={() => setShowNewChatModal(true)}
-                      >
-                        <IconPlus size={18} />
-                      </ActionIcon>
-                      <ActionIcon variant="subtle" size="lg">
-                        <IconSettings size={18} />
-                      </ActionIcon>
-                    </Group>
-                  </Group>
+            <Title order={3}>
+              {selectedConversation
+                ? (selectedConversation.name ||
+                   `${selectedConversation.participants[0]?.firstName} ${selectedConversation.participants[0]?.lastName}`)
+                : "Messages"
+              }
+            </Title>
+            {unreadCount > 0 && (
+              <Text size="sm" c="blue" fw={500}>
+                ({unreadCount} unread)
+              </Text>
+            )}
+          </Group>
 
-                  {/* Connection Status & Stats */}
-                  <Group justify="space-between">
-                    <Text size="sm" c="dimmed">
-                      {isConnected ? "Connected" : "Connecting..."}
-                    </Text>
-                    {unreadCount > 0 && (
-                      <Text size="sm" c="blue" fw={500}>
-                        {unreadCount} unread
-                      </Text>
-                    )}
-                  </Group>
-                </Box>
+          <Group>
+            <Text size="xs" c={isConnected ? "green" : "red"}>
+              {connectionState}
+            </Text>
+            <ActionIcon variant="subtle" onClick={handleNewChat}>
+              <IconPlus size={20} />
+            </ActionIcon>
+            <ActionIcon variant="subtle">
+              <IconSettings size={20} />
+            </ActionIcon>
+          </Group>
+        </Group>
+      </Card>
 
-                {/* Search */}
-                <Box p="md" pb="sm">
-                  <TextInput
-                    placeholder="Search conversations..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.currentTarget.value)}
-                    leftSection={<IconSearch size={16} />}
-                    size="sm"
-                    radius="xl"
-                  />
-                </Box>
-
-                {/* Quick Actions */}
-                <Box px="md" pb="sm">
-                  <Group gap="xs">
-                    <Button
-                      variant="light"
-                      size="xs"
-                      leftSection={<IconArchive size={14} />}
-                    >
-                      Archived
-                    </Button>
-                  </Group>
-                </Box>
-
-                {/* Conversations List */}
-                <ScrollArea style={{ flex: 1 }} px="md">
-                  <Stack gap="xs" pb="md">
-                    {filteredConversations.length === 0 ? (
-                      <Stack align="center" py="xl" gap="md">
-                        <Text size="lg" c="dimmed" ta="center">
-                          {searchQuery
-                            ? "No conversations found"
-                            : "No conversations yet"}
-                        </Text>
-                        {!searchQuery && (
-                          <Button
-                            leftSection={<IconPlus size={16} />}
-                            onClick={() => setShowNewChatModal(true)}
-                            variant="light"
-                            size="sm"
-                          >
-                            Start a Conversation
-                          </Button>
-                        )}
-                      </Stack>
-                    ) : (
-                      filteredConversations.map((conversation) => (
-                        <ConversationCard
-                          key={conversation.id}
-                          conversation={conversation}
-                          isSelected={
-                            selectedConversationId === conversation.id
-                          }
-                          onClick={() =>
-                            handleConversationSelect(conversation.id)
-                          }
-                        />
-                      ))
-                    )}
-                  </Stack>
-                </ScrollArea>
-              </Stack>
+      <Box style={{ flex: 1, display: "flex", overflow: "hidden" }}>
+        {/* Conversations List */}
+        {(!isMobileView || showConversations) && (
+          <Card
+            withBorder
+            style={{
+              width: isMobileView ? "100%" : "350px",
+              borderRadius: 0,
+              borderTop: 0,
+              borderBottom: 0,
+              borderLeft: 0,
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            {/* Search */}
+            <Box p="md" style={{ borderBottom: "1px solid var(--mantine-color-gray-2)" }}>
+              <TextInput
+                placeholder="Search conversations..."
+                leftSection={<IconSearch size={16} />}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.currentTarget.value)}
+                size="sm"
+              />
             </Box>
 
-            {/* Chat Area */}
-            <Box style={{ flex: 1 }} h="100%">
-              {selectedConversation ? (
-                <ChatWindow conversation={selectedConversation} />
-              ) : (
-                <Stack align="center" justify="center" h="100%" gap="md">
-                  <Avatar size="xl" radius="xl">
-                    💬
-                  </Avatar>
-                  <Stack align="center" gap="xs">
-                    <Text size="xl" fw={500}>
-                      Welcome to your Inbox
-                    </Text>
-                    <Text size="sm" c="dimmed" ta="center" maw={300}>
-                      Select a conversation from the list to start chatting, or
-                      create a new conversation.
-                    </Text>
-                    <Button
-                      leftSection={<IconPlus size={16} />}
-                      onClick={() => setShowNewChatModal(true)}
-                      variant="light"
-                      mt="md"
-                    >
-                      Start New Conversation
-                    </Button>
+            {/* Conversations */}
+            <ScrollArea style={{ flex: 1 }}>
+              {conversationsLoading ? (
+                <Center py="md">
+                  <Stack align="center" gap="sm">
+                    <Loader size="sm" />
+                    <Text size="sm" c="dimmed">Loading conversations...</Text>
                   </Stack>
+                </Center>
+              ) : conversationsError ? (
+                <Card p="md">
+                  <Text c="red" size="sm" ta="center">
+                    Failed to load conversations
+                  </Text>
+                </Card>
+              ) : filteredConversations.length === 0 ? (
+                <Stack align="center" gap="md" p="xl">
+                  <Text size="lg" fw={500} c="dimmed">
+                    No conversations yet
+                  </Text>
+                  <Text size="sm" c="dimmed" ta="center">
+                    Start a new conversation to begin messaging
+                  </Text>
+                  <Button
+                    leftSection={<IconPlus size={16} />}
+                    onClick={handleNewChat}
+                    variant="light"
+                  >
+                    New Chat
+                  </Button>
+                </Stack>
+              ) : (
+                <Stack gap={0}>
+                  {filteredConversations.map((conversation) => (
+                    <ConversationCard
+                      key={conversation.id}
+                      conversation={conversation}
+                      isSelected={conversation.id === selectedConversationId}
+                      onClick={() => handleConversationSelect(conversation.id)}
+                    />
+                  ))}
                 </Stack>
               )}
-            </Box>
-          </Group>
+            </ScrollArea>
+          </Card>
         )}
-      </Card>
+
+        {/* Chat Window */}
+        {(!isMobileView || !showConversations) && (
+          <Box style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+            {selectedConversation ? (
+              <ChatWindow
+                conversation={selectedConversation}
+                onBack={handleBackToConversations}
+                showBackButton={isMobileView}
+              />
+            ) : (
+              <Card
+                style={{
+                  flex: 1,
+                  borderRadius: 0,
+                  borderTop: 0,
+                  borderBottom: 0,
+                  borderRight: 0,
+                }}
+              >
+                <Stack
+                  align="center"
+                  justify="center"
+                  style={{ height: "100%" }}
+                  gap="md"
+                >
+                  <Avatar size="xl" color="blue">
+                    <IconMenu2 size={32} />
+                  </Avatar>
+                  <Text size="lg" fw={500} c="dimmed">
+                    Select a conversation
+                  </Text>
+                  <Text size="sm" c="dimmed" ta="center">
+                    Choose a conversation from the sidebar to start messaging
+                  </Text>
+                  <Button
+                    leftSection={<IconPlus size={16} />}
+                    onClick={handleNewChat}
+                    variant="light"
+                  >
+                    Start New Chat
+                  </Button>
+                </Stack>
+              </Card>
+            )}
+          </Box>
+        )}
+      </Box>
 
       {/* New Chat Modal */}
       <Modal
         opened={showNewChatModal}
         onClose={() => setShowNewChatModal(false)}
-        title="Start New Conversation"
-        size="sm"
+        title="Start New Chat"
+        size="md"
       >
         <Stack gap="md">
           <TextInput
             placeholder="Search users..."
             leftSection={<IconSearch size={16} />}
           />
+
           <Text size="sm" c="dimmed">
-            Feature coming soon! You'll be able to search for users and start
-            new conversations.
+            Search for users to start a conversation
           </Text>
-          <Button fullWidth onClick={() => setShowNewChatModal(false)}>
-            Close
-          </Button>
+
+          {/* TODO: Add user search results here */}
+          <Stack gap="xs">
+            <Text size="xs" c="dimmed">
+              Recent contacts will appear here
+            </Text>
+          </Stack>
         </Stack>
       </Modal>
 
@@ -393,29 +335,27 @@ export function InboxPage() {
       <Drawer
         opened={showMobileMenu}
         onClose={() => setShowMobileMenu(false)}
+        title="Chat Settings"
         position="right"
-        size="280px"
-        title="Inbox Settings"
+        size="sm"
       >
         <Stack gap="md">
           <Button
-            variant="light"
             leftSection={<IconArchive size={16} />}
+            variant="light"
             fullWidth
-            justify="flex-start"
           >
-            Archived Conversations
+            Archived Chats
           </Button>
           <Button
-            variant="light"
             leftSection={<IconSettings size={16} />}
+            variant="light"
             fullWidth
-            justify="flex-start"
           >
             Chat Settings
           </Button>
         </Stack>
       </Drawer>
-    </>
+    </Box>
   );
 }

@@ -8,7 +8,9 @@ import {
   ScrollArea,
   Stack,
   Text,
-  TextInput,
+  Textarea,
+  Center,
+  Button,
 } from "@mantine/core";
 import {
   IconArrowLeft,
@@ -23,115 +25,125 @@ import {
 } from "@tabler/icons-react";
 import { useEffect, useRef, useState } from "react";
 import { useAuthStore } from "../../stores/authStore";
-import { useInboxStore } from "../../stores/inboxStore";
 import { Conversation } from "../../types/chat";
 import { MessageCard } from "./MessageCard";
+import {
+  useInfiniteMessages,
+  useSendMessage,
+  useMarkConversationAsRead,
+  useUpdateConversation
+} from "../../hooks/useChat";
+import { SendMessageRequest } from "../../services/api";
 
 interface ChatWindowProps {
   conversation: Conversation;
-  onBack?: () => void; // For mobile view
+  onBack?: () => void;
+  showBackButton?: boolean;
 }
 
-export function ChatWindow({ conversation, onBack }: ChatWindowProps) {
+export function ChatWindow({ conversation, onBack, showBackButton = false }: ChatWindowProps) {
   const { user } = useAuthStore();
+
+  // React Query hooks
   const {
-    messages,
-    sendMessage,
-    sendTypingIndicator,
-    typingIndicators,
-    onlineStatuses,
-  } = useInboxStore();
+    data: messagesData,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading: messagesLoading,
+  } = useInfiniteMessages(conversation.id, { limit: 20 });
+
+  const sendMessageMutation = useSendMessage();
+  const markConversationAsReadMutation = useMarkConversationAsRead();
+  const updateConversationMutation = useUpdateConversation();
 
   const [messageText, setMessageText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showAttachmentMenu, setShowAttachmentMenu] = useState(false);
-  const [isLoadingMessages] = useState(false);
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
-  const messageInputRef = useRef<HTMLInputElement>(null);
-  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const messageInputRef = useRef<HTMLTextAreaElement>(null);
+  const typingTimeoutRef = useRef<number | undefined>(undefined);
 
-  const participant = conversation.participants[0];
-  const conversationMessages = messages[conversation.id] || [];
-  const isOnline = onlineStatuses[participant.id]?.isOnline || false;
-  const lastSeen = onlineStatuses[participant.id]?.lastSeen;
+  // Flatten messages from all pages
+  const messages = messagesData?.pages.flatMap(page => page) || [];
 
-  const participantTyping = typingIndicators.find(
-    (ti) =>
-      ti.conversationId === conversation.id && ti.userId === participant.id
-  );
+  // Get the other participant for direct conversations
+  const otherParticipant = conversation.participants.find(p => p.id !== user?.id);
 
+  // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
-    // Scroll to bottom when messages change
     if (scrollAreaRef.current) {
-      const scrollElement = scrollAreaRef.current.querySelector(
-        "[data-radix-scroll-area-viewport]"
-      );
-      if (scrollElement) {
-        scrollElement.scrollTop = scrollElement.scrollHeight;
-      }
+      scrollAreaRef.current.scrollTo({
+        top: scrollAreaRef.current.scrollHeight,
+        behavior: "smooth",
+      });
     }
-  }, [conversationMessages.length]);
+  }, [messages.length]);
 
+  // Mark conversation as read when opened
   useEffect(() => {
-    // Focus message input when conversation changes
-    if (messageInputRef.current) {
-      messageInputRef.current.focus();
+    if (conversation.unreadCount > 0) {
+      markConversationAsReadMutation.mutate(conversation.id);
     }
-  }, [conversation.id]);
+  }, [conversation.id, conversation.unreadCount, markConversationAsReadMutation]);
 
-  const formatLastSeen = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInMinutes = Math.floor(
-      (now.getTime() - date.getTime()) / (1000 * 60)
-    );
-
-    if (diffInMinutes < 1) return "Online";
-    if (diffInMinutes < 60) return `Last seen ${diffInMinutes}m ago`;
-    if (diffInMinutes < 1440)
-      return `Last seen ${Math.floor(diffInMinutes / 60)}h ago`;
-    if (diffInMinutes < 10080)
-      return `Last seen ${Math.floor(diffInMinutes / 1440)}d ago`;
-    return "Last seen recently";
-  };
-
-  const handleSendMessage = () => {
-    if (!messageText.trim()) return;
-
-    sendMessage(conversation.id, participant.id, messageText.trim());
-    setMessageText("");
-
-    // Stop typing indicator
-    if (isTyping) {
-      sendTypingIndicator(conversation.id, false);
-      setIsTyping(false);
-    }
-  };
-
-  const handleTyping = (text: string) => {
-    setMessageText(text);
-
-    // Send typing indicator
-    if (!isTyping && text.trim()) {
-      sendTypingIndicator(conversation.id, true);
+  // Handle typing indicators
+  useEffect(() => {
+    if (messageText.trim() && !isTyping) {
       setIsTyping(true);
+      // TODO: Send typing indicator via WebSocket
+    } else if (!messageText.trim() && isTyping) {
+      setIsTyping(false);
+      // TODO: Stop typing indicator via WebSocket
     }
 
-    // Clear existing timeout
+    // Clear typing timeout
     if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
+      window.clearTimeout(typingTimeoutRef.current);
     }
 
     // Set new timeout to stop typing indicator
-    typingTimeoutRef.current = setTimeout(() => {
-      if (isTyping) {
-        sendTypingIndicator(conversation.id, false);
+    if (messageText.trim()) {
+      typingTimeoutRef.current = window.setTimeout(() => {
         setIsTyping(false);
+        // TODO: Stop typing indicator via WebSocket
+      }, 2000);
+    }
+
+    return () => {
+      if (typingTimeoutRef.current) {
+        window.clearTimeout(typingTimeoutRef.current);
       }
-    }, 2000);
+    };
+  }, [messageText, isTyping]);
+
+  const handleSendMessage = () => {
+    if (!messageText.trim() || !otherParticipant) return;
+
+    const messageData: SendMessageRequest = {
+      content: messageText.trim(),
+      receiverId: otherParticipant.id,
+      conversationId: conversation.id,
+      messageType: 'text',
+    };
+
+    sendMessageMutation.mutate(
+      { conversationId: conversation.id, data: messageData },
+      {
+        onSuccess: () => {
+          setMessageText("");
+          setIsTyping(false);
+
+          // Focus back on input
+          messageInputRef.current?.focus();
+        },
+        onError: (error) => {
+          console.error('Failed to send message:', error);
+        },
+      }
+    );
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -141,116 +153,103 @@ export function ChatWindow({ conversation, onBack }: ChatWindowProps) {
     }
   };
 
-  const handleFileUpload = (file: File | null) => {
-    if (!file) return;
-
-    // TODO: Implement file upload functionality
-    console.log("File selected:", file.name);
-    setShowAttachmentMenu(false);
-  };
-
-  const emojis = ["😀", "😂", "😍", "🥰", "😎", "🤔", "👍", "❤️", "🎉", "🔥"];
-
-  const handleEmojiSelect = (emoji: string) => {
-    setMessageText((prev) => prev + emoji);
-    setShowEmojiPicker(false);
-    if (messageInputRef.current) {
-      messageInputRef.current.focus();
+  const handleLoadMoreMessages = () => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
     }
   };
 
+  const handleTogglePin = () => {
+    updateConversationMutation.mutate({
+      id: conversation.id,
+      data: { isPinned: !conversation.isPinned },
+    });
+  };
+
+  const handleToggleMute = () => {
+    updateConversationMutation.mutate({
+      id: conversation.id,
+      data: { isMuted: !conversation.isMuted },
+    });
+  };
+
+  const handleToggleArchive = () => {
+    updateConversationMutation.mutate({
+      id: conversation.id,
+      data: { isArchived: !conversation.isArchived },
+    });
+  };
+
+
+
   return (
-    <Stack h="100%" gap={0}>
+    <Box style={{ height: "100%", display: "flex", flexDirection: "column" }}>
       {/* Chat Header */}
       <Box
         p="md"
         style={{
-          borderBottom: "1px solid var(--mantine-color-gray-3)",
-          backgroundColor: "var(--mantine-color-white)",
-          position: "sticky",
-          top: 0,
-          zIndex: 10,
+          borderBottom: "1px solid var(--mantine-color-gray-2)",
+          backgroundColor: "var(--mantine-color-gray-0)",
         }}
       >
         <Group justify="space-between">
-          <Group gap="sm">
-            {/* Mobile back button */}
-            {onBack && (
-              <ActionIcon
-                variant="subtle"
-                size="sm"
-                onClick={onBack}
-                className="mobile-only"
-              >
-                <IconArrowLeft size={16} />
+          <Group>
+            {showBackButton && (
+              <ActionIcon variant="subtle" onClick={onBack}>
+                <IconArrowLeft size={20} />
               </ActionIcon>
             )}
 
-            {/* Participant info */}
-            <Group gap="sm">
-              <Box style={{ position: "relative" }}>
-                <Avatar
-                  src={participant.avatar}
-                  alt={participant.firstName}
-                  size="md"
-                  radius="xl"
-                >
-                  {participant.firstName?.charAt(0) || "U"}
-                </Avatar>
-                {isOnline && (
-                  <Box
-                    style={{
-                      position: "absolute",
-                      bottom: 0,
-                      right: 0,
-                      width: 12,
-                      height: 12,
-                      borderRadius: "50%",
-                      backgroundColor: "var(--mantine-color-green-6)",
-                      border: "2px solid white",
-                    }}
-                  />
-                )}
-              </Box>
+            <Avatar
+              src={otherParticipant?.avatar}
+              alt={otherParticipant?.firstName || "User"}
+              size="md"
+              radius="xl"
+            >
+              {(otherParticipant?.firstName || "U").charAt(0)}
+            </Avatar>
 
-              <Box>
-                <Text fw={500} size="sm">
-                  {participant.firstName} {participant.lastName}
-                </Text>
-                <Text size="xs" c="dimmed">
-                  {participantTyping?.isTyping
-                    ? "Typing..."
-                    : isOnline
-                      ? "Online"
-                      : lastSeen
-                        ? formatLastSeen(lastSeen)
-                        : "Offline"}
-                </Text>
-              </Box>
-            </Group>
+            <Box>
+              <Text fw={500} size="sm">
+                {conversation.name ||
+                 (otherParticipant ? `${otherParticipant.firstName} ${otherParticipant.lastName}` : 'Unknown User')}
+              </Text>
+              <Text size="xs" c="dimmed">
+                {/* TODO: Show online status or typing indicator */}
+                {otherParticipant ? `@${otherParticipant.username || otherParticipant.phoneNumber}` : ''}
+              </Text>
+            </Box>
           </Group>
 
-          {/* Action buttons */}
-          <Group gap="xs">
-            <ActionIcon variant="subtle" size="md">
-              <IconPhone size={18} />
+          <Group>
+            <ActionIcon variant="subtle">
+              <IconPhone size={20} />
             </ActionIcon>
-            <ActionIcon variant="subtle" size="md">
-              <IconVideo size={18} />
+            <ActionIcon variant="subtle">
+              <IconVideo size={20} />
             </ActionIcon>
+
             <Menu shadow="md" width={200} position="bottom-end">
               <Menu.Target>
-                <ActionIcon variant="subtle" size="md">
-                  <IconDotsVertical size={18} />
+                <ActionIcon variant="subtle">
+                  <IconDotsVertical size={20} />
                 </ActionIcon>
               </Menu.Target>
+
               <Menu.Dropdown>
-                <Menu.Item>View Profile</Menu.Item>
-                <Menu.Item>Media & Files</Menu.Item>
-                <Menu.Item>Search Messages</Menu.Item>
+                <Menu.Item onClick={handleTogglePin}>
+                  {conversation.isPinned ? "Unpin" : "Pin"} Conversation
+                </Menu.Item>
+                <Menu.Item onClick={handleToggleMute}>
+                  {conversation.isMuted ? "Unmute" : "Mute"} Conversation
+                </Menu.Item>
+                <Menu.Item onClick={handleToggleArchive}>
+                  {conversation.isArchived ? "Unarchive" : "Archive"} Conversation
+                </Menu.Item>
                 <Menu.Divider />
-                <Menu.Item color="orange">Mute Notifications</Menu.Item>
-                <Menu.Item color="red">Block User</Menu.Item>
+                <Menu.Item color="red">
+                  Delete Conversation
+                </Menu.Item>
               </Menu.Dropdown>
             </Menu>
           </Group>
@@ -258,236 +257,163 @@ export function ChatWindow({ conversation, onBack }: ChatWindowProps) {
       </Box>
 
       {/* Messages Area */}
-      <Box style={{ flex: 1, position: "relative" }}>
-        <ScrollArea h="100%" ref={scrollAreaRef} style={{ padding: "16px" }}>
-          {isLoadingMessages ? (
-            <Group justify="center" py="xl">
-              <Loader size="sm" />
-              <Text size="sm" c="dimmed">
-                Loading messages...
-              </Text>
-            </Group>
-          ) : conversationMessages.length === 0 ? (
-            <Stack align="center" justify="center" h="100%" gap="md">
-              <Avatar size="xl" radius="xl" src={participant.avatar}>
-                {participant.firstName?.charAt(0) || "U"}
-              </Avatar>
-              <Stack align="center" gap="xs">
-                <Text fw={500}>
-                  {participant.firstName} {participant.lastName}
+      <ScrollArea
+        ref={scrollAreaRef}
+        style={{ flex: 1 }}
+        scrollbarSize={6}
+        offsetScrollbars
+      >
+        <Stack gap="xs" p="md">
+          {/* Load more messages button */}
+          {hasNextPage && (
+            <Center pb="md">
+              <Button
+                variant="light"
+                size="xs"
+                onClick={handleLoadMoreMessages}
+                loading={isFetchingNextPage}
+              >
+                {isFetchingNextPage ? "Loading..." : "Load older messages"}
+              </Button>
+            </Center>
+          )}
+
+          {messagesLoading && messages.length === 0 ? (
+            <Center py="xl">
+              <Stack align="center" gap="md">
+                <Loader size="md" />
+                <Text c="dimmed">Loading messages...</Text>
+              </Stack>
+            </Center>
+          ) : messages.length === 0 ? (
+            <Center py="xl">
+              <Stack align="center" gap="md">
+                <Avatar size="xl" color="blue">
+                  {(otherParticipant?.firstName || "U").charAt(0)}
+                </Avatar>
+                <Text size="lg" fw={500}>
+                  Start the conversation
                 </Text>
                 <Text size="sm" c="dimmed" ta="center">
-                  No messages yet. Start a conversation!
+                  Send a message to {otherParticipant?.firstName || 'this user'} to get started
                 </Text>
               </Stack>
-            </Stack>
+            </Center>
           ) : (
-            <Stack gap="xs">
-              {conversationMessages
-                .slice()
-                .reverse()
-                .map((message, index, arr) => {
-                  const isOwn =
-                    message.senderId === user?.id ||
-                    message.senderId === "current";
-                  const previousMessage =
-                    index > 0 ? arr[index - 1] : undefined;
-                  const nextMessage =
-                    index < arr.length - 1 ? arr[index + 1] : undefined;
-
-                  return (
-                    <MessageCard
-                      key={message.id}
-                      message={message}
-                      isOwn={isOwn}
-                      showAvatar={!isOwn}
-                      previousMessage={previousMessage}
-                      nextMessage={nextMessage}
-                    />
-                  );
-                })}
-
-              {/* Typing indicator */}
-              {participantTyping?.isTyping && (
-                <Group justify="flex-start" mt="xs">
-                  <Avatar size="sm" radius="xl" src={participant.avatar}>
-                    {participant.firstName?.charAt(0) || "U"}
-                  </Avatar>
-                  <Box
-                    style={{
-                      backgroundColor: "var(--mantine-color-gray-2)",
-                      borderRadius: "18px",
-                      padding: "8px 16px",
-                    }}
-                  >
-                    <Group gap="xs">
-                      <Box
-                        style={{
-                          display: "flex",
-                          gap: "2px",
-                        }}
-                      >
-                        {[1, 2, 3].map((dot) => (
-                          <Box
-                            key={dot}
-                            style={{
-                              width: 4,
-                              height: 4,
-                              borderRadius: "50%",
-                              backgroundColor: "var(--mantine-color-gray-6)",
-                              animation: `typing-dots 1.5s infinite ${dot * 0.2}s`,
-                            }}
-                          />
-                        ))}
-                      </Box>
-                    </Group>
-                  </Box>
-                </Group>
-              )}
-            </Stack>
+            messages.map((message) => (
+              <MessageCard
+                key={message.id}
+                message={message}
+                isOwn={message.senderId === user?.id}
+                showAvatar={message.senderId !== user?.id}
+              />
+            ))
           )}
-        </ScrollArea>
-      </Box>
+
+          {/* Typing Indicators */}
+          {/* TODO: Implement typing indicators from WebSocket */}
+        </Stack>
+      </ScrollArea>
 
       {/* Message Input */}
       <Box
         p="md"
         style={{
-          borderTop: "1px solid var(--mantine-color-gray-3)",
-          backgroundColor: "var(--mantine-color-white)",
+          borderTop: "1px solid var(--mantine-color-gray-2)",
+          backgroundColor: "var(--mantine-color-gray-0)",
         }}
       >
-        <Group gap="sm" align="flex-end">
-          {/* Attachment button */}
+        <Group gap="xs" align="flex-end">
+          {/* Attachment Menu */}
           <Menu
             opened={showAttachmentMenu}
-            onClose={() => setShowAttachmentMenu(false)}
-            shadow="md"
-            width={200}
+            onChange={setShowAttachmentMenu}
             position="top-start"
+            shadow="md"
           >
             <Menu.Target>
               <ActionIcon
                 variant="subtle"
                 size="lg"
-                onClick={() => setShowAttachmentMenu(true)}
+                onClick={() => setShowAttachmentMenu(!showAttachmentMenu)}
               >
-                <IconPaperclip size={18} />
+                <IconPaperclip size={20} />
               </ActionIcon>
             </Menu.Target>
+
             <Menu.Dropdown>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={(e) => handleFileUpload(e.target.files?.[0] || null)}
-                style={{ display: "none" }}
-              />
-              <Menu.Item
-                leftSection={<IconPhoto size={16} />}
-                onClick={() => fileInputRef.current?.click()}
-              >
-                Photo or Video
+              <Menu.Item leftSection={<IconPhoto size={16} />}>
+                Photo
+              </Menu.Item>
+              <Menu.Item leftSection={<IconVideo size={16} />}>
+                Video
               </Menu.Item>
               <Menu.Item leftSection={<IconFile size={16} />}>
-                Document
+                File
               </Menu.Item>
             </Menu.Dropdown>
           </Menu>
 
-          {/* Message input */}
-          <TextInput
+          {/* Message Input */}
+          <Textarea
             ref={messageInputRef}
             placeholder="Type a message..."
             value={messageText}
-            onChange={(e) => handleTyping(e.currentTarget.value)}
+            onChange={(e) => setMessageText(e.currentTarget.value)}
             onKeyPress={handleKeyPress}
             style={{ flex: 1 }}
-            size="md"
-            radius="xl"
-            styles={{
-              input: {
-                paddingRight: "100px",
-              },
-            }}
+            autosize
+            minRows={1}
+            maxRows={4}
             rightSection={
-              <Group gap="xs" pr="xs">
-                {/* Emoji picker */}
-                <Menu
-                  opened={showEmojiPicker}
-                  onClose={() => setShowEmojiPicker(false)}
-                  shadow="md"
-                  width={280}
-                  position="top-end"
-                >
-                  <Menu.Target>
-                    <ActionIcon
-                      variant="subtle"
-                      size="sm"
-                      onClick={() => setShowEmojiPicker(true)}
-                    >
-                      <IconMoodSmile size={16} />
-                    </ActionIcon>
-                  </Menu.Target>
-                  <Menu.Dropdown p="md">
-                    <Group gap="xs">
-                      {emojis.map((emoji) => (
-                        <ActionIcon
-                          key={emoji}
-                          variant="subtle"
-                          size="lg"
-                          onClick={() => handleEmojiSelect(emoji)}
-                          style={{ fontSize: "18px" }}
-                        >
-                          {emoji}
-                        </ActionIcon>
-                      ))}
-                    </Group>
-                  </Menu.Dropdown>
-                </Menu>
-
-                {/* Send button */}
+              <Group gap="xs">
                 <ActionIcon
-                  variant="filled"
+                  variant="subtle"
+                  onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                >
+                  <IconMoodSmile size={18} />
+                </ActionIcon>
+                <ActionIcon
                   color="blue"
-                  size="sm"
                   onClick={handleSendMessage}
                   disabled={!messageText.trim()}
+                  loading={sendMessageMutation.isPending}
                 >
-                  <IconSend size={16} />
+                  <IconSend size={18} />
                 </ActionIcon>
               </Group>
             }
           />
         </Group>
+
+        {/* Emoji Picker */}
+        {showEmojiPicker && (
+          <Box
+            mt="xs"
+            p="sm"
+            style={{
+              border: "1px solid var(--mantine-color-gray-3)",
+              borderRadius: "var(--mantine-radius-md)",
+              backgroundColor: "white",
+            }}
+          >
+            <Group gap="xs">
+              {["😀", "😂", "❤️", "👍", "👎", "😮", "😢", "😡"].map((emoji) => (
+                <ActionIcon
+                  key={emoji}
+                  variant="subtle"
+                  onClick={() => {
+                    setMessageText(prev => prev + emoji);
+                    setShowEmojiPicker(false);
+                  }}
+                >
+                  <Text>{emoji}</Text>
+                </ActionIcon>
+              ))}
+            </Group>
+          </Box>
+        )}
       </Box>
-
-      <style>{`
-        @keyframes typing-dots {
-          0%,
-          60%,
-          100% {
-            transform: translateY(0);
-            opacity: 0.4;
-          }
-          30% {
-            transform: translateY(-10px);
-            opacity: 1;
-          }
-        }
-
-        @media (max-width: 768px) {
-          .mobile-only {
-            display: block;
-          }
-        }
-
-        @media (min-width: 769px) {
-          .mobile-only {
-            display: none;
-          }
-        }
-      `}</style>
-    </Stack>
+    </Box>
   );
 }

@@ -3,25 +3,31 @@ import { User } from "./auth";
 export interface Message {
   id: string;
   content: string;
+  messageType: "text" | "image" | "video" | "audio" | "file";
+  status: "sending" | "delivered" | "read" | "failed";
   senderId: string;
   receiverId: string;
   conversationId: string;
-  messageType: "text" | "image" | "video" | "audio" | "file";
-  mediaUrl?: string;
-  mediaSize?: number;
-  mediaFileName?: string;
   isRead: boolean;
   isDelivered: boolean;
   isEdited: boolean;
+  editedAt?: string;
+  readAt?: string;
+  deliveredAt?: string;
+  replyToId?: string;
+  metadata?: any;
+  reactions: MessageReaction[];
+  createdAt: string;
+  updatedAt: string;
+  // Legacy fields for backward compatibility
+  mediaUrl?: string;
+  mediaSize?: number;
+  mediaFileName?: string;
   replyToMessage?: {
     id: string;
     content: string;
     senderId: string;
   };
-  reactions: MessageReaction[];
-  createdAt: string;
-  updatedAt: string;
-  editedAt?: string;
 }
 
 export interface MessageReaction {
@@ -30,10 +36,15 @@ export interface MessageReaction {
   messageId: string;
   emoji: string;
   createdAt: string;
+  user?: User; // Include user info for display
 }
 
 export interface Conversation {
   id: string;
+  type: "direct" | "group";
+  name?: string;
+  avatar?: string;
+  description?: string;
   participants: User[];
   lastMessage?: Message;
   unreadCount: number;
@@ -47,7 +58,11 @@ export interface Conversation {
 export interface CreateMessageData {
   content: string;
   receiverId: string;
+  conversationId: string;
   messageType?: "text" | "image" | "video" | "audio" | "file";
+  replyToId?: string;
+  metadata?: any;
+  // Legacy fields for backward compatibility
   mediaFile?: File;
   replyToMessageId?: string;
 }

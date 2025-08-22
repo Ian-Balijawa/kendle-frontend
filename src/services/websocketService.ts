@@ -17,11 +17,7 @@ class WebSocketService {
   private userId: string | null = null;
 
   constructor() {
-    // In a real app, this would come from environment variables
-    const isProd = import.meta.env.MODE === "production";
-    this.url = isProd
-      ? "wss://your-production-websocket-url.com/ws"
-      : "ws://localhost:8080/ws";
+    this.url = import.meta.env.VITE_API_URL_WS;
   }
 
   connect( userId: string ): Promise<void> {
