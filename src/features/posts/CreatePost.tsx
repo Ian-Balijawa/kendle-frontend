@@ -95,8 +95,11 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
     // Create the post data
     const postData: CreatePostRequest = {
       content: content.trim(),
-      tags: hashtags.length > 0 ? hashtags.map(tag => ({ name: tag })) : undefined,
-      type: 'text',
+      tags:
+        hashtags.length > 0
+          ? hashtags.map((tag) => ({ name: tag }))
+          : undefined,
+      type: "text",
       isPublic: true,
       allowComments: true,
       allowLikes: true,
@@ -277,7 +280,9 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
               type="file"
               multiple
               accept="image/*,video/*"
-              onChange={(e) => handleMediaUpload(Array.from(e.target.files || []))}
+              onChange={(e) =>
+                handleMediaUpload(Array.from(e.target.files || []))
+              }
               style={{ display: "none" }}
             />
             <ActionIcon

@@ -46,10 +46,7 @@ import {
   useUpdatePost,
   useDeletePost,
 } from "../../hooks/usePosts";
-import {
-  useCreateComment,
-  useComments,
-} from "../../hooks/useComments";
+import { useCreateComment, useComments } from "../../hooks/useComments";
 import { CreateCommentRequest } from "../../services/api";
 
 interface PostCardProps {
@@ -84,14 +81,15 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
   const [commentContent, setCommentContent] = useState("");
 
   // Loading states from mutations
-  const isSubmitting = updatePostMutation.isPending || deletePostMutation.isPending;
+  const isSubmitting =
+    updatePostMutation.isPending || deletePostMutation.isPending;
   const isCommenting = createCommentMutation.isPending;
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
     const diffInHours = Math.floor(
-      (now.getTime() - date.getTime()) / (1000 * 60 * 60)
+      (now.getTime() - date.getTime()) / (1000 * 60 * 60),
     );
 
     if (diffInHours < 1) return "Just now";
@@ -140,7 +138,7 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
     if (post.isUpvoted) {
       removeVoteMutation.mutate(post.id);
     } else {
-      votePostMutation.mutate({ id: post.id, data: { voteType: 'upvote' } });
+      votePostMutation.mutate({ id: post.id, data: { voteType: "upvote" } });
     }
   };
 
@@ -152,7 +150,7 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
     if (post.isDownvoted) {
       removeVoteMutation.mutate(post.id);
     } else {
-      votePostMutation.mutate({ id: post.id, data: { voteType: 'downvote' } });
+      votePostMutation.mutate({ id: post.id, data: { voteType: "downvote" } });
     }
   };
 
@@ -182,7 +180,7 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
         onError: (error) => {
           console.error("Failed to update post:", error);
         },
-      }
+      },
     );
   };
 
@@ -221,7 +219,7 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
         onError: (error) => {
           console.error("Failed to post comment:", error);
         },
-      }
+      },
     );
   };
 
@@ -418,7 +416,12 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
                 >
                   <IconArrowUp size={14} />
                 </ActionIcon>
-                <Text size="xs" c="dimmed" fw={500} style={{ minWidth: "20px", textAlign: "center" }}>
+                <Text
+                  size="xs"
+                  c="dimmed"
+                  fw={500}
+                  style={{ minWidth: "20px", textAlign: "center" }}
+                >
                   {post._count.upvotes - post._count.downvotes}
                 </Text>
                 <ActionIcon
@@ -555,7 +558,11 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
 
               <Stack gap="sm">
                 {comments.slice(0, 3).map((comment) => (
-                  <CommentCard key={comment.id} comment={comment} postId={post.id} />
+                  <CommentCard
+                    key={comment.id}
+                    comment={comment}
+                    postId={post.id}
+                  />
                 ))}
 
                 {post._count.comments > 3 && (

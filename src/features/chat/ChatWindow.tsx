@@ -31,7 +31,7 @@ import {
   useInfiniteMessages,
   useSendMessage,
   useMarkConversationAsRead,
-  useUpdateConversation
+  useUpdateConversation,
 } from "../../hooks/useChat";
 import { SendMessageRequest } from "../../services/api";
 
@@ -41,7 +41,11 @@ interface ChatWindowProps {
   showBackButton?: boolean;
 }
 
-export function ChatWindow({ conversation, onBack, showBackButton = false }: ChatWindowProps) {
+export function ChatWindow({
+  conversation,
+  onBack,
+  showBackButton = false,
+}: ChatWindowProps) {
   const { user } = useAuthStore();
 
   // React Query hooks
@@ -67,10 +71,12 @@ export function ChatWindow({ conversation, onBack, showBackButton = false }: Cha
   const typingTimeoutRef = useRef<number | undefined>(undefined);
 
   // Flatten messages from all pages
-  const messages = messagesData?.pages.flatMap(page => page) || [];
+  const messages = messagesData?.pages.flatMap((page) => page) || [];
 
   // Get the other participant for direct conversations
-  const otherParticipant = conversation.participants.find(p => p.id !== user?.id);
+  const otherParticipant = conversation.participants.find(
+    (p) => p.id !== user?.id,
+  );
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -87,7 +93,11 @@ export function ChatWindow({ conversation, onBack, showBackButton = false }: Cha
     if (conversation.unreadCount > 0) {
       markConversationAsReadMutation.mutate(conversation.id);
     }
-  }, [conversation.id, conversation.unreadCount, markConversationAsReadMutation]);
+  }, [
+    conversation.id,
+    conversation.unreadCount,
+    markConversationAsReadMutation,
+  ]);
 
   // Handle typing indicators
   useEffect(() => {
@@ -126,7 +136,7 @@ export function ChatWindow({ conversation, onBack, showBackButton = false }: Cha
       content: messageText.trim(),
       receiverId: otherParticipant.id,
       conversationId: conversation.id,
-      messageType: 'text',
+      messageType: "text",
     };
 
     sendMessageMutation.mutate(
@@ -140,9 +150,9 @@ export function ChatWindow({ conversation, onBack, showBackButton = false }: Cha
           messageInputRef.current?.focus();
         },
         onError: (error) => {
-          console.error('Failed to send message:', error);
+          console.error("Failed to send message:", error);
         },
-      }
+      },
     );
   };
 
@@ -180,8 +190,6 @@ export function ChatWindow({ conversation, onBack, showBackButton = false }: Cha
     });
   };
 
-
-
   return (
     <Box style={{ height: "100%", display: "flex", flexDirection: "column" }}>
       {/* Chat Header */}
@@ -212,11 +220,15 @@ export function ChatWindow({ conversation, onBack, showBackButton = false }: Cha
             <Box>
               <Text fw={500} size="sm">
                 {conversation.name ||
-                 (otherParticipant ? `${otherParticipant.firstName} ${otherParticipant.lastName}` : 'Unknown User')}
+                  (otherParticipant
+                    ? `${otherParticipant.firstName} ${otherParticipant.lastName}`
+                    : "Unknown User")}
               </Text>
               <Text size="xs" c="dimmed">
                 {/* TODO: Show online status or typing indicator */}
-                {otherParticipant ? `@${otherParticipant.username || otherParticipant.phoneNumber}` : ''}
+                {otherParticipant
+                  ? `@${otherParticipant.username || otherParticipant.phoneNumber}`
+                  : ""}
               </Text>
             </Box>
           </Group>
@@ -244,12 +256,11 @@ export function ChatWindow({ conversation, onBack, showBackButton = false }: Cha
                   {conversation.isMuted ? "Unmute" : "Mute"} Conversation
                 </Menu.Item>
                 <Menu.Item onClick={handleToggleArchive}>
-                  {conversation.isArchived ? "Unarchive" : "Archive"} Conversation
+                  {conversation.isArchived ? "Unarchive" : "Archive"}{" "}
+                  Conversation
                 </Menu.Item>
                 <Menu.Divider />
-                <Menu.Item color="red">
-                  Delete Conversation
-                </Menu.Item>
+                <Menu.Item color="red">Delete Conversation</Menu.Item>
               </Menu.Dropdown>
             </Menu>
           </Group>
@@ -295,7 +306,8 @@ export function ChatWindow({ conversation, onBack, showBackButton = false }: Cha
                   Start the conversation
                 </Text>
                 <Text size="sm" c="dimmed" ta="center">
-                  Send a message to {otherParticipant?.firstName || 'this user'} to get started
+                  Send a message to {otherParticipant?.firstName || "this user"}{" "}
+                  to get started
                 </Text>
               </Stack>
             </Center>
@@ -342,15 +354,9 @@ export function ChatWindow({ conversation, onBack, showBackButton = false }: Cha
             </Menu.Target>
 
             <Menu.Dropdown>
-              <Menu.Item leftSection={<IconPhoto size={16} />}>
-                Photo
-              </Menu.Item>
-              <Menu.Item leftSection={<IconVideo size={16} />}>
-                Video
-              </Menu.Item>
-              <Menu.Item leftSection={<IconFile size={16} />}>
-                File
-              </Menu.Item>
+              <Menu.Item leftSection={<IconPhoto size={16} />}>Photo</Menu.Item>
+              <Menu.Item leftSection={<IconVideo size={16} />}>Video</Menu.Item>
+              <Menu.Item leftSection={<IconFile size={16} />}>File</Menu.Item>
             </Menu.Dropdown>
           </Menu>
 
@@ -403,7 +409,7 @@ export function ChatWindow({ conversation, onBack, showBackButton = false }: Cha
                   key={emoji}
                   variant="subtle"
                   onClick={() => {
-                    setMessageText(prev => prev + emoji);
+                    setMessageText((prev) => prev + emoji);
                     setShowEmojiPicker(false);
                   }}
                 >

@@ -86,10 +86,10 @@ export function StatusesPage() {
               views: [],
               isViewed: false,
               createdAt: new Date(
-                Date.now() - 2 * 60 * 60 * 1000
+                Date.now() - 2 * 60 * 60 * 1000,
               ).toISOString(), // 2 hours ago
               expiresAt: new Date(
-                Date.now() + 22 * 60 * 60 * 1000
+                Date.now() + 22 * 60 * 60 * 1000,
               ).toISOString(), // 22 hours from now
               isExpired: false,
             },
@@ -144,10 +144,10 @@ export function StatusesPage() {
               views: [],
               isViewed: false,
               createdAt: new Date(
-                Date.now() - 4 * 60 * 60 * 1000
+                Date.now() - 4 * 60 * 60 * 1000,
               ).toISOString(), // 4 hours ago
               expiresAt: new Date(
-                Date.now() + 20 * 60 * 60 * 1000
+                Date.now() + 20 * 60 * 60 * 1000,
               ).toISOString(), // 20 hours from now
               isExpired: false,
             },
@@ -189,7 +189,7 @@ export function StatusesPage() {
       setCurrentStatusIndex(currentStatusIndex + 1);
     } else {
       const currentCollectionIndex = statusCollections.findIndex(
-        (c) => c.author.id === selectedCollection?.author.id
+        (c) => c.author.id === selectedCollection?.author.id,
       );
       if (currentCollectionIndex < statusCollections.length - 1) {
         setSelectedCollection(statusCollections[currentCollectionIndex + 1]);
@@ -205,7 +205,7 @@ export function StatusesPage() {
       setCurrentStatusIndex(currentStatusIndex - 1);
     } else {
       const currentCollectionIndex = statusCollections.findIndex(
-        (c) => c.author.id === selectedCollection?.author.id
+        (c) => c.author.id === selectedCollection?.author.id,
       );
       if (currentCollectionIndex > 0) {
         const prevCollection = statusCollections[currentCollectionIndex - 1];
@@ -219,7 +219,7 @@ export function StatusesPage() {
     const date = new Date(dateString);
     const now = new Date();
     const diffInHours = Math.floor(
-      (now.getTime() - date.getTime()) / (1000 * 60 * 60)
+      (now.getTime() - date.getTime()) / (1000 * 60 * 60),
     );
 
     if (diffInHours < 1) return "now";
@@ -378,7 +378,7 @@ export function StatusesPage() {
               onPrevious={
                 currentStatusIndex > 0 ||
                 statusCollections.findIndex(
-                  (c) => c.author.id === selectedCollection?.author.id
+                  (c) => c.author.id === selectedCollection?.author.id,
                 ) > 0
                   ? handlePreviousStatus
                   : undefined
@@ -390,7 +390,7 @@ export function StatusesPage() {
 
             {currentStatusIndex > 0 ||
               (statusCollections.findIndex(
-                (c) => c.author.id === selectedCollection?.author.id
+                (c) => c.author.id === selectedCollection?.author.id,
               ) > 0 && (
                 <ActionIcon
                   variant="filled"
@@ -413,7 +413,7 @@ export function StatusesPage() {
             {(currentStatusIndex <
               (selectedCollection?.statuses.length || 1) - 1 ||
               statusCollections.findIndex(
-                (c) => c.author.id === selectedCollection?.author.id
+                (c) => c.author.id === selectedCollection?.author.id,
               ) <
                 statusCollections.length - 1) && (
               <ActionIcon

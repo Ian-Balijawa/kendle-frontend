@@ -1,20 +1,20 @@
 import {
-    ActionIcon,
-    Avatar,
-    Badge,
-    Box,
-    Group,
-    Menu,
-    Text,
-    UnstyledButton,
+  ActionIcon,
+  Avatar,
+  Badge,
+  Box,
+  Group,
+  Menu,
+  Text,
+  UnstyledButton,
 } from "@mantine/core";
 import {
-    IconArchive,
-    IconDotsVertical,
-    IconPin,
-    IconPinFilled,
-    IconTrash,
-    IconVolumeOff,
+  IconArchive,
+  IconDotsVertical,
+  IconPin,
+  IconPinFilled,
+  IconTrash,
+  IconVolumeOff,
 } from "@tabler/icons-react";
 import { useState } from "react";
 import { Conversation } from "../../types/chat";
@@ -37,7 +37,9 @@ export function ConversationCard({
   const [showMenu, setShowMenu] = useState(false);
 
   // Get the other participant for direct conversations
-  const participant = conversation.participants.find(p => p.id !== user?.id) || conversation.participants[0];
+  const participant =
+    conversation.participants.find((p) => p.id !== user?.id) ||
+    conversation.participants[0];
 
   // TODO: Get online status from WebSocket or API
   const isOnline = false; // This would come from WebSocket events
@@ -47,12 +49,12 @@ export function ConversationCard({
     const date = new Date(dateString);
     const now = new Date();
     const diffInHours = Math.floor(
-      (now.getTime() - date.getTime()) / (1000 * 60 * 60)
+      (now.getTime() - date.getTime()) / (1000 * 60 * 60),
     );
 
     if (diffInHours < 1) {
       const diffInMinutes = Math.floor(
-        (now.getTime() - date.getTime()) / (1000 * 60)
+        (now.getTime() - date.getTime()) / (1000 * 60),
       );
       if (diffInMinutes < 1) return "Just now";
       return `${diffInMinutes}m`;
@@ -67,7 +69,7 @@ export function ConversationCard({
     const date = new Date(dateString);
     const now = new Date();
     const diffInMinutes = Math.floor(
-      (now.getTime() - date.getTime()) / (1000 * 60)
+      (now.getTime() - date.getTime()) / (1000 * 60),
     );
 
     if (diffInMinutes < 1) return "Just now";
@@ -238,7 +240,14 @@ export function ConversationCard({
           </Box>
         </Group>
 
-        <Box style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
+        <Box
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-end",
+            gap: 4,
+          }}
+        >
           <Group gap="xs" align="center">
             {conversation.lastMessage && (
               <Text size="xs" c="dimmed">

@@ -40,19 +40,22 @@ export const useStatusStore = create<StatusStore>((set) => ({
     set((state) => {
       // Add to statuses list
       const newStatuses = [status, ...state.statuses];
-      
+
       // Update status collections
       const existingCollectionIndex = state.statusCollections.findIndex(
-        (collection) => collection.author.id === status.author.id
+        (collection) => collection.author.id === status.author.id,
       );
 
       let newStatusCollections = [...state.statusCollections];
-      
+
       if (existingCollectionIndex >= 0) {
         // Update existing collection
         newStatusCollections[existingCollectionIndex] = {
           ...newStatusCollections[existingCollectionIndex],
-          statuses: [status, ...newStatusCollections[existingCollectionIndex].statuses],
+          statuses: [
+            status,
+            ...newStatusCollections[existingCollectionIndex].statuses,
+          ],
           hasUnviewed: true,
           lastUpdated: status.createdAt,
         };
@@ -76,9 +79,9 @@ export const useStatusStore = create<StatusStore>((set) => ({
 
   deleteStatus: (id: string) => {
     set((state) => {
-      const deletedStatus = state.statuses.find(s => s.id === id);
+      const deletedStatus = state.statuses.find((s) => s.id === id);
       const newStatuses = state.statuses.filter((status) => status.id !== id);
-      
+
       // Update status collections
       let newStatusCollections = state.statusCollections.map((collection) => ({
         ...collection,
@@ -87,13 +90,16 @@ export const useStatusStore = create<StatusStore>((set) => ({
 
       // Remove empty collections
       newStatusCollections = newStatusCollections.filter(
-        (collection) => collection.statuses.length > 0
+        (collection) => collection.statuses.length > 0,
       );
 
       // Update last updated time for affected collections
       if (deletedStatus) {
         newStatusCollections = newStatusCollections.map((collection) => {
-          if (collection.author.id === deletedStatus.author.id && collection.statuses.length > 0) {
+          if (
+            collection.author.id === deletedStatus.author.id &&
+            collection.statuses.length > 0
+          ) {
             return {
               ...collection,
               lastUpdated: collection.statuses[0].createdAt,
@@ -106,7 +112,8 @@ export const useStatusStore = create<StatusStore>((set) => ({
       return {
         statuses: newStatuses,
         statusCollections: newStatusCollections,
-        selectedStatus: state.selectedStatus?.id === id ? null : state.selectedStatus,
+        selectedStatus:
+          state.selectedStatus?.id === id ? null : state.selectedStatus,
       };
     });
   },
@@ -114,7 +121,7 @@ export const useStatusStore = create<StatusStore>((set) => ({
   viewStatus: (id: string, userId: string) => {
     set((state) => {
       const now = new Date().toISOString();
-      
+
       const newStatuses = state.statuses.map((status) =>
         status.id === id
           ? {
@@ -131,7 +138,7 @@ export const useStatusStore = create<StatusStore>((set) => ({
                 },
               ],
             }
-          : status
+          : status,
       );
 
       // Update status collections
@@ -152,7 +159,7 @@ export const useStatusStore = create<StatusStore>((set) => ({
                   },
                 ],
               }
-            : status
+            : status,
         );
 
         // Check if all statuses in this collection are viewed
@@ -192,32 +199,35 @@ export const useStatusStore = create<StatusStore>((set) => ({
   cleanupExpiredStatuses: () => {
     set((state) => {
       const now = new Date();
-      
+
       const activeStatuses = state.statuses.filter((status) => {
         const expiresAt = new Date(status.expiresAt);
         return expiresAt > now;
       });
 
       // Update status collections with only active statuses
-      let activeStatusCollections = state.statusCollections.map((collection) => ({
-        ...collection,
-        statuses: collection.statuses.filter((status) => {
-          const expiresAt = new Date(status.expiresAt);
-          return expiresAt > now;
+      let activeStatusCollections = state.statusCollections.map(
+        (collection) => ({
+          ...collection,
+          statuses: collection.statuses.filter((status) => {
+            const expiresAt = new Date(status.expiresAt);
+            return expiresAt > now;
+          }),
         }),
-      }));
+      );
 
       // Remove empty collections
       activeStatusCollections = activeStatusCollections.filter(
-        (collection) => collection.statuses.length > 0
+        (collection) => collection.statuses.length > 0,
       );
 
       return {
         statuses: activeStatuses,
         statusCollections: activeStatusCollections,
-        selectedStatus: state.selectedStatus && new Date(state.selectedStatus.expiresAt) > now
-          ? state.selectedStatus
-          : null,
+        selectedStatus:
+          state.selectedStatus && new Date(state.selectedStatus.expiresAt) > now
+            ? state.selectedStatus
+            : null,
       };
     });
   },

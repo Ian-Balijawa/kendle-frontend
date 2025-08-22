@@ -123,7 +123,7 @@ export function OTPVerification() {
         onError: (err) => {
           console.error("Failed to resend OTP:", err);
         },
-      }
+      },
     );
   };
 

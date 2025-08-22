@@ -8,14 +8,14 @@ import {
   Menu,
   Stack,
   Text,
-  Textarea
+  Textarea,
 } from "@mantine/core";
 import {
   IconDotsVertical,
   IconEdit,
   IconFlag,
   IconHeart,
-  IconTrash
+  IconTrash,
 } from "@tabler/icons-react";
 import { useState } from "react";
 import { useAuthStore } from "../../stores/authStore";
@@ -47,13 +47,14 @@ export function CommentCard({ comment }: CommentCardProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Loading states from mutations
-  const isSubmitting = updateCommentMutation.isPending || deleteCommentMutation.isPending;
+  const isSubmitting =
+    updateCommentMutation.isPending || deleteCommentMutation.isPending;
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
     const diffInHours = Math.floor(
-      (now.getTime() - date.getTime()) / (1000 * 60 * 60)
+      (now.getTime() - date.getTime()) / (1000 * 60 * 60),
     );
 
     if (diffInHours < 1) return "Just now";
@@ -83,7 +84,7 @@ export function CommentCard({ comment }: CommentCardProps) {
         onError: (error) => {
           console.error("Failed to update comment:", error);
         },
-      }
+      },
     );
   };
 
@@ -112,7 +113,13 @@ export function CommentCard({ comment }: CommentCardProps) {
 
   if (isEditing) {
     return (
-      <Box p="sm" style={{ border: "1px solid var(--mantine-color-gray-3)", borderRadius: "var(--mantine-radius-sm)" }}>
+      <Box
+        p="sm"
+        style={{
+          border: "1px solid var(--mantine-color-gray-3)",
+          borderRadius: "var(--mantine-radius-sm)",
+        }}
+      >
         <Stack gap="sm">
           <Textarea
             placeholder="Edit your comment..."
@@ -123,7 +130,11 @@ export function CommentCard({ comment }: CommentCardProps) {
             autosize
           />
           <Group justify="flex-end" gap="xs">
-            <Button variant="light" size="xs" onClick={() => setIsEditing(false)}>
+            <Button
+              variant="light"
+              size="xs"
+              onClick={() => setIsEditing(false)}
+            >
               Cancel
             </Button>
             <Button size="xs" onClick={handleSaveEdit} loading={isSubmitting}>
@@ -252,13 +263,23 @@ export function CommentCard({ comment }: CommentCardProps) {
         <Menu.Dropdown>
           <Box p="md">
             <Text size="sm" mb="md">
-              Are you sure you want to delete this comment? This action cannot be undone.
+              Are you sure you want to delete this comment? This action cannot
+              be undone.
             </Text>
             <Group justify="flex-end" gap="xs">
-              <Button variant="light" size="xs" onClick={() => setShowDeleteConfirm(false)}>
+              <Button
+                variant="light"
+                size="xs"
+                onClick={() => setShowDeleteConfirm(false)}
+              >
                 Cancel
               </Button>
-              <Button color="red" size="xs" onClick={handleDelete} loading={isSubmitting}>
+              <Button
+                color="red"
+                size="xs"
+                onClick={handleDelete}
+                loading={isSubmitting}
+              >
                 Delete
               </Button>
             </Group>

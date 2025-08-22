@@ -19,7 +19,7 @@ import { useInfinitePosts } from "../../hooks/usePosts";
 import { useIntersection } from "@mantine/hooks";
 
 export function HomePage() {
-    const {   isAuthenticated } = useAuthStore();
+  const { isAuthenticated } = useAuthStore();
   const [createPostOpened, setCreatePostOpened] = useState(false);
 
   // Use infinite posts query
@@ -31,7 +31,7 @@ export function HomePage() {
     isLoading,
     isError,
     error,
-  } = useInfinitePosts({ limit: 10, sortBy: 'createdAt', sortOrder: 'desc' });
+  } = useInfinitePosts({ limit: 10, sortBy: "createdAt", sortOrder: "desc" });
 
   // Intersection observer for infinite scroll
   const { ref, entry } = useIntersection({
@@ -44,7 +44,7 @@ export function HomePage() {
   }
 
   // Flatten all posts from all pages
-  const posts = data?.pages.flatMap(page => page.data) || [];
+  const posts = data?.pages.flatMap((page) => page.data) || [];
 
   return (
     <Box>
@@ -72,13 +72,18 @@ export function HomePage() {
 
       <Stack gap="md">
         {isError && (
-          <Card withBorder p="xl" radius="md" style={{ borderColor: 'var(--mantine-color-red-3)' }}>
+          <Card
+            withBorder
+            p="xl"
+            radius="md"
+            style={{ borderColor: "var(--mantine-color-red-3)" }}
+          >
             <Stack align="center" gap="md">
               <Text size="lg" fw={500} c="red">
                 Failed to load posts
               </Text>
               <Text c="dimmed" ta="center">
-                {error?.message || 'Something went wrong while loading posts.'}
+                {error?.message || "Something went wrong while loading posts."}
               </Text>
               <Button variant="light" onClick={() => window.location.reload()}>
                 Try Again
@@ -126,7 +131,9 @@ export function HomePage() {
                   <Center py="md">
                     <Stack align="center" gap="sm">
                       <Loader size="sm" />
-                      <Text size="sm" c="dimmed">Loading more posts...</Text>
+                      <Text size="sm" c="dimmed">
+                        Loading more posts...
+                      </Text>
                     </Stack>
                   </Center>
                 )}
@@ -135,14 +142,19 @@ export function HomePage() {
 
             {!hasNextPage && posts.length > 0 && (
               <Center py="md">
-                <Text size="sm" c="dimmed">You've reached the end!</Text>
+                <Text size="sm" c="dimmed">
+                  You've reached the end!
+                </Text>
               </Center>
             )}
           </>
         )}
       </Stack>
 
-      <CreatePost opened={createPostOpened} onClose={() => setCreatePostOpened(false)} />
+      <CreatePost
+        opened={createPostOpened}
+        onClose={() => setCreatePostOpened(false)}
+      />
     </Box>
   );
 }

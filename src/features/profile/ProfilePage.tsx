@@ -13,11 +13,14 @@ import {
   Center,
   Modal,
   TextInput,
-  Textarea
+  Textarea,
 } from "@mantine/core";
 import {
-  IconCalendar, IconLink, IconSettings, IconUserMinus,
-  IconUserPlus
+  IconCalendar,
+  IconLink,
+  IconSettings,
+  IconUserMinus,
+  IconUserPlus,
 } from "@tabler/icons-react";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
@@ -39,14 +42,19 @@ export function ProfilePage() {
   const profileUserId = userId || currentUser?.id;
 
   // Fetch user data
-  const { data: user, isLoading: userLoading, error: userError } = isOwnProfile
-    ? useUserProfile()
-    : useUser(profileUserId!);
+  const {
+    data: user,
+    isLoading: userLoading,
+    error: userError,
+  } = isOwnProfile ? useUserProfile() : useUser(profileUserId!);
 
   // Fetch user posts
-  const { data: postsData, isLoading: postsLoading } = useUserPosts(profileUserId!, {
-    limit: 10,
-  });
+  const { data: postsData, isLoading: postsLoading } = useUserPosts(
+    profileUserId!,
+    {
+      limit: 10,
+    },
+  );
 
   // Update profile mutation
   const updateProfileMutation = useUpdateProfile();
@@ -54,34 +62,34 @@ export function ProfilePage() {
   // Form for editing profile
   const editForm = useForm<UpdateProfileRequest>({
     initialValues: {
-      firstName: user?.firstName || '',
-      lastName: user?.lastName || '',
-      bio: user?.bio || '',
-      username: user?.username || '',
-      email: user?.email || '',
-      whatsapp: user?.whatsapp || '',
-      twitterLink: user?.twitterLink || '',
-      tiktokLink: user?.tiktokLink || '',
-      instagramLink: user?.instagramLink || '',
+      firstName: user?.firstName || "",
+      lastName: user?.lastName || "",
+      bio: user?.bio || "",
+      username: user?.username || "",
+      email: user?.email || "",
+      whatsapp: user?.whatsapp || "",
+      twitterLink: user?.twitterLink || "",
+      tiktokLink: user?.tiktokLink || "",
+      instagramLink: user?.instagramLink || "",
     },
   });
 
   // Update form values when user data changes
   if (user && editForm.values.firstName !== user.firstName) {
     editForm.setValues({
-      firstName: user.firstName || '',
-      lastName: user.lastName || '',
-      bio: user.bio || '',
-      username: user.username || '',
-      email: user.email || '',
-      whatsapp: user.whatsapp || '',
-      twitterLink: user.twitterLink || '',
-      tiktokLink: user.tiktokLink || '',
-      instagramLink: user.instagramLink || '',
+      firstName: user.firstName || "",
+      lastName: user.lastName || "",
+      bio: user.bio || "",
+      username: user.username || "",
+      email: user.email || "",
+      whatsapp: user.whatsapp || "",
+      twitterLink: user.twitterLink || "",
+      tiktokLink: user.tiktokLink || "",
+      instagramLink: user.instagramLink || "",
     });
   }
 
-  const posts = postsData?.pages.flatMap(page => page.data) || [];
+  const posts = postsData?.pages.flatMap((page) => page.data) || [];
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -113,7 +121,7 @@ export function ProfilePage() {
         setEditModalOpen(false);
       },
       onError: (error) => {
-        console.error('Failed to update profile:', error);
+        console.error("Failed to update profile:", error);
       },
     });
   };
@@ -131,7 +139,12 @@ export function ProfilePage() {
 
   if (userError || !user) {
     return (
-      <Card withBorder p="xl" radius="md" style={{ borderColor: 'var(--mantine-color-red-3)' }}>
+      <Card
+        withBorder
+        p="xl"
+        radius="md"
+        style={{ borderColor: "var(--mantine-color-red-3)" }}
+      >
         <Stack align="center" gap="md">
           <Text size="lg" fw={500} c="red">
             Profile not found
@@ -286,7 +299,9 @@ export function ProfilePage() {
                 <Center py="md">
                   <Stack align="center" gap="sm">
                     <Loader size="sm" />
-                    <Text size="sm" c="dimmed">Loading posts...</Text>
+                    <Text size="sm" c="dimmed">
+                      Loading posts...
+                    </Text>
                   </Stack>
                 </Center>
               ) : posts.length === 0 ? (
@@ -296,9 +311,7 @@ export function ProfilePage() {
                   </Text>
                 </Card>
               ) : (
-                posts.map((post) => (
-                  <PostCard key={post.id} post={post} />
-                ))
+                posts.map((post) => <PostCard key={post.id} post={post} />)
               )}
             </Stack>
           </Tabs.Panel>
@@ -330,57 +343,57 @@ export function ProfilePage() {
               <TextInput
                 label="First Name"
                 placeholder="Enter first name"
-                {...editForm.getInputProps('firstName')}
+                {...editForm.getInputProps("firstName")}
               />
               <TextInput
                 label="Last Name"
                 placeholder="Enter last name"
-                {...editForm.getInputProps('lastName')}
+                {...editForm.getInputProps("lastName")}
               />
             </Group>
 
             <TextInput
               label="Username"
               placeholder="Enter username"
-              {...editForm.getInputProps('username')}
+              {...editForm.getInputProps("username")}
             />
 
             <TextInput
               label="Email"
               placeholder="Enter email"
               type="email"
-              {...editForm.getInputProps('email')}
+              {...editForm.getInputProps("email")}
             />
 
             <Textarea
               label="Bio"
               placeholder="Tell us about yourself"
               minRows={3}
-              {...editForm.getInputProps('bio')}
+              {...editForm.getInputProps("bio")}
             />
 
             <TextInput
               label="WhatsApp"
               placeholder="Enter WhatsApp number"
-              {...editForm.getInputProps('whatsapp')}
+              {...editForm.getInputProps("whatsapp")}
             />
 
             <TextInput
               label="Twitter Link"
               placeholder="Enter Twitter profile URL"
-              {...editForm.getInputProps('twitterLink')}
+              {...editForm.getInputProps("twitterLink")}
             />
 
             <TextInput
               label="Instagram Link"
               placeholder="Enter Instagram profile URL"
-              {...editForm.getInputProps('instagramLink')}
+              {...editForm.getInputProps("instagramLink")}
             />
 
             <TextInput
               label="TikTok Link"
               placeholder="Enter TikTok profile URL"
-              {...editForm.getInputProps('tiktokLink')}
+              {...editForm.getInputProps("tiktokLink")}
             />
 
             <Group justify="flex-end" mt="md">

@@ -1,56 +1,53 @@
 import {
-    ActionIcon,
-    Avatar,
-    Badge,
-    Box,
-    Button,
-    Card,
-    Group,
-    Image,
-    LoadingOverlay,
-    Menu,
-    Modal,
-    Stack,
-    Text,
-    Textarea,
-    TextInput,
-    Loader,
-    Center,
+  ActionIcon,
+  Avatar,
+  Badge,
+  Box,
+  Button,
+  Card,
+  Group,
+  Image,
+  LoadingOverlay,
+  Menu,
+  Modal,
+  Stack,
+  Text,
+  Textarea,
+  TextInput,
+  Loader,
+  Center,
 } from "@mantine/core";
 import {
-    IconArrowDown,
-    IconArrowLeft,
-    IconArrowUp,
-    IconBookmark,
-    IconDotsVertical,
-    IconEdit,
-    IconFlag,
-    IconHeart,
-    IconMessageCircle,
-    IconSend,
-    IconShare,
-    IconTrash,
+  IconArrowDown,
+  IconArrowLeft,
+  IconArrowUp,
+  IconBookmark,
+  IconDotsVertical,
+  IconEdit,
+  IconFlag,
+  IconHeart,
+  IconMessageCircle,
+  IconSend,
+  IconShare,
+  IconTrash,
 } from "@tabler/icons-react";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuthStore } from "../../stores/authStore";
 import { CommentCard } from "./CommentCard";
 import {
-    usePost,
-    useLikePost,
-    useUnlikePost,
-    useBookmarkPost,
-    useUnbookmarkPost,
-    useVotePost,
-    useRemoveVote,
-    useSharePost,
-    useUpdatePost,
-    useDeletePost,
+  usePost,
+  useLikePost,
+  useUnlikePost,
+  useBookmarkPost,
+  useUnbookmarkPost,
+  useVotePost,
+  useRemoveVote,
+  useSharePost,
+  useUpdatePost,
+  useDeletePost,
 } from "../../hooks/usePosts";
-import {
-    useInfiniteComments,
-    useCreateComment,
-} from "../../hooks/useComments";
+import { useInfiniteComments, useCreateComment } from "../../hooks/useComments";
 import { CreateCommentRequest, UpdatePostRequest } from "../../services/api";
 
 export function PostDetail() {
@@ -59,7 +56,11 @@ export function PostDetail() {
   const { user, isAuthenticated } = useAuthStore();
 
   // React Query hooks
-  const { data: post, isLoading: postLoading, isError: postError } = usePost(postId!);
+  const {
+    data: post,
+    isLoading: postLoading,
+    isError: postError,
+  } = usePost(postId!);
   const {
     data: commentsData,
     fetchNextPage,
@@ -87,11 +88,12 @@ export function PostDetail() {
   const [commentContent, setCommentContent] = useState("");
 
   // Loading states
-  const isSubmitting = updatePostMutation.isPending || deletePostMutation.isPending;
+  const isSubmitting =
+    updatePostMutation.isPending || deletePostMutation.isPending;
   const isCommenting = createCommentMutation.isPending;
 
   // Flatten comments from all pages
-  const comments = commentsData?.pages.flatMap(page => page.data) || [];
+  const comments = commentsData?.pages.flatMap((page) => page.data) || [];
 
   if (postLoading) {
     return (
@@ -106,7 +108,12 @@ export function PostDetail() {
 
   if (postError || !post) {
     return (
-      <Card withBorder p="xl" radius="md" style={{ borderColor: 'var(--mantine-color-red-3)' }}>
+      <Card
+        withBorder
+        p="xl"
+        radius="md"
+        style={{ borderColor: "var(--mantine-color-red-3)" }}
+      >
         <Stack align="center" gap="md">
           <Text size="lg" fw={500} c="red">
             Post not found
@@ -114,7 +121,7 @@ export function PostDetail() {
           <Text c="dimmed" ta="center">
             The post you're looking for doesn't exist or has been removed.
           </Text>
-          <Button variant="light" onClick={() => navigate('/dashboard')}>
+          <Button variant="light" onClick={() => navigate("/dashboard")}>
             Go Back to Home
           </Button>
         </Stack>
@@ -126,7 +133,7 @@ export function PostDetail() {
     const date = new Date(dateString);
     const now = new Date();
     const diffInHours = Math.floor(
-      (now.getTime() - date.getTime()) / (1000 * 60 * 60)
+      (now.getTime() - date.getTime()) / (1000 * 60 * 60),
     );
 
     if (diffInHours < 1) return "Just now";
@@ -163,7 +170,7 @@ export function PostDetail() {
     if (post.isUpvoted) {
       removeVoteMutation.mutate(post.id);
     } else {
-      votePostMutation.mutate({ id: post.id, data: { voteType: 'upvote' } });
+      votePostMutation.mutate({ id: post.id, data: { voteType: "upvote" } });
     }
   };
 
@@ -172,7 +179,7 @@ export function PostDetail() {
     if (post.isDownvoted) {
       removeVoteMutation.mutate(post.id);
     } else {
-      votePostMutation.mutate({ id: post.id, data: { voteType: 'downvote' } });
+      votePostMutation.mutate({ id: post.id, data: { voteType: "downvote" } });
     }
   };
 
@@ -197,7 +204,7 @@ export function PostDetail() {
         onError: (error) => {
           console.error("Failed to update post:", error);
         },
-      }
+      },
     );
   };
 
@@ -205,7 +212,7 @@ export function PostDetail() {
     deletePostMutation.mutate(post.id, {
       onSuccess: () => {
         setShowDeleteConfirm(false);
-        navigate('/dashboard');
+        navigate("/dashboard");
       },
       onError: (error) => {
         console.error("Failed to delete post:", error);
@@ -229,7 +236,7 @@ export function PostDetail() {
         onError: (error) => {
           console.error("Failed to post comment:", error);
         },
-      }
+      },
     );
   };
 
@@ -240,11 +247,7 @@ export function PostDetail() {
       <Box>
         {/* Header */}
         <Group justify="space-between" mb="lg">
-          <ActionIcon
-            variant="subtle"
-            size="lg"
-            onClick={() => navigate(-1)}
-          >
+          <ActionIcon variant="subtle" size="lg" onClick={() => navigate(-1)}>
             <IconArrowLeft size={20} />
           </ActionIcon>
           <Text fw={500}>Post</Text>
@@ -397,7 +400,10 @@ export function PostDetail() {
                   >
                     <IconArrowUp size={18} />
                   </ActionIcon>
-                  <Text fw={500} style={{ minWidth: "30px", textAlign: "center" }}>
+                  <Text
+                    fw={500}
+                    style={{ minWidth: "30px", textAlign: "center" }}
+                  >
                     {post._count.upvotes - post._count.downvotes}
                   </Text>
                   <ActionIcon
@@ -493,7 +499,13 @@ export function PostDetail() {
         )}
 
         {!isAuthenticated && (
-          <Card withBorder p="md" radius="md" mb="md" style={{ backgroundColor: "var(--mantine-color-blue-0)" }}>
+          <Card
+            withBorder
+            p="md"
+            radius="md"
+            mb="md"
+            style={{ backgroundColor: "var(--mantine-color-blue-0)" }}
+          >
             <Text size="sm" c="blue" ta="center">
               Sign in to like, comment, and interact with this post
             </Text>
@@ -506,7 +518,9 @@ export function PostDetail() {
             <Center py="md">
               <Stack align="center" gap="sm">
                 <Loader size="sm" />
-                <Text size="sm" c="dimmed">Loading comments...</Text>
+                <Text size="sm" c="dimmed">
+                  Loading comments...
+                </Text>
               </Stack>
             </Center>
           ) : comments.length === 0 ? (
@@ -518,7 +532,11 @@ export function PostDetail() {
           ) : (
             <>
               {comments.map((comment) => (
-                <CommentCard key={comment.id} comment={comment} postId={post.id} />
+                <CommentCard
+                  key={comment.id}
+                  comment={comment}
+                  postId={post.id}
+                />
               ))}
 
               {/* Load more comments */}

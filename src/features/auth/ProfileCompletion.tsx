@@ -1,26 +1,26 @@
 import {
-    Alert,
-    Box,
-    Button,
-    Center,
-    Container,
-    Grid,
-    LoadingOverlay,
-    Paper,
-    Stack,
-    Text,
-    TextInput,
-    Title,
+  Alert,
+  Box,
+  Button,
+  Center,
+  Container,
+  Grid,
+  LoadingOverlay,
+  Paper,
+  Stack,
+  Text,
+  TextInput,
+  Title,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import {
-    IconAlertCircle,
-    IconBrandInstagram,
-    IconBrandTiktok,
-    IconBrandTwitter,
-    IconBrandWhatsapp,
-    IconMail,
-    IconUser,
+  IconAlertCircle,
+  IconBrandInstagram,
+  IconBrandTiktok,
+  IconBrandTwitter,
+  IconBrandWhatsapp,
+  IconMail,
+  IconUser,
 } from "@tabler/icons-react";
 import { zodResolver } from "mantine-form-zod-resolver";
 import { useNavigate } from "react-router-dom";
@@ -39,19 +39,19 @@ const profileSchema = z.object({
     .string()
     .regex(
       /^https?:\/\/(www\.)?twitter\.com\/\w+/,
-      "Please enter a valid Twitter profile URL"
+      "Please enter a valid Twitter profile URL",
     ),
   tiktokLink: z
     .string()
     .regex(
       /^https?:\/\/(www\.)?tiktok\.com\/@\w+/,
-      "Please enter a valid TikTok profile URL"
+      "Please enter a valid TikTok profile URL",
     ),
   instagramLink: z
     .string()
     .regex(
       /^https?:\/\/(www\.)?instagram\.com\/\w+/,
-      "Please enter a valid Instagram profile URL"
+      "Please enter a valid Instagram profile URL",
     ),
 });
 

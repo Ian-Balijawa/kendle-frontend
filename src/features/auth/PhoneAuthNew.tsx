@@ -32,12 +32,10 @@ const phoneSchema = z.object({
     .regex(/^\+?[1-9]\d{1,14}$/, "Please enter a valid phone number"),
 });
 
-
-
 export function PhoneAuthNew() {
   const navigate = useNavigate();
   const { phoneNumber, error, clearError } = useAuthStore();
-  const [step, setStep] = useState<'phone' | 'otp'>('phone');
+  const [step, setStep] = useState<"phone" | "otp">("phone");
 
   // React Query mutations
   const sendOTPMutation = useSendOTP();
@@ -47,7 +45,9 @@ export function PhoneAuthNew() {
   // Phone number form
   const phoneForm = useForm<SendOTPRequest>({
     initialValues: { phoneNumber: "" },
-    validate: zodResolver(phoneSchema) as unknown as FormValidateInput<SendOTPRequest>,
+    validate: zodResolver(
+      phoneSchema,
+    ) as unknown as FormValidateInput<SendOTPRequest>,
   });
 
   // OTP form
@@ -58,7 +58,7 @@ export function PhoneAuthNew() {
 
     sendOTPMutation.mutate(values, {
       onSuccess: () => {
-        setStep('otp');
+        setStep("otp");
       },
     });
   };
@@ -93,7 +93,7 @@ export function PhoneAuthNew() {
   };
 
   const handleBackToPhone = () => {
-    setStep('phone');
+    setStep("phone");
     setOtpValue("");
     clearError();
   };
@@ -102,7 +102,9 @@ export function PhoneAuthNew() {
     <Box className="auth-container">
       <Container size="sm" style={{ width: "100%", maxWidth: "500px" }}>
         <Paper className="auth-paper" p="xl" withBorder>
-          <LoadingOverlay visible={sendOTPMutation.isPending || verifyOTPMutation.isPending} />
+          <LoadingOverlay
+            visible={sendOTPMutation.isPending || verifyOTPMutation.isPending}
+          />
 
           <Box
             className="auth-decoration"
@@ -145,13 +147,12 @@ export function PhoneAuthNew() {
                 className="text-gradient"
                 style={{ marginBottom: "var(--mantine-spacing-xs)" }}
               >
-                {step === 'phone' ? 'Welcome to Kendle' : 'Verify Your Phone'}
+                {step === "phone" ? "Welcome to Kendle" : "Verify Your Phone"}
               </Title>
               <Text c="dimmed" size="sm">
-                {step === 'phone'
-                  ? 'Enter your phone number to get started'
-                  : `We've sent a 6-digit code to ${phoneNumber || phoneForm.values.phoneNumber}`
-                }
+                {step === "phone"
+                  ? "Enter your phone number to get started"
+                  : `We've sent a 6-digit code to ${phoneNumber || phoneForm.values.phoneNumber}`}
               </Text>
             </div>
 
@@ -167,8 +168,12 @@ export function PhoneAuthNew() {
               </Alert>
             )}
 
-            {step === 'phone' ? (
-              <form onSubmit={phoneForm.onSubmit((values) => handleSendOTP(values as unknown as SendOTPRequest))}>
+            {step === "phone" ? (
+              <form
+                onSubmit={phoneForm.onSubmit((values) =>
+                  handleSendOTP(values as unknown as SendOTPRequest),
+                )}
+              >
                 <Stack gap="lg">
                   <TextInput
                     placeholder="Enter your phone number"
@@ -242,7 +247,8 @@ export function PhoneAuthNew() {
             )}
 
             <Text size="xs" c="dimmed" ta="center">
-              By continuing, you agree to our Terms of Service and Privacy Policy
+              By continuing, you agree to our Terms of Service and Privacy
+              Policy
             </Text>
           </Stack>
         </Paper>

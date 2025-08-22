@@ -1,10 +1,6 @@
 import { create } from "zustand";
 import { chatService } from "../services/websocketService";
-import {
-  ChatSettings,
-  OnlineStatus,
-  TypingIndicator,
-} from "../types/chat";
+import { ChatSettings, OnlineStatus, TypingIndicator } from "../types/chat";
 
 interface InboxStore {
   // State - simplified to work alongside React Query
@@ -15,21 +11,21 @@ interface InboxStore {
   chatSettings: ChatSettings;
 
   // Actions
-  setSelectedConversationId: ( id: string | null ) => void;
-  setTypingIndicator: ( indicator: TypingIndicator ) => void;
-  removeTypingIndicator: ( userId: string, conversationId: string ) => void;
-  setOnlineStatus: ( status: OnlineStatus ) => void;
-  setConnected: ( connected: boolean ) => void;
-  setChatSettings: ( settings: Partial<ChatSettings> ) => void;
-  sendTypingIndicator: ( conversationId: string, isTyping: boolean ) => void;
+  setSelectedConversationId: (id: string | null) => void;
+  setTypingIndicator: (indicator: TypingIndicator) => void;
+  removeTypingIndicator: (userId: string, conversationId: string) => void;
+  setOnlineStatus: (status: OnlineStatus) => void;
+  setConnected: (connected: boolean) => void;
+  setChatSettings: (settings: Partial<ChatSettings>) => void;
+  sendTypingIndicator: (conversationId: string, isTyping: boolean) => void;
 
   // Utility methods
-  getTypingUsers: ( conversationId: string ) => TypingIndicator[];
-  isUserOnline: ( userId: string ) => boolean;
-  getUserLastSeen: ( userId: string ) => string | null;
+  getTypingUsers: (conversationId: string) => TypingIndicator[];
+  isUserOnline: (userId: string) => boolean;
+  getUserLastSeen: (userId: string) => string | null;
 }
 
-export const useInboxStore = create<InboxStore>( ( set, get ) => ( {
+export const useInboxStore = create<InboxStore>((set, get) => ({
   // Initial state
   selectedConversationId: null,
   typingIndicators: [],
@@ -44,18 +40,18 @@ export const useInboxStore = create<InboxStore>( ( set, get ) => ( {
   },
 
   // Actions
-  setSelectedConversationId: ( id ) => {
-    set( { selectedConversationId: id } );
+  setSelectedConversationId: (id) => {
+    set({ selectedConversationId: id });
   },
 
-  setTypingIndicator: ( indicator ) => {
-    set( ( state ) => {
+  setTypingIndicator: (indicator) => {
+    set((state) => {
       const filteredIndicators = state.typingIndicators.filter(
-        ( ti ) =>
+        (ti) =>
           !(
             ti.userId === indicator.userId &&
             ti.conversationId === indicator.conversationId
-          )
+          ),
       );
 
       return {
@@ -63,57 +59,57 @@ export const useInboxStore = create<InboxStore>( ( set, get ) => ( {
           ? [...filteredIndicators, indicator]
           : filteredIndicators,
       };
-    } );
+    });
   },
 
-  removeTypingIndicator: ( userId, conversationId ) => {
-    set( ( state ) => ( {
+  removeTypingIndicator: (userId, conversationId) => {
+    set((state) => ({
       typingIndicators: state.typingIndicators.filter(
-        ( ti ) => !( ti.userId === userId && ti.conversationId === conversationId )
+        (ti) => !(ti.userId === userId && ti.conversationId === conversationId),
       ),
-    } ) );
+    }));
   },
 
-  setOnlineStatus: ( status ) => {
-    set( ( state ) => ( {
+  setOnlineStatus: (status) => {
+    set((state) => ({
       onlineStatuses: {
         ...state.onlineStatuses,
         [status.userId]: status,
       },
-    } ) );
+    }));
   },
 
-  setConnected: ( connected ) => {
-    set( { isConnected: connected } );
+  setConnected: (connected) => {
+    set({ isConnected: connected });
   },
 
-  setChatSettings: ( settings ) => {
-    set( ( state ) => ( {
+  setChatSettings: (settings) => {
+    set((state) => ({
       chatSettings: { ...state.chatSettings, ...settings },
-    } ) );
+    }));
   },
 
-  sendTypingIndicator: ( conversationId, isTyping ) => {
-    if ( get().chatSettings.showTypingIndicator ) {
-      chatService.sendTypingIndicator( conversationId, isTyping );
+  sendTypingIndicator: (conversationId, isTyping) => {
+    if (get().chatSettings.showTypingIndicator) {
+      chatService.sendTypingIndicator(conversationId, isTyping);
     }
   },
 
   // Utility methods
-  getTypingUsers: ( conversationId ) => {
+  getTypingUsers: (conversationId) => {
     const { typingIndicators } = get();
-    return typingIndicators.filter( ti =>
-      ti.conversationId === conversationId && ti.isTyping
+    return typingIndicators.filter(
+      (ti) => ti.conversationId === conversationId && ti.isTyping,
     );
   },
 
-  isUserOnline: ( userId ) => {
+  isUserOnline: (userId) => {
     const { onlineStatuses } = get();
     return onlineStatuses[userId]?.isOnline || false;
   },
 
-  getUserLastSeen: ( userId ) => {
+  getUserLastSeen: (userId) => {
     const { onlineStatuses } = get();
     return onlineStatuses[userId]?.lastSeen || null;
   },
-} ) );
+}));

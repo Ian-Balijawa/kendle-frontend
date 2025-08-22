@@ -47,16 +47,13 @@ export function PhoneAuth() {
     clearError();
 
     sendOTPMutation.mutate(values as unknown as SendOTPRequest, {
-        onSuccess: () => {
-          navigate("/verify-otp", {
-            state: { phoneNumber: values.phoneNumber },
-            replace: true,
-          });
-        },
-      });
-
-
-
+      onSuccess: () => {
+        navigate("/verify-otp", {
+          state: { phoneNumber: values.phoneNumber },
+          replace: true,
+        });
+      },
+    });
   };
 
   return (

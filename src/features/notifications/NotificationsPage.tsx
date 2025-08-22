@@ -147,7 +147,7 @@ export function NotificationsPage() {
     const date = new Date(dateString);
     const now = new Date();
     const diffInMinutes = Math.floor(
-      (now.getTime() - date.getTime()) / (1000 * 60)
+      (now.getTime() - date.getTime()) / (1000 * 60),
     );
 
     if (diffInMinutes < 1) return "Just now";
@@ -161,20 +161,20 @@ export function NotificationsPage() {
       prev.map((notification) =>
         notification.id === id
           ? { ...notification, isRead: true }
-          : notification
-      )
+          : notification,
+      ),
     );
   };
 
   const markAllAsRead = () => {
     setNotifications((prev) =>
-      prev.map((notification) => ({ ...notification, isRead: true }))
+      prev.map((notification) => ({ ...notification, isRead: true })),
     );
   };
 
   const deleteNotification = (id: string) => {
     setNotifications((prev) =>
-      prev.filter((notification) => notification.id !== id)
+      prev.filter((notification) => notification.id !== id),
     );
   };
 

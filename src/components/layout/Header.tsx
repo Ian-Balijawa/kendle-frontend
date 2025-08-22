@@ -60,7 +60,7 @@ export function HeaderContent() {
     event.preventDefault();
     if (searchQuery.trim()) {
       navigate(
-        `/dashboard/explore?q=${encodeURIComponent(searchQuery.trim())}`
+        `/dashboard/explore?q=${encodeURIComponent(searchQuery.trim())}`,
       );
       setSearchFocused(false);
     }

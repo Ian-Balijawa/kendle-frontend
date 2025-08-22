@@ -1,32 +1,33 @@
 import {
-    ActionIcon,
-    Avatar,
-    Box,
-    Button,
-    Group,
-    Image,
-    Menu, Stack,
-    Text,
-    Textarea
+  ActionIcon,
+  Avatar,
+  Box,
+  Button,
+  Group,
+  Image,
+  Menu,
+  Stack,
+  Text,
+  Textarea,
 } from "@mantine/core";
 import {
-    IconCheck,
-    IconChecks,
-    IconCopy,
-    IconDotsVertical,
-    IconEdit,
-    IconMessageReply,
-    IconMoodSmile,
-    IconTrash,
-    IconAlertCircle,
+  IconCheck,
+  IconChecks,
+  IconCopy,
+  IconDotsVertical,
+  IconEdit,
+  IconMessageReply,
+  IconMoodSmile,
+  IconTrash,
+  IconAlertCircle,
 } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { Message } from "../../types/chat";
 import {
-    useUpdateMessage,
-    useDeleteMessage,
-    useAddMessageReaction,
-    useMarkMessageAsRead
+  useUpdateMessage,
+  useDeleteMessage,
+  useAddMessageReaction,
+  useMarkMessageAsRead,
 } from "../../hooks/useChat";
 import { useAuthStore } from "../../stores/authStore";
 import { UpdateMessageRequest } from "../../services/api";
@@ -101,16 +102,16 @@ export function MessageCard({
           setIsEditing(false);
         },
         onError: (error) => {
-          console.error('Failed to update message:', error);
+          console.error("Failed to update message:", error);
         },
-      }
+      },
     );
   };
 
   const handleDelete = () => {
     deleteMessageMutation.mutate(message.id, {
       onError: (error) => {
-        console.error('Failed to delete message:', error);
+        console.error("Failed to delete message:", error);
       },
     });
     setShowMenu(false);
@@ -156,13 +157,13 @@ export function MessageCard({
     if (!isOwn) return null;
 
     switch (message.status) {
-      case 'sending':
+      case "sending":
         return <IconCheck size={12} color="var(--mantine-color-gray-5)" />;
-      case 'delivered':
+      case "delivered":
         return <IconCheck size={12} color="var(--mantine-color-gray-6)" />;
-      case 'read':
+      case "read":
         return <IconChecks size={12} color="var(--mantine-color-blue-6)" />;
-      case 'failed':
+      case "failed":
         return <IconAlertCircle size={12} color="var(--mantine-color-red-6)" />;
       default:
         return <IconCheck size={12} color="var(--mantine-color-gray-5)" />;
@@ -268,23 +269,32 @@ export function MessageCard({
             borderRadius: "var(--mantine-radius-md)",
             padding: "var(--mantine-spacing-sm)",
             position: "relative",
-            borderTopLeftRadius: !isOwn && isGroupedWithPrevious ? 4 : undefined,
-            borderTopRightRadius: isOwn && isGroupedWithPrevious ? 4 : undefined,
+            borderTopLeftRadius:
+              !isOwn && isGroupedWithPrevious ? 4 : undefined,
+            borderTopRightRadius:
+              isOwn && isGroupedWithPrevious ? 4 : undefined,
             borderBottomLeftRadius: !isOwn && isGroupedWithNext ? 4 : undefined,
             borderBottomRightRadius: isOwn && isGroupedWithNext ? 4 : undefined,
           }}
           onMouseEnter={(e) => {
-            const menu = e.currentTarget.querySelector('.message-menu') as HTMLElement;
-            if (menu) menu.style.opacity = '1';
+            const menu = e.currentTarget.querySelector(
+              ".message-menu",
+            ) as HTMLElement;
+            if (menu) menu.style.opacity = "1";
           }}
           onMouseLeave={(e) => {
-            const menu = e.currentTarget.querySelector('.message-menu') as HTMLElement;
-            if (menu) menu.style.opacity = '0';
+            const menu = e.currentTarget.querySelector(
+              ".message-menu",
+            ) as HTMLElement;
+            if (menu) menu.style.opacity = "0";
           }}
         >
           {/* Message Content */}
           {message.messageType === "text" ? (
-            <Text size="sm" style={{ lineHeight: 1.4, wordBreak: "break-word" }}>
+            <Text
+              size="sm"
+              style={{ lineHeight: 1.4, wordBreak: "break-word" }}
+            >
               {message.content}
             </Text>
           ) : (
@@ -432,11 +442,7 @@ export function MessageCard({
 
         {/* Message Info */}
         {!isGroupedWithNext && (
-          <Group
-            gap="xs"
-            justify={isOwn ? "flex-end" : "flex-start"}
-            mt={4}
-          >
+          <Group gap="xs" justify={isOwn ? "flex-end" : "flex-start"} mt={4}>
             <Text size="xs" c="dimmed">
               {formatTime(message.createdAt)}
             </Text>
