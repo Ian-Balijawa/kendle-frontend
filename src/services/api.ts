@@ -196,11 +196,6 @@ class ApiService {
         if ( token ) {
           config.headers.Authorization = `Bearer ${token}`;
         }
-        notifications.show( {
-          title: "Request",
-          message: config.url,
-          color: "blue",
-        } );
         return config;
       },
       ( error ) => {
