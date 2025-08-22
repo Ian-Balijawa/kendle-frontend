@@ -1,26 +1,32 @@
 import {
-  ActionIcon,
-  Avatar,
-  Badge,
-  Box,
-  Button,
-  Group,
-  Menu,
-  Stack,
-  Text,
-  Textarea,
+    ActionIcon,
+    Avatar,
+    Badge,
+    Box,
+    Button,
+    Group,
+    Menu,
+    Stack,
+    Text,
+    Textarea,
 } from "@mantine/core";
 import {
-  IconDotsVertical,
-  IconEdit,
-  IconFlag,
-  IconHeart,
-  IconTrash,
+    IconDotsVertical,
+    IconEdit,
+    IconFlag,
+    IconHeart,
+    IconTrash,
 } from "@tabler/icons-react";
 import { useState } from "react";
 import { useAuthStore } from "../../stores/authStore";
-import { usePostStore } from "../../stores/postStore";
 import { Comment } from "../../types";
+import {
+    useUpdateComment,
+    useDeleteComment,
+    useLikeComment,
+    useUnlikeComment,
+} from "../../hooks/useComments";
+import { UpdateCommentRequest } from "../../services/api";
 
 interface CommentCardProps {
   comment: Comment;
@@ -29,12 +35,19 @@ interface CommentCardProps {
 
 export function CommentCard({ comment, postId }: CommentCardProps) {
   const { user, isAuthenticated } = useAuthStore();
-  const { updateComment, deleteComment, likeComment } = usePostStore();
-  
+
+  // React Query mutations
+  const updateCommentMutation = useUpdateComment();
+  const deleteCommentMutation = useDeleteComment();
+  const likeCommentMutation = useLikeComment();
+  const unlikeCommentMutation = useUnlikeComment();
+
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(comment.content);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  // Loading states from mutations
+  const isSubmitting = updateCommentMutation.isPending || deleteCommentMutation.isPending;
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -57,32 +70,42 @@ export function CommentCard({ comment, postId }: CommentCardProps) {
   const handleSaveEdit = async () => {
     if (!editContent.trim()) return;
 
-    setIsSubmitting(true);
-    try {
-      updateComment(postId, comment.id, editContent.trim());
-      setIsEditing(false);
-    } catch (error) {
-      console.error("Failed to update comment:", error);
-    } finally {
-      setIsSubmitting(false);
-    }
+    const updateData: UpdateCommentRequest = {
+      content: editContent.trim(),
+    };
+
+    updateCommentMutation.mutate(
+      { id: comment.id, data: updateData },
+      {
+        onSuccess: () => {
+          setIsEditing(false);
+        },
+        onError: (error) => {
+          console.error("Failed to update comment:", error);
+        },
+      }
+    );
   };
 
   const handleDelete = async () => {
-    setIsSubmitting(true);
-    try {
-      deleteComment(postId, comment.id);
-      setShowDeleteConfirm(false);
-    } catch (error) {
-      console.error("Failed to delete comment:", error);
-    } finally {
-      setIsSubmitting(false);
-    }
+    deleteCommentMutation.mutate(comment.id, {
+      onSuccess: () => {
+        setShowDeleteConfirm(false);
+      },
+      onError: (error) => {
+        console.error("Failed to delete comment:", error);
+      },
+    });
   };
 
   const handleLike = () => {
     if (!isAuthenticated) return;
-    likeComment(postId, comment.id);
+
+    if (comment.isLiked) {
+      unlikeCommentMutation.mutate(comment.id);
+    } else {
+      likeCommentMutation.mutate(comment.id);
+    }
   };
 
   const isAuthor = user?.id === comment.author.id;
@@ -200,8 +223,8 @@ export function CommentCard({ comment, postId }: CommentCardProps) {
 
           <Group gap="xs">
             <ActionIcon
-              variant="subtle"
-              color="gray"
+              variant={comment.isLiked ? "filled" : "subtle"}
+              color={comment.isLiked ? "red" : "gray"}
               size="xs"
               onClick={handleLike}
               style={{

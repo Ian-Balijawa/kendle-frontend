@@ -1,80 +1,126 @@
 import {
-  ActionIcon,
-  Avatar,
-  Badge,
-  Box,
-  Button,
-  Card,
-  Group,
-  Image,
-  LoadingOverlay,
-  Menu,
-  Modal,
-  Stack,
-  Text,
-  Textarea,
-  TextInput,
+    ActionIcon,
+    Avatar,
+    Badge,
+    Box,
+    Button,
+    Card,
+    Group,
+    Image,
+    LoadingOverlay,
+    Menu,
+    Modal,
+    Stack,
+    Text,
+    Textarea,
+    TextInput,
+    Loader,
+    Center,
 } from "@mantine/core";
 import {
-  IconArrowDown,
-  IconArrowLeft,
-  IconArrowUp,
-  IconBookmark,
-  IconDotsVertical,
-  IconEdit,
-  IconFlag,
-  IconHeart,
-  IconMessageCircle,
-  IconSend,
-  IconShare,
-  IconTrash,
+    IconArrowDown,
+    IconArrowLeft,
+    IconArrowUp,
+    IconBookmark,
+    IconDotsVertical,
+    IconEdit,
+    IconFlag,
+    IconHeart,
+    IconMessageCircle,
+    IconSend,
+    IconShare,
+    IconTrash,
 } from "@tabler/icons-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuthStore } from "../../stores/authStore";
-import { usePostStore } from "../../stores/postStore";
-import { Comment, Post } from "../../types";
 import { CommentCard } from "./CommentCard";
+import {
+    usePost,
+    useLikePost,
+    useUnlikePost,
+    useBookmarkPost,
+    useUnbookmarkPost,
+    useVotePost,
+    useRemoveVote,
+    useSharePost,
+    useUpdatePost,
+    useDeletePost,
+} from "../../hooks/usePosts";
+import {
+    useInfiniteComments,
+    useCreateComment,
+} from "../../hooks/useComments";
+import { CreateCommentRequest, UpdatePostRequest } from "../../services/api";
 
 export function PostDetail() {
   const { postId } = useParams<{ postId: string }>();
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuthStore();
-  const {
-    posts,
-    setSelectedPost,
-    likePost,
-    unlikePost,
-    deletePost,
-    updatePost,
-    bookmarkPost,
-    unbookmarkPost,
-    sharePost,
-    addComment,
-    upvotePost,
-    downvotePost,
-    removeVote,
-  } = usePostStore();
 
-  const [post, setPost] = useState<Post | null>(null);
+  // React Query hooks
+  const { data: post, isLoading: postLoading, isError: postError } = usePost(postId!);
+  const {
+    data: commentsData,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading: commentsLoading,
+  } = useInfiniteComments(postId!, { limit: 20 });
+
+  // Mutations
+  const likePostMutation = useLikePost();
+  const unlikePostMutation = useUnlikePost();
+  const bookmarkPostMutation = useBookmarkPost();
+  const unbookmarkPostMutation = useUnbookmarkPost();
+  const votePostMutation = useVotePost();
+  const removeVoteMutation = useRemoveVote();
+  const sharePostMutation = useSharePost();
+  const updatePostMutation = useUpdatePost();
+  const deletePostMutation = useDeletePost();
+  const createCommentMutation = useCreateComment();
+
+  // Local state
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [commentContent, setCommentContent] = useState("");
-  const [isCommenting, setIsCommenting] = useState(false);
 
-  useEffect(() => {
-    if (postId) {
-      const foundPost = posts.find((p) => p.id === postId);
-      if (foundPost) {
-        setPost(foundPost);
-        setSelectedPost(foundPost);
-      } else {
-        navigate("/dashboard");
-      }
-    }
-  }, [postId, posts, setSelectedPost, navigate]);
+  // Loading states
+  const isSubmitting = updatePostMutation.isPending || deletePostMutation.isPending;
+  const isCommenting = createCommentMutation.isPending;
+
+  // Flatten comments from all pages
+  const comments = commentsData?.pages.flatMap(page => page.data) || [];
+
+  if (postLoading) {
+    return (
+      <Center py="xl">
+        <Stack align="center" gap="md">
+          <Loader size="lg" />
+          <Text c="dimmed">Loading post...</Text>
+        </Stack>
+      </Center>
+    );
+  }
+
+  if (postError || !post) {
+    return (
+      <Card withBorder p="xl" radius="md" style={{ borderColor: 'var(--mantine-color-red-3)' }}>
+        <Stack align="center" gap="md">
+          <Text size="lg" fw={500} c="red">
+            Post not found
+          </Text>
+          <Text c="dimmed" ta="center">
+            The post you're looking for doesn't exist or has been removed.
+          </Text>
+          <Button variant="light" onClick={() => navigate('/dashboard')}>
+            Go Back to Home
+          </Button>
+        </Stack>
+      </Card>
+    );
+  }
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -90,296 +136,146 @@ export function PostDetail() {
   };
 
   const handleLike = () => {
-    if (!isAuthenticated) {
-      return;
-    }
-
-    if (post?.isLiked) {
-      unlikePost(post.id);
-      setPost((prev) =>
-        prev
-          ? {
-              ...prev,
-              isLiked: false,
-              _count: {
-                ...prev._count,
-                likes: Math.max(0, prev._count.likes - 1),
-              },
-            }
-          : null
-      );
+    if (!isAuthenticated) return;
+    if (post.isLiked) {
+      unlikePostMutation.mutate(post.id);
     } else {
-      likePost(post!.id);
-      setPost((prev) =>
-        prev
-          ? {
-              ...prev,
-              isLiked: true,
-              _count: { ...prev._count, likes: prev._count.likes + 1 },
-            }
-          : null
-      );
+      likePostMutation.mutate(post.id);
     }
   };
 
   const handleBookmark = () => {
-    if (!isAuthenticated) {
-      return;
-    }
-
-    if (post?.isBookmarked) {
-      unbookmarkPost(post.id);
-      setPost((prev) => (prev ? { ...prev, isBookmarked: false } : null));
+    if (!isAuthenticated) return;
+    if (post.isBookmarked) {
+      unbookmarkPostMutation.mutate(post.id);
     } else {
-      bookmarkPost(post!.id);
-      setPost((prev) => (prev ? { ...prev, isBookmarked: true } : null));
+      bookmarkPostMutation.mutate({ id: post.id });
     }
   };
 
   const handleShare = () => {
-    if (!isAuthenticated) {
-      return;
-    }
-
-    sharePost(post!.id);
-    setPost((prev) =>
-      prev
-        ? {
-            ...prev,
-            isShared: true,
-            _count: { ...prev._count, shares: prev._count.shares + 1 },
-          }
-        : null
-    );
+    if (!isAuthenticated) return;
+    sharePostMutation.mutate({ id: post.id });
   };
 
   const handleUpvote = () => {
-    if (!isAuthenticated || !post) {
-      return;
-    }
-
+    if (!isAuthenticated) return;
     if (post.isUpvoted) {
-      removeVote(post.id);
-      setPost((prev) =>
-        prev
-          ? {
-              ...prev,
-              isUpvoted: false,
-              _count: {
-                ...prev._count,
-                upvotes: Math.max(0, prev._count.upvotes - 1),
-              },
-            }
-          : null
-      );
+      removeVoteMutation.mutate(post.id);
     } else {
-      upvotePost(post.id);
-      setPost((prev) =>
-        prev
-          ? {
-              ...prev,
-              isUpvoted: true,
-              isDownvoted: false,
-              _count: {
-                ...prev._count,
-                upvotes: prev._count.upvotes + 1,
-                downvotes: prev.isDownvoted
-                  ? Math.max(0, prev._count.downvotes - 1)
-                  : prev._count.downvotes,
-              },
-            }
-          : null
-      );
+      votePostMutation.mutate({ id: post.id, data: { voteType: 'upvote' } });
     }
   };
 
   const handleDownvote = () => {
-    if (!isAuthenticated || !post) {
-      return;
-    }
-
+    if (!isAuthenticated) return;
     if (post.isDownvoted) {
-      removeVote(post.id);
-      setPost((prev) =>
-        prev
-          ? {
-              ...prev,
-              isDownvoted: false,
-              _count: {
-                ...prev._count,
-                downvotes: Math.max(0, prev._count.downvotes - 1),
-              },
-            }
-          : null
-      );
+      removeVoteMutation.mutate(post.id);
     } else {
-      downvotePost(post.id);
-      setPost((prev) =>
-        prev
-          ? {
-              ...prev,
-              isDownvoted: true,
-              isUpvoted: false,
-              _count: {
-                ...prev._count,
-                downvotes: prev._count.downvotes + 1,
-                upvotes: prev.isUpvoted
-                  ? Math.max(0, prev._count.upvotes - 1)
-                  : prev._count.upvotes,
-              },
-            }
-          : null
-      );
+      votePostMutation.mutate({ id: post.id, data: { voteType: 'downvote' } });
     }
   };
 
   const handleEdit = () => {
-    if (post) {
-      setEditContent(post.content);
-      setIsEditing(true);
-    }
+    setEditContent(post.content);
+    setIsEditing(true);
   };
 
   const handleSaveEdit = async () => {
-    if (!editContent.trim() || !post) {
-      return;
-    }
+    if (!editContent.trim()) return;
 
-    setIsSubmitting(true);
-    try {
-      updatePost(post.id, { content: editContent.trim() });
-      setPost((prev) =>
-        prev
-          ? {
-              ...prev,
-              content: editContent.trim(),
-              updatedAt: new Date().toISOString(),
-            }
-          : null
-      );
-      setIsEditing(false);
-    } catch (error) {
-      console.error("Failed to update post:", error);
-    } finally {
-      setIsSubmitting(false);
-    }
+    const updateData: UpdatePostRequest = {
+      content: editContent.trim(),
+    };
+
+    updatePostMutation.mutate(
+      { id: post.id, data: updateData },
+      {
+        onSuccess: () => {
+          setIsEditing(false);
+        },
+        onError: (error) => {
+          console.error("Failed to update post:", error);
+        },
+      }
+    );
   };
 
   const handleDelete = async () => {
-    if (!post) return;
-
-    setIsSubmitting(true);
-    try {
-      deletePost(post.id);
-      setShowDeleteConfirm(false);
-      navigate("/dashboard");
-    } catch (error) {
-      console.error("Failed to delete post:", error);
-    } finally {
-      setIsSubmitting(false);
-    }
+    deletePostMutation.mutate(post.id, {
+      onSuccess: () => {
+        setShowDeleteConfirm(false);
+        navigate('/dashboard');
+      },
+      onError: (error) => {
+        console.error("Failed to delete post:", error);
+      },
+    });
   };
 
   const handleComment = async () => {
-    if (!commentContent.trim() || !post) {
-      return;
-    }
+    if (!commentContent.trim()) return;
 
-    setIsCommenting(true);
-    try {
-      const newComment: Comment = {
-        id: Date.now().toString(),
-        content: commentContent.trim(),
-        author: {
-          id: user!.id,
-          phoneNumber: user!.phoneNumber,
-          username: user!.firstName?.toLowerCase(),
-          firstName: user!.firstName,
-          lastName: user!.lastName,
-          avatar: user!.avatar,
-          isVerified: user!.isVerified,
-          isProfileComplete: user!.isProfileComplete,
-          createdAt: user!.createdAt,
-          updatedAt: user!.updatedAt,
-          followersCount: user!.followersCount,
-          followingCount: user!.followingCount,
-          postsCount: user!.postsCount,
+    const commentData: CreateCommentRequest = {
+      content: commentContent.trim(),
+    };
+
+    createCommentMutation.mutate(
+      { postId: post.id, data: commentData },
+      {
+        onSuccess: () => {
+          setCommentContent("");
         },
-        postId: post.id,
-        replies: [],
-        likes: [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        _count: {
-          likes: 0,
-          replies: 0,
+        onError: (error) => {
+          console.error("Failed to post comment:", error);
         },
-      };
-
-      // Add comment to store
-      addComment(post.id, newComment);
-
-      // Update local state
-      setPost((prev) =>
-        prev
-          ? {
-              ...prev,
-              comments: [newComment, ...prev.comments],
-              _count: { ...prev._count, comments: prev._count.comments + 1 },
-            }
-          : null
-      );
-
-      setCommentContent("");
-    } catch (error) {
-      console.error("Failed to post comment:", error);
-    } finally {
-      setIsCommenting(false);
-    }
+      }
+    );
   };
-
-  if (!post) {
-    return <LoadingOverlay visible={true} />;
-  }
 
   const isAuthor = user?.id === post.author.id;
 
   return (
     <>
-      <Stack gap="md">
-        <Button
-          variant="subtle"
-          leftSection={<IconArrowLeft size={16} />}
-          onClick={() => navigate("/dashboard")}
-          style={{ alignSelf: "flex-start" }}
-        >
-          Back to Feed
-        </Button>
+      <Box>
+        {/* Header */}
+        <Group justify="space-between" mb="lg">
+          <ActionIcon
+            variant="subtle"
+            size="lg"
+            onClick={() => navigate(-1)}
+          >
+            <IconArrowLeft size={20} />
+          </ActionIcon>
+          <Text fw={500}>Post</Text>
+          <Box />
+        </Group>
 
-        <Card withBorder p="md" radius="md">
+        {/* Post Content */}
+        <Card withBorder p="lg" radius="md" mb="md">
           <Stack gap="md">
             <Group justify="space-between">
               <Group>
                 <Avatar
                   src={post.author.avatar}
                   alt={post.author.firstName || "User"}
-                  size="md"
+                  size="lg"
                   radius="xl"
                 >
                   {(post.author.firstName || "U").charAt(0)}
                 </Avatar>
                 <Box>
                   <Group gap="xs" align="center">
-                    <Text fw={500} size="sm">
+                    <Text fw={500} size="lg">
                       {post.author.firstName} {post.author.lastName}
                     </Text>
                     {post.author.isVerified && (
-                      <Badge size="xs" color="blue" variant="light">
+                      <Badge size="sm" color="blue" variant="light">
                         Verified
                       </Badge>
                     )}
                   </Group>
-                  <Text c="dimmed" size="xs">
+                  <Text c="dimmed" size="sm">
                     @{post.author.username || post.author.phoneNumber} •{" "}
                     {formatDate(post.createdAt)}
                     {post.updatedAt !== post.createdAt && " (edited)"}
@@ -390,7 +286,7 @@ export function PostDetail() {
               {isAuthenticated && (
                 <Menu shadow="md" width={200} position="bottom-end">
                   <Menu.Target>
-                    <ActionIcon variant="subtle" size="sm">
+                    <ActionIcon variant="subtle">
                       <IconDotsVertical size={16} />
                     </ActionIcon>
                   </Menu.Target>
@@ -425,9 +321,30 @@ export function PostDetail() {
               )}
             </Group>
 
-            <Text size="sm" style={{ lineHeight: 1.6 }}>
-              {post.content}
-            </Text>
+            {isEditing ? (
+              <Stack gap="md">
+                <Textarea
+                  placeholder="What's on your mind?"
+                  value={editContent}
+                  onChange={(e) => setEditContent(e.currentTarget.value)}
+                  minRows={4}
+                  maxRows={10}
+                  autosize
+                />
+                <Group justify="flex-end">
+                  <Button variant="light" onClick={() => setIsEditing(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleSaveEdit} loading={isSubmitting}>
+                    Save Changes
+                  </Button>
+                </Group>
+              </Stack>
+            ) : (
+              <Text size="md" style={{ lineHeight: 1.6 }}>
+                {post.content}
+              </Text>
+            )}
 
             {post.media && post.media.length > 0 && (
               <Box>
@@ -441,17 +358,13 @@ export function PostDetail() {
                 ) : (
                   <Group gap="xs">
                     {post.media.map((media) => (
-                      <Box
+                      <Image
                         key={media.id}
-                        style={{ position: "relative", flex: 1 }}
-                      >
-                        <Image
-                          src={media.url}
-                          alt={media.filename}
-                          radius="sm"
-                          style={{ height: 200, objectFit: "cover" }}
-                        />
-                      </Box>
+                        src={media.url}
+                        alt={media.filename}
+                        radius="sm"
+                        style={{ height: 200, objectFit: "cover", flex: 1 }}
+                      />
                     ))}
                   </Group>
                 )}
@@ -468,89 +381,80 @@ export function PostDetail() {
               </Group>
             )}
 
-            <Group justify="space-between">
-              <Group gap="xs">
-                {/* Upvote/Downvote Section */}
-                <Group gap={2}>
+            {/* Actions */}
+            <Group justify="space-between" pt="md">
+              <Group gap="lg">
+                {/* Upvote/Downvote */}
+                <Group gap={4}>
                   <ActionIcon
                     variant={post.isUpvoted ? "filled" : "subtle"}
                     color={post.isUpvoted ? "green" : "gray"}
                     onClick={handleUpvote}
-                    size="sm"
                     style={{
                       cursor: isAuthenticated ? "pointer" : "not-allowed",
                       opacity: isAuthenticated ? 1 : 0.6,
                     }}
                   >
-                    <IconArrowUp size={14} />
+                    <IconArrowUp size={18} />
                   </ActionIcon>
-                  <Text
-                    size="xs"
-                    c="dimmed"
-                    fw={500}
-                    style={{ minWidth: "20px", textAlign: "center" }}
-                  >
+                  <Text fw={500} style={{ minWidth: "30px", textAlign: "center" }}>
                     {post._count.upvotes - post._count.downvotes}
                   </Text>
                   <ActionIcon
                     variant={post.isDownvoted ? "filled" : "subtle"}
                     color={post.isDownvoted ? "red" : "gray"}
                     onClick={handleDownvote}
-                    size="sm"
                     style={{
                       cursor: isAuthenticated ? "pointer" : "not-allowed",
                       opacity: isAuthenticated ? 1 : 0.6,
                     }}
                   >
-                    <IconArrowDown size={14} />
+                    <IconArrowDown size={18} />
                   </ActionIcon>
                 </Group>
 
-                <ActionIcon
-                  variant={post.isLiked ? "filled" : "subtle"}
-                  color={post.isLiked ? "red" : "gray"}
-                  onClick={handleLike}
-                  style={{
-                    cursor: isAuthenticated ? "pointer" : "not-allowed",
-                    opacity: isAuthenticated ? 1 : 0.6,
-                  }}
-                >
-                  <IconHeart size={16} />
-                </ActionIcon>
-                <Text size="xs" c="dimmed">
-                  {post._count.likes}
-                </Text>
+                {/* Like */}
+                <Group gap="xs">
+                  <ActionIcon
+                    variant={post.isLiked ? "filled" : "subtle"}
+                    color={post.isLiked ? "red" : "gray"}
+                    onClick={handleLike}
+                    style={{
+                      cursor: isAuthenticated ? "pointer" : "not-allowed",
+                      opacity: isAuthenticated ? 1 : 0.6,
+                    }}
+                  >
+                    <IconHeart size={18} />
+                  </ActionIcon>
+                  <Text>{post._count.likes}</Text>
+                </Group>
 
-                <ActionIcon
-                  variant="subtle"
-                  color="gray"
-                  style={{
-                    cursor: isAuthenticated ? "pointer" : "not-allowed",
-                    opacity: isAuthenticated ? 1 : 0.6,
-                  }}
-                >
-                  <IconMessageCircle size={16} />
-                </ActionIcon>
-                <Text size="xs" c="dimmed">
-                  {post._count.comments}
-                </Text>
+                {/* Comments */}
+                <Group gap="xs">
+                  <ActionIcon variant="subtle" color="gray">
+                    <IconMessageCircle size={18} />
+                  </ActionIcon>
+                  <Text>{post._count.comments}</Text>
+                </Group>
 
-                <ActionIcon
-                  variant="subtle"
-                  color="gray"
-                  onClick={handleShare}
-                  style={{
-                    cursor: isAuthenticated ? "pointer" : "not-allowed",
-                    opacity: isAuthenticated ? 1 : 0.6,
-                  }}
-                >
-                  <IconShare size={16} />
-                </ActionIcon>
-                <Text size="xs" c="dimmed">
-                  {post._count.shares}
-                </Text>
+                {/* Share */}
+                <Group gap="xs">
+                  <ActionIcon
+                    variant="subtle"
+                    color="gray"
+                    onClick={handleShare}
+                    style={{
+                      cursor: isAuthenticated ? "pointer" : "not-allowed",
+                      opacity: isAuthenticated ? 1 : 0.6,
+                    }}
+                  >
+                    <IconShare size={18} />
+                  </ActionIcon>
+                  <Text>{post._count.shares}</Text>
+                </Group>
               </Group>
 
+              {/* Bookmark */}
               <ActionIcon
                 variant={post.isBookmarked ? "filled" : "subtle"}
                 color={post.isBookmarked ? "yellow" : "gray"}
@@ -560,73 +464,81 @@ export function PostDetail() {
                   opacity: isAuthenticated ? 1 : 0.6,
                 }}
               >
-                <IconBookmark size={16} />
+                <IconBookmark size={18} />
               </ActionIcon>
             </Group>
-
-            {!isAuthenticated && (
-              <Box
-                p="sm"
-                style={{
-                  backgroundColor: "var(--mantine-color-blue-0)",
-                  borderRadius: "var(--mantine-radius-sm)",
-                  border: "1px solid var(--mantine-color-blue-2)",
-                }}
-              >
-                <Text size="xs" c="blue" ta="center">
-                  Sign in to like, comment, and interact with posts
-                </Text>
-              </Box>
-            )}
           </Stack>
         </Card>
 
-        <Card withBorder p="md" radius="md">
-          <Stack gap="md">
-            <Text fw={600} size="lg">
-              Comments ({post._count.comments})
+        {/* Comment Input */}
+        {isAuthenticated && (
+          <Card withBorder p="md" radius="md" mb="md">
+            <TextInput
+              placeholder="Add a comment..."
+              value={commentContent}
+              onChange={(e) => setCommentContent(e.currentTarget.value)}
+              rightSection={
+                <ActionIcon
+                  onClick={handleComment}
+                  loading={isCommenting}
+                  disabled={!commentContent.trim()}
+                  color="blue"
+                >
+                  <IconSend size={16} />
+                </ActionIcon>
+              }
+              onKeyPress={(e) => e.key === "Enter" && handleComment()}
+            />
+          </Card>
+        )}
+
+        {!isAuthenticated && (
+          <Card withBorder p="md" radius="md" mb="md" style={{ backgroundColor: "var(--mantine-color-blue-0)" }}>
+            <Text size="sm" c="blue" ta="center">
+              Sign in to like, comment, and interact with this post
             </Text>
+          </Card>
+        )}
 
-            {isAuthenticated && (
-              <Box>
-                <TextInput
-                  placeholder="Add a comment..."
-                  value={commentContent}
-                  onChange={(e) => setCommentContent(e.currentTarget.value)}
-                  rightSection={
-                    <ActionIcon
-                      onClick={handleComment}
-                      loading={isCommenting}
-                      disabled={!commentContent.trim()}
-                      color="blue"
-                    >
-                      <IconSend size={16} />
-                    </ActionIcon>
-                  }
-                  onKeyPress={(e) => e.key === "Enter" && handleComment()}
-                />
-              </Box>
-            )}
+        {/* Comments */}
+        <Stack gap="md">
+          {commentsLoading && comments.length === 0 ? (
+            <Center py="md">
+              <Stack align="center" gap="sm">
+                <Loader size="sm" />
+                <Text size="sm" c="dimmed">Loading comments...</Text>
+              </Stack>
+            </Center>
+          ) : comments.length === 0 ? (
+            <Card withBorder p="md" radius="md">
+              <Text c="dimmed" ta="center">
+                No comments yet. Be the first to comment!
+              </Text>
+            </Card>
+          ) : (
+            <>
+              {comments.map((comment) => (
+                <CommentCard key={comment.id} comment={comment} postId={post.id} />
+              ))}
 
-            <Stack gap="md">
-              {post.comments.length > 0 ? (
-                post.comments.map((comment) => (
-                  <CommentCard
-                    key={comment.id}
-                    comment={comment}
-                    postId={post.id}
-                  />
-                ))
-              ) : (
-                <Text c="dimmed" ta="center" py="md">
-                  No comments yet. Be the first to comment!
-                </Text>
+              {/* Load more comments */}
+              {hasNextPage && (
+                <Center>
+                  <Button
+                    variant="light"
+                    onClick={() => fetchNextPage()}
+                    loading={isFetchingNextPage}
+                  >
+                    {isFetchingNextPage ? "Loading..." : "Load more comments"}
+                  </Button>
+                </Center>
               )}
-            </Stack>
-          </Stack>
-        </Card>
-      </Stack>
+            </>
+          )}
+        </Stack>
+      </Box>
 
+      {/* Edit Modal */}
       <Modal
         opened={isEditing}
         onClose={() => setIsEditing(false)}
@@ -654,6 +566,7 @@ export function PostDetail() {
         </Stack>
       </Modal>
 
+      {/* Delete Confirmation Modal */}
       <Modal
         opened={showDeleteConfirm}
         onClose={() => setShowDeleteConfirm(false)}

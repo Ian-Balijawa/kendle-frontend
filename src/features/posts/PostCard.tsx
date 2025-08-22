@@ -32,10 +32,25 @@ import {
 } from "@tabler/icons-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { usePostStore } from "../../stores/postStore";
 import { useAuthStore } from "../../stores/authStore";
-import { Post, Comment } from "../../types";
+import { Post } from "../../types";
 import { CommentCard } from "./CommentCard";
+import {
+  useLikePost,
+  useUnlikePost,
+  useBookmarkPost,
+  useUnbookmarkPost,
+  useVotePost,
+  useRemoveVote,
+  useSharePost,
+  useUpdatePost,
+  useDeletePost,
+} from "../../hooks/usePosts";
+import {
+  useCreateComment,
+  useComments,
+} from "../../hooks/useComments";
+import { CreateCommentRequest } from "../../services/api";
 
 interface PostCardProps {
   post: Post;
@@ -45,27 +60,32 @@ interface PostCardProps {
 export function PostCard({ post, onUpdate }: PostCardProps) {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuthStore();
-  const {
-    likePost,
-    unlikePost,
-    deletePost,
-    updatePost,
-    bookmarkPost,
-    unbookmarkPost,
-    sharePost,
-    addComment,
-    upvotePost,
-    downvotePost,
-    removeVote,
-  } = usePostStore();
+
+  // React Query mutations
+  const likePostMutation = useLikePost();
+  const unlikePostMutation = useUnlikePost();
+  const bookmarkPostMutation = useBookmarkPost();
+  const unbookmarkPostMutation = useUnbookmarkPost();
+  const votePostMutation = useVotePost();
+  const removeVoteMutation = useRemoveVote();
+  const sharePostMutation = useSharePost();
+  const updatePostMutation = useUpdatePost();
+  const deletePostMutation = useDeletePost();
+  const createCommentMutation = useCreateComment();
+
+  // Get comments for this post
+  const { data: commentsData } = useComments(post.id, { limit: 3 });
+  const comments = commentsData?.data || [];
 
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(post.content);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [commentContent, setCommentContent] = useState("");
-  const [isCommenting, setIsCommenting] = useState(false);
+
+  // Loading states from mutations
+  const isSubmitting = updatePostMutation.isPending || deletePostMutation.isPending;
+  const isCommenting = createCommentMutation.isPending;
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -86,9 +106,9 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
     }
 
     if (post.isLiked) {
-      unlikePost(post.id);
+      unlikePostMutation.mutate(post.id);
     } else {
-      likePost(post.id);
+      likePostMutation.mutate(post.id);
     }
   };
 
@@ -98,9 +118,9 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
     }
 
     if (post.isBookmarked) {
-      unbookmarkPost(post.id);
+      unbookmarkPostMutation.mutate(post.id);
     } else {
-      bookmarkPost(post.id);
+      bookmarkPostMutation.mutate({ id: post.id });
     }
   };
 
@@ -109,7 +129,7 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
       return;
     }
 
-    sharePost(post.id);
+    sharePostMutation.mutate({ id: post.id });
   };
 
   const handleUpvote = () => {
@@ -118,9 +138,9 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
     }
 
     if (post.isUpvoted) {
-      removeVote(post.id);
+      removeVoteMutation.mutate(post.id);
     } else {
-      upvotePost(post.id);
+      votePostMutation.mutate({ id: post.id, data: { voteType: 'upvote' } });
     }
   };
 
@@ -130,9 +150,9 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
     }
 
     if (post.isDownvoted) {
-      removeVote(post.id);
+      removeVoteMutation.mutate(post.id);
     } else {
-      downvotePost(post.id);
+      votePostMutation.mutate({ id: post.id, data: { voteType: 'downvote' } });
     }
   };
 
@@ -150,30 +170,31 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
       return;
     }
 
-    setIsSubmitting(true);
-    try {
-      updatePost(post.id, { content: editContent.trim() });
-      if (onUpdate) {
-        onUpdate({ ...post, content: editContent.trim() });
+    updatePostMutation.mutate(
+      { id: post.id, data: { content: editContent.trim() } },
+      {
+        onSuccess: (updatedPost) => {
+          if (onUpdate) {
+            onUpdate(updatedPost);
+          }
+          setIsEditing(false);
+        },
+        onError: (error) => {
+          console.error("Failed to update post:", error);
+        },
       }
-      setIsEditing(false);
-    } catch (error) {
-      console.error("Failed to update post:", error);
-    } finally {
-      setIsSubmitting(false);
-    }
+    );
   };
 
   const handleDelete = async () => {
-    setIsSubmitting(true);
-    try {
-      deletePost(post.id);
-      setShowDeleteConfirm(false);
-    } catch (error) {
-      console.error("Failed to delete post:", error);
-    } finally {
-      setIsSubmitting(false);
-    }
+    deletePostMutation.mutate(post.id, {
+      onSuccess: () => {
+        setShowDeleteConfirm(false);
+      },
+      onError: (error) => {
+        console.error("Failed to delete post:", error);
+      },
+    });
   };
 
   const handleComment = async () => {
@@ -181,52 +202,27 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
       return;
     }
 
-    setIsCommenting(true);
-    try {
-      const newComment: Comment = {
-        id: Date.now().toString(),
-        content: commentContent.trim(),
-        author: {
-          id: user!.id,
-          phoneNumber: user!.phoneNumber,
-          username: user!.firstName?.toLowerCase(),
-          firstName: user!.firstName,
-          lastName: user!.lastName,
-          avatar: user!.avatar,
-          isVerified: user!.isVerified,
-          isProfileComplete: user!.isProfileComplete,
-          createdAt: user!.createdAt,
-          updatedAt: user!.updatedAt,
-          followersCount: user!.followersCount,
-          followingCount: user!.followingCount,
-          postsCount: user!.postsCount,
-        },
-        postId: post.id,
-        replies: [],
-        likes: [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        _count: {
-          likes: 0,
-          replies: 0,
-        },
-      };
+    const commentData: CreateCommentRequest = {
+      content: commentContent.trim(),
+    };
 
-      // Add comment to store
-      addComment(post.id, newComment);
-      
-      // Clear input
-      setCommentContent("");
-      
-      // Show comments if not already visible
-      if (!showComments) {
-        setShowComments(true);
+    createCommentMutation.mutate(
+      { postId: post.id, data: commentData },
+      {
+        onSuccess: () => {
+          // Clear input
+          setCommentContent("");
+
+          // Show comments if not already visible
+          if (!showComments) {
+            setShowComments(true);
+          }
+        },
+        onError: (error) => {
+          console.error("Failed to post comment:", error);
+        },
       }
-    } catch (error) {
-      console.error("Failed to post comment:", error);
-    } finally {
-      setIsCommenting(false);
-    }
+    );
   };
 
   const isAuthor = user?.id === post.author.id;
@@ -535,11 +531,11 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
           )}
 
           {/* Comments Section */}
-          {showComments && post.comments.length > 0 && (
+          {showComments && comments.length > 0 && (
             <Box>
               <Group justify="space-between" align="center" mb="sm">
                 <Text size="sm" fw={500}>
-                  Comments ({post.comments.length})
+                  Comments ({post._count.comments})
                 </Text>
                 <Button
                   variant="subtle"
@@ -556,20 +552,20 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
                   {showComments ? "Hide" : "Show"}
                 </Button>
               </Group>
-              
+
               <Stack gap="sm">
-                {post.comments.slice(0, 3).map((comment) => (
+                {comments.slice(0, 3).map((comment) => (
                   <CommentCard key={comment.id} comment={comment} postId={post.id} />
                 ))}
-                
-                {post.comments.length > 3 && (
+
+                {post._count.comments > 3 && (
                   <Button
                     variant="light"
                     size="xs"
                     onClick={handlePostClick}
                     style={{ alignSelf: "center" }}
                   >
-                    View all {post.comments.length} comments
+                    View all {post._count.comments} comments
                   </Button>
                 )}
               </Stack>

@@ -3,7 +3,6 @@ import {
   Badge,
   Box,
   Button,
-  FileInput,
   Group,
   Image,
   LoadingOverlay,
@@ -22,8 +21,8 @@ import {
 } from "@tabler/icons-react";
 import { useRef, useState } from "react";
 import { useAuthStore } from "../../stores/authStore";
-import { usePostStore } from "../../stores/postStore";
-import { CreatePostData, Post } from "../../types";
+import { useCreatePost } from "../../hooks/usePosts";
+import { CreatePostRequest } from "../../services/api";
 
 interface CreatePostProps {
   opened: boolean;
@@ -32,13 +31,15 @@ interface CreatePostProps {
 
 export function CreatePost({ opened, onClose }: CreatePostProps) {
   const { user } = useAuthStore();
-  const { addPost } = usePostStore();
+  const createPostMutation = useCreatePost();
+
   const [content, setContent] = useState("");
   const [media, setMedia] = useState<File[]>([]);
   const [hashtags, setHashtags] = useState<string[]>([]);
   const [hashtagInput, setHashtagInput] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const isSubmitting = createPostMutation.isPending;
 
   const handleMediaUpload = (files: File[] | null) => {
     if (!files) return;
@@ -49,109 +50,77 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
       const isValidSize = file.size <= 50 * 1024 * 1024; // 50MB limit
 
       if (!isValidType) {
-        return;
+        console.error("Invalid file type:", file.type);
+        return false;
       }
 
       if (!isValidSize) {
-        return;
+        console.error("File too large:", file.size);
+        return false;
       }
 
-      return isValidType && isValidSize;
+      return true;
     });
 
-    setMedia((prev) => [...prev, ...validFiles]);
+    setMedia((prev) => [...prev, ...validFiles].slice(0, 4)); // Max 4 files
   };
 
   const removeMedia = (index: number) => {
     setMedia((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const addHashtag = () => {
-    const hashtag = hashtagInput.trim().replace(/^#/, "");
-    if (hashtag && !hashtags.includes(hashtag) && hashtags.length < 10) {
-      setHashtags((prev) => [...prev, hashtag]);
+  const handleHashtagAdd = () => {
+    if (hashtagInput.trim() && !hashtags.includes(hashtagInput.trim())) {
+      setHashtags((prev) => [...prev, hashtagInput.trim()]);
       setHashtagInput("");
     }
   };
 
-  const removeHashtag = (hashtag: string) => {
-    setHashtags((prev) => prev.filter((h) => h !== hashtag));
+  const handleHashtagKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" || e.key === ",") {
+      e.preventDefault();
+      handleHashtagAdd();
+    }
+  };
+
+  const removeHashtag = (tagToRemove: string) => {
+    setHashtags((prev) => prev.filter((tag) => tag !== tagToRemove));
   };
 
   const handleSubmit = async () => {
-    if (!content.trim() && media.length === 0) {
+    if (!content.trim()) {
       return;
     }
 
-    setIsSubmitting(true);
+    // Create the post data
+    const postData: CreatePostRequest = {
+      content: content.trim(),
+      tags: hashtags.length > 0 ? hashtags.map(tag => ({ name: tag })) : undefined,
+      type: 'text',
+      isPublic: true,
+      allowComments: true,
+      allowLikes: true,
+      allowShares: true,
+      allowBookmarks: true,
+      allowVoting: true,
+    };
 
-    try {
-      const postData: CreatePostData = {
-        content: content.trim(),
-        media: media.length > 0 ? media : undefined,
-        hashtags: hashtags.length > 0 ? hashtags : undefined,
-      };
+    createPostMutation.mutate(postData, {
+      onSuccess: () => {
+        // Reset form
+        setContent("");
+        setMedia([]);
+        setHashtags([]);
+        setHashtagInput("");
 
-      const newPost: Post = {
-        id: Date.now().toString(),
-        content: postData.content,
-        author: {
-          id: user?.id || "1",
-          username: user?.firstName?.toLowerCase() || "user",
-          firstName: user?.firstName || "User",
-          lastName: user?.lastName || "",
-          avatar: user?.avatar,
-          isVerified: user?.isVerified || false,
-          isProfileComplete: user?.isProfileComplete || false,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          followersCount: user?.followersCount || 0,
-          followingCount: user?.followingCount || 0,
-          postsCount: user?.postsCount || 0,
-          phoneNumber: user?.phoneNumber || "",
-        },
-        media:
-          postData.media?.map((file, index) => ({
-            id: `media-${Date.now()}-${index}`,
-            url: URL.createObjectURL(file),
-            type: file.type.startsWith("image/") ? "image" : "video",
-            filename: file.name,
-            size: file.size,
-            createdAt: new Date().toISOString(),
-          })) || [],
-        likes: [],
-        comments: [],
-        shares: [],
-        upvotes: [],
-        downvotes: [],
-        isLiked: false,
-        isShared: false,
-        isBookmarked: false,
-        isUpvoted: false,
-        isDownvoted: false,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        _count: {
-          likes: 0,
-          comments: 0,
-          shares: 0,
-          upvotes: 0,
-          downvotes: 0,
-        },
-      };
-
-      addPost(newPost as unknown as Post);
-
-      setContent("");
-      setMedia([]);
-      setHashtags([]);
-      setHashtagInput("");
-      onClose();
-    } catch (error) {
-      console.error("Error creating post:", error);
-    } finally {
-      setIsSubmitting(false);
-    }
+        // Close modal
+        onClose();
+      },
+      onError: (error) => {
+        console.error("Failed to create post:", error);
+        // You could show a notification here
+      },
+    });
   };
 
   const handleClose = () => {
@@ -197,11 +166,11 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
             {user?.firstName?.charAt(0) || "U"}
           </Box>
           <Box>
-            <Text size="sm" fw={500}>
+            <Text fw={500} size="sm">
               {user?.firstName} {user?.lastName}
             </Text>
-            <Text size="xs" c="dimmed">
-              @{user?.firstName?.toLowerCase() || "user"}
+            <Text c="dimmed" size="xs">
+              @{user?.username || user?.phoneNumber}
             </Text>
           </Box>
         </Group>
@@ -213,147 +182,131 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
           minRows={3}
           maxRows={8}
           autosize
-          style={{ border: "none", fontSize: "16px" }}
+          styles={{
+            input: {
+              border: "none",
+              fontSize: "16px",
+              padding: 0,
+            },
+          }}
         />
 
+        {/* Media Preview */}
         {media.length > 0 && (
-          <Box>
-            <Text size="sm" fw={500} mb="xs">
-              Media ({media.length})
+          <Stack gap="xs">
+            <Text size="sm" fw={500}>
+              Media ({media.length}/4)
             </Text>
-            <Group gap="xs">
+            <Group gap="sm">
               {media.map((file, index) => (
                 <Box key={index} style={{ position: "relative" }}>
-                  {file.type.startsWith("image/") ? (
-                    <Image
-                      src={URL.createObjectURL(file)}
-                      alt={file.name}
-                      width={80}
-                      height={80}
-                      fit="cover"
-                      radius="sm"
-                    />
-                  ) : (
-                    <Box
-                      style={{
-                        width: 80,
-                        height: 80,
-                        backgroundColor: "var(--mantine-color-gray-2)",
-                        borderRadius: "var(--mantine-radius-sm)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <IconVideo
-                        size={24}
-                        color="var(--mantine-color-gray-6)"
-                      />
-                    </Box>
-                  )}
+                  <Image
+                    src={URL.createObjectURL(file)}
+                    alt={`Preview ${index + 1}`}
+                    width={100}
+                    height={100}
+                    style={{ objectFit: "cover" }}
+                    radius="md"
+                  />
                   <ActionIcon
                     size="xs"
-                    variant="filled"
                     color="red"
+                    variant="filled"
                     style={{
                       position: "absolute",
-                      top: -5,
-                      right: -5,
+                      top: -8,
+                      right: -8,
                     }}
                     onClick={() => removeMedia(index)}
                   >
-                    <IconX size={10} />
+                    <IconX size={12} />
                   </ActionIcon>
                 </Box>
               ))}
             </Group>
-          </Box>
+          </Stack>
         )}
 
+        {/* Hashtags */}
         {hashtags.length > 0 && (
-          <Box>
-            <Text size="sm" fw={500} mb="xs">
-              Hashtags
-            </Text>
-            <Group gap="xs">
-              {hashtags.map((hashtag) => (
-                <Badge
-                  key={hashtag}
-                  variant="light"
-                  color="blue"
-                  rightSection={
-                    <ActionIcon
-                      size="xs"
-                      variant="subtle"
-                      onClick={() => removeHashtag(hashtag)}
-                    >
-                      <IconX size={10} />
-                    </ActionIcon>
-                  }
-                >
-                  #{hashtag}
-                </Badge>
-              ))}
-            </Group>
-          </Box>
+          <Group gap="xs">
+            {hashtags.map((tag) => (
+              <Badge
+                key={tag}
+                variant="light"
+                color="blue"
+                rightSection={
+                  <ActionIcon
+                    size="xs"
+                    color="blue"
+                    radius="xl"
+                    variant="transparent"
+                    onClick={() => removeHashtag(tag)}
+                  >
+                    <IconX size={10} />
+                  </ActionIcon>
+                }
+              >
+                #{tag}
+              </Badge>
+            ))}
+          </Group>
         )}
 
-        <Group gap="xs">
-          <TextInput
-            placeholder="Add hashtag..."
-            value={hashtagInput}
-            onChange={(e) => setHashtagInput(e.currentTarget.value)}
-            onKeyPress={(e) => e.key === "Enter" && addHashtag()}
-            leftSection={<IconHash size={16} />}
-            style={{ flex: 1 }}
-            size="sm"
-          />
-          <Button
-            size="sm"
-            variant="light"
-            onClick={addHashtag}
-            disabled={!hashtagInput.trim() || hashtags.length >= 10}
-          >
-            Add
-          </Button>
-        </Group>
+        {/* Hashtag Input */}
+        <TextInput
+          placeholder="Add hashtags (press Enter or comma to add)"
+          value={hashtagInput}
+          onChange={(e) => setHashtagInput(e.currentTarget.value)}
+          onKeyPress={handleHashtagKeyPress}
+          leftSection={<IconHash size={16} />}
+          rightSection={
+            hashtagInput.trim() && (
+              <ActionIcon onClick={handleHashtagAdd} variant="light">
+                <IconSend size={16} />
+              </ActionIcon>
+            )
+          }
+        />
 
+        {/* Actions */}
         <Group justify="space-between">
-          <Group gap="xs">
-            <FileInput
-              ref={fileInputRef as any}
-              accept="image/*,video/*"
+          <Group gap="sm">
+            <input
+              ref={fileInputRef}
+              type="file"
               multiple
-              onChange={handleMediaUpload}
-              leftSection={<IconPhoto size={16} />}
-              placeholder="Add media"
-              size="sm"
+              accept="image/*,video/*"
+              onChange={(e) => handleMediaUpload(Array.from(e.target.files || []))}
               style={{ display: "none" }}
             />
-            <Button
+            <ActionIcon
               variant="light"
-              size="sm"
-              leftSection={<IconPhoto size={16} />}
+              size="lg"
               onClick={() => fileInputRef.current?.click()}
-              disabled={media.length >= 5}
+              disabled={media.length >= 4}
             >
-              Media ({media.length}/5)
-            </Button>
+              <IconPhoto size={20} />
+            </ActionIcon>
+            <ActionIcon variant="light" size="lg" disabled>
+              <IconVideo size={20} />
+            </ActionIcon>
           </Group>
 
-          <Button
-            onClick={handleSubmit}
-            loading={isSubmitting}
-            disabled={!content.trim() && media.length === 0}
-            leftSection={<IconSend size={16} />}
-          >
-            Post
-          </Button>
+          <Group gap="sm">
+            <Button variant="light" onClick={handleClose}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSubmit}
+              disabled={!content.trim()}
+              loading={isSubmitting}
+              leftSection={<IconSend size={16} />}
+            >
+              Post
+            </Button>
+          </Group>
         </Group>
-
-        <Text size="xs" c="dimmed" ta="center">
-          {content.length}/1000 characters
-        </Text>
       </Stack>
     </Modal>
   );
