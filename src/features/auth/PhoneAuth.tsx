@@ -18,11 +18,11 @@ import {
   IconPhone,
 } from "@tabler/icons-react";
 import { zodResolver } from "mantine-form-zod-resolver";
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { useAuthStore } from "../../stores/authStore";
-
+import { SendOTPRequest } from "../../services/api";
+import { useSendOTP } from "../../hooks/useAuth";
 interface PhoneAuthFormData {
   phoneNumber: string;
 }
@@ -33,9 +33,8 @@ const phoneSchema = z.object({
 
 export function PhoneAuth() {
   const navigate = useNavigate();
-  const { sendOTP, isLoading, error, clearError } = useAuthStore();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
+  const { error, clearError } = useAuthStore();
+  const sendOTPMutation = useSendOTP();
   const form = useForm<PhoneAuthFormData>({
     mode: "uncontrolled",
     initialValues: {
@@ -44,28 +43,27 @@ export function PhoneAuth() {
     validate: zodResolver(phoneSchema) as any,
   });
 
-  const handleSubmit = async (values: PhoneAuthFormData) => {
-    setIsSubmitting(true);
+  const handleSubmit = (values: PhoneAuthFormData) => {
     clearError();
 
-    try {
-      await sendOTP(values);
-      navigate("/verify-otp", {
-        state: { phoneNumber: values.phoneNumber },
-        replace: true,
+    sendOTPMutation.mutate(values as unknown as SendOTPRequest, {
+        onSuccess: () => {
+          navigate("/verify-otp", {
+            state: { phoneNumber: values.phoneNumber },
+            replace: true,
+          });
+        },
       });
-    } catch (err) {
-      console.error("Failed to send OTP:", err);
-    } finally {
-      setIsSubmitting(false);
-    }
+
+
+
   };
 
   return (
     <Box className="auth-container">
       <Container size="xs" style={{ width: "100%", maxWidth: "400px" }}>
         <Paper className="auth-paper" p="xl" withBorder>
-          <LoadingOverlay visible={isSubmitting} />
+          <LoadingOverlay visible={sendOTPMutation.isPending} />
 
           <Box
             className="auth-decoration"
@@ -147,8 +145,8 @@ export function PhoneAuth() {
                   type="submit"
                   fullWidth
                   size="sm"
-                  loading={isSubmitting}
-                  disabled={isLoading}
+                  loading={sendOTPMutation.isPending}
+                  disabled={sendOTPMutation.isPending}
                   className="auth-button"
                 >
                   Send Verification Code

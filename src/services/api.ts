@@ -178,6 +178,55 @@ export interface BookmarkRequest {
   note?: string;
 }
 
+// Authentication request/response types
+export interface SendOTPRequest {
+  phoneNumber: string;
+}
+
+export interface VerifyOTPRequest {
+  identifier: string;
+  otp: string;
+}
+
+export interface ResendOTPRequest {
+  identifier: string;
+}
+
+export interface LoginRequest {
+  phoneNumber: string;
+}
+
+export interface CompleteProfileRequest {
+  username: string;
+  email: string;
+  whatsapp: string;
+  twitterLink: string;
+  tiktokLink: string;
+  instagramLink: string;
+}
+
+// User profile request/response types
+export interface UpdateProfileRequest {
+  firstName?: string;
+  lastName?: string;
+  bio?: string;
+  username?: string;
+  email?: string;
+  whatsapp?: string;
+  twitterLink?: string;
+  tiktokLink?: string;
+  instagramLink?: string;
+}
+
+export interface UserProfileCompleteRequest {
+  username: string;
+  email: string;
+  whatsapp: string;
+  twitterLink: string;
+  tiktokLink: string;
+  instagramLink: string;
+}
+
 class ApiService {
   private api: AxiosInstance;
 
@@ -219,9 +268,40 @@ class ApiService {
     );
   }
 
-  async login( credentials: any ): Promise<AuthResponse> {
+  // Authentication API methods
+  async sendOTP( data: SendOTPRequest ): Promise<any> {
+    const response: AxiosResponse<ApiResponse<any>> =
+      await this.api.post( "/v1/auth/send-otp", data );
+    return response.data.data;
+  }
+
+  async verifyOTP( data: VerifyOTPRequest ): Promise<AuthResponse> {
     const response: AxiosResponse<ApiResponse<AuthResponse>> =
-      await this.api.post( "/auth/login", credentials );
+      await this.api.post( "/v1/auth/verify-otp", data );
+    return response.data.data;
+  }
+
+  async resendOTP( data: ResendOTPRequest ): Promise<any> {
+    const response: AxiosResponse<ApiResponse<any>> =
+      await this.api.post( "/v1/auth/resend-otp", data );
+    return response.data.data;
+  }
+
+  async login( data: LoginRequest ): Promise<AuthResponse> {
+    const response: AxiosResponse<ApiResponse<AuthResponse>> =
+      await this.api.post( "/v1/auth/login", data );
+    return response.data.data;
+  }
+
+  async completeProfile( data: CompleteProfileRequest ): Promise<User> {
+    const response: AxiosResponse<ApiResponse<User>> =
+      await this.api.post( "/v1/auth/complete-profile", data );
+    return response.data.data;
+  }
+
+  async getCurrentUser(): Promise<User> {
+    const response: AxiosResponse<ApiResponse<User>> =
+      await this.api.get( "/v1/auth/me" );
     return response.data.data;
   }
 
@@ -462,13 +542,45 @@ class ApiService {
     await this.api.post( `/v1/comments/${id}/unhide` );
   }
 
-  async getUser( id: string ): Promise<User> {
+  // User API methods
+  async getCurrentUserProfile(): Promise<User> {
     const response: AxiosResponse<ApiResponse<User>> = await this.api.get(
-      `/users/${id}`
+      "/v1/user/profile"
     );
     return response.data.data;
   }
 
+  async updateUserProfile( data: UpdateProfileRequest ): Promise<User> {
+    const response: AxiosResponse<ApiResponse<User>> = await this.api.put(
+      "/v1/user/profile",
+      data
+    );
+    return response.data.data;
+  }
+
+  async completeUserProfile( data: UserProfileCompleteRequest ): Promise<User> {
+    const response: AxiosResponse<ApiResponse<User>> = await this.api.post(
+      "/v1/user/profile/complete",
+      data
+    );
+    return response.data.data;
+  }
+
+  async getUser( id: string ): Promise<User> {
+    const response: AxiosResponse<ApiResponse<User>> = await this.api.get(
+      `/v1/user/${id}`
+    );
+    return response.data.data;
+  }
+
+  async getUserByUsername( username: string ): Promise<User> {
+    const response: AxiosResponse<ApiResponse<User>> = await this.api.get(
+      `/v1/user/username/${username}`
+    );
+    return response.data.data;
+  }
+
+  // Legacy method for backward compatibility
   async updateUser( id: string, data: UpdateUserData ): Promise<User> {
     const formData = new FormData();
 

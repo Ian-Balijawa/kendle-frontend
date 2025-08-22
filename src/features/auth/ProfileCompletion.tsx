@@ -1,72 +1,68 @@
 import {
-  Alert,
-  Box,
-  Button,
-  Center,
-  Container,
-  Grid,
-  LoadingOverlay,
-  Paper,
-  Stack,
-  Text,
-  TextInput,
-  Title,
+    Alert,
+    Box,
+    Button,
+    Center,
+    Container,
+    Grid,
+    LoadingOverlay,
+    Paper,
+    Stack,
+    Text,
+    TextInput,
+    Title,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import {
-  IconAlertCircle,
-  IconBrandInstagram,
-  IconBrandTiktok,
-  IconBrandTwitter,
-  IconBrandWhatsapp,
-  IconMail,
-  IconUser,
+    IconAlertCircle,
+    IconBrandInstagram,
+    IconBrandTiktok,
+    IconBrandTwitter,
+    IconBrandWhatsapp,
+    IconMail,
+    IconUser,
 } from "@tabler/icons-react";
 import { zodResolver } from "mantine-form-zod-resolver";
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { useAuthStore } from "../../stores/authStore";
-import { ProfileCompletionData } from "../../types";
+import { useCompleteProfile } from "../../hooks/useAuth";
+import { CompleteProfileRequest } from "../../services/api";
 
-const profileSchema = z
-  .object({
-    username: z.string().min(2, "Username must be at least 2 characters"),
-    email: z.string().email("Please enter a valid email address"),
-    whatsapp: z
-      .string()
-      .regex(/^\+?[1-9]\d{1,14}$/, "Please enter a valid WhatsApp number"),
-    twitterLink: z
-      .string()
-      .regex(
-        /^https?:\/\/(www\.)?twitter\.com\/\w+/,
-        "Please enter a valid Twitter profile URL"
-      ),
-    tiktokLink: z
-      .string()
-      .regex(
-        /^https?:\/\/(www\.)?tiktok\.com\/@\w+/,
-        "Please enter a valid TikTok profile URL"
-      ),
-    instagramLink: z
-      .string()
-      .regex(
-        /^https?:\/\/(www\.)?instagram\.com\/\w+/,
-        "Please enter a valid Instagram profile URL"
-      ),
-  })
-  .refine((data) => data.username, {
-    message: "Username is required",
-    path: ["username"],
-  });
+const profileSchema = z.object({
+  username: z.string().min(2, "Username must be at least 2 characters"),
+  email: z.string().email("Please enter a valid email address"),
+  whatsapp: z
+    .string()
+    .regex(/^\+?[1-9]\d{1,14}$/, "Please enter a valid WhatsApp number"),
+  twitterLink: z
+    .string()
+    .regex(
+      /^https?:\/\/(www\.)?twitter\.com\/\w+/,
+      "Please enter a valid Twitter profile URL"
+    ),
+  tiktokLink: z
+    .string()
+    .regex(
+      /^https?:\/\/(www\.)?tiktok\.com\/@\w+/,
+      "Please enter a valid TikTok profile URL"
+    ),
+  instagramLink: z
+    .string()
+    .regex(
+      /^https?:\/\/(www\.)?instagram\.com\/\w+/,
+      "Please enter a valid Instagram profile URL"
+    ),
+});
 
 export function ProfileCompletion() {
   const navigate = useNavigate();
-  const { completeProfile, user, isLoading, error, clearError } =
-    useAuthStore();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { user, error, clearError } = useAuthStore();
+  const completeProfileMutation = useCompleteProfile();
 
-  const form = useForm<ProfileCompletionData>({
+  const isSubmitting = completeProfileMutation.isPending;
+
+  const form = useForm<CompleteProfileRequest>({
     mode: "uncontrolled",
     initialValues: {
       username: "",
@@ -79,19 +75,18 @@ export function ProfileCompletion() {
     validate: zodResolver(profileSchema) as any,
   });
 
-  const handleSubmit = async (values: ProfileCompletionData) => {
-    setIsSubmitting(true);
+  const handleSubmit = async (values: CompleteProfileRequest) => {
     clearError();
 
-    try {
-      await completeProfile(values);
-      console.log("Profile completed!");
-      navigate("/dashboard", { replace: true });
-    } catch (err) {
-      console.error("Profile completion failed:", err);
-    } finally {
-      setIsSubmitting(false);
-    }
+    completeProfileMutation.mutate(values, {
+      onSuccess: () => {
+        console.log("Profile completed!");
+        navigate("/dashboard", { replace: true });
+      },
+      onError: (err) => {
+        console.error("Profile completion failed:", err);
+      },
+    });
   };
 
   if (!user || user.isProfileComplete) {
@@ -249,7 +244,7 @@ export function ProfileCompletion() {
                   fullWidth
                   size="sm"
                   loading={isSubmitting}
-                  disabled={isLoading}
+                  disabled={isSubmitting}
                   className="auth-button"
                 >
                   Complete Profile
