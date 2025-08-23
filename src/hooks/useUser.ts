@@ -1,12 +1,12 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { queryClient } from "../lib/queryClient";
 import {
   apiService,
   UpdateProfileRequest,
   UserProfileCompleteRequest,
 } from "../services/api";
-import { User } from "../types";
 import { useAuthStore } from "../stores/authStore";
-import { queryClient } from "../lib/queryClient";
+import { User } from "../types";
 
 // Query keys
 export const userKeys = {
@@ -53,7 +53,7 @@ export function useUserByUsername(username: string) {
 
 // Update user profile mutation
 export function useUpdateProfile() {
-  const { user, updateProfile } = useAuthStore();
+  const { user, updateUser } = useAuthStore();
 
   return useMutation({
     mutationFn: (data: UpdateProfileRequest) =>
@@ -74,7 +74,7 @@ export function useUpdateProfile() {
         };
 
         queryClient.setQueryData(userKeys.profile(), updatedUser);
-        updateProfile({ user: updatedUser });
+        updateUser(updatedUser);
 
         // Also update in user detail cache if it exists
         queryClient.setQueryData(userKeys.detail(user.id), updatedUser);
@@ -83,7 +83,7 @@ export function useUpdateProfile() {
         if (updateData.username) {
           queryClient.setQueryData(
             userKeys.username(updateData.username),
-            updatedUser,
+            updatedUser
           );
         }
       }
@@ -94,20 +94,20 @@ export function useUpdateProfile() {
       // Revert the optimistic update
       if (context?.previousUser) {
         queryClient.setQueryData(userKeys.profile(), context.previousUser);
-        updateProfile({ user: context.previousUser as User });
+        updateUser(context.previousUser as User);
       }
     },
     onSuccess: (updatedUser) => {
       // Update with the server response
       queryClient.setQueryData(userKeys.profile(), updatedUser);
-      updateProfile({ user: updatedUser });
+      updateUser(updatedUser);
 
       // Update related caches
       queryClient.setQueryData(userKeys.detail(updatedUser.id), updatedUser);
       if (updatedUser.username) {
         queryClient.setQueryData(
           userKeys.username(updatedUser.username),
-          updatedUser,
+          updatedUser
         );
       }
 
@@ -119,7 +119,7 @@ export function useUpdateProfile() {
 
 // Complete user profile mutation
 export function useCompleteUserProfile() {
-  const { user, updateProfile } = useAuthStore();
+  const { user, updateUser } = useAuthStore();
 
   return useMutation({
     mutationFn: (data: UserProfileCompleteRequest) =>
@@ -141,13 +141,13 @@ export function useCompleteUserProfile() {
         };
 
         queryClient.setQueryData(userKeys.profile(), updatedUser);
-        updateProfile({ user: updatedUser });
+        updateUser(updatedUser);
 
         // Also update in user detail cache
         queryClient.setQueryData(userKeys.detail(user.id), updatedUser);
         queryClient.setQueryData(
           userKeys.username(profileData.username),
-          updatedUser,
+          updatedUser
         );
       }
 
@@ -157,20 +157,20 @@ export function useCompleteUserProfile() {
       // Revert the optimistic update
       if (context?.previousUser) {
         queryClient.setQueryData(userKeys.profile(), context.previousUser);
-        updateProfile({ user: context.previousUser as User });
+        updateUser(context.previousUser as User);
       }
     },
     onSuccess: (updatedUser) => {
       // Update with the server response
       queryClient.setQueryData(userKeys.profile(), updatedUser);
-      updateProfile({ user: updatedUser });
+      updateUser(updatedUser);
 
       // Update related caches
       queryClient.setQueryData(userKeys.detail(updatedUser.id), updatedUser);
       if (updatedUser.username) {
         queryClient.setQueryData(
           userKeys.username(updatedUser.username),
-          updatedUser,
+          updatedUser
         );
       }
 

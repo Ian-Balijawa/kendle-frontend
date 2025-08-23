@@ -23,7 +23,7 @@ import {
   IconUserMinus,
   IconUserPlus,
 } from "@tabler/icons-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useUserPosts } from "../../hooks/usePosts";
 import { useUpdateProfile, useUser, useUserProfile } from "../../hooks/useUser";
@@ -75,19 +75,21 @@ export function ProfilePage() {
   });
 
   // Update form values when user data changes
-  if (user && editForm.values.firstName !== user.firstName) {
-    editForm.setValues({
-      firstName: user.firstName || "",
-      lastName: user.lastName || "",
-      bio: user.bio || "",
-      username: user.username || "",
-      email: user.email || "",
-      whatsapp: user.whatsapp || "",
-      twitterLink: user.twitterLink || "",
-      tiktokLink: user.tiktokLink || "",
-      instagramLink: user.instagramLink || "",
-    });
-  }
+  useEffect(() => {
+    if (user) {
+      editForm.setValues({
+        firstName: user.firstName || "",
+        lastName: user.lastName || "",
+        bio: user.bio || "",
+        username: user.username || "",
+        email: user.email || "",
+        whatsapp: user.whatsapp || "",
+        twitterLink: user.twitterLink || "",
+        tiktokLink: user.tiktokLink || "",
+        instagramLink: user.instagramLink || "",
+      });
+    }
+  }, [user]); // Remove editForm from dependencies
 
   const posts = postsData?.pages.flatMap((page) => page.posts) || [];
 
@@ -249,6 +251,19 @@ export function ProfilePage() {
             </Group>
 
             <Group gap="lg">
+              {user.whatsapp && (
+                <Group gap="xs">
+                  <IconLink size={16} />
+                  <Text
+                    size="sm"
+                    component="a"
+                    href={`https://wa.me/${user.whatsapp}`}
+                    target="_blank"
+                  >
+                    WhatsApp
+                  </Text>
+                </Group>
+              )}
               {user.twitterLink && (
                 <Group gap="xs">
                   <IconLink size={16} />
@@ -259,6 +274,19 @@ export function ProfilePage() {
                     target="_blank"
                   >
                     Twitter
+                  </Text>
+                </Group>
+              )}
+              {user.tiktokLink && (
+                <Group gap="xs">
+                  <IconLink size={16} />
+                  <Text
+                    size="sm"
+                    component="a"
+                    href={user.tiktokLink}
+                    target="_blank"
+                  >
+                    TikTok
                   </Text>
                 </Group>
               )}

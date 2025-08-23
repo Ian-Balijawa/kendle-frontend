@@ -15,6 +15,7 @@ interface AuthStore {
   // Actions
   logout: () => void;
   updateProfile: (data: Partial<AuthStore>) => void;
+  updateUser: (user: User) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   clearError: () => void;
@@ -52,6 +53,10 @@ export const useAuthStore = create<AuthStore>()(
           ...state,
           ...data,
         }));
+      },
+
+      updateUser: (user: User) => {
+        set({ user });
       },
 
       setLoading: (loading: boolean) => {
@@ -92,6 +97,6 @@ export const useAuthStore = create<AuthStore>()(
         refreshToken: state.refreshToken,
         isAuthenticated: state.isAuthenticated,
       }),
-    },
-  ),
+    }
+  )
 );

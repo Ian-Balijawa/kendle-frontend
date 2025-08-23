@@ -26,7 +26,7 @@ import { zodResolver } from "mantine-form-zod-resolver";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { useAuthStore } from "../../stores/authStore";
-import { useCompleteProfile } from "../../hooks/useAuth";
+import { useCompleteUserProfile } from "../../hooks/useUser";
 import { CompleteProfileRequest } from "../../services/api";
 
 const profileSchema = z.object({
@@ -61,7 +61,7 @@ const profileSchema = z.object({
 export function ProfileCompletion() {
   const navigate = useNavigate();
   const { user, error, clearError } = useAuthStore();
-  const completeProfileMutation = useCompleteProfile();
+  const completeProfileMutation = useCompleteUserProfile();
 
   const isSubmitting = completeProfileMutation.isPending;
 

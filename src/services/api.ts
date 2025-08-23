@@ -752,39 +752,33 @@ class ApiService {
 
   // User API methods
   async getCurrentUserProfile(): Promise<User> {
-    const response: AxiosResponse<ApiResponse<User>> =
+    const response: AxiosResponse<ApiResponse<{ user: User }>> =
       await this.api.get("/user/profile");
-    return response.data.data;
+    return response.data.data.user;
   }
 
   async updateUserProfile(data: UpdateProfileRequest): Promise<User> {
-    const response: AxiosResponse<ApiResponse<User>> = await this.api.put(
-      "/user/profile",
-      data
-    );
-    return response.data.data;
+    const response: AxiosResponse<ApiResponse<{ user: User }>> =
+      await this.api.put("/user/profile", data);
+    return response.data.data.user;
   }
 
   async completeUserProfile(data: UserProfileCompleteRequest): Promise<User> {
-    const response: AxiosResponse<ApiResponse<User>> = await this.api.post(
-      "/user/profile/complete",
-      data
-    );
-    return response.data.data;
+    const response: AxiosResponse<ApiResponse<{ user: User }>> =
+      await this.api.post("/user/profile/complete", data);
+    return response.data.data.user;
   }
 
   async getUser(id: string): Promise<User> {
-    const response: AxiosResponse<ApiResponse<User>> = await this.api.get(
-      `/user/${id}`
-    );
-    return response.data.data;
+    const response: AxiosResponse<ApiResponse<{ user: User }>> =
+      await this.api.get(`/user/${id}`);
+    return response.data.data.user;
   }
 
   async getUserByUsername(username: string): Promise<User> {
-    const response: AxiosResponse<ApiResponse<User>> = await this.api.get(
-      `/user/username/${username}`
-    );
-    return response.data.data;
+    const response: AxiosResponse<ApiResponse<{ user: User }>> =
+      await this.api.get(`/user/username/${username}`);
+    return response.data.data.user;
   }
 
   // Legacy method for backward compatibility
