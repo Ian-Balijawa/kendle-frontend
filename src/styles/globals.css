@@ -23,7 +23,7 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: var(--mantine-color-gray-0);
+  /* background-color: var(--mantine-color-gray-0); */
 }
 
 #root {

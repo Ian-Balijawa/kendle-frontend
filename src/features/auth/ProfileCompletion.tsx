@@ -5,6 +5,7 @@ import {
   Center,
   Container,
   Grid,
+  Group,
   LoadingOverlay,
   Paper,
   Stack,
@@ -25,36 +26,40 @@ import {
 import { zodResolver } from "mantine-form-zod-resolver";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
-import { useAuthStore } from "../../stores/authStore";
 import { useCompleteUserProfile } from "../../hooks/useUser";
 import { CompleteProfileRequest } from "../../services/api";
+import { useAuthStore } from "../../stores/authStore";
 
 const profileSchema = z.object({
   username: z.string().min(2, "Username must be at least 2 characters"),
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
-  email: z.string().email("Please enter a valid email address"),
+  email: z.string().email("Please enter a valid email address").optional(),
   whatsapp: z
     .string()
-    .regex(/^\+?[1-9]\d{1,14}$/, "Please enter a valid WhatsApp number"),
+    .regex(/^\+?[1-9]\d{1,14}$/, "Please enter a valid WhatsApp number")
+    .optional(),
   twitterLink: z
     .string()
     .regex(
       /^https?:\/\/(www\.)?twitter\.com\/\w+/,
-      "Please enter a valid Twitter profile URL",
-    ),
+      "Please enter a valid Twitter profile URL"
+    )
+    .optional(),
   tiktokLink: z
     .string()
     .regex(
       /^https?:\/\/(www\.)?tiktok\.com\/@\w+/,
-      "Please enter a valid TikTok profile URL",
-    ),
+      "Please enter a valid TikTok profile URL"
+    )
+    .optional(),
   instagramLink: z
     .string()
     .regex(
       /^https?:\/\/(www\.)?instagram\.com\/\w+/,
-      "Please enter a valid Instagram profile URL",
-    ),
+      "Please enter a valid Instagram profile URL"
+    )
+    .optional(),
   bio: z.string().optional(),
 });
 
@@ -84,7 +89,15 @@ export function ProfileCompletion() {
   const handleSubmit = async (values: CompleteProfileRequest) => {
     clearError();
 
-    completeProfileMutation.mutate(values, {
+    // Filter out empty optional fields
+    const cleanedValues = Object.fromEntries(
+      Object.entries(values).map(([key, value]) => [
+        key,
+        typeof value === "string" ? value.trim() : value,
+      ])
+    );
+
+    completeProfileMutation.mutate(cleanedValues as CompleteProfileRequest, {
       onSuccess: () => {
         console.log("Profile completed!");
         navigate("/dashboard", { replace: true });
@@ -95,8 +108,14 @@ export function ProfileCompletion() {
     });
   };
 
-  if (!user || user.isProfileComplete) {
+  if (!user) {
     navigate("/", { replace: true });
+    return null;
+  }
+
+  // If profile is already complete, redirect to dashboard
+  if (user.isProfileComplete) {
+    navigate("/dashboard", { replace: true });
     return null;
   }
 
@@ -150,7 +169,7 @@ export function ProfileCompletion() {
                 Complete Your Profile
               </Title>
               <Text c="dimmed" size="sm">
-                Help us personalize your Kendle experience
+                Help us personalize your Kendle experience (optional)
               </Text>
             </div>
 
@@ -171,7 +190,7 @@ export function ProfileCompletion() {
                 <Grid>
                   <Grid.Col span={6}>
                     <TextInput
-                      placeholder="Enter your first name"
+                      placeholder="Enter your first name *"
                       leftSection={<IconUser size={18} />}
                       required
                       size="md"
@@ -185,7 +204,7 @@ export function ProfileCompletion() {
                   </Grid.Col>
                   <Grid.Col span={6}>
                     <TextInput
-                      placeholder="Enter your last name"
+                      placeholder="Enter your last name *"
                       leftSection={<IconUser size={18} />}
                       required
                       size="md"
@@ -202,7 +221,7 @@ export function ProfileCompletion() {
                 <Grid>
                   <Grid.Col span={12}>
                     <TextInput
-                      placeholder="Enter your username"
+                      placeholder="Enter your username *"
                       leftSection={<IconUser size={18} />}
                       required
                       size="md"
@@ -217,7 +236,7 @@ export function ProfileCompletion() {
                 </Grid>
 
                 <TextInput
-                  placeholder="Enter your email address"
+                  placeholder="Enter your email address (optional)"
                   leftSection={<IconMail size={18} />}
                   size="md"
                   radius="md"
@@ -229,7 +248,7 @@ export function ProfileCompletion() {
                 />
 
                 <TextInput
-                  placeholder="Enter your WhatsApp number"
+                  placeholder="Enter your WhatsApp number (optional)"
                   leftSection={<IconBrandWhatsapp size={18} />}
                   size="md"
                   radius="md"
@@ -241,7 +260,7 @@ export function ProfileCompletion() {
                 />
 
                 <TextInput
-                  placeholder="Enter your Twitter profile URL"
+                  placeholder="Enter your Twitter profile URL (optional)"
                   leftSection={<IconBrandTwitter size={18} />}
                   size="md"
                   radius="md"
@@ -253,7 +272,7 @@ export function ProfileCompletion() {
                 />
 
                 <TextInput
-                  placeholder="Enter your TikTok profile URL"
+                  placeholder="Enter your TikTok profile URL (optional)"
                   leftSection={<IconBrandTiktok size={18} />}
                   size="md"
                   radius="md"
@@ -265,7 +284,7 @@ export function ProfileCompletion() {
                 />
 
                 <TextInput
-                  placeholder="Enter your Instagram profile URL"
+                  placeholder="Enter your Instagram profile URL (optional)"
                   leftSection={<IconBrandInstagram size={18} />}
                   size="md"
                   radius="md"
@@ -288,21 +307,33 @@ export function ProfileCompletion() {
                   {...form.getInputProps("bio")}
                 />
 
-                <Button
-                  type="submit"
-                  fullWidth
-                  size="sm"
-                  loading={isSubmitting}
-                  disabled={isSubmitting}
-                  className="auth-button"
-                >
-                  Complete Profile
-                </Button>
+                <Group gap="sm" style={{ width: "100%" }}>
+                  <Button
+                    type="submit"
+                    size="sm"
+                    loading={isSubmitting}
+                    disabled={isSubmitting}
+                    className="auth-button"
+                    style={{ flex: 1 }}
+                  >
+                    Complete Profile
+                  </Button>
+                  <Button
+                    variant="light"
+                    size="sm"
+                    onClick={() => navigate("/dashboard", { replace: true })}
+                    disabled={isSubmitting}
+                    className="auth-button"
+                  >
+                    Skip for Now
+                  </Button>
+                </Group>
               </Stack>
             </form>
 
             <Text size="xs" c="dimmed" ta="center">
-              You can update these details later in your profile settings
+              You can complete your profile now or skip and update these details
+              later in your profile settings
             </Text>
           </Stack>
         </Paper>

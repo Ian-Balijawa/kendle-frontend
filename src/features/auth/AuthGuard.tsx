@@ -52,10 +52,9 @@ export function AuthGuard({ children }: AuthGuardProps) {
     return <Navigate to="/" state={{ from: location }} replace />;
   }
 
-  // If user is authenticated but profile is incomplete, redirect to profile completion
-  if (user && !user.isProfileComplete) {
-    return <Navigate to="/complete-profile" replace />;
-  }
+  // Note: Users can now skip profile completion and access the dashboard
+  // Profile completion is optional and can be done later
+  // The profile completion page will still redirect users with complete profiles
 
   return <>{children}</>;
 }
