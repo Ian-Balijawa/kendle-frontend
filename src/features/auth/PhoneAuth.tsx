@@ -4,17 +4,14 @@ import {
   Button,
   Center,
   Container,
+  Image,
   LoadingOverlay,
   Stack,
   Text,
   TextInput,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import {
-  IconAlertCircle,
-  IconBrandTwitter,
-  IconPhone,
-} from "@tabler/icons-react";
+import { IconAlertCircle, IconPhone } from "@tabler/icons-react";
 import { zodResolver } from "mantine-form-zod-resolver";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
@@ -84,14 +81,16 @@ export function PhoneAuth() {
           />
 
           <Stack
-            gap="xl"
             style={{ position: "relative", zIndex: 1 }}
             className="auth-form"
           >
             <Center>
-              <Box className="auth-logo">
-                <IconBrandTwitter size={32} color="white" />
-              </Box>
+              <Stack align="center" gap="xs">
+                <Image src="/logo.png" alt="Kendle" width={80} height={80} />
+                <Text size="xl" fw={800}>
+                  Kendle
+                </Text>
+              </Stack>
             </Center>
 
             {error && (
@@ -129,7 +128,7 @@ export function PhoneAuth() {
                   disabled={sendOTPMutation.isPending}
                   className="auth-button"
                 >
-                  Sign In
+                  Continue with phone
                 </Button>
               </Stack>
             </form>

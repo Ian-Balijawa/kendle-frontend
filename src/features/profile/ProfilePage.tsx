@@ -237,8 +237,8 @@ export function ProfilePage() {
         }}
       >
         <Avatar
-          src={user.avatar}
-          alt={user.firstName}
+          src={user.avatar || "/user.png"}
+          alt={user.firstName || ""}
           size={120}
           radius="50%"
           style={{

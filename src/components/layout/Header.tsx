@@ -4,6 +4,7 @@ import {
   Box,
   Button,
   Group,
+  Image,
   Indicator,
   Menu,
   Paper,
@@ -105,15 +106,7 @@ export function HeaderContent() {
             }}
             className="logo-hover"
           >
-            <Text
-              size="xl"
-              fw={800}
-              variant="gradient"
-              gradient={{ from: "blue", to: "cyan", deg: 45 }}
-              style={{ letterSpacing: "-0.5px" }}
-            >
-              Kendle
-            </Text>
+            <Image src="/logo.png" alt="Kendle" width={50} height={50} />
           </UnstyledButton>
 
           <Group gap="xs" visibleFrom="md">

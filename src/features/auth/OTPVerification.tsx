@@ -5,6 +5,7 @@ import {
   Button,
   Center,
   Container,
+  Image,
   LoadingOverlay,
   Paper,
   PinInput,
@@ -12,11 +13,7 @@ import {
   Text,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import {
-  IconAlertCircle,
-  IconArrowLeft,
-  IconBrandTwitter,
-} from "@tabler/icons-react";
+import { IconAlertCircle, IconArrowLeft } from "@tabler/icons-react";
 import { zodResolver } from "mantine-form-zod-resolver";
 import { useCallback, useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -132,7 +129,7 @@ export function OTPVerification() {
   return (
     <Box className="auth-container">
       <Container size="xs" style={{ width: "100%", maxWidth: "400px" }}>
-        <Paper className="auth-paper" p="xl" withBorder>
+        <Paper radius="xl" shadow="xl" className="auth-paper" p="xl" withBorder>
           <LoadingOverlay visible={isSubmitting} />
           <Box
             className="auth-decoration"
@@ -157,14 +154,16 @@ export function OTPVerification() {
             }}
           />
           <Stack
-            gap="xl"
             style={{ position: "relative", zIndex: 1 }}
             className="auth-form"
           >
             <Center>
-              <Box className="auth-logo">
-                <IconBrandTwitter size={32} color="white" />
-              </Box>
+              <Stack align="center" gap="xs">
+                <Image src="/logo.png" alt="Kendle" width={80} height={80} />
+                <Text size="xl" fw={800}>
+                  Kendle
+                </Text>
+              </Stack>
             </Center>
             <div style={{ textAlign: "center" }}>
               <Text c="dimmed" size="sm">
