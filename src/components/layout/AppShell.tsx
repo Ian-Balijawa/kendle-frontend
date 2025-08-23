@@ -41,7 +41,9 @@ export function AppShell() {
           top: 0,
         }}
       >
-        <HeaderContent />
+        <Container size="lg">
+          <HeaderContent />
+        </Container>
       </MantineAppShell.Header>
 
       <MantineAppShell.Main>

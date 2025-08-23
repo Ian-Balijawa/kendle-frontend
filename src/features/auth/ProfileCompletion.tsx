@@ -4,14 +4,18 @@ import {
   Button,
   Center,
   Container,
+  Divider,
   Grid,
   Group,
   LoadingOverlay,
   Paper,
+  Progress,
   Stack,
   Text,
+  Textarea,
   TextInput,
   Title,
+  Tooltip,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import {
@@ -20,7 +24,10 @@ import {
   IconBrandTiktok,
   IconBrandTwitter,
   IconBrandWhatsapp,
+  IconCheck,
+  IconInfoCircle,
   IconMail,
+  IconSparkles,
   IconUser,
 } from "@tabler/icons-react";
 import { zodResolver } from "mantine-form-zod-resolver";
@@ -60,14 +67,13 @@ const profileSchema = z.object({
       "Please enter a valid Instagram profile URL"
     )
     .optional(),
-  bio: z.string().optional(),
+  bio: z.string().max(500, "Bio must be less than 500 characters").optional(),
 });
 
 export function ProfileCompletion() {
   const navigate = useNavigate();
   const { user, error, clearError } = useAuthStore();
   const completeProfileMutation = useCompleteUserProfile();
-
   const isSubmitting = completeProfileMutation.isPending;
 
   const form = useForm<CompleteProfileRequest>({
@@ -86,10 +92,33 @@ export function ProfileCompletion() {
     validate: zodResolver(profileSchema) as any,
   });
 
+  const getCompletionProgress = () => {
+    const values = form.getValues();
+    const requiredFields = ["username", "firstName", "lastName"] as const;
+    const optionalFields = [
+      "email",
+      "whatsapp",
+      "twitterLink",
+      "tiktokLink",
+      "instagramLink",
+      "bio",
+    ] as const;
+
+    const completedRequired = requiredFields.filter((field) =>
+      values[field]?.trim()
+    ).length;
+    const completedOptional = optionalFields.filter((field) =>
+      values[field]?.trim()
+    ).length;
+
+    const requiredProgress = (completedRequired / requiredFields.length) * 70;
+    const optionalProgress = (completedOptional / optionalFields.length) * 30;
+
+    return Math.round(requiredProgress + optionalProgress);
+  };
+
   const handleSubmit = async (values: CompleteProfileRequest) => {
     clearError();
-
-    // Filter out empty optional fields
     const cleanedValues = Object.fromEntries(
       Object.entries(values).map(([key, value]) => [
         key,
@@ -113,66 +142,92 @@ export function ProfileCompletion() {
     return null;
   }
 
-  // If profile is already complete, redirect to dashboard
   if (user.isProfileComplete) {
     navigate("/dashboard", { replace: true });
     return null;
   }
 
+  const progress = getCompletionProgress();
+
   return (
-    <Box className="auth-container">
-      <Container size="sm" style={{ width: "100%", maxWidth: "600px" }}>
-        <Paper className="auth-paper" p="xl" withBorder>
-          <LoadingOverlay visible={isSubmitting} />
+    <Box
+      style={{
+        minHeight: "100vh",
+        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+        padding: "2rem 0",
+      }}
+    >
+      <Container size="md" style={{ maxWidth: "680px" }}>
+        <Paper
+          shadow="xl"
+          radius="xl"
+          p={0}
+          style={{
+            overflow: "hidden",
+            background: "white",
+            position: "relative",
+          }}
+        >
+          <LoadingOverlay visible={isSubmitting} overlayProps={{ blur: 2 }} />
 
           <Box
-            className="auth-decoration"
             style={{
-              top: "-50px",
-              right: "-50px",
-              width: "100px",
-              height: "100px",
-              background:
-                "linear-gradient(135deg, var(--mantine-color-primary-2), var(--mantine-color-primary-3))",
+              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+              padding: "2rem",
+              color: "white",
+              textAlign: "center",
+              position: "relative",
             }}
-          />
-          <Box
-            className="auth-decoration"
-            style={{
-              bottom: "-30px",
-              left: "-30px",
-              width: "60px",
-              height: "60px",
-              background:
-                "linear-gradient(135deg, var(--mantine-color-secondary-2), var(--mantine-color-secondary-3))",
-            }}
-          />
-
-          <Stack
-            gap="xl"
-            style={{ position: "relative", zIndex: 1 }}
-            className="auth-form"
           >
-            <Center>
-              <Box className="auth-logo">
-                <IconBrandTwitter size={32} color="white" />
+            <Center mb="md">
+              <Box
+                style={{
+                  width: "60px",
+                  height: "60px",
+                  borderRadius: "50%",
+                  background: "rgba(255, 255, 255, 0.2)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backdropFilter: "blur(10px)",
+                  border: "1px solid rgba(255, 255, 255, 0.3)",
+                }}
+              >
+                <IconSparkles size={28} />
               </Box>
             </Center>
 
-            <div style={{ textAlign: "center" }}>
-              <Title
-                order={1}
-                size="h2"
-                className="text-gradient"
-                style={{ marginBottom: "var(--mantine-spacing-xs)" }}
-              >
-                Complete Your Profile
-              </Title>
-              <Text c="dimmed" size="sm">
-                Help us personalize your Kendle experience (optional)
-              </Text>
-            </div>
+            <Title order={1} size="h2" mb="xs" fw={600}>
+              Complete Your Profile
+            </Title>
 
+            <Text size="sm" opacity={0.9} mb="lg">
+              Let's personalize your Kendle experience
+            </Text>
+
+            <Box style={{ maxWidth: "300px", margin: "0 auto" }}>
+              <Group justify="space-between" mb="xs">
+                <Text size="xs" opacity={0.8}>
+                  Progress
+                </Text>
+                <Text size="xs" opacity={0.8}>
+                  {progress}%
+                </Text>
+              </Group>
+              <Progress
+                value={progress}
+                size="sm"
+                radius="xl"
+                style={{
+                  "& .mantine-Progress-bar": {
+                    background: "rgba(255, 255, 255, 0.9)",
+                  },
+                }}
+              />
+            </Box>
+          </Box>
+
+          <Box p="2rem">
             {error && (
               <Alert
                 icon={<IconAlertCircle size={16} />}
@@ -180,162 +235,301 @@ export function ProfileCompletion() {
                 color="red"
                 variant="light"
                 radius="md"
+                mb="xl"
               >
                 {error}
               </Alert>
             )}
 
             <form onSubmit={form.onSubmit(handleSubmit as any)}>
-              <Stack gap="lg">
-                <Grid>
-                  <Grid.Col span={6}>
-                    <TextInput
-                      placeholder="Enter your first name *"
-                      leftSection={<IconUser size={18} />}
-                      required
-                      size="md"
-                      radius="md"
-                      classNames={{
-                        input: "auth-input",
-                        label: "auth-label",
-                      }}
-                      {...form.getInputProps("firstName")}
-                    />
-                  </Grid.Col>
-                  <Grid.Col span={6}>
-                    <TextInput
-                      placeholder="Enter your last name *"
-                      leftSection={<IconUser size={18} />}
-                      required
-                      size="md"
-                      radius="md"
-                      classNames={{
-                        input: "auth-input",
-                        label: "auth-label",
-                      }}
-                      {...form.getInputProps("lastName")}
-                    />
-                  </Grid.Col>
-                </Grid>
+              <Stack gap="xl">
+                <Box>
+                  <Group align="center" mb="md">
+                    <IconUser size={18} style={{ color: "#667eea" }} />
+                    <Text fw={600} size="sm" c="gray.8">
+                      Basic Information
+                    </Text>
+                    <Text size="xs" c="red.6">
+                      Required
+                    </Text>
+                  </Group>
 
-                <Grid>
-                  <Grid.Col span={12}>
-                    <TextInput
-                      placeholder="Enter your username *"
-                      leftSection={<IconUser size={18} />}
-                      required
-                      size="md"
-                      radius="md"
-                      classNames={{
-                        input: "auth-input",
-                        label: "auth-label",
-                      }}
-                      {...form.getInputProps("username")}
-                    />
-                  </Grid.Col>
-                </Grid>
+                  <Grid gutter="md">
+                    <Grid.Col span={{ base: 12, sm: 6 }}>
+                      <TextInput
+                        label="First Name"
+                        placeholder="Enter your first name"
+                        required
+                        size="md"
+                        radius="md"
+                        styles={{
+                          label: { marginBottom: "0.5rem", fontWeight: 500 },
+                          input: {
+                            border: "1px solid #e9ecef",
+                            "&:focus": {
+                              borderColor: "#667eea",
+                              boxShadow: "0 0 0 2px rgba(102, 126, 234, 0.1)",
+                            },
+                          },
+                        }}
+                        {...form.getInputProps("firstName")}
+                      />
+                    </Grid.Col>
+                    <Grid.Col span={{ base: 12, sm: 6 }}>
+                      <TextInput
+                        label="Last Name"
+                        placeholder="Enter your last name"
+                        required
+                        size="md"
+                        radius="md"
+                        styles={{
+                          label: { marginBottom: "0.5rem", fontWeight: 500 },
+                          input: {
+                            border: "1px solid #e9ecef",
+                            "&:focus": {
+                              borderColor: "#667eea",
+                              boxShadow: "0 0 0 2px rgba(102, 126, 234, 0.1)",
+                            },
+                          },
+                        }}
+                        {...form.getInputProps("lastName")}
+                      />
+                    </Grid.Col>
+                  </Grid>
 
-                <TextInput
-                  placeholder="Enter your email address (optional)"
-                  leftSection={<IconMail size={18} />}
-                  size="md"
-                  radius="md"
-                  classNames={{
-                    input: "auth-input",
-                    label: "auth-label",
-                  }}
-                  {...form.getInputProps("email")}
-                />
+                  <TextInput
+                    label="Username"
+                    placeholder="Choose a unique username"
+                    required
+                    size="md"
+                    radius="md"
+                    mt="md"
+                    styles={{
+                      label: { marginBottom: "0.5rem", fontWeight: 500 },
+                      input: {
+                        border: "1px solid #e9ecef",
+                        "&:focus": {
+                          borderColor: "#667eea",
+                          boxShadow: "0 0 0 2px rgba(102, 126, 234, 0.1)",
+                        },
+                      },
+                    }}
+                    {...form.getInputProps("username")}
+                  />
+                </Box>
 
-                <TextInput
-                  placeholder="Enter your WhatsApp number (optional)"
-                  leftSection={<IconBrandWhatsapp size={18} />}
-                  size="md"
-                  radius="md"
-                  classNames={{
-                    input: "auth-input",
-                    label: "auth-label",
-                  }}
-                  {...form.getInputProps("whatsapp")}
-                />
+                <Divider />
 
-                <TextInput
-                  placeholder="Enter your Twitter profile URL (optional)"
-                  leftSection={<IconBrandTwitter size={18} />}
-                  size="md"
-                  radius="md"
-                  classNames={{
-                    input: "auth-input",
-                    label: "auth-label",
-                  }}
-                  {...form.getInputProps("twitterLink")}
-                />
+                <Box>
+                  <Group align="center" mb="md">
+                    <IconMail size={18} style={{ color: "#667eea" }} />
+                    <Text fw={600} size="sm" c="gray.8">
+                      Contact Information
+                    </Text>
+                    <Text size="xs" c="gray.6">
+                      Optional
+                    </Text>
+                    <Tooltip label="This helps others find and connect with you">
+                      <IconInfoCircle size={14} style={{ color: "#adb5bd" }} />
+                    </Tooltip>
+                  </Group>
 
-                <TextInput
-                  placeholder="Enter your TikTok profile URL (optional)"
-                  leftSection={<IconBrandTiktok size={18} />}
-                  size="md"
-                  radius="md"
-                  classNames={{
-                    input: "auth-input",
-                    label: "auth-label",
-                  }}
-                  {...form.getInputProps("tiktokLink")}
-                />
+                  <Grid gutter="md">
+                    <Grid.Col span={{ base: 12, sm: 6 }}>
+                      <TextInput
+                        label="Email Address"
+                        placeholder="your.email@example.com"
+                        leftSection={<IconMail size={16} />}
+                        size="md"
+                        radius="md"
+                        styles={{
+                          label: { marginBottom: "0.5rem", fontWeight: 500 },
+                          input: {
+                            border: "1px solid #e9ecef",
+                            "&:focus": {
+                              borderColor: "#667eea",
+                              boxShadow: "0 0 0 2px rgba(102, 126, 234, 0.1)",
+                            },
+                          },
+                        }}
+                        {...form.getInputProps("email")}
+                      />
+                    </Grid.Col>
+                    <Grid.Col span={{ base: 12, sm: 6 }}>
+                      <TextInput
+                        label="WhatsApp Number"
+                        placeholder="+1234567890"
+                        leftSection={<IconBrandWhatsapp size={16} />}
+                        size="md"
+                        radius="md"
+                        styles={{
+                          label: { marginBottom: "0.5rem", fontWeight: 500 },
+                          input: {
+                            border: "1px solid #e9ecef",
+                            "&:focus": {
+                              borderColor: "#667eea",
+                              boxShadow: "0 0 0 2px rgba(102, 126, 234, 0.1)",
+                            },
+                          },
+                        }}
+                        {...form.getInputProps("whatsapp")}
+                      />
+                    </Grid.Col>
+                  </Grid>
+                </Box>
 
-                <TextInput
-                  placeholder="Enter your Instagram profile URL (optional)"
-                  leftSection={<IconBrandInstagram size={18} />}
-                  size="md"
-                  radius="md"
-                  classNames={{
-                    input: "auth-input",
-                    label: "auth-label",
-                  }}
-                  {...form.getInputProps("instagramLink")}
-                />
+                <Divider />
 
-                <TextInput
-                  placeholder="Enter your bio (optional)"
-                  leftSection={<IconUser size={18} />}
-                  size="md"
-                  radius="md"
-                  classNames={{
-                    input: "auth-input",
-                    label: "auth-label",
-                  }}
-                  {...form.getInputProps("bio")}
-                />
+                <Box>
+                  <Group align="center" mb="md">
+                    <IconBrandTwitter size={18} style={{ color: "#667eea" }} />
+                    <Text fw={600} size="sm" c="gray.8">
+                      Social Media
+                    </Text>
+                    <Text size="xs" c="gray.6">
+                      Optional
+                    </Text>
+                  </Group>
 
-                <Group gap="sm" style={{ width: "100%" }}>
+                  <Grid gutter="md">
+                    <Grid.Col span={{ base: 12, sm: 6 }}>
+                      <TextInput
+                        label="Twitter Profile"
+                        placeholder="https://twitter.com/username"
+                        leftSection={<IconBrandTwitter size={16} />}
+                        size="md"
+                        radius="md"
+                        styles={{
+                          label: { marginBottom: "0.5rem", fontWeight: 500 },
+                          input: {
+                            border: "1px solid #e9ecef",
+                            "&:focus": {
+                              borderColor: "#667eea",
+                              boxShadow: "0 0 0 2px rgba(102, 126, 234, 0.1)",
+                            },
+                          },
+                        }}
+                        {...form.getInputProps("twitterLink")}
+                      />
+                    </Grid.Col>
+                    <Grid.Col span={{ base: 12, sm: 6 }}>
+                      <TextInput
+                        label="Instagram Profile"
+                        placeholder="https://instagram.com/username"
+                        leftSection={<IconBrandInstagram size={16} />}
+                        size="md"
+                        radius="md"
+                        styles={{
+                          label: { marginBottom: "0.5rem", fontWeight: 500 },
+                          input: {
+                            border: "1px solid #e9ecef",
+                            "&:focus": {
+                              borderColor: "#667eea",
+                              boxShadow: "0 0 0 2px rgba(102, 126, 234, 0.1)",
+                            },
+                          },
+                        }}
+                        {...form.getInputProps("instagramLink")}
+                      />
+                    </Grid.Col>
+                  </Grid>
+
+                  <TextInput
+                    label="TikTok Profile"
+                    placeholder="https://tiktok.com/@username"
+                    leftSection={<IconBrandTiktok size={16} />}
+                    size="md"
+                    radius="md"
+                    mt="md"
+                    styles={{
+                      label: { marginBottom: "0.5rem", fontWeight: 500 },
+                      input: {
+                        border: "1px solid #e9ecef",
+                        "&:focus": {
+                          borderColor: "#667eea",
+                          boxShadow: "0 0 0 2px rgba(102, 126, 234, 0.1)",
+                        },
+                      },
+                    }}
+                    {...form.getInputProps("tiktokLink")}
+                  />
+                </Box>
+
+                <Divider />
+
+                <Box>
+                  <Group align="center" mb="md">
+                    <IconUser size={18} style={{ color: "#667eea" }} />
+                    <Text fw={600} size="sm" c="gray.8">
+                      About You
+                    </Text>
+                    <Text size="xs" c="gray.6">
+                      Optional
+                    </Text>
+                  </Group>
+
+                  <Textarea
+                    label="Bio"
+                    placeholder="Tell us a bit about yourself..."
+                    autosize
+                    minRows={3}
+                    maxRows={6}
+                    size="md"
+                    radius="md"
+                    styles={{
+                      label: { marginBottom: "0.5rem", fontWeight: 500 },
+                      input: {
+                        border: "1px solid #e9ecef",
+                        "&:focus": {
+                          borderColor: "#667eea",
+                          boxShadow: "0 0 0 2px rgba(102, 126, 234, 0.1)",
+                        },
+                      },
+                    }}
+                    {...form.getInputProps("bio")}
+                  />
+                </Box>
+
+                <Group gap="sm" mt="xl">
                   <Button
                     type="submit"
-                    size="sm"
+                    size="lg"
                     loading={isSubmitting}
                     disabled={isSubmitting}
-                    className="auth-button"
-                    style={{ flex: 1 }}
+                    leftSection={<IconCheck size={18} />}
+                    style={{
+                      flex: 1,
+                      background:
+                        "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                      border: "none",
+                      "&:hover": {
+                        background:
+                          "linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)",
+                      },
+                    }}
+                    radius="md"
                   >
                     Complete Profile
                   </Button>
                   <Button
-                    variant="light"
-                    size="sm"
+                    variant="subtle"
+                    size="lg"
                     onClick={() => navigate("/dashboard", { replace: true })}
                     disabled={isSubmitting}
-                    className="auth-button"
+                    c="gray.7"
+                    radius="md"
                   >
                     Skip for Now
                   </Button>
                 </Group>
+
+                <Text size="xs" c="dimmed" ta="center" mt="md">
+                  You can always update these details later in your profile
+                  settings
+                </Text>
               </Stack>
             </form>
-
-            <Text size="xs" c="dimmed" ta="center">
-              You can complete your profile now or skip and update these details
-              later in your profile settings
-            </Text>
-          </Stack>
+          </Box>
         </Paper>
       </Container>
     </Box>

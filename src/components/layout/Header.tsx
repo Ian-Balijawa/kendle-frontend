@@ -47,7 +47,6 @@ export function HeaderContent() {
   const [searchFocused, setSearchFocused] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
-  // Handle scroll effect
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
@@ -60,7 +59,7 @@ export function HeaderContent() {
     event.preventDefault();
     if (searchQuery.trim()) {
       navigate(
-        `/dashboard/explore?q=${encodeURIComponent(searchQuery.trim())}`,
+        `/dashboard/explore?q=${encodeURIComponent(searchQuery.trim())}`
       );
       setSearchFocused(false);
     }
@@ -91,8 +90,7 @@ export function HeaderContent() {
         backdropFilter: "blur(10px)",
       }}
     >
-      <Group justify="space-between" h={60} px="lg" gap="md">
-        {/* Logo Section */}
+      <Group justify="space-between" h={60} gap="md">
         <Group gap="xl">
           <UnstyledButton
             onClick={() => navigate("/dashboard")}
@@ -114,7 +112,6 @@ export function HeaderContent() {
             </Text>
           </UnstyledButton>
 
-          {/* Desktop Navigation */}
           <Group gap="xs" visibleFrom="md">
             {navigationItems.map((item) => {
               const isCurrentActive = isActive(item.path);
@@ -170,7 +167,6 @@ export function HeaderContent() {
           </Group>
         </Group>
 
-        {/* Search Bar - Center */}
         <Box style={{ flex: 1, maxWidth: 400 }} visibleFrom="sm">
           <form onSubmit={handleSearch}>
             <TextInput
@@ -210,7 +206,6 @@ export function HeaderContent() {
           </form>
         </Box>
 
-        {/* Right Section */}
         <Group gap="sm">
           {!isAuthenticated ? (
             <Group gap="sm">
@@ -234,7 +229,6 @@ export function HeaderContent() {
             </Group>
           ) : (
             <Group gap="xs">
-              {/* Create Button - Mobile */}
               <ActionIcon
                 variant="gradient"
                 gradient={{ from: "blue", to: "cyan" }}
@@ -246,7 +240,6 @@ export function HeaderContent() {
                 <IconPlus size={20} />
               </ActionIcon>
 
-              {/* Notifications */}
               <Indicator
                 disabled={unreadCount === 0}
                 size={16}
@@ -265,7 +258,6 @@ export function HeaderContent() {
                 </ActionIcon>
               </Indicator>
 
-              {/* User Menu */}
               <Menu shadow="lg" width={220} position="bottom-end" radius="md">
                 <Menu.Target>
                   <UnstyledButton
@@ -335,7 +327,6 @@ export function HeaderContent() {
                 </Menu.Dropdown>
               </Menu>
 
-              {/* Mobile Menu - Hidden for now, could add hamburger menu */}
               <ActionIcon
                 variant="subtle"
                 size="lg"

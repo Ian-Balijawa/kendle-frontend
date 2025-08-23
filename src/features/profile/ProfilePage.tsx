@@ -5,6 +5,9 @@ import {
   Button,
   Card,
   Center,
+  Container,
+  Divider,
+  Grid,
   Group,
   Loader,
   Modal,
@@ -14,13 +17,23 @@ import {
   TextInput,
   Textarea,
   Title,
+  UnstyledButton,
+  rem,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import {
+  IconBrandInstagram,
+  IconBrandTiktok,
+  IconBrandTwitter,
+  IconBrandWhatsapp,
   IconCalendar,
-  IconLink,
-  IconSettings,
-  IconUserMinus,
+  IconCheck,
+  IconEdit,
+  IconExternalLink,
+  IconHeart,
+  IconMessage,
+  IconPhoto,
+  IconUserCheck,
   IconUserPlus,
 } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
@@ -29,6 +42,7 @@ import { useUserPosts } from "../../hooks/usePosts";
 import { useUpdateProfile, useUser, useUserProfile } from "../../hooks/useUser";
 import { UpdateProfileRequest } from "../../services/api";
 import { useAuthStore } from "../../stores/authStore";
+import { User } from "../../types/auth";
 import { PostCard } from "../posts/PostCard";
 
 export function ProfilePage() {
@@ -37,18 +51,15 @@ export function ProfilePage() {
   const [activeTab, setActiveTab] = useState("posts");
   const [editModalOpen, setEditModalOpen] = useState(false);
 
-  // Determine if viewing own profile or another user's profile
   const isOwnProfile = !userId || userId === currentUser?.id;
   const profileUserId = userId || currentUser?.id;
 
-  // Fetch user data
   const {
     data: user,
     isLoading: userLoading,
     error: userError,
   } = isOwnProfile ? useUserProfile() : useUser(profileUserId!);
 
-  // Fetch user posts
   const { data: postsData, isLoading: postsLoading } = useUserPosts(
     profileUserId!,
     {
@@ -56,10 +67,8 @@ export function ProfilePage() {
     }
   );
 
-  // Update profile mutation
   const updateProfileMutation = useUpdateProfile();
 
-  // Form for editing profile
   const editForm = useForm<UpdateProfileRequest>({
     initialValues: {
       firstName: user?.firstName || "",
@@ -74,7 +83,6 @@ export function ProfilePage() {
     },
   });
 
-  // Update form values when user data changes
   useEffect(() => {
     if (user) {
       editForm.setValues({
@@ -89,7 +97,7 @@ export function ProfilePage() {
         instagramLink: user.instagramLink || "",
       });
     }
-  }, [user]); // Remove editForm from dependencies
+  }, [user]);
 
   const posts = postsData?.pages.flatMap((page) => page.posts) || [];
 
@@ -110,7 +118,6 @@ export function ProfilePage() {
 
   const handleFollow = () => {
     console.log("Follow/Unfollow user");
-    // TODO: Implement follow/unfollow functionality
   };
 
   const handleEditProfile = () => {
@@ -128,261 +135,571 @@ export function ProfilePage() {
     });
   };
 
+  const socialLinks = [
+    {
+      key: "whatsapp",
+      url: `https://wa.me/${user?.whatsapp}`,
+      icon: IconBrandWhatsapp,
+      label: "WhatsApp",
+      color: "#25D366",
+    },
+    {
+      key: "twitterLink",
+      url: user?.twitterLink,
+      icon: IconBrandTwitter,
+      label: "Twitter",
+      color: "#1DA1F2",
+    },
+    {
+      key: "instagramLink",
+      url: user?.instagramLink,
+      icon: IconBrandInstagram,
+      label: "Instagram",
+      color: "#E4405F",
+    },
+    {
+      key: "tiktokLink",
+      url: user?.tiktokLink,
+      icon: IconBrandTiktok,
+      label: "TikTok",
+      color: "#000000",
+    },
+  ].filter((link) => user?.[link.key as keyof User]);
+
   if (userLoading) {
     return (
-      <Center py="xl">
-        <Stack align="center" gap="md">
-          <Loader size="lg" />
-          <Text c="dimmed">Loading profile...</Text>
-        </Stack>
-      </Center>
+      <Container size="xl">
+        <Center py={100}>
+          <Stack align="center" gap="xl">
+            <Loader size={60} />
+            <Stack align="center" gap="xs">
+              <Text size="lg" fw={500}>
+                Loading profile...
+              </Text>
+              <Text c="dimmed" size="sm">
+                Please wait while we fetch the profile data
+              </Text>
+            </Stack>
+          </Stack>
+        </Center>
+      </Container>
     );
   }
 
   if (userError || !user) {
     return (
-      <Card
-        withBorder
-        p="xl"
-        radius="md"
-        style={{ borderColor: "var(--mantine-color-red-3)" }}
-      >
-        <Stack align="center" gap="md">
-          <Text size="lg" fw={500} c="red">
-            Profile not found
-          </Text>
-          <Text c="dimmed" ta="center">
-            The profile you're looking for doesn't exist or has been removed.
-          </Text>
-        </Stack>
-      </Card>
+      <Container size="xl">
+        <Center py={100}>
+          <Card
+            withBorder
+            p="xl"
+            radius="xl"
+            shadow="sm"
+            style={{ maxWidth: 400, width: "100%" }}
+          >
+            <Stack align="center" gap="lg">
+              <Box
+                style={{
+                  width: 80,
+                  height: 80,
+                  borderRadius: "50%",
+                  background: "linear-gradient(135deg, #ff6b6b, #ee5a24)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <IconUserCheck size={40} color="white" />
+              </Box>
+              <Stack align="center" gap="xs">
+                <Text size="xl" fw={600} c="red">
+                  Profile not found
+                </Text>
+                <Text c="dimmed" ta="center" size="sm">
+                  The profile you're looking for doesn't exist or has been
+                  removed.
+                </Text>
+              </Stack>
+            </Stack>
+          </Card>
+        </Center>
+      </Container>
     );
   }
 
   return (
-    <>
-      <Stack gap="lg">
-        <Card withBorder p="xl">
-          <Stack gap="lg">
-            <Group justify="space-between" align="flex-start">
-              <Group>
-                <Avatar
-                  src={user.avatar}
-                  alt={user.firstName}
-                  size="xl"
-                  radius="xl"
-                >
-                  {user.firstName?.charAt(0)}
-                </Avatar>
-                <Box>
-                  <Group gap="xs" align="center">
-                    <Title order={2} size="h3">
-                      {user.firstName} {user.lastName}
-                    </Title>
-                    {user.isVerified && (
-                      <Badge color="blue" variant="light" size="sm">
-                        Verified
-                      </Badge>
-                    )}
-                  </Group>
-                  <Text c="dimmed" size="sm">
-                    @{user.username}
-                  </Text>
-                  {user.bio && (
-                    <Text size="sm" mt="xs" style={{ lineHeight: 1.5 }}>
-                      {user.bio}
-                    </Text>
-                  )}
-                </Box>
-              </Group>
+    <Container size="xl">
+      <Box
+        style={{
+          height: 200,
+          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          position: "relative",
+        }}
+      >
+        <Avatar
+          src={user.avatar}
+          alt={user.firstName}
+          size={120}
+          radius="50%"
+          style={{
+            position: "absolute",
+            bottom: -60,
+            left: 30,
+            border: "4px solid white",
+            boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+          }}
+        >
+          <Text size="2rem" fw={600} c="white">
+            {user.firstName?.charAt(0)}
+            {user.lastName?.charAt(0)}
+          </Text>
+        </Avatar>
+      </Box>
 
-              <Group>
-                {isOwnProfile ? (
-                  <Button
-                    variant="outline"
-                    leftSection={<IconSettings size={16} />}
-                    onClick={handleEditProfile}
-                  >
-                    Edit Profile
-                  </Button>
-                ) : (
-                  <Button
-                    variant={user?.isFollowing ? "outline" : "filled"}
-                    leftSection={
-                      user?.isFollowing ? (
-                        <IconUserMinus size={16} />
-                      ) : (
-                        <IconUserPlus size={16} />
-                      )
-                    }
-                    onClick={handleFollow}
-                  >
-                    {user?.isFollowing ? "Unfollow" : "Follow"}
-                  </Button>
-                )}
-              </Group>
+      <Box py="xl" pt={80}>
+        <Group justify="space-between" align="flex-start" mb="lg">
+          <Box style={{ flex: 1 }}>
+            <Group gap="sm" align="center" mb="xs">
+              <Title order={1} size={rem(28)} fw={700}>
+                {user.firstName} {user.lastName}
+              </Title>
+              {user.isVerified && (
+                <Badge
+                  color="blue"
+                  variant="light"
+                  size="lg"
+                  style={{
+                    background: "linear-gradient(135deg, #4dabf7, #339af0)",
+                    color: "white",
+                    border: "none",
+                  }}
+                >
+                  <IconCheck size={14} style={{ marginRight: 4 }} />
+                  Verified
+                </Badge>
+              )}
             </Group>
 
-            <Group gap="xl">
-              <Box ta="center">
-                <Text fw={700} size="lg">
+            <Text c="dimmed" size="lg" mb="md" fw={500}>
+              @{user.username}
+            </Text>
+
+            {user.bio && (
+              <Text
+                size="md"
+                style={{ lineHeight: 1.6, maxWidth: 600 }}
+                mb="lg"
+              >
+                {user.bio}
+              </Text>
+            )}
+
+            <Group gap="xs" mb="lg">
+              <IconCalendar size={18} color="#868e96" />
+              <Text size="sm" c="dimmed">
+                Joined {formatDate(user.createdAt)}
+              </Text>
+            </Group>
+          </Box>
+
+          <Group>
+            {isOwnProfile ? (
+              <Button
+                variant="light"
+                leftSection={<IconEdit size={18} />}
+                onClick={handleEditProfile}
+                radius="xl"
+                style={{
+                  background: "linear-gradient(135deg, #667eea, #764ba2)",
+                  color: "white",
+                  border: "none",
+                }}
+              >
+                Edit Profile
+              </Button>
+            ) : (
+              <Button
+                variant={user?.isFollowing ? "light" : "filled"}
+                leftSection={
+                  user?.isFollowing ? (
+                    <IconUserCheck size={18} />
+                  ) : (
+                    <IconUserPlus size={18} />
+                  )
+                }
+                onClick={handleFollow}
+                radius="xl"
+                style={
+                  user?.isFollowing
+                    ? { color: "#667eea", borderColor: "#667eea" }
+                    : {
+                        background: "linear-gradient(135deg, #667eea, #764ba2)",
+                        border: "none",
+                      }
+                }
+              >
+                {user?.isFollowing ? "Following" : "Follow"}
+              </Button>
+            )}
+          </Group>
+        </Group>
+
+        <Grid mb="lg">
+          <Grid.Col span={4}>
+            <UnstyledButton
+              style={{
+                width: "100%",
+                padding: "1rem",
+                borderRadius: "12px",
+                background: "linear-gradient(135deg, #f8f9ff, #f1f3ff)",
+                transition: "transform 0.2s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "translateY(-2px)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "translateY(0)";
+              }}
+            >
+              <Stack align="center" gap="xs">
+                <Text fw={700} size="xl" c="#667eea">
                   {formatNumber(user.postsCount)}
                 </Text>
-                <Text size="sm" c="dimmed">
+                <Text size="sm" c="dimmed" fw={500}>
                   Posts
                 </Text>
-              </Box>
-              <Box ta="center">
-                <Text fw={700} size="lg">
+              </Stack>
+            </UnstyledButton>
+          </Grid.Col>
+
+          <Grid.Col span={4}>
+            <UnstyledButton
+              style={{
+                width: "100%",
+                padding: "1rem",
+                borderRadius: "12px",
+                background: "linear-gradient(135deg, #fff8f0, #fff0e6)",
+                transition: "transform 0.2s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "translateY(-2px)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "translateY(0)";
+              }}
+            >
+              <Stack align="center" gap="xs">
+                <Text fw={700} size="xl" c="#fd7e14">
                   {formatNumber(user.followersCount)}
                 </Text>
-                <Text size="sm" c="dimmed">
+                <Text size="sm" c="dimmed" fw={500}>
                   Followers
                 </Text>
-              </Box>
-              <Box ta="center">
-                <Text fw={700} size="lg">
+              </Stack>
+            </UnstyledButton>
+          </Grid.Col>
+
+          <Grid.Col span={4}>
+            <UnstyledButton
+              style={{
+                width: "100%",
+                padding: "1rem",
+                borderRadius: "12px",
+                background: "linear-gradient(135deg, #f0fff4, #e6fffa)",
+                transition: "transform 0.2s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "translateY(-2px)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "translateY(0)";
+              }}
+            >
+              <Stack align="center" gap="xs">
+                <Text fw={700} size="xl" c="#20c997">
                   {formatNumber(user.followingCount)}
                 </Text>
-                <Text size="sm" c="dimmed">
+                <Text size="sm" c="dimmed" fw={500}>
                   Following
                 </Text>
-              </Box>
-            </Group>
+              </Stack>
+            </UnstyledButton>
+          </Grid.Col>
+        </Grid>
 
-            <Group gap="lg">
-              {user.whatsapp && (
-                <Group gap="xs">
-                  <IconLink size={16} />
-                  <Text
-                    size="sm"
-                    component="a"
-                    href={`https://wa.me/${user.whatsapp}`}
-                    target="_blank"
-                  >
-                    WhatsApp
-                  </Text>
-                </Group>
-              )}
-              {user.twitterLink && (
-                <Group gap="xs">
-                  <IconLink size={16} />
-                  <Text
-                    size="sm"
-                    component="a"
-                    href={user.twitterLink}
-                    target="_blank"
-                  >
-                    Twitter
-                  </Text>
-                </Group>
-              )}
-              {user.tiktokLink && (
-                <Group gap="xs">
-                  <IconLink size={16} />
-                  <Text
-                    size="sm"
-                    component="a"
-                    href={user.tiktokLink}
-                    target="_blank"
-                  >
-                    TikTok
-                  </Text>
-                </Group>
-              )}
-              {user.instagramLink && (
-                <Group gap="xs">
-                  <IconLink size={16} />
-                  <Text
-                    size="sm"
-                    component="a"
-                    href={user.instagramLink}
-                    target="_blank"
-                  >
-                    Instagram
-                  </Text>
-                </Group>
-              )}
-              <Group gap="xs">
-                <IconCalendar size={16} />
-                <Text size="sm">Joined {formatDate(user.createdAt)}</Text>
-              </Group>
+        {socialLinks.length > 0 && (
+          <>
+            <Divider mb="lg" />
+            <Group gap="md">
+              {socialLinks.map(({ key, url, icon: Icon, label, color }) => (
+                <Button
+                  key={key}
+                  component="a"
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  variant="light"
+                  leftSection={<Icon size={16} />}
+                  rightSection={<IconExternalLink size={14} />}
+                  size="sm"
+                  radius="xl"
+                  style={{
+                    color: color,
+                    borderColor: color + "30",
+                    backgroundColor: color + "10",
+                  }}
+                >
+                  {label}
+                </Button>
+              ))}
             </Group>
-          </Stack>
-        </Card>
+          </>
+        )}
+      </Box>
 
-        <Tabs
-          value={activeTab}
-          onChange={(value) => setActiveTab(value || "posts")}
+      <Tabs
+        value={activeTab}
+        onChange={(value) => setActiveTab(value || "posts")}
+        variant="pills"
+        radius="xl"
+      >
+        <Tabs.List
+          style={{
+            background: "#f8f9fa",
+            padding: "4px",
+            borderRadius: "16px",
+          }}
         >
-          <Tabs.List>
-            <Tabs.Tab value="posts">Posts</Tabs.Tab>
-            <Tabs.Tab value="media">Media</Tabs.Tab>
-            <Tabs.Tab value="likes">Likes</Tabs.Tab>
-          </Tabs.List>
+          <Tabs.Tab
+            value="posts"
+            leftSection={<IconMessage size={16} />}
+            style={{
+              borderRadius: "12px",
+              fontWeight: 500,
+            }}
+          >
+            Posts
+          </Tabs.Tab>
+          <Tabs.Tab
+            value="media"
+            leftSection={<IconPhoto size={16} />}
+            style={{
+              borderRadius: "12px",
+              fontWeight: 500,
+            }}
+          >
+            Media
+          </Tabs.Tab>
+          <Tabs.Tab
+            value="likes"
+            leftSection={<IconHeart size={16} />}
+            style={{
+              borderRadius: "12px",
+              fontWeight: 500,
+            }}
+          >
+            Likes
+          </Tabs.Tab>
+        </Tabs.List>
 
-          <Tabs.Panel value="posts" pt="md">
-            <Stack gap="md">
-              {postsLoading ? (
-                <Center py="md">
-                  <Stack align="center" gap="sm">
-                    <Loader size="sm" />
-                    <Text size="sm" c="dimmed">
-                      Loading posts...
+        <Tabs.Panel value="posts" pt="xl">
+          <Stack gap="lg">
+            {postsLoading ? (
+              <Center py={60}>
+                <Stack align="center" gap="md">
+                  <Loader size="lg" />
+                  <Text size="sm" c="dimmed" fw={500}>
+                    Loading posts...
+                  </Text>
+                </Stack>
+              </Center>
+            ) : posts.length === 0 ? (
+              <Card
+                p="xl"
+                radius="xl"
+                style={{
+                  background: "linear-gradient(135deg, #f8f9ff, #f1f3ff)",
+                  border: "none",
+                }}
+              >
+                <Stack align="center" gap="md">
+                  <Box
+                    style={{
+                      width: 80,
+                      height: 80,
+                      borderRadius: "50%",
+                      background: "rgba(102, 126, 234, 0.1)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <IconMessage size={32} color="#667eea" />
+                  </Box>
+                  <Stack align="center" gap="xs">
+                    <Text fw={600} size="lg">
+                      No posts yet
+                    </Text>
+                    <Text c="dimmed" ta="center" size="sm">
+                      {isOwnProfile
+                        ? "Share your first post to get started!"
+                        : "This user hasn't posted anything yet."}
                     </Text>
                   </Stack>
-                </Center>
-              ) : posts.length === 0 ? (
-                <Card withBorder p="md">
-                  <Text c="dimmed" ta="center">
-                    No posts yet
-                  </Text>
-                </Card>
-              ) : (
-                posts.map((post) => <PostCard key={post.id} post={post} />)
-              )}
+                </Stack>
+              </Card>
+            ) : (
+              posts.map((post) => <PostCard key={post.id} post={post} />)
+            )}
+          </Stack>
+        </Tabs.Panel>
+
+        <Tabs.Panel value="media" pt="xl">
+          <Card
+            p="xl"
+            radius="xl"
+            style={{
+              background: "linear-gradient(135deg, #fff8f0, #fff0e6)",
+              border: "none",
+            }}
+          >
+            <Stack align="center" gap="md">
+              <Box
+                style={{
+                  width: 80,
+                  height: 80,
+                  borderRadius: "50%",
+                  background: "rgba(253, 126, 20, 0.1)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <IconPhoto size={32} color="#fd7e14" />
+              </Box>
+              <Stack align="center" gap="xs">
+                <Text fw={600} size="lg">
+                  No media posts yet
+                </Text>
+                <Text c="dimmed" ta="center" size="sm">
+                  Media posts will appear here when available.
+                </Text>
+              </Stack>
             </Stack>
-          </Tabs.Panel>
+          </Card>
+        </Tabs.Panel>
 
-          <Tabs.Panel value="media" pt="md">
-            <Text c="dimmed" ta="center" py="xl">
-              No media posts yet
-            </Text>
-          </Tabs.Panel>
+        <Tabs.Panel value="likes" pt="xl">
+          <Card
+            p="xl"
+            radius="xl"
+            style={{
+              background: "linear-gradient(135deg, #fff5f5, #ffe0e6)",
+              border: "none",
+            }}
+          >
+            <Stack align="center" gap="md">
+              <Box
+                style={{
+                  width: 80,
+                  height: 80,
+                  borderRadius: "50%",
+                  background: "rgba(224, 49, 49, 0.1)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <IconHeart size={32} color="#e03131" />
+              </Box>
+              <Stack align="center" gap="xs">
+                <Text fw={600} size="lg">
+                  No liked posts yet
+                </Text>
+                <Text c="dimmed" ta="center" size="sm">
+                  Liked posts will appear here when available.
+                </Text>
+              </Stack>
+            </Stack>
+          </Card>
+        </Tabs.Panel>
+      </Tabs>
 
-          <Tabs.Panel value="likes" pt="md">
-            <Text c="dimmed" ta="center" py="xl">
-              No liked posts yet
-            </Text>
-          </Tabs.Panel>
-        </Tabs>
-      </Stack>
-
-      {/* Edit Profile Modal */}
       <Modal
         opened={editModalOpen}
         onClose={() => setEditModalOpen(false)}
-        title="Edit Profile"
+        title={
+          <Group gap="sm">
+            <IconEdit size={20} />
+            <Text fw={600} size="lg">
+              Edit Profile
+            </Text>
+          </Group>
+        }
         size="lg"
+        radius="xl"
+        padding="xl"
       >
         <form onSubmit={editForm.onSubmit(handleSaveProfile)}>
-          <Stack gap="md">
-            <Group grow>
-              <TextInput
-                label="First Name"
-                placeholder="Enter first name"
-                {...editForm.getInputProps("firstName")}
-              />
-              <TextInput
-                label="Last Name"
-                placeholder="Enter last name"
-                {...editForm.getInputProps("lastName")}
-              />
-            </Group>
+          <Stack gap="lg">
+            <Grid>
+              <Grid.Col span={6}>
+                <TextInput
+                  label="First Name"
+                  placeholder="Enter first name"
+                  size="md"
+                  radius="md"
+                  styles={{
+                    label: { fontWeight: 600, marginBottom: "0.5rem" },
+                    input: {
+                      "&:focus": {
+                        borderColor: "#667eea",
+                        boxShadow: "0 0 0 2px rgba(102, 126, 234, 0.1)",
+                      },
+                    },
+                  }}
+                  {...editForm.getInputProps("firstName")}
+                />
+              </Grid.Col>
+              <Grid.Col span={6}>
+                <TextInput
+                  label="Last Name"
+                  placeholder="Enter last name"
+                  size="md"
+                  radius="md"
+                  styles={{
+                    label: { fontWeight: 600, marginBottom: "0.5rem" },
+                    input: {
+                      "&:focus": {
+                        borderColor: "#667eea",
+                        boxShadow: "0 0 0 2px rgba(102, 126, 234, 0.1)",
+                      },
+                    },
+                  }}
+                  {...editForm.getInputProps("lastName")}
+                />
+              </Grid.Col>
+            </Grid>
 
             <TextInput
               label="Username"
               placeholder="Enter username"
+              size="md"
+              radius="md"
+              leftSection={
+                <Text size="sm" c="dimmed">
+                  @
+                </Text>
+              }
+              styles={{
+                label: { fontWeight: 600, marginBottom: "0.5rem" },
+                input: {
+                  "&:focus": {
+                    borderColor: "#667eea",
+                    boxShadow: "0 0 0 2px rgba(102, 126, 234, 0.1)",
+                  },
+                },
+              }}
               {...editForm.getInputProps("username")}
             />
 
@@ -390,6 +707,17 @@ export function ProfilePage() {
               label="Email"
               placeholder="Enter email"
               type="email"
+              size="md"
+              radius="md"
+              styles={{
+                label: { fontWeight: 600, marginBottom: "0.5rem" },
+                input: {
+                  "&:focus": {
+                    borderColor: "#667eea",
+                    boxShadow: "0 0 0 2px rgba(102, 126, 234, 0.1)",
+                  },
+                },
+              }}
               {...editForm.getInputProps("email")}
             />
 
@@ -397,44 +725,129 @@ export function ProfilePage() {
               label="Bio"
               placeholder="Tell us about yourself"
               minRows={3}
+              size="md"
+              radius="md"
+              styles={{
+                label: { fontWeight: 600, marginBottom: "0.5rem" },
+                input: {
+                  "&:focus": {
+                    borderColor: "#667eea",
+                    boxShadow: "0 0 0 2px rgba(102, 126, 234, 0.1)",
+                  },
+                },
+              }}
               {...editForm.getInputProps("bio")}
             />
 
-            <TextInput
-              label="WhatsApp"
-              placeholder="Enter WhatsApp number"
-              {...editForm.getInputProps("whatsapp")}
-            />
+            <Divider label="Social Media Links" labelPosition="center" />
 
-            <TextInput
-              label="Twitter Link"
-              placeholder="Enter Twitter profile URL"
-              {...editForm.getInputProps("twitterLink")}
-            />
+            <Grid>
+              <Grid.Col span={6}>
+                <TextInput
+                  label="WhatsApp"
+                  placeholder="Enter WhatsApp number"
+                  leftSection={<IconBrandWhatsapp size={16} />}
+                  size="md"
+                  radius="md"
+                  styles={{
+                    label: { fontWeight: 600, marginBottom: "0.5rem" },
+                    input: {
+                      "&:focus": {
+                        borderColor: "#667eea",
+                        boxShadow: "0 0 0 2px rgba(102, 126, 234, 0.1)",
+                      },
+                    },
+                  }}
+                  {...editForm.getInputProps("whatsapp")}
+                />
+              </Grid.Col>
+              <Grid.Col span={6}>
+                <TextInput
+                  label="Twitter Link"
+                  placeholder="Enter Twitter profile URL"
+                  leftSection={<IconBrandTwitter size={16} />}
+                  size="md"
+                  radius="md"
+                  styles={{
+                    label: { fontWeight: 600, marginBottom: "0.5rem" },
+                    input: {
+                      "&:focus": {
+                        borderColor: "#667eea",
+                        boxShadow: "0 0 0 2px rgba(102, 126, 234, 0.1)",
+                      },
+                    },
+                  }}
+                  {...editForm.getInputProps("twitterLink")}
+                />
+              </Grid.Col>
+            </Grid>
 
-            <TextInput
-              label="Instagram Link"
-              placeholder="Enter Instagram profile URL"
-              {...editForm.getInputProps("instagramLink")}
-            />
+            <Grid>
+              <Grid.Col span={6}>
+                <TextInput
+                  label="Instagram Link"
+                  placeholder="Enter Instagram profile URL"
+                  leftSection={<IconBrandInstagram size={16} />}
+                  size="md"
+                  radius="md"
+                  styles={{
+                    label: { fontWeight: 600, marginBottom: "0.5rem" },
+                    input: {
+                      "&:focus": {
+                        borderColor: "#667eea",
+                        boxShadow: "0 0 0 2px rgba(102, 126, 234, 0.1)",
+                      },
+                    },
+                  }}
+                  {...editForm.getInputProps("instagramLink")}
+                />
+              </Grid.Col>
+              <Grid.Col span={6}>
+                <TextInput
+                  label="TikTok Link"
+                  placeholder="Enter TikTok profile URL"
+                  leftSection={<IconBrandTiktok size={16} />}
+                  size="md"
+                  radius="md"
+                  styles={{
+                    label: { fontWeight: 600, marginBottom: "0.5rem" },
+                    input: {
+                      "&:focus": {
+                        borderColor: "#667eea",
+                        boxShadow: "0 0 0 2px rgba(102, 126, 234, 0.1)",
+                      },
+                    },
+                  }}
+                  {...editForm.getInputProps("tiktokLink")}
+                />
+              </Grid.Col>
+            </Grid>
 
-            <TextInput
-              label="TikTok Link"
-              placeholder="Enter TikTok profile URL"
-              {...editForm.getInputProps("tiktokLink")}
-            />
-
-            <Group justify="flex-end" mt="md">
-              <Button variant="light" onClick={() => setEditModalOpen(false)}>
+            <Group justify="flex-end" mt="xl">
+              <Button
+                variant="light"
+                onClick={() => setEditModalOpen(false)}
+                size="md"
+                radius="md"
+              >
                 Cancel
               </Button>
-              <Button type="submit" loading={updateProfileMutation.isPending}>
+              <Button
+                type="submit"
+                loading={updateProfileMutation.isPending}
+                size="md"
+                radius="md"
+                style={{
+                  background: "linear-gradient(135deg, #667eea, #764ba2)",
+                  border: "none",
+                }}
+              >
                 Save Changes
               </Button>
             </Group>
           </Stack>
         </form>
       </Modal>
-    </>
+    </Container>
   );
 }

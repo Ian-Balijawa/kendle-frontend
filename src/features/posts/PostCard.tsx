@@ -30,7 +30,6 @@ import {
   IconHeartFilled,
   IconMessageCircle,
   IconSend,
-  IconShare,
   IconTrash,
 } from "@tabler/icons-react";
 import { useState } from "react";
@@ -42,7 +41,6 @@ import {
   useDeletePost,
   useLikePost,
   useRemoveVote,
-  useSharePost,
   useUnbookmarkPost,
   useUnlikePost,
   useUpdatePost,
@@ -69,7 +67,6 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
   const unbookmarkPostMutation = useUnbookmarkPost();
   const votePostMutation = useVotePost();
   const removeVoteMutation = useRemoveVote();
-  const sharePostMutation = useSharePost();
   const updatePostMutation = useUpdatePost();
   const deletePostMutation = useDeletePost();
   const createCommentMutation = useCreateComment();
@@ -122,11 +119,6 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
     } else {
       bookmarkPostMutation.mutate({ id: post.id });
     }
-  };
-
-  const handleShare = () => {
-    if (!isAuthenticated) return;
-    sharePostMutation.mutate({ id: post.id });
   };
 
   const handleUpvote = () => {
@@ -491,25 +483,6 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                 </ActionIcon>
                 <Text size="sm" c="dimmed" fw={500}>
                   {post?.commentsCount}
-                </Text>
-              </Group>
-
-              <Group gap={4}>
-                <ActionIcon
-                  variant="subtle"
-                  color="gray"
-                  onClick={handleShare}
-                  size="lg"
-                  radius="xl"
-                  disabled={!isAuthenticated}
-                  style={{
-                    transition: "all 0.2s ease",
-                  }}
-                >
-                  <IconShare size={16} />
-                </ActionIcon>
-                <Text size="sm" c="dimmed" fw={500}>
-                  {post?.sharesCount}
                 </Text>
               </Group>
             </Group>
