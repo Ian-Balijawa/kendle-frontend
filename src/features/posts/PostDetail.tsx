@@ -261,7 +261,7 @@ export function PostDetail() {
   const netScore = post?.upvotesCount - post?.downvotesCount;
 
   return (
-    <Box maw={680} mx="auto" p="md">
+    <Box mx="auto" p="md">
       {/* Header */}
       <Group justify="space-between" mb="xl">
         <ActionIcon

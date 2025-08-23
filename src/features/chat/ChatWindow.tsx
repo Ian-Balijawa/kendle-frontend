@@ -2,15 +2,18 @@ import {
   ActionIcon,
   Avatar,
   Box,
+  Button,
+  Center,
   Group,
   Loader,
   Menu,
+  Paper,
+  rem,
   ScrollArea,
   Stack,
   Text,
   Textarea,
-  Center,
-  Button,
+  useMantineTheme,
 } from "@mantine/core";
 import {
   IconArrowLeft,
@@ -24,16 +27,16 @@ import {
   IconVideo,
 } from "@tabler/icons-react";
 import { useEffect, useRef, useState } from "react";
-import { useAuthStore } from "../../stores/authStore";
-import { Conversation } from "../../types/chat";
-import { MessageCard } from "./MessageCard";
 import {
   useInfiniteMessages,
-  useSendMessage,
   useMarkConversationAsRead,
+  useSendMessage,
   useUpdateConversation,
 } from "../../hooks/useChat";
 import { SendMessageRequest } from "../../services/api";
+import { useAuthStore } from "../../stores/authStore";
+import { Conversation } from "../../types/chat";
+import { MessageCard } from "./MessageCard";
 
 interface ChatWindowProps {
   conversation: Conversation;
@@ -47,6 +50,7 @@ export function ChatWindow({
   showBackButton = false,
 }: ChatWindowProps) {
   const { user } = useAuthStore();
+  const theme = useMantineTheme();
 
   // React Query hooks
   const {
@@ -75,7 +79,7 @@ export function ChatWindow({
 
   // Get the other participant for direct conversations
   const otherParticipant = conversation.participants.find(
-    (p) => p.id !== user?.id,
+    (p) => p.id !== user?.id
   );
 
   // Auto-scroll to bottom when new messages arrive
@@ -152,7 +156,7 @@ export function ChatWindow({
         onError: (error) => {
           console.error("Failed to send message:", error);
         },
-      },
+      }
     );
   };
 
@@ -191,98 +195,179 @@ export function ChatWindow({
   };
 
   return (
-    <Box style={{ height: "100%", display: "flex", flexDirection: "column" }}>
+    <Box
+      style={{
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        backgroundColor: theme.colors.gray[0],
+      }}
+    >
       {/* Chat Header */}
-      <Box
+      <Paper
         p="md"
+        shadow="sm"
         style={{
-          borderBottom: "1px solid var(--mantine-color-gray-2)",
-          backgroundColor: "var(--mantine-color-gray-0)",
+          borderBottom: `1px solid ${theme.colors.gray[2]}`,
+          backgroundColor: theme.white,
         }}
       >
         <Group justify="space-between">
           <Group>
             {showBackButton && (
-              <ActionIcon variant="subtle" onClick={onBack}>
-                <IconArrowLeft size={20} />
+              <ActionIcon
+                variant="subtle"
+                onClick={onBack}
+                radius="xl"
+                size="lg"
+                style={{
+                  backgroundColor: theme.colors.gray[1],
+                  color: theme.colors.gray[7],
+                }}
+              >
+                <IconArrowLeft size={18} />
               </ActionIcon>
             )}
 
-            <Avatar
-              src={otherParticipant?.avatar}
-              alt={otherParticipant?.firstName || "User"}
-              size="md"
-              radius="xl"
-            >
-              {(otherParticipant?.firstName || "U").charAt(0)}
-            </Avatar>
+            <Group gap="sm">
+              <Avatar
+                src={otherParticipant?.avatar}
+                alt={otherParticipant?.firstName || "User"}
+                size="md"
+                radius="xl"
+                style={{
+                  border: `2px solid ${theme.colors.gray[2]}`,
+                }}
+              >
+                {(otherParticipant?.firstName || "U").charAt(0)}
+              </Avatar>
 
-            <Box>
-              <Text fw={500} size="sm">
-                {conversation.name ||
-                  (otherParticipant
-                    ? `${otherParticipant.firstName} ${otherParticipant.lastName}`
-                    : "Unknown User")}
-              </Text>
-              <Text size="xs" c="dimmed">
-                {/* TODO: Show online status or typing indicator */}
-                {otherParticipant
-                  ? `@${otherParticipant.username || otherParticipant.phoneNumber}`
-                  : ""}
-              </Text>
-            </Box>
+              <Box>
+                <Text fw={600} size="sm" c={theme.colors.gray[8]}>
+                  {conversation.name ||
+                    (otherParticipant
+                      ? `${otherParticipant.firstName} ${otherParticipant.lastName}`
+                      : "Unknown User")}
+                </Text>
+                <Group gap={4}>
+                  <Box
+                    style={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: "50%",
+                      backgroundColor: theme.colors.green[5],
+                    }}
+                  />
+                  <Text size="xs" c="dimmed">
+                    {otherParticipant
+                      ? `@${otherParticipant.username || otherParticipant.phoneNumber}`
+                      : ""}
+                  </Text>
+                </Group>
+              </Box>
+            </Group>
           </Group>
 
           <Group>
-            <ActionIcon variant="subtle">
-              <IconPhone size={20} />
+            <ActionIcon
+              variant="subtle"
+              radius="xl"
+              size="lg"
+              style={{
+                backgroundColor: theme.colors.green[1],
+                color: theme.colors.green[7],
+              }}
+            >
+              <IconPhone size={18} />
             </ActionIcon>
-            <ActionIcon variant="subtle">
-              <IconVideo size={20} />
+            <ActionIcon
+              variant="subtle"
+              radius="xl"
+              size="lg"
+              style={{
+                backgroundColor: theme.colors.blue[1],
+                color: theme.colors.blue[7],
+              }}
+            >
+              <IconVideo size={18} />
             </ActionIcon>
 
-            <Menu shadow="md" width={200} position="bottom-end">
+            <Menu shadow="md" width={200} position="bottom-end" radius="lg">
               <Menu.Target>
-                <ActionIcon variant="subtle">
-                  <IconDotsVertical size={20} />
+                <ActionIcon
+                  variant="subtle"
+                  radius="xl"
+                  size="lg"
+                  style={{
+                    backgroundColor: theme.colors.gray[1],
+                    color: theme.colors.gray[6],
+                  }}
+                >
+                  <IconDotsVertical size={18} />
                 </ActionIcon>
               </Menu.Target>
 
               <Menu.Dropdown>
-                <Menu.Item onClick={handleTogglePin}>
+                <Menu.Item
+                  onClick={handleTogglePin}
+                  leftSection={<IconDotsVertical size={14} />}
+                >
                   {conversation.isPinned ? "Unpin" : "Pin"} Conversation
                 </Menu.Item>
-                <Menu.Item onClick={handleToggleMute}>
+                <Menu.Item
+                  onClick={handleToggleMute}
+                  leftSection={<IconDotsVertical size={14} />}
+                >
                   {conversation.isMuted ? "Unmute" : "Mute"} Conversation
                 </Menu.Item>
-                <Menu.Item onClick={handleToggleArchive}>
+                <Menu.Item
+                  onClick={handleToggleArchive}
+                  leftSection={<IconDotsVertical size={14} />}
+                >
                   {conversation.isArchived ? "Unarchive" : "Archive"}{" "}
                   Conversation
                 </Menu.Item>
                 <Menu.Divider />
-                <Menu.Item color="red">Delete Conversation</Menu.Item>
+                <Menu.Item
+                  color="red"
+                  leftSection={<IconDotsVertical size={14} />}
+                >
+                  Delete Conversation
+                </Menu.Item>
               </Menu.Dropdown>
             </Menu>
           </Group>
         </Group>
-      </Box>
+      </Paper>
 
       {/* Messages Area */}
       <ScrollArea
         ref={scrollAreaRef}
         style={{ flex: 1 }}
-        scrollbarSize={6}
+        scrollbarSize={4}
         offsetScrollbars
+        styles={{
+          viewport: {
+            backgroundColor: theme.colors.gray[0],
+          },
+        }}
       >
-        <Stack gap="xs" p="md">
+        <Stack gap="xs" p="md" style={{ minHeight: "100%" }}>
           {/* Load more messages button */}
           {hasNextPage && (
             <Center pb="md">
               <Button
-                variant="light"
+                variant="subtle"
                 size="xs"
+                radius="xl"
                 onClick={handleLoadMoreMessages}
                 loading={isFetchingNextPage}
+                styles={{
+                  root: {
+                    backgroundColor: theme.colors.gray[1],
+                    color: theme.colors.gray[7],
+                  },
+                }}
               >
                 {isFetchingNextPage ? "Loading..." : "Load older messages"}
               </Button>
@@ -290,49 +375,97 @@ export function ChatWindow({
           )}
 
           {messagesLoading && messages.length === 0 ? (
-            <Center py="xl">
-              <Stack align="center" gap="md">
-                <Loader size="md" />
-                <Text c="dimmed">Loading messages...</Text>
+            <Center py="xl" style={{ height: "100%" }}>
+              <Stack align="center" gap="lg">
+                <Loader size="lg" color="blue" />
+                <Text c="dimmed" fw={500}>
+                  Loading messages...
+                </Text>
               </Stack>
             </Center>
           ) : messages.length === 0 ? (
-            <Center py="xl">
-              <Stack align="center" gap="md">
-                <Avatar size="xl" color="blue">
-                  {(otherParticipant?.firstName || "U").charAt(0)}
-                </Avatar>
-                <Text size="lg" fw={500}>
-                  Start the conversation
-                </Text>
-                <Text size="sm" c="dimmed" ta="center">
-                  Send a message to {otherParticipant?.firstName || "this user"}{" "}
-                  to get started
-                </Text>
+            <Center py="xl" style={{ height: "100%" }}>
+              <Stack align="center" gap="lg" style={{ maxWidth: 300 }}>
+                <Paper
+                  p="xl"
+                  radius="xl"
+                  style={{
+                    background: `linear-gradient(135deg, ${theme.colors.blue[1]} 0%, ${theme.colors.cyan[1]} 100%)`,
+                  }}
+                >
+                  <Avatar size="lg" color="blue" radius="xl">
+                    {(otherParticipant?.firstName || "U").charAt(0)}
+                  </Avatar>
+                </Paper>
+                <div style={{ textAlign: "center" }}>
+                  <Text size="lg" fw={600} c={theme.colors.gray[8]} mb={8}>
+                    Start the conversation
+                  </Text>
+                  <Text size="sm" c="dimmed" mb="lg">
+                    Send a message to{" "}
+                    {otherParticipant?.firstName || "this user"} to get started
+                  </Text>
+                </div>
+                <Button
+                  variant="filled"
+                  color="blue"
+                  radius="xl"
+                  size="md"
+                  onClick={() => messageInputRef.current?.focus()}
+                  style={{
+                    boxShadow: theme.shadows.md,
+                  }}
+                >
+                  Send First Message
+                </Button>
               </Stack>
             </Center>
           ) : (
-            messages.map((message) => (
-              <MessageCard
-                key={message.id}
-                message={message}
-                isOwn={message.senderId === user?.id}
-                showAvatar={message.senderId !== user?.id}
-              />
-            ))
+            messages.map((message, index) => {
+              const previousMessage = messages[index - 1];
+              const nextMessage = messages[index + 1];
+              return (
+                <MessageCard
+                  key={message.id}
+                  message={message}
+                  isOwn={message.senderId === user?.id}
+                  showAvatar={message.senderId !== user?.id}
+                  previousMessage={previousMessage}
+                  nextMessage={nextMessage}
+                />
+              );
+            })
           )}
 
           {/* Typing Indicators */}
-          {/* TODO: Implement typing indicators from WebSocket */}
+          {isTyping && (
+            <Group gap="sm" align="center" p="sm">
+              <Avatar size="sm" radius="xl">
+                {(otherParticipant?.firstName || "U").charAt(0)}
+              </Avatar>
+              <Paper
+                p="xs"
+                radius="lg"
+                style={{
+                  backgroundColor: theme.colors.gray[2],
+                }}
+              >
+                <Text size="xs" c="dimmed" fw={500}>
+                  {otherParticipant?.firstName || "User"} is typing...
+                </Text>
+              </Paper>
+            </Group>
+          )}
         </Stack>
       </ScrollArea>
 
       {/* Message Input */}
-      <Box
+      <Paper
         p="md"
+        shadow="sm"
         style={{
-          borderTop: "1px solid var(--mantine-color-gray-2)",
-          backgroundColor: "var(--mantine-color-gray-0)",
+          borderTop: `1px solid ${theme.colors.gray[2]}`,
+          backgroundColor: theme.white,
         }}
       >
         <Group gap="xs" align="flex-end">
@@ -342,21 +475,42 @@ export function ChatWindow({
             onChange={setShowAttachmentMenu}
             position="top-start"
             shadow="md"
+            radius="lg"
           >
             <Menu.Target>
               <ActionIcon
                 variant="subtle"
                 size="lg"
+                radius="xl"
                 onClick={() => setShowAttachmentMenu(!showAttachmentMenu)}
+                style={{
+                  backgroundColor: theme.colors.gray[1],
+                  color: theme.colors.gray[6],
+                }}
               >
-                <IconPaperclip size={20} />
+                <IconPaperclip size={18} />
               </ActionIcon>
             </Menu.Target>
 
             <Menu.Dropdown>
-              <Menu.Item leftSection={<IconPhoto size={16} />}>Photo</Menu.Item>
-              <Menu.Item leftSection={<IconVideo size={16} />}>Video</Menu.Item>
-              <Menu.Item leftSection={<IconFile size={16} />}>File</Menu.Item>
+              <Menu.Item
+                leftSection={<IconPhoto size={16} />}
+                onClick={() => setShowAttachmentMenu(false)}
+              >
+                Photo
+              </Menu.Item>
+              <Menu.Item
+                leftSection={<IconVideo size={16} />}
+                onClick={() => setShowAttachmentMenu(false)}
+              >
+                Video
+              </Menu.Item>
+              <Menu.Item
+                leftSection={<IconFile size={16} />}
+                onClick={() => setShowAttachmentMenu(false)}
+              >
+                File
+              </Menu.Item>
             </Menu.Dropdown>
           </Menu>
 
@@ -371,21 +525,44 @@ export function ChatWindow({
             autosize
             minRows={1}
             maxRows={4}
+            radius="xl"
+            styles={{
+              input: {
+                border: `2px solid ${theme.colors.gray[2]}`,
+                backgroundColor: theme.colors.gray[0],
+                fontSize: rem(14),
+                padding: `${theme.spacing.sm} ${theme.spacing.md}`,
+              },
+            }}
             rightSection={
               <Group gap="xs">
                 <ActionIcon
                   variant="subtle"
+                  radius="xl"
+                  size="md"
                   onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                  style={{
+                    backgroundColor: theme.colors.yellow[1],
+                    color: theme.colors.yellow[7],
+                  }}
                 >
-                  <IconMoodSmile size={18} />
+                  <IconMoodSmile size={16} />
                 </ActionIcon>
                 <ActionIcon
                   color="blue"
+                  radius="xl"
+                  size="md"
                   onClick={handleSendMessage}
                   disabled={!messageText.trim()}
                   loading={sendMessageMutation.isPending}
+                  style={{
+                    backgroundColor: messageText.trim()
+                      ? theme.colors.blue[6]
+                      : theme.colors.gray[2],
+                    color: theme.white,
+                  }}
                 >
-                  <IconSend size={18} />
+                  <IconSend size={16} />
                 </ActionIcon>
               </Group>
             }
@@ -394,13 +571,14 @@ export function ChatWindow({
 
         {/* Emoji Picker */}
         {showEmojiPicker && (
-          <Box
+          <Paper
             mt="xs"
             p="sm"
+            radius="lg"
+            shadow="sm"
             style={{
-              border: "1px solid var(--mantine-color-gray-3)",
-              borderRadius: "var(--mantine-radius-md)",
-              backgroundColor: "white",
+              border: `1px solid ${theme.colors.gray[2]}`,
+              backgroundColor: theme.white,
             }}
           >
             <Group gap="xs">
@@ -408,18 +586,30 @@ export function ChatWindow({
                 <ActionIcon
                   key={emoji}
                   variant="subtle"
+                  radius="xl"
+                  size="md"
                   onClick={() => {
                     setMessageText((prev) => prev + emoji);
                     setShowEmojiPicker(false);
                   }}
+                  style={{
+                    transition: "all 0.2s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor =
+                      theme.colors.gray[1];
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "transparent";
+                  }}
                 >
-                  <Text>{emoji}</Text>
+                  <Text size="lg">{emoji}</Text>
                 </ActionIcon>
               ))}
             </Group>
-          </Box>
+          </Paper>
         )}
-      </Box>
+      </Paper>
     </Box>
   );
 }

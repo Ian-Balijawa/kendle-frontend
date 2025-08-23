@@ -5,8 +5,10 @@ import {
   Box,
   Group,
   Menu,
+  rem,
   Text,
   UnstyledButton,
+  useMantineTheme,
 } from "@mantine/core";
 import {
   IconArchive,
@@ -17,9 +19,9 @@ import {
   IconVolumeOff,
 } from "@tabler/icons-react";
 import { useState } from "react";
-import { Conversation } from "../../types/chat";
 import { useUpdateConversation } from "../../hooks/useChat";
 import { useAuthStore } from "../../stores/authStore";
+import { Conversation } from "../../types/chat";
 
 interface ConversationCardProps {
   conversation: Conversation;
@@ -33,6 +35,7 @@ export function ConversationCard({
   onClick,
 }: ConversationCardProps) {
   const { user } = useAuthStore();
+  const theme = useMantineTheme();
   const updateConversationMutation = useUpdateConversation();
   const [showMenu, setShowMenu] = useState(false);
 
@@ -49,12 +52,12 @@ export function ConversationCard({
     const date = new Date(dateString);
     const now = new Date();
     const diffInHours = Math.floor(
-      (now.getTime() - date.getTime()) / (1000 * 60 * 60),
+      (now.getTime() - date.getTime()) / (1000 * 60 * 60)
     );
 
     if (diffInHours < 1) {
       const diffInMinutes = Math.floor(
-        (now.getTime() - date.getTime()) / (1000 * 60),
+        (now.getTime() - date.getTime()) / (1000 * 60)
       );
       if (diffInMinutes < 1) return "Just now";
       return `${diffInMinutes}m`;
@@ -69,7 +72,7 @@ export function ConversationCard({
     const date = new Date(dateString);
     const now = new Date();
     const diffInMinutes = Math.floor(
-      (now.getTime() - date.getTime()) / (1000 * 60),
+      (now.getTime() - date.getTime()) / (1000 * 60)
     );
 
     if (diffInMinutes < 1) return "Just now";
@@ -139,19 +142,18 @@ export function ConversationCard({
       onClick={onClick}
       style={{
         width: "100%",
-        padding: "var(--mantine-spacing-md)",
+        padding: `${theme.spacing.md} ${theme.spacing.lg}`,
         borderRadius: 0,
-        backgroundColor: isSelected
-          ? "var(--mantine-color-blue-0)"
-          : "transparent",
+        backgroundColor: isSelected ? theme.colors.blue[0] : "transparent",
         borderLeft: isSelected
-          ? "3px solid var(--mantine-color-blue-6)"
+          ? `3px solid ${theme.colors.blue[6]}`
           : "3px solid transparent",
+        position: "relative",
         transition: "all 0.2s ease",
       }}
       onMouseEnter={(e) => {
         if (!isSelected) {
-          e.currentTarget.style.backgroundColor = "var(--mantine-color-gray-0)";
+          e.currentTarget.style.backgroundColor = theme.colors.gray[1];
         }
       }}
       onMouseLeave={(e) => {
@@ -166,8 +168,16 @@ export function ConversationCard({
             <Avatar
               src={participant?.avatar}
               alt={participant?.firstName || "User"}
-              size="md"
+              size="lg"
               radius="xl"
+              style={{
+                border: isSelected
+                  ? `2px solid ${theme.colors.blue[3]}`
+                  : `1px solid ${theme.colors.gray[3]}`,
+                boxShadow: isSelected
+                  ? `0 0 0 2px ${theme.colors.blue[1]}`
+                  : "none",
+              }}
             >
               {(participant?.firstName || "U").charAt(0)}
             </Avatar>
@@ -179,43 +189,85 @@ export function ConversationCard({
                   position: "absolute",
                   bottom: -2,
                   right: -2,
-                  width: 12,
-                  height: 12,
+                  width: 14,
+                  height: 14,
                   borderRadius: "50%",
-                  backgroundColor: "var(--mantine-color-green-6)",
-                  border: "2px solid white",
+                  backgroundColor: theme.colors.green[5],
+                  border: `2px solid ${theme.white}`,
+                  boxShadow: `0 0 0 1px ${theme.colors.green[2]}`,
                 }}
               />
+            )}
+
+            {/* Unread Count Badge on Avatar */}
+            {conversation.unreadCount > 0 && !isSelected && (
+              <Box
+                style={{
+                  position: "absolute",
+                  top: -4,
+                  right: -4,
+                  minWidth: 18,
+                  height: 18,
+                  borderRadius: "50%",
+                  backgroundColor: theme.colors.red[5],
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "0 4px",
+                }}
+              >
+                <Text size="xs" c="white" fw={600}>
+                  {conversation.unreadCount > 99
+                    ? "99+"
+                    : conversation.unreadCount}
+                </Text>
+              </Box>
             )}
           </Box>
 
           <Box style={{ flex: 1, minWidth: 0 }}>
             <Group gap="xs" align="center" mb={4}>
               <Text
-                fw={500}
+                fw={600}
                 size="sm"
+                c={isSelected ? theme.colors.blue[7] : theme.colors.gray[8]}
                 style={{
                   overflow: "hidden",
                   textOverflow: "ellipsis",
                   whiteSpace: "nowrap",
                   maxWidth: "150px",
+                  fontSize: rem(14),
                 }}
               >
                 {getDisplayName()}
               </Text>
 
               {participant?.isVerified && (
-                <Badge size="xs" color="blue" variant="light">
+                <Badge
+                  size="xs"
+                  color="blue"
+                  variant="filled"
+                  radius="xl"
+                  style={{ fontSize: rem(10) }}
+                >
                   ✓
                 </Badge>
               )}
 
               {conversation.isPinned && (
-                <IconPinFilled size={12} color="var(--mantine-color-blue-6)" />
+                <IconPinFilled
+                  size={14}
+                  color={theme.colors.blue[6]}
+                  style={{ opacity: 0.8 }}
+                />
               )}
 
               {conversation.isMuted && (
-                <IconVolumeOff size={12} color="var(--mantine-color-gray-6)" />
+                <IconVolumeOff
+                  size={14}
+                  color={theme.colors.gray[5]}
+                  style={{ opacity: 0.6 }}
+                />
               )}
             </Group>
 
@@ -227,13 +279,14 @@ export function ConversationCard({
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap",
                 lineHeight: 1.4,
+                fontSize: rem(13),
               }}
             >
               {getDisplayMessage()}
             </Text>
 
             {!isOnline && lastSeen && (
-              <Text size="xs" c="dimmed" mt={2}>
+              <Text size="xs" c="dimmed" mt={2} style={{ fontSize: rem(11) }}>
                 Last seen {formatLastSeen(lastSeen)}
               </Text>
             )}
@@ -245,12 +298,16 @@ export function ConversationCard({
             display: "flex",
             flexDirection: "column",
             alignItems: "flex-end",
-            gap: 4,
+            gap: 6,
           }}
         >
           <Group gap="xs" align="center">
             {conversation.lastMessage && (
-              <Text size="xs" c="dimmed">
+              <Text
+                size="xs"
+                c={isSelected ? theme.colors.blue[6] : "dimmed"}
+                style={{ fontSize: rem(11) }}
+              >
                 {formatTime(conversation.lastMessage.createdAt)}
               </Text>
             )}
@@ -260,15 +317,22 @@ export function ConversationCard({
               onChange={setShowMenu}
               position="bottom-end"
               shadow="md"
-              width={180}
+              width={200}
+              radius="lg"
             >
               <Menu.Target>
                 <ActionIcon
                   variant="subtle"
                   size="sm"
+                  radius="xl"
                   onClick={(e) => {
                     e.stopPropagation();
                     setShowMenu(!showMenu);
+                  }}
+                  style={{
+                    backgroundColor: "transparent",
+                    color: theme.colors.gray[5],
+                    opacity: 0.7,
                   }}
                 >
                   <IconDotsVertical size={14} />
@@ -316,17 +380,20 @@ export function ConversationCard({
             </Menu>
           </Group>
 
-          {conversation.unreadCount > 0 && (
+          {/* Unread count badge - only show if not on avatar */}
+          {conversation.unreadCount > 0 && isSelected && (
             <Badge
               size="sm"
               color="blue"
               variant="filled"
+              radius="xl"
               style={{
                 minWidth: "20px",
                 height: "20px",
                 padding: "0 6px",
-                fontSize: "11px",
+                fontSize: rem(11),
                 fontWeight: 600,
+                boxShadow: theme.shadows.sm,
               }}
             >
               {conversation.unreadCount > 99 ? "99+" : conversation.unreadCount}

@@ -189,7 +189,7 @@ export function ProfilePage() {
   if (userError || !user) {
     return (
       <Container size="xl">
-        <Center py={100}>
+        <Center>
           <Card
             withBorder
             p="xl"

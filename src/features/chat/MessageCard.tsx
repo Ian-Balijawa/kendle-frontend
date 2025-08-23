@@ -6,11 +6,15 @@ import {
   Group,
   Image,
   Menu,
+  Paper,
+  rem,
   Stack,
   Text,
   Textarea,
+  useMantineTheme,
 } from "@mantine/core";
 import {
+  IconAlertCircle,
   IconCheck,
   IconChecks,
   IconCopy,
@@ -19,18 +23,17 @@ import {
   IconMessageReply,
   IconMoodSmile,
   IconTrash,
-  IconAlertCircle,
 } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
-import { Message } from "../../types/chat";
 import {
-  useUpdateMessage,
-  useDeleteMessage,
   useAddMessageReaction,
+  useDeleteMessage,
   useMarkMessageAsRead,
+  useUpdateMessage,
 } from "../../hooks/useChat";
-import { useAuthStore } from "../../stores/authStore";
 import { UpdateMessageRequest } from "../../services/api";
+import { useAuthStore } from "../../stores/authStore";
+import { Message } from "../../types/chat";
 
 interface MessageCardProps {
   message: Message;
@@ -48,6 +51,7 @@ export function MessageCard({
   nextMessage,
 }: MessageCardProps) {
   const { user } = useAuthStore();
+  const theme = useMantineTheme();
 
   // React Query mutations
   const updateMessageMutation = useUpdateMessage();
@@ -104,7 +108,7 @@ export function MessageCard({
         onError: (error) => {
           console.error("Failed to update message:", error);
         },
-      },
+      }
     );
   };
 
@@ -184,17 +188,21 @@ export function MessageCard({
           </Avatar>
         )}
 
-        <Box
+        <Paper
+          shadow="sm"
           style={{
             maxWidth: "70%",
             backgroundColor: isOwn
-              ? "var(--mantine-color-blue-6)"
-              : "var(--mantine-color-gray-1)",
-            borderRadius: "var(--mantine-radius-md)",
-            padding: "var(--mantine-spacing-sm)",
+              ? theme.colors.blue[6]
+              : theme.colors.gray[1],
+            borderRadius: theme.radius.lg,
+            padding: theme.spacing.sm,
+            border: isOwn
+              ? `1px solid ${theme.colors.blue[5]}`
+              : `1px solid ${theme.colors.gray[3]}`,
           }}
         >
-          <Stack gap="xs">
+          <Stack gap="sm">
             <Textarea
               value={editContent}
               onChange={(e) => setEditContent(e.currentTarget.value)}
@@ -202,25 +210,51 @@ export function MessageCard({
               minRows={1}
               maxRows={4}
               size="sm"
+              radius="md"
+              styles={{
+                input: {
+                  backgroundColor: isOwn
+                    ? "rgba(255,255,255,0.1)"
+                    : theme.white,
+                  color: isOwn ? theme.white : theme.colors.dark[7],
+                  border: `1px solid ${isOwn ? "rgba(255,255,255,0.2)" : theme.colors.gray[3]}`,
+                  fontSize: rem(14),
+                },
+              }}
             />
             <Group gap="xs" justify="flex-end">
               <Button
                 size="xs"
-                variant="light"
+                variant="subtle"
+                radius="xl"
                 onClick={() => setIsEditing(false)}
+                styles={{
+                  root: {
+                    color: isOwn ? theme.white : theme.colors.gray[7],
+                  },
+                }}
               >
                 Cancel
               </Button>
               <Button
                 size="xs"
+                radius="xl"
                 onClick={handleSaveEdit}
                 loading={updateMessageMutation.isPending}
+                styles={{
+                  root: {
+                    backgroundColor: isOwn
+                      ? "rgba(255,255,255,0.2)"
+                      : theme.colors.blue[6],
+                    color: isOwn ? theme.white : theme.white,
+                  },
+                }}
               >
                 Save
               </Button>
             </Group>
           </Stack>
-        </Box>
+        </Paper>
       </Group>
     );
   }
@@ -260,40 +294,59 @@ export function MessageCard({
           </Box>
         )}
 
-        <Box
+        <Paper
+          shadow={isOwn ? "sm" : "xs"}
           style={{
             backgroundColor: isOwn
-              ? "var(--mantine-color-blue-6)"
-              : "var(--mantine-color-gray-1)",
-            color: isOwn ? "white" : "var(--mantine-color-dark-7)",
-            borderRadius: "var(--mantine-radius-md)",
-            padding: "var(--mantine-spacing-sm)",
+              ? theme.colors.blue[6]
+              : theme.colors.gray[1],
+            color: isOwn ? theme.white : theme.colors.dark[7],
+            borderRadius: theme.radius.lg,
+            padding: `${theme.spacing.sm} ${theme.spacing.md}`,
             position: "relative",
+            maxWidth: "85%",
+            wordWrap: "break-word",
+            border: isOwn
+              ? `1px solid ${theme.colors.blue[5]}`
+              : `1px solid ${theme.colors.gray[3]}`,
             borderTopLeftRadius:
-              !isOwn && isGroupedWithPrevious ? 4 : undefined,
+              !isOwn && isGroupedWithPrevious ? theme.radius.sm : undefined,
             borderTopRightRadius:
-              isOwn && isGroupedWithPrevious ? 4 : undefined,
-            borderBottomLeftRadius: !isOwn && isGroupedWithNext ? 4 : undefined,
-            borderBottomRightRadius: isOwn && isGroupedWithNext ? 4 : undefined,
+              isOwn && isGroupedWithPrevious ? theme.radius.sm : undefined,
+            borderBottomLeftRadius:
+              !isOwn && isGroupedWithNext ? theme.radius.sm : undefined,
+            borderBottomRightRadius:
+              isOwn && isGroupedWithNext ? theme.radius.sm : undefined,
+            transition: "all 0.2s ease",
           }}
           onMouseEnter={(e) => {
             const menu = e.currentTarget.querySelector(
-              ".message-menu",
+              ".message-menu"
             ) as HTMLElement;
             if (menu) menu.style.opacity = "1";
+            if (!isOwn) {
+              e.currentTarget.style.backgroundColor = theme.colors.gray[2];
+            }
           }}
           onMouseLeave={(e) => {
             const menu = e.currentTarget.querySelector(
-              ".message-menu",
+              ".message-menu"
             ) as HTMLElement;
             if (menu) menu.style.opacity = "0";
+            if (!isOwn) {
+              e.currentTarget.style.backgroundColor = theme.colors.gray[1];
+            }
           }}
         >
           {/* Message Content */}
           {message.messageType === "text" ? (
             <Text
               size="sm"
-              style={{ lineHeight: 1.4, wordBreak: "break-word" }}
+              style={{
+                lineHeight: 1.5,
+                wordBreak: "break-word",
+                fontSize: rem(14),
+              }}
             >
               {message.content}
             </Text>
@@ -303,12 +356,23 @@ export function MessageCard({
                 <Image
                   src={message.mediaUrl}
                   alt="Shared image"
-                  radius="sm"
-                  style={{ maxWidth: 200, maxHeight: 200 }}
+                  radius="md"
+                  style={{
+                    maxWidth: 250,
+                    maxHeight: 250,
+                    border: `1px solid ${isOwn ? "rgba(255,255,255,0.2)" : theme.colors.gray[3]}`,
+                  }}
                 />
               )}
               {message.content && (
-                <Text size="sm" mt="xs" style={{ lineHeight: 1.4 }}>
+                <Text
+                  size="sm"
+                  mt="xs"
+                  style={{
+                    lineHeight: 1.5,
+                    fontSize: rem(14),
+                  }}
+                >
                   {message.content}
                 </Text>
               )}
@@ -317,19 +381,38 @@ export function MessageCard({
 
           {/* Reactions */}
           {message.reactions.length > 0 && (
-            <Group gap="xs" mt="xs">
+            <Group gap="xs" mt="sm">
               {message.reactions.map((reaction) => (
-                <Box
+                <Paper
                   key={reaction.id}
+                  p="xs"
+                  radius="xl"
                   style={{
-                    backgroundColor: "rgba(255, 255, 255, 0.2)",
-                    borderRadius: "var(--mantine-radius-sm)",
-                    padding: "2px 6px",
-                    fontSize: "12px",
+                    backgroundColor: isOwn
+                      ? "rgba(255, 255, 255, 0.2)"
+                      : theme.colors.gray[2],
+                    border: isOwn
+                      ? "1px solid rgba(255, 255, 255, 0.3)"
+                      : `1px solid ${theme.colors.gray[3]}`,
+                    fontSize: rem(12),
+                    cursor: "pointer",
+                    transition: "all 0.2s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = "scale(1.1)";
+                    e.currentTarget.style.backgroundColor = isOwn
+                      ? "rgba(255, 255, 255, 0.3)"
+                      : theme.colors.gray[3];
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = "scale(1)";
+                    e.currentTarget.style.backgroundColor = isOwn
+                      ? "rgba(255, 255, 255, 0.2)"
+                      : theme.colors.gray[2];
                   }}
                 >
                   {reaction.emoji}
-                </Box>
+                </Paper>
               ))}
             </Group>
           )}
@@ -339,19 +422,27 @@ export function MessageCard({
             className="message-menu"
             style={{
               position: "absolute",
-              top: -10,
-              right: isOwn ? undefined : -10,
-              left: isOwn ? -10 : undefined,
+              top: -12,
+              right: isOwn ? undefined : -12,
+              left: isOwn ? -12 : undefined,
               opacity: 0,
-              transition: "opacity 0.2s ease",
+              transition: "all 0.2s ease",
+              zIndex: 10,
             }}
           >
             <Group gap="xs">
               <ActionIcon
                 size="sm"
+                radius="xl"
                 variant="filled"
                 color="gray"
                 onClick={() => setShowReactions(!showReactions)}
+                style={{
+                  boxShadow: theme.shadows.sm,
+                  backgroundColor: theme.white,
+                  color: theme.colors.gray[6],
+                  border: `1px solid ${theme.colors.gray[3]}`,
+                }}
               >
                 <IconMoodSmile size={12} />
               </ActionIcon>
@@ -361,14 +452,22 @@ export function MessageCard({
                 onChange={setShowMenu}
                 position="bottom"
                 shadow="md"
-                width={150}
+                width={160}
+                radius="lg"
               >
                 <Menu.Target>
                   <ActionIcon
                     size="sm"
+                    radius="xl"
                     variant="filled"
                     color="gray"
                     onClick={() => setShowMenu(!showMenu)}
+                    style={{
+                      boxShadow: theme.shadows.sm,
+                      backgroundColor: theme.white,
+                      color: theme.colors.gray[6],
+                      border: `1px solid ${theme.colors.gray[3]}`,
+                    }}
                   >
                     <IconDotsVertical size={12} />
                   </ActionIcon>
@@ -411,18 +510,24 @@ export function MessageCard({
               </Menu>
             </Group>
           </Box>
-        </Box>
+        </Paper>
 
         {/* Reaction Picker */}
         {showReactions && (
-          <Box
+          <Paper
             mt="xs"
-            p="xs"
+            p="sm"
+            radius="lg"
+            shadow="md"
             style={{
-              backgroundColor: "white",
-              border: "1px solid var(--mantine-color-gray-3)",
-              borderRadius: "var(--mantine-radius-md)",
-              boxShadow: "var(--mantine-shadow-sm)",
+              backgroundColor: theme.white,
+              border: `1px solid ${theme.colors.gray[3]}`,
+              position: "absolute",
+              bottom: "100%",
+              left: isOwn ? "auto" : 0,
+              right: isOwn ? 0 : "auto",
+              zIndex: 1000,
+              marginBottom: theme.spacing.xs,
             }}
           >
             <Group gap="xs">
@@ -430,26 +535,55 @@ export function MessageCard({
                 <ActionIcon
                   key={emoji}
                   variant="subtle"
+                  radius="xl"
+                  size="md"
                   onClick={() => handleReaction(emoji)}
                   loading={addReactionMutation.isPending}
+                  style={{
+                    transition: "all 0.2s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = "scale(1.2)";
+                    e.currentTarget.style.backgroundColor =
+                      theme.colors.gray[1];
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = "scale(1)";
+                    e.currentTarget.style.backgroundColor = "transparent";
+                  }}
                 >
-                  <Text>{emoji}</Text>
+                  <Text size="lg">{emoji}</Text>
                 </ActionIcon>
               ))}
             </Group>
-          </Box>
+          </Paper>
         )}
 
         {/* Message Info */}
         {!isGroupedWithNext && (
-          <Group gap="xs" justify={isOwn ? "flex-end" : "flex-start"} mt={4}>
-            <Text size="xs" c="dimmed">
+          <Group gap="xs" justify={isOwn ? "flex-end" : "flex-start"} mt={6}>
+            <Text
+              size="xs"
+              c="dimmed"
+              style={{
+                fontSize: rem(11),
+                opacity: 0.8,
+              }}
+            >
               {formatTime(message.createdAt)}
             </Text>
 
             {message.isEdited && (
-              <Text size="xs" c="dimmed">
-                (edited)
+              <Text
+                size="xs"
+                c="dimmed"
+                style={{
+                  fontSize: rem(10),
+                  opacity: 0.6,
+                  fontStyle: "italic",
+                }}
+              >
+                edited
               </Text>
             )}
 

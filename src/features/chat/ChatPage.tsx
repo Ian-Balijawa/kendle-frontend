@@ -1,19 +1,21 @@
 import {
   ActionIcon,
-  Avatar,
+  Badge,
   Box,
   Button,
-  Card,
+  Center,
   Drawer,
   Group,
+  Loader,
   Modal,
+  Paper,
+  rem,
   ScrollArea,
   Stack,
   Text,
   TextInput,
   Title,
-  Loader,
-  Center,
+  useMantineTheme,
 } from "@mantine/core";
 import {
   IconArchive,
@@ -22,15 +24,16 @@ import {
   IconSearch,
   IconSettings,
 } from "@tabler/icons-react";
-import { useState, useMemo, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useConversations, useUnreadCount } from "../../hooks/useChat";
+import { useWebSocketIntegration } from "../../hooks/useWebSocket";
 import { useAuthStore } from "../../stores/authStore";
 import { ChatWindow } from "./ChatWindow";
 import { ConversationCard } from "./ConversationCard";
-import { useConversations, useUnreadCount } from "../../hooks/useChat";
-import { useWebSocketIntegration } from "../../hooks/useWebSocket";
 
 export function ChatPage() {
   const { isAuthenticated } = useAuthStore();
+  const theme = useMantineTheme();
 
   // React Query hooks
   const {
@@ -85,12 +88,12 @@ export function ChatPage() {
       })
       .sort(
         (a, b) =>
-          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
       );
   }, [conversations, searchQuery]);
 
   const selectedConversation = conversations.find(
-    (conv) => conv.id === selectedConversationId,
+    (conv) => conv.id === selectedConversationId
   );
 
   const unreadCount = unreadData?.count || 0;
@@ -134,7 +137,7 @@ export function ChatPage() {
 
   if (!isAuthenticated) {
     return (
-      <Card withBorder p="xl" radius="md">
+      <Paper withBorder p="xl" radius="md">
         <Stack align="center" gap="md">
           <Text size="lg" fw={500}>
             Authentication Required
@@ -143,67 +146,123 @@ export function ChatPage() {
             Please sign in to access your messages.
           </Text>
         </Stack>
-      </Card>
+      </Paper>
     );
   }
 
   return (
-    <Box style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
+    <Paper
+      style={{
+        height: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        backgroundColor: theme.colors.gray[0],
+      }}
+    >
       {/* Header */}
-      <Card withBorder p="md" style={{ borderRadius: 0, borderTop: 0 }}>
+      <Paper
+        p="md"
+        shadow="sm"
+        style={{
+          borderRadius: 0,
+          borderBottom: `1px solid ${theme.colors.gray[2]}`,
+          backgroundColor: theme.white,
+        }}
+      >
         <Group justify="space-between">
           <Group>
             {isMobileView && !showConversations && (
-              <ActionIcon variant="subtle" onClick={handleBackToConversations}>
-                <IconMenu2 size={20} />
+              <ActionIcon
+                variant="subtle"
+                onClick={handleBackToConversations}
+                radius="xl"
+                size="lg"
+                style={{
+                  backgroundColor: theme.colors.gray[1],
+                  color: theme.colors.gray[7],
+                }}
+              >
+                <IconMenu2 size={18} />
               </ActionIcon>
             )}
-            <Title order={3}>
-              {selectedConversation
-                ? selectedConversation.name ||
-                  `${selectedConversation.participants[0]?.firstName} ${selectedConversation.participants[0]?.lastName}`
-                : "Messages"}
-            </Title>
-            {unreadCount > 0 && (
-              <Text size="sm" c="blue" fw={500}>
-                ({unreadCount} unread)
-              </Text>
-            )}
+            <div>
+              <Title order={3} fw={600} c={theme.colors.gray[8]}>
+                {selectedConversation
+                  ? selectedConversation.name ||
+                    `${selectedConversation.participants[0]?.firstName} ${selectedConversation.participants[0]?.lastName}`
+                  : "Messages"}
+              </Title>
+              {unreadCount > 0 && (
+                <Badge
+                  size="sm"
+                  color="blue"
+                  variant="light"
+                  mt={4}
+                  style={{ fontSize: rem(11) }}
+                >
+                  {unreadCount} unread
+                </Badge>
+              )}
+            </div>
           </Group>
 
           <Group>
-            <Text size="xs" c={isConnected ? "green" : "red"}>
+            <Badge
+              size="xs"
+              color={isConnected ? "green" : "red"}
+              variant="dot"
+              style={{ fontSize: rem(10) }}
+            >
               {connectionState}
-            </Text>
-            <ActionIcon variant="subtle" onClick={handleNewChat}>
-              <IconPlus size={20} />
+            </Badge>
+            <ActionIcon
+              variant="subtle"
+              onClick={handleNewChat}
+              radius="xl"
+              size="lg"
+              style={{
+                backgroundColor: theme.colors.blue[1],
+                color: theme.colors.blue[6],
+              }}
+            >
+              <IconPlus size={18} />
             </ActionIcon>
-            <ActionIcon variant="subtle">
-              <IconSettings size={20} />
+            <ActionIcon
+              variant="subtle"
+              radius="xl"
+              size="lg"
+              style={{
+                backgroundColor: theme.colors.gray[1],
+                color: theme.colors.gray[6],
+              }}
+            >
+              <IconSettings size={18} />
             </ActionIcon>
           </Group>
         </Group>
-      </Card>
+      </Paper>
 
       <Box style={{ flex: 1, display: "flex", overflow: "hidden" }}>
         {/* Conversations List */}
         {(!isMobileView || showConversations) && (
-          <Card
-            withBorder
+          <Paper
+            shadow="xs"
             style={{
-              width: isMobileView ? "100%" : "350px",
+              width: isMobileView ? "100%" : "360px",
               borderRadius: 0,
-              borderTop: 0,
-              borderBottom: 0,
-              borderLeft: 0,
+              borderRight: `1px solid ${theme.colors.gray[2]}`,
               display: "flex",
               flexDirection: "column",
+              backgroundColor: theme.white,
             }}
           >
             {/* Search */}
             <Box
               p="md"
-              style={{ borderBottom: "1px solid var(--mantine-color-gray-2)" }}
+              style={{
+                borderBottom: `1px solid ${theme.colors.gray[2]}`,
+                backgroundColor: theme.colors.gray[0],
+              }}
             >
               <TextInput
                 placeholder="Search conversations..."
@@ -211,42 +270,76 @@ export function ChatPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.currentTarget.value)}
                 size="sm"
+                radius="xl"
+                styles={{
+                  input: {
+                    border: `1px solid ${theme.colors.gray[3]}`,
+                    backgroundColor: theme.white,
+                    fontSize: rem(14),
+                  },
+                }}
               />
             </Box>
 
             {/* Conversations */}
-            <ScrollArea style={{ flex: 1 }}>
+            <ScrollArea style={{ flex: 1 }} scrollbarSize={6}>
               {conversationsLoading ? (
-                <Center py="md">
-                  <Stack align="center" gap="sm">
-                    <Loader size="sm" />
-                    <Text size="sm" c="dimmed">
+                <Center py="xl">
+                  <Stack align="center" gap="md">
+                    <Loader size="lg" color="blue" />
+                    <Text size="sm" c="dimmed" fw={500}>
                       Loading conversations...
                     </Text>
                   </Stack>
                 </Center>
               ) : conversationsError ? (
-                <Card p="md">
-                  <Text c="red" size="sm" ta="center">
-                    Failed to load conversations
-                  </Text>
-                </Card>
+                <Paper p="md" radius={0}>
+                  <Stack align="center" gap="md">
+                    <Text c="red" size="sm" ta="center" fw={500}>
+                      Failed to load conversations
+                    </Text>
+                    <Button
+                      size="sm"
+                      variant="light"
+                      color="red"
+                      onClick={() => window.location.reload()}
+                    >
+                      Try Again
+                    </Button>
+                  </Stack>
+                </Paper>
               ) : filteredConversations.length === 0 ? (
-                <Stack align="center" gap="md" p="xl">
-                  <Text size="lg" fw={500} c="dimmed">
-                    No conversations yet
-                  </Text>
-                  <Text size="sm" c="dimmed" ta="center">
-                    Start a new conversation to begin messaging
-                  </Text>
-                  <Button
-                    leftSection={<IconPlus size={16} />}
-                    onClick={handleNewChat}
-                    variant="light"
-                  >
-                    New Chat
-                  </Button>
-                </Stack>
+                <Center py="xl">
+                  <Stack align="center" gap="lg" style={{ maxWidth: 280 }}>
+                    <Paper
+                      p="xl"
+                      radius="xl"
+                      style={{
+                        backgroundColor: theme.colors.gray[1],
+                      }}
+                    >
+                      <IconMenu2 size={48} color={theme.colors.gray[4]} />
+                    </Paper>
+                    <div style={{ textAlign: "center" }}>
+                      <Text size="lg" fw={600} c={theme.colors.gray[7]} mb={8}>
+                        No conversations yet
+                      </Text>
+                      <Text size="sm" c="dimmed" mb="lg">
+                        Start a new conversation to begin messaging
+                      </Text>
+                    </div>
+                    <Button
+                      leftSection={<IconPlus size={16} />}
+                      onClick={handleNewChat}
+                      variant="filled"
+                      color="blue"
+                      radius="xl"
+                      size="md"
+                    >
+                      New Chat
+                    </Button>
+                  </Stack>
+                </Center>
               ) : (
                 <Stack gap={0}>
                   {filteredConversations.map((conversation) => (
@@ -260,12 +353,19 @@ export function ChatPage() {
                 </Stack>
               )}
             </ScrollArea>
-          </Card>
+          </Paper>
         )}
 
         {/* Chat Window */}
         {(!isMobileView || !showConversations) && (
-          <Box style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+          <Box
+            style={{
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              backgroundColor: theme.colors.gray[0],
+            }}
+          >
             {selectedConversation ? (
               <ChatWindow
                 conversation={selectedConversation}
@@ -273,39 +373,41 @@ export function ChatPage() {
                 showBackButton={isMobileView}
               />
             ) : (
-              <Card
-                style={{
-                  flex: 1,
-                  borderRadius: 0,
-                  borderTop: 0,
-                  borderBottom: 0,
-                  borderRight: 0,
-                }}
-              >
-                <Stack
-                  align="center"
-                  justify="center"
-                  style={{ height: "100%" }}
-                  gap="md"
-                >
-                  <Avatar size="xl" color="blue">
-                    <IconMenu2 size={32} />
-                  </Avatar>
-                  <Text size="lg" fw={500} c="dimmed">
-                    Select a conversation
-                  </Text>
-                  <Text size="sm" c="dimmed" ta="center">
-                    Choose a conversation from the sidebar to start messaging
-                  </Text>
+              <Center style={{ height: "100%", flexDirection: "column" }}>
+                <Stack align="center" gap="xl" style={{ maxWidth: 320 }}>
+                  <Paper
+                    p="xl"
+                    radius="xl"
+                    style={{
+                      background: `linear-gradient(135deg, ${theme.colors.blue[1]} 0%, ${theme.colors.cyan[1]} 100%)`,
+                      border: `2px solid ${theme.colors.blue[2]}`,
+                    }}
+                  >
+                    <IconMenu2 size={64} color={theme.colors.blue[6]} />
+                  </Paper>
+                  <div style={{ textAlign: "center" }}>
+                    <Text size="xl" fw={600} c={theme.colors.gray[8]} mb={8}>
+                      Select a conversation
+                    </Text>
+                    <Text size="sm" c="dimmed" mb="xl">
+                      Choose a conversation from the sidebar to start messaging
+                    </Text>
+                  </div>
                   <Button
                     leftSection={<IconPlus size={16} />}
                     onClick={handleNewChat}
-                    variant="light"
+                    variant="filled"
+                    color="blue"
+                    radius="xl"
+                    size="lg"
+                    style={{
+                      boxShadow: theme.shadows.md,
+                    }}
                   >
                     Start New Chat
                   </Button>
                 </Stack>
-              </Card>
+              </Center>
             )}
           </Box>
         )}
@@ -315,25 +417,64 @@ export function ChatPage() {
       <Modal
         opened={showNewChatModal}
         onClose={() => setShowNewChatModal(false)}
-        title="Start New Chat"
-        size="md"
+        title={
+          <Group>
+            <IconPlus size={20} />
+            <Text fw={600}>Start New Chat</Text>
+          </Group>
+        }
+        size="lg"
+        radius="lg"
+        padding="xl"
+        styles={{
+          header: {
+            borderBottom: `1px solid ${theme.colors.gray[2]}`,
+            paddingBottom: theme.spacing.md,
+          },
+          body: {
+            paddingTop: theme.spacing.lg,
+          },
+        }}
       >
-        <Stack gap="md">
+        <Stack gap="lg">
           <TextInput
-            placeholder="Search users..."
-            leftSection={<IconSearch size={16} />}
+            placeholder="Search users by name, username, or phone..."
+            leftSection={<IconSearch size={18} />}
+            size="md"
+            radius="xl"
+            styles={{
+              input: {
+                border: `2px solid ${theme.colors.gray[2]}`,
+                backgroundColor: theme.colors.gray[0],
+                fontSize: rem(14),
+                padding: `${theme.spacing.sm} ${theme.spacing.md}`,
+              },
+            }}
           />
 
-          <Text size="sm" c="dimmed">
-            Search for users to start a conversation
+          <Text size="sm" c="dimmed" ta="center">
+            Search for users to start a conversation with
           </Text>
 
-          {/* TODO: Add user search results here */}
-          <Stack gap="xs">
-            <Text size="xs" c="dimmed">
-              Recent contacts will appear here
-            </Text>
-          </Stack>
+          {/* User Search Results Placeholder */}
+          <Paper
+            p="xl"
+            radius="lg"
+            style={{
+              backgroundColor: theme.colors.gray[1],
+              border: `2px dashed ${theme.colors.gray[3]}`,
+            }}
+          >
+            <Stack align="center" gap="md">
+              <IconSearch size={32} color={theme.colors.gray[4]} />
+              <Text size="sm" c="dimmed" ta="center" fw={500}>
+                Start typing to search for users
+              </Text>
+              <Text size="xs" c="dimmed" ta="center">
+                Recent contacts and search results will appear here
+              </Text>
+            </Stack>
+          </Paper>
         </Stack>
       </Modal>
 
@@ -341,27 +482,53 @@ export function ChatPage() {
       <Drawer
         opened={showMobileMenu}
         onClose={() => setShowMobileMenu(false)}
-        title="Chat Settings"
+        title={
+          <Group>
+            <IconSettings size={20} />
+            <Text fw={600}>Chat Menu</Text>
+          </Group>
+        }
         position="right"
         size="sm"
+        padding="lg"
+        styles={{
+          header: {
+            borderBottom: `1px solid ${theme.colors.gray[2]}`,
+            paddingBottom: theme.spacing.md,
+          },
+        }}
       >
-        <Stack gap="md">
+        <Stack gap="sm">
           <Button
-            leftSection={<IconArchive size={16} />}
-            variant="light"
+            leftSection={<IconArchive size={18} />}
+            variant="subtle"
             fullWidth
+            radius="lg"
+            styles={{
+              inner: {
+                justifyContent: "flex-start",
+              },
+            }}
+            size="md"
           >
             Archived Chats
           </Button>
           <Button
-            leftSection={<IconSettings size={16} />}
-            variant="light"
+            leftSection={<IconSettings size={18} />}
+            variant="subtle"
             fullWidth
+            radius="lg"
+            styles={{
+              inner: {
+                justifyContent: "flex-start",
+              },
+            }}
+            size="md"
           >
             Chat Settings
           </Button>
         </Stack>
       </Drawer>
-    </Box>
+    </Paper>
   );
 }
