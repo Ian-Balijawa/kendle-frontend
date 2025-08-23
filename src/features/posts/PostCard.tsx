@@ -6,7 +6,6 @@ import {
   Button,
   Card,
   Collapse,
-  Divider,
   Group,
   Image,
   Menu,
@@ -412,8 +411,6 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
               ))}
             </Group>
           )}
-
-          <Divider />
 
           <Group justify="space-between" align="center">
             <Group gap="lg">
