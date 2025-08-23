@@ -4,12 +4,9 @@ import {
   Button,
   Center,
   Container,
-  LoadingOverlay,
-  Paper,
-  Stack,
+  LoadingOverlay, Stack,
   Text,
-  TextInput,
-  Title,
+  TextInput
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import {
@@ -59,7 +56,7 @@ export function PhoneAuth() {
   return (
     <Box className="auth-container">
       <Container size="xs" style={{ width: "100%", maxWidth: "400px" }}>
-        <Paper className="auth-paper" p="xl" withBorder>
+        <Stack className="auth-paper" p="xl">
           <LoadingOverlay visible={sendOTPMutation.isPending} />
 
           <Box
@@ -96,20 +93,6 @@ export function PhoneAuth() {
               </Box>
             </Center>
 
-            <div style={{ textAlign: "center" }}>
-              <Title
-                order={1}
-                size="h2"
-                className="text-gradient"
-                style={{ marginBottom: "var(--mantine-spacing-xs)" }}
-              >
-                Welcome to Kendle
-              </Title>
-              <Text c="dimmed" size="sm">
-                Enter your phone number to get started
-              </Text>
-            </div>
-
             {error && (
               <Alert
                 icon={<IconAlertCircle size={16} />}
@@ -125,8 +108,7 @@ export function PhoneAuth() {
             <form onSubmit={form.onSubmit(handleSubmit)}>
               <Stack gap="lg">
                 <TextInput
-                  label="Phone Number"
-                  placeholder="0770000000"
+                  placeholder="Sign in with your phone"
                   leftSection={<IconPhone size={18} />}
                   required
                   size="md"
@@ -156,7 +138,7 @@ export function PhoneAuth() {
               Policy
             </Text>
           </Stack>
-        </Paper>
+        </Stack>
       </Container>
     </Box>
   );
