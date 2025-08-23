@@ -95,10 +95,6 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
     // Create the post data
     const postData: CreatePostRequest = {
       content: content.trim(),
-      tags:
-        hashtags.length > 0
-          ? hashtags.map((tag) => ({ name: tag }))
-          : undefined,
       type: "text",
       isPublic: true,
       allowComments: true,

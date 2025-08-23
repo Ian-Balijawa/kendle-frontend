@@ -4,27 +4,33 @@ import { Comment } from "./post";
 
 export interface ApiResponse<T> {
   data: T;
-  message: string;
+  message: string | null;
   success: boolean;
+  error?: any;
+  timestamp?: string;
+  path?: string;
 }
 
-export interface PaginatedResponse<T> {
-  data: T[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-    hasNext: boolean;
-    hasPrev: boolean;
-  };
+export interface PostsResponse {
+  posts: Post[];
+  total: number;
+  page: number;
+  limit: number;
 }
 
-export interface PostsResponse extends PaginatedResponse<Post> {}
+export interface UsersResponse {
+  users: User[];
+  total: number;
+  page: number;
+  limit: number;
+}
 
-export interface UsersResponse extends PaginatedResponse<User> {}
-
-export interface CommentsResponse extends PaginatedResponse<Comment> {}
+export interface CommentsResponse {
+  comments: Comment[];
+  total: number;
+  page: number;
+  limit: number;
+}
 
 export interface ApiError {
   message: string;

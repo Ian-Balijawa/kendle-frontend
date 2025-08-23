@@ -32,8 +32,9 @@ export function useInfinitePosts(params: GetPostsParams = {}) {
     queryFn: ({ pageParam = 1 }) =>
       apiService.getPosts({ ...params, page: pageParam }),
     getNextPageParam: (lastPage: PostsResponse) => {
-      if (lastPage.pagination.page < lastPage.pagination.totalPages) {
-        return lastPage.pagination.page + 1;
+      const totalPages = Math.ceil(lastPage.total / lastPage.limit);
+      if (lastPage.page < totalPages) {
+        return lastPage.page + 1;
       }
       return undefined;
     },
@@ -61,8 +62,9 @@ export function useUserPosts(
     queryFn: ({ pageParam = 1 }) =>
       apiService.getUserPosts(userId, { ...params, page: pageParam }),
     getNextPageParam: (lastPage: PostsResponse) => {
-      if (lastPage.pagination?.page < lastPage.pagination?.totalPages) {
-        return lastPage.pagination.page + 1;
+      const totalPages = Math.ceil(lastPage.total / lastPage.limit);
+      if (lastPage.page < totalPages) {
+        return lastPage.page + 1;
       }
       return undefined;
     },
@@ -77,8 +79,9 @@ export function useLikedPosts(params: { page?: number; limit?: number } = {}) {
     queryFn: ({ pageParam = 1 }) =>
       apiService.getLikedPosts({ ...params, page: pageParam }),
     getNextPageParam: (lastPage: PostsResponse) => {
-      if (lastPage.pagination?.page < lastPage.pagination?.totalPages) {
-        return lastPage.pagination.page + 1;
+      const totalPages = Math.ceil(lastPage.total / lastPage.limit);
+      if (lastPage.page < totalPages) {
+        return lastPage.page + 1;
       }
       return undefined;
     },
@@ -95,8 +98,9 @@ export function useBookmarkedPosts(
     queryFn: ({ pageParam = 1 }) =>
       apiService.getBookmarkedPosts({ ...params, page: pageParam }),
     getNextPageParam: (lastPage: PostsResponse) => {
-      if (lastPage.pagination.page < lastPage.pagination.totalPages) {
-        return lastPage.pagination.page + 1;
+      const totalPages = Math.ceil(lastPage.total / lastPage.limit);
+      if (lastPage.page < totalPages) {
+        return lastPage.page + 1;
       }
       return undefined;
     },
@@ -111,8 +115,9 @@ export function useMyPosts(params: { page?: number; limit?: number } = {}) {
     queryFn: ({ pageParam = 1 }) =>
       apiService.getMyPosts({ ...params, page: pageParam }),
     getNextPageParam: (lastPage: PostsResponse) => {
-      if (lastPage.pagination.page < lastPage.pagination.totalPages) {
-        return lastPage.pagination.page + 1;
+      const totalPages = Math.ceil(lastPage.total / lastPage.limit);
+      if (lastPage.page < totalPages) {
+        return lastPage.page + 1;
       }
       return undefined;
     },
@@ -134,17 +139,40 @@ export function useCreatePost() {
       const optimisticPost: Post = {
         id: `temp-${Date.now()}`,
         content: newPost.content,
+        location: newPost.location,
+        type: newPost.type || "text",
+        status: "published",
+        isPublic: newPost.isPublic ?? true,
+        allowComments: newPost.allowComments ?? true,
+        allowLikes: newPost.allowLikes ?? true,
+        allowShares: newPost.allowShares ?? true,
+        allowBookmarks: newPost.allowBookmarks ?? true,
+        allowVoting: newPost.allowVoting ?? true,
+        isRepost: newPost.isRepost ?? false,
+        isQuote: newPost.isQuote ?? false,
+        isArticle: newPost.isArticle ?? false,
+        isStory: newPost.isStory ?? false,
+        likesCount: 0,
+        commentsCount: 0,
+        sharesCount: 0,
+        bookmarksCount: 0,
+        upvotesCount: 0,
+        downvotesCount: 0,
+        viewsCount: 0,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        publishedAt: new Date().toISOString(),
         author: user!,
-        media:
-          newPost.media?.map((m, index) => ({
-            id: `temp-media-${index}`,
-            url: m.url,
-            type: m.type,
-            filename: `temp-${index}`,
-            size: m.fileSize || 0,
-            createdAt: new Date().toISOString(),
-          })) || [],
+        media: newPost.media?.map((m, index) => ({
+          id: `temp-media-${index}`,
+          url: m.url,
+          type: m.type,
+          filename: `temp-${index}`,
+          size: m.fileSize || 0,
+          createdAt: new Date().toISOString(),
+        })),
         hashtags: newPost.tags?.map((t) => t.name) || [],
+        // Legacy fields for backward compatibility
         likes: [],
         comments: [],
         shares: [],
@@ -155,8 +183,6 @@ export function useCreatePost() {
         isBookmarked: false,
         isUpvoted: false,
         isDownvoted: false,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
         _count: {
           likes: 0,
           comments: 0,
@@ -176,11 +202,8 @@ export function useCreatePost() {
             if (index === 0) {
               return {
                 ...page,
-                data: [optimisticPost, ...page.data],
-                pagination: {
-                  ...page.pagination,
-                  total: page.pagination.total + 1,
-                },
+                posts: [optimisticPost, ...page.posts],
+                total: page.total + 1,
               };
             }
             return page;
@@ -204,13 +227,10 @@ export function useCreatePost() {
                 if (index === 0) {
                   return {
                     ...page,
-                    data: page.data.filter(
+                    posts: page.posts.filter(
                       (post: Post) => post.id !== context.optimisticPost.id
                     ),
-                    pagination: {
-                      ...page.pagination,
-                      total: Math.max(0, page.pagination.total - 1),
-                    },
+                    total: Math.max(0, page.total - 1),
                   };
                 }
                 return page;
@@ -234,7 +254,7 @@ export function useCreatePost() {
                 if (index === 0) {
                   return {
                     ...page,
-                    data: page.data.map((post: Post) =>
+                    posts: page.posts.map((post: Post) =>
                       post.id === context.optimisticPost.id ? newPost : post
                     ),
                   };
@@ -284,7 +304,7 @@ export function useUpdatePost() {
           ...old,
           pages: old.pages.map((page: PostsResponse) => ({
             ...page,
-            data: page.data.map((post: Post) =>
+            posts: page.posts.map((post: Post) =>
               post.id === id
                 ? { ...post, ...data, updatedAt: new Date().toISOString() }
                 : post
@@ -331,11 +351,8 @@ export function useDeletePost() {
           ...old,
           pages: old.pages.map((page: PostsResponse) => ({
             ...page,
-            data: page.data.filter((post: Post) => post.id !== id),
-            pagination: {
-              ...page.pagination,
-              total: Math.max(0, page.pagination.total - 1),
-            },
+            posts: page.posts.filter((post: Post) => post.id !== id),
+            total: Math.max(0, page.total - 1),
           })),
         };
       });
@@ -371,9 +388,10 @@ export function useLikePost() {
       const updatePost = (post: Post) => ({
         ...post,
         isLiked: true,
+        likesCount: post.likesCount + 1,
         _count: {
           ...post._count,
-          likes: post._count.likes + 1,
+          likes: (post._count?.likes || 0) + 1,
         },
       });
 
@@ -391,7 +409,7 @@ export function useLikePost() {
           ...old,
           pages: old.pages.map((page: PostsResponse) => ({
             ...page,
-            data: page.data.map((post: Post) =>
+            posts: page.posts.map((post: Post) =>
               post.id === id ? updatePost(post) : post
             ),
           })),
@@ -419,9 +437,10 @@ export function useUnlikePost() {
       const updatePost = (post: Post) => ({
         ...post,
         isLiked: false,
+        likesCount: Math.max(0, post.likesCount - 1),
         _count: {
           ...post._count,
-          likes: Math.max(0, post._count.likes - 1),
+          likes: Math.max(0, (post._count?.likes || 0) - 1),
         },
       });
 
@@ -439,7 +458,7 @@ export function useUnlikePost() {
           ...old,
           pages: old.pages.map((page: PostsResponse) => ({
             ...page,
-            data: page.data.map((post: Post) =>
+            posts: page.posts.map((post: Post) =>
               post.id === id ? updatePost(post) : post
             ),
           })),
@@ -480,7 +499,7 @@ export function useBookmarkPost() {
           ...old,
           pages: old.pages.map((page: PostsResponse) => ({
             ...page,
-            data: page.data.map((post: Post) =>
+            posts: page.posts.map((post: Post) =>
               post.id === id ? updatePost(post) : post
             ),
           })),
@@ -522,7 +541,7 @@ export function useUnbookmarkPost() {
           ...old,
           pages: old.pages.map((page: PostsResponse) => ({
             ...page,
-            data: page.data.map((post: Post) =>
+            posts: page.posts.map((post: Post) =>
               post.id === id ? updatePost(post) : post
             ),
           })),
@@ -551,31 +570,31 @@ export function useVotePost() {
         const wasUpvoted = post.isUpvoted;
         const wasDownvoted = post.isDownvoted;
 
-        let upvotes = post._count.upvotes;
-        let downvotes = post._count.downvotes;
+        let upvotesCount = post.upvotesCount;
+        let downvotesCount = post.downvotesCount;
 
         if (isUpvote) {
           if (wasUpvoted) {
             // Remove upvote
-            upvotes = Math.max(0, upvotes - 1);
+            upvotesCount = Math.max(0, upvotesCount - 1);
           } else {
             // Add upvote
-            upvotes = upvotes + 1;
+            upvotesCount = upvotesCount + 1;
             if (wasDownvoted) {
               // Remove previous downvote
-              downvotes = Math.max(0, downvotes - 1);
+              downvotesCount = Math.max(0, downvotesCount - 1);
             }
           }
         } else {
           if (wasDownvoted) {
             // Remove downvote
-            downvotes = Math.max(0, downvotes - 1);
+            downvotesCount = Math.max(0, downvotesCount - 1);
           } else {
             // Add downvote
-            downvotes = downvotes + 1;
+            downvotesCount = downvotesCount + 1;
             if (wasUpvoted) {
               // Remove previous upvote
-              upvotes = Math.max(0, upvotes - 1);
+              upvotesCount = Math.max(0, upvotesCount - 1);
             }
           }
         }
@@ -584,10 +603,12 @@ export function useVotePost() {
           ...post,
           isUpvoted: isUpvote ? !wasUpvoted : false,
           isDownvoted: !isUpvote ? !wasDownvoted : false,
+          upvotesCount,
+          downvotesCount,
           _count: {
             ...post._count,
-            upvotes,
-            downvotes,
+            upvotes: upvotesCount,
+            downvotes: downvotesCount,
           },
         };
       };
@@ -606,7 +627,7 @@ export function useVotePost() {
           ...old,
           pages: old.pages.map((page: PostsResponse) => ({
             ...page,
-            data: page.data.map((post: Post) =>
+            posts: page.posts.map((post: Post) =>
               post.id === id ? updatePost(post) : post
             ),
           })),
@@ -630,14 +651,20 @@ export function useRemoveVote() {
         ...post,
         isUpvoted: false,
         isDownvoted: false,
+        upvotesCount: post.isUpvoted
+          ? Math.max(0, post.upvotesCount - 1)
+          : post.upvotesCount,
+        downvotesCount: post.isDownvoted
+          ? Math.max(0, post.downvotesCount - 1)
+          : post.downvotesCount,
         _count: {
           ...post._count,
           upvotes: post.isUpvoted
-            ? Math.max(0, post._count.upvotes - 1)
-            : post._count.upvotes,
+            ? Math.max(0, (post._count?.upvotes || 0) - 1)
+            : post._count?.upvotes || 0,
           downvotes: post.isDownvoted
-            ? Math.max(0, post._count.downvotes - 1)
-            : post._count.downvotes,
+            ? Math.max(0, (post._count?.downvotes || 0) - 1)
+            : post._count?.downvotes || 0,
         },
       });
 
@@ -655,7 +682,7 @@ export function useRemoveVote() {
           ...old,
           pages: old.pages.map((page: PostsResponse) => ({
             ...page,
-            data: page.data.map((post: Post) =>
+            posts: page.posts.map((post: Post) =>
               post.id === id ? updatePost(post) : post
             ),
           })),
@@ -679,9 +706,10 @@ export function useSharePost() {
       const updatePost = (post: Post) => ({
         ...post,
         isShared: true,
+        sharesCount: post.sharesCount + 1,
         _count: {
           ...post._count,
-          shares: post._count.shares + 1,
+          shares: (post._count?.shares || 0) + 1,
         },
       });
 
@@ -699,7 +727,7 @@ export function useSharePost() {
           ...old,
           pages: old.pages.map((page: PostsResponse) => ({
             ...page,
-            data: page.data.map((post: Post) =>
+            posts: page.posts.map((post: Post) =>
               post.id === id ? updatePost(post) : post
             ),
           })),

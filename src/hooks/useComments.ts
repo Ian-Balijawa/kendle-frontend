@@ -36,8 +36,9 @@ export function useInfiniteComments(
     queryFn: ({ pageParam = 1 }) =>
       apiService.getComments(postId, { ...params, page: pageParam }),
     getNextPageParam: (lastPage: CommentsResponse) => {
-      if (lastPage.pagination.page < lastPage.pagination.totalPages) {
-        return lastPage.pagination.page + 1;
+      const totalPages = Math.ceil(lastPage.total / lastPage.limit);
+      if (lastPage.page < totalPages) {
+        return lastPage.page + 1;
       }
       return undefined;
     },
@@ -71,8 +72,9 @@ export function useMyComments(params: { page?: number; limit?: number } = {}) {
     queryFn: ({ pageParam = 1 }) =>
       apiService.getMyComments({ ...params, page: pageParam }),
     getNextPageParam: (lastPage: CommentsResponse) => {
-      if (lastPage.pagination.page < lastPage.pagination.totalPages) {
-        return lastPage.pagination.page + 1;
+      const totalPages = Math.ceil(lastPage.total / lastPage.limit);
+      if (lastPage.page < totalPages) {
+        return lastPage.page + 1;
       }
       return undefined;
     },
@@ -90,8 +92,9 @@ export function useUserComments(
     queryFn: ({ pageParam = 1 }) =>
       apiService.getUserComments(userId, { ...params, page: pageParam }),
     getNextPageParam: (lastPage: CommentsResponse) => {
-      if (lastPage.pagination.page < lastPage.pagination.totalPages) {
-        return lastPage.pagination.page + 1;
+      const totalPages = Math.ceil(lastPage.total / lastPage.limit);
+      if (lastPage.page < totalPages) {
+        return lastPage.page + 1;
       }
       return undefined;
     },
@@ -108,8 +111,9 @@ export function useLikedComments(
     queryFn: ({ pageParam = 1 }) =>
       apiService.getLikedComments({ ...params, page: pageParam }),
     getNextPageParam: (lastPage: CommentsResponse) => {
-      if (lastPage.pagination.page < lastPage.pagination.totalPages) {
-        return lastPage.pagination.page + 1;
+      const totalPages = Math.ceil(lastPage.total / lastPage.limit);
+      if (lastPage.page < totalPages) {
+        return lastPage.page + 1;
       }
       return undefined;
     },
@@ -129,8 +133,9 @@ export function useSearchComments(params: {
     queryFn: ({ pageParam = 1 }) =>
       apiService.searchComments({ ...params, page: pageParam }),
     getNextPageParam: (lastPage: CommentsResponse) => {
-      if (lastPage.pagination.page < lastPage.pagination.totalPages) {
-        return lastPage.pagination.page + 1;
+      const totalPages = Math.ceil(lastPage.total / lastPage.limit);
+      if (lastPage.page < totalPages) {
+        return lastPage.page + 1;
       }
       return undefined;
     },
@@ -173,10 +178,36 @@ export function useCreateComment() {
         author: user!,
         postId,
         parentId: data.parentCommentId,
-        replies: [],
-        likes: [],
+        location: undefined,
+        type: "text",
+        status: "active",
+        isPublic: true,
+        allowReplies: true,
+        allowLikes: true,
+        allowShares: true,
+        allowBookmarks: true,
+        allowVoting: true,
+        isRepost: false,
+        isQuote: false,
+        likesCount: 0,
+        repliesCount: 0,
+        sharesCount: 0,
+        bookmarksCount: 0,
+        upvotesCount: 0,
+        downvotesCount: 0,
+        viewsCount: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
+        publishedAt: undefined,
+        originalComment: null,
+        repostContent: null,
+        pollQuestion: null,
+        pollOptions: null,
+        pollEndDate: null,
+        pollResults: null,
+        // Legacy fields for backward compatibility
+        replies: [],
+        likes: [],
         _count: {
           likes: 0,
           replies: 0,
@@ -197,11 +228,8 @@ export function useCreateComment() {
                 if (index === 0) {
                   return {
                     ...page,
-                    data: [optimisticComment, ...page.data],
-                    pagination: {
-                      ...page.pagination,
-                      total: page.pagination.total + 1,
-                    },
+                    comments: [optimisticComment, ...page.comments],
+                    total: page.total + 1,
                   };
                 }
                 return page;
@@ -212,26 +240,24 @@ export function useCreateComment() {
           // Handle regular query
           return {
             ...old,
-            data: [optimisticComment, ...old.data],
-            pagination: {
-              ...old.pagination,
-              total: old.pagination.total + 1,
-            },
+            comments: [optimisticComment, ...old.comments],
+            total: old.total + 1,
           };
         },
       );
 
-      // Optimistically update post comment count
-      queryClient.setQueryData(postKeys.detail(postId), (old: any) => {
-        if (!old) return old;
-        return {
-          ...old,
-          _count: {
-            ...old._count,
-            comments: old._count.comments + 1,
-          },
-        };
-      });
+              // Optimistically update post comment count
+        queryClient.setQueryData(postKeys.detail(postId), (old: any) => {
+          if (!old) return old;
+          return {
+            ...old,
+            commentsCount: old.commentsCount + 1,
+            _count: {
+              ...old._count,
+              comments: (old._count?.comments || 0) + 1,
+            },
+          };
+        });
 
       // Update post in lists
       queryClient.setQueriesData({ queryKey: postKeys.lists() }, (old: any) => {
@@ -241,13 +267,14 @@ export function useCreateComment() {
           ...old,
           pages: old.pages.map((page: any) => ({
             ...page,
-            data: page.data.map((post: any) =>
+            posts: page.posts.map((post: any) =>
               post.id === postId
                 ? {
                     ...post,
+                    commentsCount: post.commentsCount + 1,
                     _count: {
                       ...post._count,
-                      comments: post._count.comments + 1,
+                      comments: (post._count?.comments || 0) + 1,
                     },
                   }
                 : post,
@@ -266,43 +293,37 @@ export function useCreateComment() {
           (old: any) => {
             if (!old) return old;
 
-            // Handle infinite query
-            if (old.pages) {
-              return {
-                ...old,
-                pages: old.pages.map(
-                  (page: CommentsResponse, index: number) => {
-                    if (index === 0) {
-                      return {
-                        ...page,
-                        data: page.data.filter(
-                          (comment: Comment) =>
-                            comment.id !== context.optimisticComment.id,
-                        ),
-                        pagination: {
-                          ...page.pagination,
-                          total: Math.max(0, page.pagination.total - 1),
-                        },
-                      };
-                    }
-                    return page;
-                  },
-                ),
-              };
-            }
-
-            // Handle regular query
+                      // Handle infinite query
+          if (old.pages) {
             return {
               ...old,
-              data: old.data.filter(
-                (comment: Comment) =>
-                  comment.id !== context.optimisticComment.id,
+              pages: old.pages.map(
+                (page: CommentsResponse, index: number) => {
+                  if (index === 0) {
+                    return {
+                      ...page,
+                      comments: page.comments.filter(
+                        (comment: Comment) =>
+                          comment.id !== context.optimisticComment.id,
+                      ),
+                      total: Math.max(0, page.total - 1),
+                    };
+                  }
+                  return page;
+                },
               ),
-              pagination: {
-                ...old.pagination,
-                total: Math.max(0, old.pagination.total - 1),
-              },
             };
+          }
+
+          // Handle regular query
+          return {
+            ...old,
+            comments: old.comments.filter(
+              (comment: Comment) =>
+                comment.id !== context.optimisticComment.id,
+            ),
+            total: Math.max(0, old.total - 1),
+          };
           },
         );
 
@@ -311,9 +332,10 @@ export function useCreateComment() {
           if (!old) return old;
           return {
             ...old,
+            commentsCount: Math.max(0, old.commentsCount - 1),
             _count: {
               ...old._count,
-              comments: Math.max(0, old._count.comments - 1),
+              comments: Math.max(0, (old._count?.comments || 0) - 1),
             },
           };
         });
@@ -327,37 +349,37 @@ export function useCreateComment() {
           (old: any) => {
             if (!old) return old;
 
-            // Handle infinite query
-            if (old.pages) {
-              return {
-                ...old,
-                pages: old.pages.map(
-                  (page: CommentsResponse, index: number) => {
-                    if (index === 0) {
-                      return {
-                        ...page,
-                        data: page.data.map((comment: Comment) =>
-                          comment.id === context.optimisticComment.id
-                            ? newComment
-                            : comment,
-                        ),
-                      };
-                    }
-                    return page;
-                  },
-                ),
-              };
-            }
-
-            // Handle regular query
+                      // Handle infinite query
+          if (old.pages) {
             return {
               ...old,
-              data: old.data.map((comment: Comment) =>
-                comment.id === context.optimisticComment.id
-                  ? newComment
-                  : comment,
+              pages: old.pages.map(
+                (page: CommentsResponse, index: number) => {
+                  if (index === 0) {
+                    return {
+                      ...page,
+                      comments: page.comments.map((comment: Comment) =>
+                        comment.id === context.optimisticComment.id
+                          ? newComment
+                          : comment,
+                      ),
+                    };
+                  }
+                  return page;
+                },
               ),
             };
+          }
+
+          // Handle regular query
+          return {
+            ...old,
+            comments: old.comments.map((comment: Comment) =>
+              comment.id === context.optimisticComment.id
+                ? newComment
+                : comment,
+            ),
+          };
           },
         );
       }
@@ -408,7 +430,7 @@ export function useUpdateComment() {
               ...old,
               pages: old.pages.map((page: CommentsResponse) => ({
                 ...page,
-                data: page.data.map((comment: Comment) =>
+                comments: page.comments.map((comment: Comment) =>
                   comment.id === id
                     ? {
                         ...comment,
@@ -424,7 +446,7 @@ export function useUpdateComment() {
           // Handle regular query
           return {
             ...old,
-            data: old.data.map((comment: Comment) =>
+            comments: old.comments.map((comment: Comment) =>
               comment.id === id
                 ? { ...comment, ...data, updatedAt: new Date().toISOString() }
                 : comment,
@@ -473,7 +495,7 @@ export function useDeleteComment() {
           const pages = queryData.pages || [queryData];
 
           for (const page of pages) {
-            const comment = page.data?.find((c: Comment) => c.id === id);
+            const comment = page.comments?.find((c: Comment) => c.id === id);
             if (comment) {
               postId = comment.postId;
               break;
@@ -500,11 +522,8 @@ export function useDeleteComment() {
               ...old,
               pages: old.pages.map((page: CommentsResponse) => ({
                 ...page,
-                data: page.data.filter((comment: Comment) => comment.id !== id),
-                pagination: {
-                  ...page.pagination,
-                  total: Math.max(0, page.pagination.total - 1),
-                },
+                comments: page.comments.filter((comment: Comment) => comment.id !== id),
+                total: Math.max(0, page.total - 1),
               })),
             };
           }
@@ -512,11 +531,8 @@ export function useDeleteComment() {
           // Handle regular query
           return {
             ...old,
-            data: old.data.filter((comment: Comment) => comment.id !== id),
-            pagination: {
-              ...old.pagination,
-              total: Math.max(0, old.pagination.total - 1),
-            },
+            comments: old.comments.filter((comment: Comment) => comment.id !== id),
+            total: Math.max(0, old.total - 1),
           };
         },
       );
@@ -527,9 +543,10 @@ export function useDeleteComment() {
           if (!old) return old;
           return {
             ...old,
+            commentsCount: Math.max(0, old.commentsCount - 1),
             _count: {
               ...old._count,
-              comments: Math.max(0, old._count.comments - 1),
+              comments: Math.max(0, (old._count?.comments || 0) - 1),
             },
           };
         });
@@ -544,13 +561,14 @@ export function useDeleteComment() {
               ...old,
               pages: old.pages.map((page: any) => ({
                 ...page,
-                data: page.data.map((post: any) =>
+                posts: page.posts.map((post: any) =>
                   post.id === postId
                     ? {
                         ...post,
+                        commentsCount: Math.max(0, post.commentsCount - 1),
                         _count: {
                           ...post._count,
-                          comments: Math.max(0, post._count.comments - 1),
+                          comments: Math.max(0, (post._count?.comments || 0) - 1),
                         },
                       }
                     : post,
@@ -605,9 +623,10 @@ export function useLikeComment() {
       // Optimistically update
       const updateComment = (comment: Comment) => ({
         ...comment,
+        likesCount: comment.likesCount + 1,
         _count: {
           ...comment._count,
-          likes: comment._count.likes + 1,
+          likes: (comment._count?.likes || 0) + 1,
         },
       });
 
@@ -632,7 +651,7 @@ export function useLikeComment() {
               ...old,
               pages: old.pages.map((page: CommentsResponse) => ({
                 ...page,
-                data: page.data.map((comment: Comment) =>
+                comments: page.comments.map((comment: Comment) =>
                   comment.id === id ? updateComment(comment) : comment,
                 ),
               })),
@@ -642,7 +661,7 @@ export function useLikeComment() {
           // Handle regular query
           return {
             ...old,
-            data: old.data.map((comment: Comment) =>
+            comments: old.comments.map((comment: Comment) =>
               comment.id === id ? updateComment(comment) : comment,
             ),
           };
@@ -669,9 +688,10 @@ export function useUnlikeComment() {
       // Optimistically update
       const updateComment = (comment: Comment) => ({
         ...comment,
+        likesCount: Math.max(0, comment.likesCount - 1),
         _count: {
           ...comment._count,
-          likes: Math.max(0, comment._count.likes - 1),
+          likes: Math.max(0, (comment._count?.likes || 0) - 1),
         },
       });
 
@@ -696,7 +716,7 @@ export function useUnlikeComment() {
               ...old,
               pages: old.pages.map((page: CommentsResponse) => ({
                 ...page,
-                data: page.data.map((comment: Comment) =>
+                comments: page.comments.map((comment: Comment) =>
                   comment.id === id ? updateComment(comment) : comment,
                 ),
               })),
@@ -706,7 +726,7 @@ export function useUnlikeComment() {
           // Handle regular query
           return {
             ...old,
-            data: old.data.map((comment: Comment) =>
+            comments: old.comments.map((comment: Comment) =>
               comment.id === id ? updateComment(comment) : comment,
             ),
           };

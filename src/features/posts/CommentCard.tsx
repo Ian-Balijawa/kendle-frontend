@@ -246,7 +246,7 @@ export function CommentCard({ comment }: CommentCardProps) {
               <IconHeart size={14} />
             </ActionIcon>
             <Text size="xs" c="dimmed">
-              {comment._count.likes}
+              {comment.likesCount}
             </Text>
           </Group>
         </Stack>

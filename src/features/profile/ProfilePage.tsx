@@ -89,7 +89,7 @@ export function ProfilePage() {
     });
   }
 
-  const posts = postsData?.pages.flatMap((page) => page.data) || [];
+  const posts = postsData?.pages.flatMap((page) => page.posts) || [];
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);

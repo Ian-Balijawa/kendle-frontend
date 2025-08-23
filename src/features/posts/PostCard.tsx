@@ -7,47 +7,47 @@ import {
   Card,
   Group,
   Image,
+  LoadingOverlay,
   Menu,
   Modal,
   Stack,
   Text,
   Textarea,
   TextInput,
-  LoadingOverlay,
 } from "@mantine/core";
 import {
-  IconHeart,
-  IconMessageCircle,
-  IconShare,
+  IconArrowDown,
+  IconArrowUp,
   IconBookmark,
-  IconDotsVertical,
-  IconEdit,
-  IconTrash,
-  IconFlag,
-  IconSend,
   IconChevronDown,
   IconChevronUp,
-  IconArrowUp,
-  IconArrowDown,
+  IconDotsVertical,
+  IconEdit,
+  IconFlag,
+  IconHeart,
+  IconMessageCircle,
+  IconSend,
+  IconShare,
+  IconTrash,
 } from "@tabler/icons-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useComments, useCreateComment } from "../../hooks/useComments";
+import {
+  useBookmarkPost,
+  useDeletePost,
+  useLikePost,
+  useRemoveVote,
+  useSharePost,
+  useUnbookmarkPost,
+  useUnlikePost,
+  useUpdatePost,
+  useVotePost,
+} from "../../hooks/usePosts";
+import { CreateCommentRequest } from "../../services/api";
 import { useAuthStore } from "../../stores/authStore";
 import { Post } from "../../types";
 import { CommentCard } from "./CommentCard";
-import {
-  useLikePost,
-  useUnlikePost,
-  useBookmarkPost,
-  useUnbookmarkPost,
-  useVotePost,
-  useRemoveVote,
-  useSharePost,
-  useUpdatePost,
-  useDeletePost,
-} from "../../hooks/usePosts";
-import { useCreateComment, useComments } from "../../hooks/useComments";
-import { CreateCommentRequest } from "../../services/api";
 
 interface PostCardProps {
   post: Post;
@@ -72,7 +72,7 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
 
   // Get comments for this post
   const { data: commentsData } = useComments(post.id, { limit: 3 });
-  const comments = commentsData?.data || [];
+  const comments = commentsData?.comments || [];
 
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(post.content);
@@ -89,7 +89,7 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
     const date = new Date(dateString);
     const now = new Date();
     const diffInHours = Math.floor(
-      (now.getTime() - date.getTime()) / (1000 * 60 * 60),
+      (now.getTime() - date.getTime()) / (1000 * 60 * 60)
     );
 
     if (diffInHours < 1) return "Just now";
@@ -180,7 +180,7 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
         onError: (error) => {
           console.error("Failed to update post:", error);
         },
-      },
+      }
     );
   };
 
@@ -219,11 +219,11 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
         onError: (error) => {
           console.error("Failed to post comment:", error);
         },
-      },
+      }
     );
   };
 
-  const isAuthor = user?.id === post.author.id;
+  const isAuthor = user?.id === post?.author?.id;
 
   return (
     <>
@@ -232,28 +232,28 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
           <Group justify="space-between">
             <Group>
               <Avatar
-                src={post.author.avatar}
-                alt={post.author.firstName || "User"}
+                src={post.author?.avatar}
+                alt={post.author?.firstName || "User"}
                 size="md"
                 radius="xl"
               >
-                {(post.author.firstName || "U").charAt(0)}
+                {(post.author?.firstName || "U").charAt(0)}
               </Avatar>
               <Box>
                 <Group gap="xs" align="center">
                   <Text fw={500} size="sm">
-                    {post.author.firstName} {post.author.lastName}
+                    {post.author?.firstName} {post.author?.lastName}
                   </Text>
-                  {post.author.isVerified && (
+                  {post.author?.isVerified && (
                     <Badge size="xs" color="blue" variant="light">
                       Verified
                     </Badge>
                   )}
                 </Group>
                 <Text c="dimmed" size="xs">
-                  @{post.author.username || post.author.phoneNumber} •{" "}
-                  {formatDate(post.createdAt)}
-                  {post.updatedAt !== post.createdAt && " (edited)"}
+                  @{post.author?.username || post.author?.phoneNumber} •{" "}
+                  {formatDate(post?.createdAt)}
+                  {post?.updatedAt !== post?.createdAt && " (edited)"}
                 </Text>
               </Box>
             </Group>
@@ -317,12 +317,12 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
             {post.content}
           </Text>
 
-          {post.media && post.media.length > 0 && (
+          {post?.media && post?.media?.length > 0 && (
             <Box>
-              {post.media.length === 1 ? (
+              {post?.media?.length === 1 ? (
                 <Image
-                  src={post.media[0].url}
-                  alt={post.media[0].filename}
+                  src={post?.media[0]?.url}
+                  alt={post?.media[0]?.filename}
                   radius="md"
                   style={{
                     maxHeight: 400,
@@ -340,7 +340,7 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
                 />
               ) : (
                 <Group gap="xs">
-                  {post.media.slice(0, 4).map((media, index) => (
+                  {post?.media?.slice(0, 4).map((media, index) => (
                     <Box
                       key={media.id}
                       style={{ position: "relative", flex: 1 }}
@@ -363,26 +363,28 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
                           e.currentTarget.style.opacity = "1";
                         }}
                       />
-                      {index === 3 && post.media && post.media.length > 4 && (
-                        <Box
-                          style={{
-                            position: "absolute",
-                            top: 0,
-                            left: 0,
-                            right: 0,
-                            bottom: 0,
-                            backgroundColor: "rgba(0, 0, 0, 0.7)",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            borderRadius: "var(--mantine-radius-sm)",
-                          }}
-                        >
-                          <Text size="lg" fw={600} c="white">
-                            +{post.media.length - 4}
-                          </Text>
-                        </Box>
-                      )}
+                      {index === 3 &&
+                        post?.media &&
+                        post?.media?.length > 4 && (
+                          <Box
+                            style={{
+                              position: "absolute",
+                              top: 0,
+                              left: 0,
+                              right: 0,
+                              bottom: 0,
+                              backgroundColor: "rgba(0, 0, 0, 0.7)",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              borderRadius: "var(--mantine-radius-sm)",
+                            }}
+                          >
+                            <Text size="lg" fw={600} c="white">
+                              +{post?.media?.length - 4}
+                            </Text>
+                          </Box>
+                        )}
                     </Box>
                   ))}
                 </Group>
@@ -390,9 +392,9 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
             </Box>
           )}
 
-          {post.hashtags && post.hashtags.length > 0 && (
+          {post?.hashtags && post?.hashtags?.length > 0 && (
             <Group gap="xs">
-              {post.hashtags.map((hashtag: string) => (
+              {post?.hashtags?.map((hashtag: string) => (
                 <Badge key={hashtag} variant="light" color="blue" size="sm">
                   #{hashtag}
                 </Badge>
@@ -405,8 +407,8 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
               {/* Upvote/Downvote Section */}
               <Group gap={2}>
                 <ActionIcon
-                  variant={post.isUpvoted ? "filled" : "subtle"}
-                  color={post.isUpvoted ? "green" : "gray"}
+                  variant={post?.isUpvoted ? "filled" : "subtle"}
+                  color={post?.isUpvoted ? "green" : "gray"}
                   onClick={handleUpvote}
                   size="sm"
                   style={{
@@ -422,11 +424,11 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
                   fw={500}
                   style={{ minWidth: "20px", textAlign: "center" }}
                 >
-                  {post._count.upvotes - post._count.downvotes}
+                  {post?.upvotesCount - post?.downvotesCount}
                 </Text>
                 <ActionIcon
-                  variant={post.isDownvoted ? "filled" : "subtle"}
-                  color={post.isDownvoted ? "red" : "gray"}
+                  variant={post?.isDownvoted ? "filled" : "subtle"}
+                  color={post?.isDownvoted ? "red" : "gray"}
                   onClick={handleDownvote}
                   size="sm"
                   style={{
@@ -439,8 +441,8 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
               </Group>
 
               <ActionIcon
-                variant={post.isLiked ? "filled" : "subtle"}
-                color={post.isLiked ? "red" : "gray"}
+                variant={post?.isLiked ? "filled" : "subtle"}
+                color={post?.isLiked ? "red" : "gray"}
                 onClick={handleLike}
                 style={{
                   cursor: isAuthenticated ? "pointer" : "not-allowed",
@@ -450,7 +452,7 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
                 <IconHeart size={16} />
               </ActionIcon>
               <Text size="xs" c="dimmed">
-                {post._count.likes}
+                {post?.likesCount}
               </Text>
 
               <ActionIcon
@@ -464,7 +466,7 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
                 <IconMessageCircle size={16} />
               </ActionIcon>
               <Text size="xs" c="dimmed">
-                {post._count.comments}
+                {post?.commentsCount}
               </Text>
 
               <ActionIcon
@@ -479,13 +481,13 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
                 <IconShare size={16} />
               </ActionIcon>
               <Text size="xs" c="dimmed">
-                {post._count.shares}
+                {post?.sharesCount}
               </Text>
             </Group>
 
             <ActionIcon
-              variant={post.isBookmarked ? "filled" : "subtle"}
-              color={post.isBookmarked ? "yellow" : "gray"}
+              variant={post?.isBookmarked ? "filled" : "subtle"}
+              color={post?.isBookmarked ? "yellow" : "gray"}
               onClick={handleBookmark}
               style={{
                 cursor: isAuthenticated ? "pointer" : "not-allowed",
@@ -538,7 +540,7 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
             <Box>
               <Group justify="space-between" align="center" mb="sm">
                 <Text size="sm" fw={500}>
-                  Comments ({post._count.comments})
+                  Comments ({post?.commentsCount})
                 </Text>
                 <Button
                   variant="subtle"
@@ -557,7 +559,7 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
               </Group>
 
               <Stack gap="sm">
-                {comments.slice(0, 3).map((comment) => (
+                {comments.slice(0, 3).map((comment: any) => (
                   <CommentCard
                     key={comment.id}
                     comment={comment}
@@ -565,14 +567,14 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
                   />
                 ))}
 
-                {post._count.comments > 3 && (
+                {post?.commentsCount > 3 && (
                   <Button
                     variant="light"
                     size="xs"
                     onClick={handlePostClick}
                     style={{ alignSelf: "center" }}
                   >
-                    View all {post._count.comments} comments
+                    View all {post?.commentsCount} comments
                   </Button>
                 )}
               </Stack>

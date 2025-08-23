@@ -44,7 +44,7 @@ export function HomePage() {
   }
 
   // Flatten all posts from all pages
-  const posts = data?.pages.flatMap((page) => page.data) || [];
+  const posts = data?.pages.flatMap((page) => page.posts) || [];
 
   return (
     <Box>

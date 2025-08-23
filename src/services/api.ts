@@ -392,10 +392,9 @@ class ApiService {
   }
 
   async getPost(id: string): Promise<Post> {
-    const response: AxiosResponse<ApiResponse<Post>> = await this.api.get(
-      `/posts/${id}`
-    );
-    return response.data.data;
+    const response: AxiosResponse<ApiResponse<{ post: Post }>> =
+      await this.api.get(`/posts/${id}`);
+    return response.data.data.post;
   }
 
   async createPost(data: CreatePostRequest): Promise<Post> {
@@ -458,7 +457,9 @@ class ApiService {
     });
 
     const response: AxiosResponse<ApiResponse<PostsResponse>> =
-      await this.api.get(`/posts/user/${userId}?${searchParams.toString()}`);
+      await this.api.get(
+        `/posts?authorId=${userId}&${searchParams.toString()}`
+      );
     return response.data.data;
   }
 
@@ -473,7 +474,7 @@ class ApiService {
     });
 
     const response: AxiosResponse<ApiResponse<PostsResponse>> =
-      await this.api.get(`/posts/user/liked?${searchParams.toString()}`);
+      await this.api.get(`/posts?liked=true&${searchParams.toString()}`);
     return response.data.data;
   }
 
@@ -488,7 +489,7 @@ class ApiService {
     });
 
     const response: AxiosResponse<ApiResponse<PostsResponse>> =
-      await this.api.get(`/posts/user/bookmarked?${searchParams.toString()}`);
+      await this.api.get(`/posts?bookmarked=true&${searchParams.toString()}`);
     return response.data.data;
   }
 
@@ -503,7 +504,7 @@ class ApiService {
     });
 
     const response: AxiosResponse<ApiResponse<PostsResponse>> =
-      await this.api.get(`/posts/user/me?${searchParams.toString()}`);
+      await this.api.get(`/posts?myPosts=true&${searchParams.toString()}`);
     return response.data.data;
   }
 

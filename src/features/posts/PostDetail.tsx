@@ -5,8 +5,10 @@ import {
   Box,
   Button,
   Card,
+  Center,
   Group,
   Image,
+  Loader,
   LoadingOverlay,
   Menu,
   Modal,
@@ -14,8 +16,6 @@ import {
   Text,
   Textarea,
   TextInput,
-  Loader,
-  Center,
 } from "@mantine/core";
 import {
   IconArrowDown,
@@ -33,22 +33,22 @@ import {
 } from "@tabler/icons-react";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useAuthStore } from "../../stores/authStore";
-import { CommentCard } from "./CommentCard";
+import { useCreateComment, useInfiniteComments } from "../../hooks/useComments";
 import {
-  usePost,
-  useLikePost,
-  useUnlikePost,
   useBookmarkPost,
-  useUnbookmarkPost,
-  useVotePost,
+  useDeletePost,
+  useLikePost,
+  usePost,
   useRemoveVote,
   useSharePost,
+  useUnbookmarkPost,
+  useUnlikePost,
   useUpdatePost,
-  useDeletePost,
+  useVotePost,
 } from "../../hooks/usePosts";
-import { useInfiniteComments, useCreateComment } from "../../hooks/useComments";
 import { CreateCommentRequest, UpdatePostRequest } from "../../services/api";
+import { useAuthStore } from "../../stores/authStore";
+import { CommentCard } from "./CommentCard";
 
 export function PostDetail() {
   const { postId } = useParams<{ postId: string }>();
@@ -93,7 +93,7 @@ export function PostDetail() {
   const isCommenting = createCommentMutation.isPending;
 
   // Flatten comments from all pages
-  const comments = commentsData?.pages.flatMap((page) => page.data) || [];
+  const comments = commentsData?.pages.flatMap((page) => page.comments) || [];
 
   if (postLoading) {
     return (
@@ -133,7 +133,7 @@ export function PostDetail() {
     const date = new Date(dateString);
     const now = new Date();
     const diffInHours = Math.floor(
-      (now.getTime() - date.getTime()) / (1000 * 60 * 60),
+      (now.getTime() - date.getTime()) / (1000 * 60 * 60)
     );
 
     if (diffInHours < 1) return "Just now";
@@ -204,7 +204,7 @@ export function PostDetail() {
         onError: (error) => {
           console.error("Failed to update post:", error);
         },
-      },
+      }
     );
   };
 
@@ -236,11 +236,11 @@ export function PostDetail() {
         onError: (error) => {
           console.error("Failed to post comment:", error);
         },
-      },
+      }
     );
   };
 
-  const isAuthor = user?.id === post.author.id;
+  const isAuthor = user?.id === post?.author?.id;
 
   return (
     <>
@@ -260,28 +260,28 @@ export function PostDetail() {
             <Group justify="space-between">
               <Group>
                 <Avatar
-                  src={post.author.avatar}
-                  alt={post.author.firstName || "User"}
+                  src={post?.author?.avatar}
+                  alt={post?.author?.firstName || "User"}
                   size="lg"
                   radius="xl"
                 >
-                  {(post.author.firstName || "U").charAt(0)}
+                  {(post?.author?.firstName || "U").charAt(0)}
                 </Avatar>
                 <Box>
                   <Group gap="xs" align="center">
                     <Text fw={500} size="lg">
-                      {post.author.firstName} {post.author.lastName}
+                      {post?.author?.firstName} {post?.author?.lastName}
                     </Text>
-                    {post.author.isVerified && (
+                    {post?.author?.isVerified && (
                       <Badge size="sm" color="blue" variant="light">
                         Verified
                       </Badge>
                     )}
                   </Group>
                   <Text c="dimmed" size="sm">
-                    @{post.author.username || post.author.phoneNumber} •{" "}
-                    {formatDate(post.createdAt)}
-                    {post.updatedAt !== post.createdAt && " (edited)"}
+                    @{post?.author?.username || post?.author?.phoneNumber} •{" "}
+                    {formatDate(post?.createdAt)}
+                    {post?.updatedAt !== post?.createdAt && " (edited)"}
                   </Text>
                 </Box>
               </Group>
@@ -349,9 +349,9 @@ export function PostDetail() {
               </Text>
             )}
 
-            {post.media && post.media.length > 0 && (
+            {post?.media && post?.media?.length > 0 && (
               <Box>
-                {post.media.length === 1 ? (
+                {post?.media?.length === 1 ? (
                   <Image
                     src={post.media[0].url}
                     alt={post.media[0].filename}
@@ -360,7 +360,7 @@ export function PostDetail() {
                   />
                 ) : (
                   <Group gap="xs">
-                    {post.media.map((media) => (
+                    {post?.media?.map((media) => (
                       <Image
                         key={media.id}
                         src={media.url}
@@ -374,9 +374,9 @@ export function PostDetail() {
               </Box>
             )}
 
-            {post.hashtags && post.hashtags.length > 0 && (
+            {post?.hashtags && post?.hashtags?.length > 0 && (
               <Group gap="xs">
-                {post.hashtags.map((hashtag: string) => (
+                {post?.hashtags?.map((hashtag: string) => (
                   <Badge key={hashtag} variant="light" color="blue" size="sm">
                     #{hashtag}
                   </Badge>
@@ -390,8 +390,8 @@ export function PostDetail() {
                 {/* Upvote/Downvote */}
                 <Group gap={4}>
                   <ActionIcon
-                    variant={post.isUpvoted ? "filled" : "subtle"}
-                    color={post.isUpvoted ? "green" : "gray"}
+                    variant={post?.isUpvoted ? "filled" : "subtle"}
+                    color={post?.isUpvoted ? "green" : "gray"}
                     onClick={handleUpvote}
                     style={{
                       cursor: isAuthenticated ? "pointer" : "not-allowed",
@@ -404,11 +404,11 @@ export function PostDetail() {
                     fw={500}
                     style={{ minWidth: "30px", textAlign: "center" }}
                   >
-                    {post._count.upvotes - post._count.downvotes}
+                    {post?.upvotesCount - post?.downvotesCount}
                   </Text>
                   <ActionIcon
-                    variant={post.isDownvoted ? "filled" : "subtle"}
-                    color={post.isDownvoted ? "red" : "gray"}
+                    variant={post?.isDownvoted ? "filled" : "subtle"}
+                    color={post?.isDownvoted ? "red" : "gray"}
                     onClick={handleDownvote}
                     style={{
                       cursor: isAuthenticated ? "pointer" : "not-allowed",
@@ -422,8 +422,8 @@ export function PostDetail() {
                 {/* Like */}
                 <Group gap="xs">
                   <ActionIcon
-                    variant={post.isLiked ? "filled" : "subtle"}
-                    color={post.isLiked ? "red" : "gray"}
+                    variant={post?.isLiked ? "filled" : "subtle"}
+                    color={post?.isLiked ? "red" : "gray"}
                     onClick={handleLike}
                     style={{
                       cursor: isAuthenticated ? "pointer" : "not-allowed",
@@ -432,7 +432,7 @@ export function PostDetail() {
                   >
                     <IconHeart size={18} />
                   </ActionIcon>
-                  <Text>{post._count.likes}</Text>
+                  <Text>{post?.likesCount}</Text>
                 </Group>
 
                 {/* Comments */}
@@ -440,7 +440,7 @@ export function PostDetail() {
                   <ActionIcon variant="subtle" color="gray">
                     <IconMessageCircle size={18} />
                   </ActionIcon>
-                  <Text>{post._count.comments}</Text>
+                  <Text>{post?.commentsCount}</Text>
                 </Group>
 
                 {/* Share */}
@@ -456,14 +456,14 @@ export function PostDetail() {
                   >
                     <IconShare size={18} />
                   </ActionIcon>
-                  <Text>{post._count.shares}</Text>
+                  <Text>{post?.sharesCount}</Text>
                 </Group>
               </Group>
 
               {/* Bookmark */}
               <ActionIcon
-                variant={post.isBookmarked ? "filled" : "subtle"}
-                color={post.isBookmarked ? "yellow" : "gray"}
+                variant={post?.isBookmarked ? "filled" : "subtle"}
+                color={post?.isBookmarked ? "yellow" : "gray"}
                 onClick={handleBookmark}
                 style={{
                   cursor: isAuthenticated ? "pointer" : "not-allowed",
