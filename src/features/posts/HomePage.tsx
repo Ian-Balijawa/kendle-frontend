@@ -1,16 +1,23 @@
 import {
+  ActionIcon,
   Badge,
   Box,
   Button,
   Card,
-  Center,
+  Container,
+  Divider,
   Group,
   Stack,
   Text,
   Title,
 } from "@mantine/core";
 import { useIntersection } from "@mantine/hooks";
-import { IconPlus, IconTrendingUp } from "@tabler/icons-react";
+import {
+  IconPlus,
+  IconRefresh,
+  IconSparkles,
+  IconTrendingUp,
+} from "@tabler/icons-react";
 import { useState } from "react";
 import { InfiniteScrollLoader, PostSkeletonList } from "../../components/ui";
 import { useInfinitePosts } from "../../hooks/usePosts";
@@ -31,6 +38,7 @@ export function HomePage() {
     isLoading,
     isError,
     error,
+    refetch,
   } = useInfinitePosts({ limit: 10, sortBy: "createdAt", sortOrder: "desc" });
 
   // Intersection observer for infinite scroll
@@ -47,76 +55,131 @@ export function HomePage() {
   const posts = data?.pages.flatMap((page) => page.posts) || [];
 
   return (
-    <Box>
-      <Group justify="space-between" align="center" mb="lg">
-        <Title order={2}>Home Feed</Title>
-        <Group>
-          <Badge
-            leftSection={<IconTrendingUp size={14} />}
-            variant="light"
-            color="blue"
-            size="lg"
-          >
-            Trending
-          </Badge>
-          {isAuthenticated && (
-            <Button
-              leftSection={<IconPlus size={16} />}
-              onClick={() => setCreatePostOpened(true)}
+    <Container size="xl" px="md">
+      {/* Header Section */}
+      <Box mb="xl">
+        <Group justify="space-between" align="center" mb="md">
+          <Group>
+            <Title order={1} size="h2" fw={600} c="dark.8">
+              Home
+            </Title>
+            <Badge
+              leftSection={<IconTrendingUp size={12} />}
+              variant="gradient"
+              gradient={{ from: "blue", to: "cyan" }}
+              size="sm"
+              radius="xl"
             >
-              Create Post
-            </Button>
-          )}
-        </Group>
-      </Group>
+              Trending
+            </Badge>
+          </Group>
 
-      <Stack gap="md">
+          <Group gap="xs">
+            <ActionIcon
+              variant="subtle"
+              color="gray"
+              size="lg"
+              radius="xl"
+              onClick={() => refetch()}
+            >
+              <IconRefresh size={18} />
+            </ActionIcon>
+
+            {isAuthenticated && (
+              <Button
+                leftSection={<IconPlus size={16} />}
+                onClick={() => setCreatePostOpened(true)}
+                radius="xl"
+                variant="gradient"
+                gradient={{ from: "blue", to: "cyan" }}
+                size="sm"
+              >
+                Create Post
+              </Button>
+            )}
+          </Group>
+        </Group>
+
+        <Divider />
+      </Box>
+
+      {/* Content Section */}
+      <Stack gap="lg">
+        {/* Error State */}
         {isError && (
           <Card
-            withBorder
+            radius="xl"
             p="xl"
-            radius="md"
-            style={{ borderColor: "var(--mantine-color-red-3)" }}
+            style={{
+              background: "linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)",
+              border: "1px solid var(--mantine-color-red-2)",
+            }}
           >
             <Stack align="center" gap="md">
-              <Text size="lg" fw={500} c="red">
-                Failed to load posts
+              <Text size="lg" fw={600} c="red.7">
+                Oops! Something went wrong
               </Text>
-              <Text c="dimmed" ta="center">
-                {error?.message || "Something went wrong while loading posts."}
+              <Text c="red.6" ta="center" size="sm">
+                {error?.message || "We couldn't load the posts right now."}
               </Text>
-              <Button variant="light" onClick={() => window.location.reload()}>
+              <Button
+                variant="light"
+                color="red"
+                radius="xl"
+                onClick={() => refetch()}
+              >
                 Try Again
               </Button>
             </Stack>
           </Card>
         )}
 
-        {isLoading ? (
-          <PostSkeletonList count={5} />
-        ) : posts.length === 0 ? (
-          <Stack p="xl" style={{ borderColor: "var(--mantine-color-gray-3)" }}>
-            <Stack align="center" gap="md">
-              <Text size="lg" fw={500}>
-                Welcome to Kendle!
-              </Text>
-              <Text c="dimmed" ta="center">
-                Be the first to share something with the community.
-              </Text>
+        {/* Loading State */}
+        {isLoading && <PostSkeletonList count={5} />}
+
+        {/* Empty State */}
+        {!isLoading && posts.length === 0 && !isError && (
+          <Card
+            radius="xl"
+            p="xl"
+            style={{
+              background: "linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)",
+              border: "1px solid var(--mantine-color-blue-2)",
+              textAlign: "center",
+            }}
+          >
+            <Stack align="center" gap="lg" py="xl">
+              <IconSparkles size={48} color="var(--mantine-color-blue-6)" />
+              <div>
+                <Text size="xl" fw={600} c="blue.8" mb="xs">
+                  Welcome to Kendle!
+                </Text>
+                <Text c="blue.6" size="sm">
+                  Be the first to share something amazing with our community.
+                </Text>
+              </div>
+
               {isAuthenticated && (
                 <Button
                   leftSection={<IconPlus size={16} />}
                   onClick={() => setCreatePostOpened(true)}
+                  radius="xl"
+                  variant="gradient"
+                  gradient={{ from: "blue", to: "cyan" }}
+                  size="md"
                 >
-                  Create Your First Post
+                  Share Your First Post
                 </Button>
               )}
             </Stack>
-          </Stack>
-        ) : (
+          </Card>
+        )}
+
+        {/* Posts List */}
+        {!isLoading && posts.length > 0 && (
           <>
-            {posts.map((post) => (
-              <PostCard key={post.id} post={post} />
+            {posts.map((post, index) => (
+              <PostCard key={post.id} post={post} isFirst={index === 0} />
             ))}
 
             {/* Infinite scroll trigger */}
@@ -128,21 +191,30 @@ export function HomePage() {
               </div>
             )}
 
+            {/* End of feed */}
             {!hasNextPage && posts.length > 0 && (
-              <Center py="md">
-                <Text size="sm" c="dimmed">
-                  You've reached the end!
+              <Card
+                radius="xl"
+                p="md"
+                style={{
+                  background: "var(--mantine-color-gray-0)",
+                  border: "1px solid var(--mantine-color-gray-2)",
+                }}
+              >
+                <Text size="sm" c="dimmed" ta="center">
+                  🎉 You're all caught up!
                 </Text>
-              </Center>
+              </Card>
             )}
           </>
         )}
       </Stack>
 
+      {/* Create Post Modal */}
       <CreatePost
         opened={createPostOpened}
         onClose={() => setCreatePostOpened(false)}
       />
-    </Box>
+    </Container>
   );
 }

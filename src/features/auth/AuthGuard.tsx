@@ -1,8 +1,8 @@
+import { Box, Center, Loader, Stack, Text } from "@mantine/core";
 import { ReactNode } from "react";
 import { Navigate, useLocation } from "react-router-dom";
-import { Box, Center, Loader, Text, Stack } from "@mantine/core";
-import { useAuthStore } from "../../stores/authStore";
 import { useCurrentUser } from "../../hooks/useAuth";
+import { useAuthStore } from "../../stores/authStore";
 
 interface AuthGuardProps {
   children: ReactNode;
@@ -10,12 +10,11 @@ interface AuthGuardProps {
 
 export function AuthGuard({ children }: AuthGuardProps) {
   const { isAuthenticated, isLoading } = useAuthStore();
-  const { data: user, isLoading: userLoading } = useCurrentUser();
+  const { isLoading: userLoading } = useCurrentUser();
   const location = useLocation();
 
   const loading = isLoading || userLoading;
 
-  // Show loading state while checking authentication
   if (loading) {
     return (
       <Box
@@ -47,14 +46,9 @@ export function AuthGuard({ children }: AuthGuardProps) {
     );
   }
 
-  // Redirect to phone auth if not authenticated
   if (!isAuthenticated) {
     return <Navigate to="/" state={{ from: location }} replace />;
   }
-
-  // Note: Users can now skip profile completion and access the dashboard
-  // Profile completion is optional and can be done later
-  // The profile completion page will still redirect users with complete profiles
 
   return <>{children}</>;
 }

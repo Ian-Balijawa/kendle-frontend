@@ -6,27 +6,32 @@ import {
   Button,
   Group,
   Menu,
+  Modal,
+  Paper,
   Stack,
   Text,
   Textarea,
+  rem,
 } from "@mantine/core";
 import {
+  IconCheck,
   IconDotsVertical,
   IconEdit,
   IconFlag,
   IconHeart,
   IconTrash,
+  IconX,
 } from "@tabler/icons-react";
 import { useState } from "react";
-import { useAuthStore } from "../../stores/authStore";
-import { Comment } from "../../types";
 import {
-  useUpdateComment,
   useDeleteComment,
   useLikeComment,
   useUnlikeComment,
+  useUpdateComment,
 } from "../../hooks/useComments";
 import { UpdateCommentRequest } from "../../services/api";
+import { useAuthStore } from "../../stores/authStore";
+import { Comment } from "../../types";
 
 interface CommentCardProps {
   comment: Comment;
@@ -36,7 +41,6 @@ interface CommentCardProps {
 export function CommentCard({ comment }: CommentCardProps) {
   const { user, isAuthenticated } = useAuthStore();
 
-  // React Query mutations
   const updateCommentMutation = useUpdateComment();
   const deleteCommentMutation = useDeleteComment();
   const likeCommentMutation = useLikeComment();
@@ -46,7 +50,6 @@ export function CommentCard({ comment }: CommentCardProps) {
   const [editContent, setEditContent] = useState(comment.content);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  // Loading states from mutations
   const isSubmitting =
     updateCommentMutation.isPending || deleteCommentMutation.isPending;
 
@@ -54,12 +57,12 @@ export function CommentCard({ comment }: CommentCardProps) {
     const date = new Date(dateString);
     const now = new Date();
     const diffInHours = Math.floor(
-      (now.getTime() - date.getTime()) / (1000 * 60 * 60),
+      (now.getTime() - date.getTime()) / (1000 * 60 * 60)
     );
 
-    if (diffInHours < 1) return "Just now";
-    if (diffInHours < 24) return `${diffInHours}h ago`;
-    if (diffInHours < 168) return `${Math.floor(diffInHours / 24)}d ago`;
+    if (diffInHours < 1) return "now";
+    if (diffInHours < 24) return `${diffInHours}h`;
+    if (diffInHours < 168) return `${Math.floor(diffInHours / 24)}d`;
     return date.toLocaleDateString();
   };
 
@@ -84,8 +87,13 @@ export function CommentCard({ comment }: CommentCardProps) {
         onError: (error) => {
           console.error("Failed to update comment:", error);
         },
-      },
+      }
     );
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditContent(comment.content);
   };
 
   const handleDelete = async () => {
@@ -113,179 +121,246 @@ export function CommentCard({ comment }: CommentCardProps) {
 
   if (isEditing) {
     return (
-      <Box
-        p="sm"
+      <Paper
+        withBorder
+        radius="lg"
+        p="md"
         style={{
-          border: "1px solid var(--mantine-color-gray-3)",
-          borderRadius: "var(--mantine-radius-sm)",
+          borderColor: "var(--mantine-color-blue-3)",
+          backgroundColor: "var(--mantine-color-blue-0)",
         }}
       >
-        <Stack gap="sm">
+        <Stack gap="md">
+          <Group gap="sm">
+            <Avatar
+              src={comment.author?.avatar}
+              alt={comment.author?.firstName || "User"}
+              size={36}
+              radius="xl"
+            >
+              {(comment.author?.firstName || "U").charAt(0)}
+            </Avatar>
+            <Text size="sm" fw={500} c="blue.7">
+              Editing comment...
+            </Text>
+          </Group>
+
           <Textarea
             placeholder="Edit your comment..."
             value={editContent}
             onChange={(e) => setEditContent(e.currentTarget.value)}
             minRows={2}
-            maxRows={4}
+            maxRows={6}
             autosize
+            radius="md"
+            style={{ fontSize: rem(14) }}
           />
-          <Group justify="flex-end" gap="xs">
-            <Button
-              variant="light"
-              size="xs"
-              onClick={() => setIsEditing(false)}
+
+          <Group justify="flex-end" gap="sm">
+            <ActionIcon
+              variant="subtle"
+              color="gray"
+              onClick={handleCancelEdit}
+              size="lg"
+              radius="xl"
             >
-              Cancel
-            </Button>
-            <Button size="xs" onClick={handleSaveEdit} loading={isSubmitting}>
-              Save
-            </Button>
+              <IconX size={16} />
+            </ActionIcon>
+            <ActionIcon
+              variant="filled"
+              color="blue"
+              onClick={handleSaveEdit}
+              loading={isSubmitting}
+              size="lg"
+              radius="xl"
+            >
+              <IconCheck size={16} />
+            </ActionIcon>
           </Group>
         </Stack>
-      </Box>
+      </Paper>
     );
   }
 
   return (
     <>
-      <Box
-        p="sm"
-        style={{
-          border: "1px solid var(--mantine-color-gray-2)",
-          borderRadius: "var(--mantine-radius-sm)",
-          backgroundColor: "var(--mantine-color-gray-0)",
-        }}
-      >
-        <Stack gap="sm">
-          <Group justify="space-between" align="flex-start">
-            <Group gap="sm" align="flex-start">
-              <Avatar
-                src={comment.author.avatar}
-                alt={comment.author.firstName || "User"}
-                size="sm"
-                radius="xl"
-              >
-                {(comment.author.firstName || "U").charAt(0)}
-              </Avatar>
-              <Box style={{ flex: 1 }}>
-                <Group gap="xs" align="center">
-                  <Text fw={500} size="sm">
-                    {comment.author.firstName} {comment.author.lastName}
-                  </Text>
-                  {comment.author.isVerified && (
-                    <Badge size="xs" color="blue" variant="light">
-                      Verified
-                    </Badge>
-                  )}
-                </Group>
-                <Text size="sm" mt={4} style={{ lineHeight: 1.4 }}>
-                  {comment.content}
+      <Paper withBorder={false} radius="lg" p="md">
+        <Group align="flex-start" gap="md">
+          <Avatar
+            src={comment.author?.avatar}
+            alt={comment.author?.firstName || "User"}
+            size={36}
+            radius="xl"
+            style={{
+              border: comment.author?.isVerified
+                ? "2px solid var(--mantine-color-blue-4)"
+                : "none",
+              flexShrink: 0,
+            }}
+          >
+            {(comment.author?.firstName || "U").charAt(0)}
+          </Avatar>
+
+          <Box style={{ flex: 1, minWidth: 0 }}>
+            <Group justify="space-between" align="flex-start" mb="xs">
+              <Group gap="xs" align="center" style={{ flex: 1, minWidth: 0 }}>
+                <Text fw={600} size="sm" c="dark.8" truncate>
+                  {comment.author?.firstName} {comment.author?.lastName}
                 </Text>
-                <Group gap="xs" mt={8}>
-                  <Text size="xs" c="dimmed">
-                    {formatDate(comment.createdAt)}
-                  </Text>
-                  {comment.updatedAt !== comment.createdAt && (
-                    <Text size="xs" c="dimmed">
-                      (edited)
-                    </Text>
-                  )}
-                </Group>
-              </Box>
+
+                {comment.author?.isVerified && (
+                  <Badge size="xs" color="blue" radius="sm" variant="filled">
+                    ✓
+                  </Badge>
+                )}
+
+                <Text c="dimmed" size="xs">
+                  •
+                </Text>
+
+                <Text c="dimmed" size="xs">
+                  {formatDate(comment.createdAt)}
+                  {comment.updatedAt !== comment.createdAt && " (edited)"}
+                </Text>
+              </Group>
+
+              <Stack>
+                {isAuthenticated && (
+                  <Menu
+                    shadow="lg"
+                    width={160}
+                    position="bottom-end"
+                    radius="md"
+                    styles={{
+                      dropdown: {
+                        backgroundColor: "var(--mantine-color-gray-0)",
+                      },
+                    }}
+                  >
+                    <Menu.Target>
+                      <ActionIcon variant="subtle" size="sm" radius="xl">
+                        <IconDotsVertical size={14} />
+                      </ActionIcon>
+                    </Menu.Target>
+                    <Menu.Dropdown>
+                      {isAuthor && (
+                        <>
+                          <Menu.Item
+                            leftSection={<IconEdit size={14} />}
+                            onClick={handleEdit}
+                          >
+                            Edit
+                          </Menu.Item>
+                          <Menu.Item
+                            leftSection={<IconTrash size={14} />}
+                            color="red"
+                            onClick={() => setShowDeleteConfirm(true)}
+                          >
+                            Delete
+                          </Menu.Item>
+                          <Menu.Divider />
+                        </>
+                      )}
+                      <Menu.Item
+                        leftSection={<IconFlag size={14} />}
+                        color="orange"
+                      >
+                        Report
+                      </Menu.Item>
+                    </Menu.Dropdown>
+                  </Menu>
+                )}
+              </Stack>
             </Group>
 
-            {isAuthenticated && (
-              <Menu shadow="md" width={150} position="bottom-end">
-                <Menu.Target>
-                  <ActionIcon variant="subtle" size="xs">
-                    <IconDotsVertical size={14} />
-                  </ActionIcon>
-                </Menu.Target>
-
-                <Menu.Dropdown>
-                  {isAuthor && (
-                    <>
-                      <Menu.Item
-                        leftSection={<IconEdit size={14} />}
-                        onClick={handleEdit}
-                      >
-                        Edit
-                      </Menu.Item>
-                      <Menu.Item
-                        leftSection={<IconTrash size={14} />}
-                        color="red"
-                        onClick={() => setShowDeleteConfirm(true)}
-                      >
-                        Delete
-                      </Menu.Item>
-                      <Menu.Divider />
-                    </>
-                  )}
-                  <Menu.Item
-                    leftSection={<IconFlag size={14} />}
-                    color="orange"
-                  >
-                    Report
-                  </Menu.Item>
-                </Menu.Dropdown>
-              </Menu>
-            )}
-          </Group>
-
-          <Group gap="xs">
-            <ActionIcon
-              variant={comment.isLiked ? "filled" : "subtle"}
-              color={comment.isLiked ? "red" : "gray"}
-              size="xs"
-              onClick={handleLike}
+            <Text
+              size="sm"
               style={{
-                cursor: isAuthenticated ? "pointer" : "not-allowed",
-                opacity: isAuthenticated ? 1 : 0.6,
+                lineHeight: 1.5,
+                wordBreak: "break-word",
               }}
+              c="dark.7"
+              mb="sm"
             >
-              <IconHeart size={14} />
-            </ActionIcon>
-            <Text size="xs" c="dimmed">
-              {comment.likesCount}
+              {comment.content}
             </Text>
-          </Group>
-        </Stack>
-      </Box>
 
-      {/* Delete Confirmation Modal */}
-      <Menu
-        opened={showDeleteConfirm}
-        onClose={() => setShowDeleteConfirm(false)}
-        shadow="md"
-        width={300}
-        position="bottom"
-      >
-        <Menu.Dropdown>
-          <Box p="md">
-            <Text size="sm" mb="md">
-              Are you sure you want to delete this comment? This action cannot
-              be undone.
-            </Text>
-            <Group justify="flex-end" gap="xs">
-              <Button
-                variant="light"
-                size="xs"
-                onClick={() => setShowDeleteConfirm(false)}
+            <Group gap="md">
+              <Group
+                gap="xs"
+                style={{ cursor: isAuthenticated ? "pointer" : "default" }}
+                onClick={handleLike}
               >
-                Cancel
-              </Button>
-              <Button
-                color="red"
-                size="xs"
-                onClick={handleDelete}
-                loading={isSubmitting}
-              >
-                Delete
-              </Button>
+                <ActionIcon
+                  variant={comment.isLiked ? "filled" : "subtle"}
+                  color={comment.isLiked ? "red" : "gray"}
+                  size="sm"
+                  radius="xl"
+                  disabled={!isAuthenticated}
+                  style={{
+                    transition: "all 150ms ease",
+                    transform: comment.isLiked ? "scale(1.1)" : "scale(1)",
+                  }}
+                >
+                  <IconHeart
+                    size={14}
+                    style={{
+                      fill: comment.isLiked ? "currentColor" : "none",
+                    }}
+                  />
+                </ActionIcon>
+
+                {comment.likesCount > 0 && (
+                  <Text
+                    size="xs"
+                    c={comment.isLiked ? "red.6" : "dimmed"}
+                    fw={comment.isLiked ? 500 : 400}
+                  >
+                    {comment.likesCount}
+                  </Text>
+                )}
+              </Group>
             </Group>
           </Box>
-        </Menu.Dropdown>
-      </Menu>
+        </Group>
+      </Paper>
+
+      <Modal
+        opened={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        title="Delete Comment"
+        radius="lg"
+        centered
+        size="sm"
+      >
+        <Stack gap="lg">
+          <Text size="sm" c="dimmed">
+            This action cannot be undone. Your comment will be permanently
+            deleted.
+          </Text>
+
+          <Group justify="flex-end" gap="sm">
+            <Button
+              variant="subtle"
+              color="gray"
+              onClick={() => setShowDeleteConfirm(false)}
+              radius="xl"
+              size="sm"
+            >
+              Cancel
+            </Button>
+            <Button
+              color="red"
+              onClick={handleDelete}
+              loading={isSubmitting}
+              radius="xl"
+              size="sm"
+            >
+              Delete
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
     </>
   );
 }

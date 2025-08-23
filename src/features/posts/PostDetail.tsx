@@ -4,21 +4,26 @@ import {
   Badge,
   Box,
   Button,
-  Card,
+  Center,
+  Divider,
   Group,
   Image,
+  Loader,
   Menu,
   Modal,
+  Paper,
+  rem,
   Stack,
   Text,
   Textarea,
   TextInput,
+  Transition,
 } from "@mantine/core";
 import {
-  IconArrowDown,
   IconArrowLeft,
-  IconArrowUp,
   IconBookmark,
+  IconChevronDown,
+  IconChevronUp,
   IconDotsVertical,
   IconEdit,
   IconFlag,
@@ -30,11 +35,7 @@ import {
 } from "@tabler/icons-react";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import {
-  CommentSkeletonList,
-  InfiniteScrollLoader,
-  PostDetailSkeleton,
-} from "../../components/ui";
+import { CommentSkeletonList, PostDetailSkeleton } from "../../components/ui";
 import { useCreateComment, useInfiniteComments } from "../../hooks/useComments";
 import {
   useBookmarkPost,
@@ -88,6 +89,7 @@ export function PostDetail() {
   const [editContent, setEditContent] = useState("");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [commentContent, setCommentContent] = useState("");
+  const [showCommentInput, setShowCommentInput] = useState(false);
 
   // Loading states
   const isSubmitting =
@@ -103,24 +105,43 @@ export function PostDetail() {
 
   if (postError || !post) {
     return (
-      <Card
-        withBorder
-        p="xl"
-        radius="md"
-        style={{ borderColor: "var(--mantine-color-red-3)" }}
-      >
-        <Stack align="center" gap="md">
-          <Text size="lg" fw={500} c="red">
-            Post not found
-          </Text>
-          <Text c="dimmed" ta="center">
-            The post you're looking for doesn't exist or has been removed.
-          </Text>
-          <Button variant="light" onClick={() => navigate("/dashboard")}>
-            Go Back to Home
-          </Button>
-        </Stack>
-      </Card>
+      <Center py={60}>
+        <Paper p="xl" radius="lg" withBorder w="100%" maw={400}>
+          <Stack align="center" gap="lg">
+            <Box
+              w={60}
+              h={60}
+              bg="red.1"
+              style={{
+                borderRadius: "50%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Text size="xl" c="red.6">
+                !
+              </Text>
+            </Box>
+            <Stack gap="xs" align="center">
+              <Text size="lg" fw={600} c="red.6">
+                Post not found
+              </Text>
+              <Text c="dimmed" ta="center" size="sm">
+                This post doesn't exist or has been removed.
+              </Text>
+            </Stack>
+            <Button
+              variant="light"
+              size="md"
+              leftSection={<IconArrowLeft size={16} />}
+              onClick={() => navigate("/dashboard")}
+            >
+              Back to Home
+            </Button>
+          </Stack>
+        </Paper>
+      </Center>
     );
   }
 
@@ -131,9 +152,9 @@ export function PostDetail() {
       (now.getTime() - date.getTime()) / (1000 * 60 * 60)
     );
 
-    if (diffInHours < 1) return "Just now";
-    if (diffInHours < 24) return `${diffInHours}h ago`;
-    if (diffInHours < 168) return `${Math.floor(diffInHours / 24)}d ago`;
+    if (diffInHours < 1) return "now";
+    if (diffInHours < 24) return `${diffInHours}h`;
+    if (diffInHours < 168) return `${Math.floor(diffInHours / 24)}d`;
     return date.toLocaleDateString();
   };
 
@@ -227,6 +248,7 @@ export function PostDetail() {
       {
         onSuccess: () => {
           setCommentContent("");
+          setShowCommentInput(false);
         },
         onError: (error) => {
           console.error("Failed to post comment:", error);
@@ -236,363 +258,453 @@ export function PostDetail() {
   };
 
   const isAuthor = user?.id === post?.author?.id;
+  const netScore = post?.upvotesCount - post?.downvotesCount;
 
   return (
-    <>
-      <Box>
-        {/* Header */}
-        <Group justify="space-between" mb="lg">
-          <ActionIcon variant="subtle" size="lg" onClick={() => navigate(-1)}>
-            <IconArrowLeft size={20} />
-          </ActionIcon>
-          <Text fw={500}>Post</Text>
-          <Box />
-        </Group>
+    <Box maw={680} mx="auto" p="md">
+      {/* Header */}
+      <Group justify="space-between" mb="xl">
+        <ActionIcon
+          variant="light"
+          size="lg"
+          radius="xl"
+          onClick={() => navigate(-1)}
+        >
+          <IconArrowLeft size={18} />
+        </ActionIcon>
+        <Text fw={600} size="lg" c="dark.7">
+          Post
+        </Text>
+        <Box w={40} />
+      </Group>
 
-        {/* Post Content */}
-        <Card withBorder p="lg" radius="md" mb="md">
-          <Stack gap="md">
-            <Group justify="space-between">
-              <Group>
-                <Avatar
-                  src={post?.author?.avatar}
-                  alt={post?.author?.firstName || "User"}
-                  size="lg"
-                  radius="xl"
-                >
-                  {(post?.author?.firstName || "U").charAt(0)}
-                </Avatar>
-                <Box>
-                  <Group gap="xs" align="center">
-                    <Text fw={500} size="lg">
-                      {post?.author?.firstName} {post?.author?.lastName}
-                    </Text>
-                    {post?.author?.isVerified && (
-                      <Badge size="sm" color="blue" variant="light">
-                        Verified
-                      </Badge>
-                    )}
-                  </Group>
+      {/* Main Post Card */}
+      <Paper
+        withBorder
+        radius="xl"
+        p={0}
+        mb="xl"
+        style={{ overflow: "hidden" }}
+      >
+        <Box p="xl">
+          {/* Author Header */}
+          <Group justify="space-between" mb="lg">
+            <Group gap="md">
+              <Avatar
+                src={post?.author?.avatar}
+                alt={post?.author?.firstName || "User"}
+                size={48}
+                radius="xl"
+                style={{
+                  border: post?.author?.isVerified
+                    ? "2px solid var(--mantine-color-blue-5)"
+                    : "none",
+                }}
+              >
+                {(post?.author?.firstName || "U").charAt(0)}
+              </Avatar>
+              <Box>
+                <Group gap="xs" align="center">
+                  <Text fw={600} size="md" c="dark.8">
+                    {post?.author?.firstName} {post?.author?.lastName}
+                  </Text>
+                  {post?.author?.isVerified && (
+                    <Badge size="xs" color="blue" radius="sm" variant="filled">
+                      ✓
+                    </Badge>
+                  )}
+                </Group>
+                <Group gap="xs" align="center">
                   <Text c="dimmed" size="sm">
-                    @{post?.author?.username || post?.author?.phoneNumber} •{" "}
+                    @{post?.author?.username || post?.author?.phoneNumber}
+                  </Text>
+                  <Text c="dimmed" size="xs">
+                    •
+                  </Text>
+                  <Text c="dimmed" size="sm">
                     {formatDate(post?.createdAt)}
                     {post?.updatedAt !== post?.createdAt && " (edited)"}
                   </Text>
-                </Box>
-              </Group>
-
-              {isAuthenticated && (
-                <Menu shadow="md" width={200} position="bottom-end">
-                  <Menu.Target>
-                    <ActionIcon variant="subtle">
-                      <IconDotsVertical size={16} />
-                    </ActionIcon>
-                  </Menu.Target>
-
-                  <Menu.Dropdown>
-                    {isAuthor && (
-                      <>
-                        <Menu.Item
-                          leftSection={<IconEdit size={14} />}
-                          onClick={handleEdit}
-                        >
-                          Edit Post
-                        </Menu.Item>
-                        <Menu.Item
-                          leftSection={<IconTrash size={14} />}
-                          color="red"
-                          onClick={() => setShowDeleteConfirm(true)}
-                        >
-                          Delete Post
-                        </Menu.Item>
-                        <Menu.Divider />
-                      </>
-                    )}
-                    <Menu.Item
-                      leftSection={<IconFlag size={14} />}
-                      color="orange"
-                    >
-                      Report Post
-                    </Menu.Item>
-                  </Menu.Dropdown>
-                </Menu>
-              )}
+                </Group>
+              </Box>
             </Group>
 
-            {isEditing ? (
-              <Stack gap="md">
-                <Textarea
-                  placeholder="What's on your mind?"
-                  value={editContent}
-                  onChange={(e) => setEditContent(e.currentTarget.value)}
-                  minRows={4}
-                  maxRows={10}
-                  autosize
-                />
-                <Group justify="flex-end">
-                  <Button variant="light" onClick={() => setIsEditing(false)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={handleSaveEdit} loading={isSubmitting}>
-                    Save Changes
-                  </Button>
-                </Group>
-              </Stack>
-            ) : (
-              <Text size="md" style={{ lineHeight: 1.6 }}>
-                {post.content}
-              </Text>
+            {isAuthenticated && (
+              <Menu shadow="lg" width={180} position="bottom-end" radius="md">
+                <Menu.Target>
+                  <ActionIcon variant="subtle" size="md" radius="xl">
+                    <IconDotsVertical size={16} />
+                  </ActionIcon>
+                </Menu.Target>
+                <Menu.Dropdown>
+                  {isAuthor && (
+                    <>
+                      <Menu.Item
+                        leftSection={<IconEdit size={14} />}
+                        onClick={handleEdit}
+                      >
+                        Edit
+                      </Menu.Item>
+                      <Menu.Item
+                        leftSection={<IconTrash size={14} />}
+                        color="red"
+                        onClick={() => setShowDeleteConfirm(true)}
+                      >
+                        Delete
+                      </Menu.Item>
+                      <Menu.Divider />
+                    </>
+                  )}
+                  <Menu.Item
+                    leftSection={<IconFlag size={14} />}
+                    color="orange"
+                  >
+                    Report
+                  </Menu.Item>
+                </Menu.Dropdown>
+              </Menu>
             )}
+          </Group>
 
-            {post?.media && post?.media?.length > 0 && (
-              <Box>
-                {post?.media?.length === 1 ? (
-                  <Image
-                    src={post.media[0].url}
-                    alt={post.media[0].filename}
-                    radius="md"
-                    style={{ maxHeight: 500, objectFit: "cover" }}
-                  />
-                ) : (
-                  <Group gap="xs">
-                    {post?.media?.map((media) => (
-                      <Image
-                        key={media.id}
-                        src={media.url}
-                        alt={media.filename}
-                        radius="sm"
-                        style={{ height: 200, objectFit: "cover", flex: 1 }}
-                      />
-                    ))}
-                  </Group>
-                )}
-              </Box>
-            )}
-
-            {post?.hashtags && post?.hashtags?.length > 0 && (
-              <Group gap="xs">
-                {post?.hashtags?.map((hashtag: string) => (
-                  <Badge key={hashtag} variant="light" color="blue" size="sm">
-                    #{hashtag}
-                  </Badge>
-                ))}
+          {/* Post Content */}
+          {isEditing ? (
+            <Stack gap="md">
+              <Textarea
+                placeholder="What's on your mind?"
+                value={editContent}
+                onChange={(e) => setEditContent(e.currentTarget.value)}
+                minRows={4}
+                maxRows={10}
+                autosize
+                radius="md"
+                style={{ fontSize: rem(15) }}
+              />
+              <Group justify="flex-end" gap="sm">
+                <Button
+                  variant="subtle"
+                  color="gray"
+                  onClick={() => setIsEditing(false)}
+                  radius="xl"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleSaveEdit}
+                  loading={isSubmitting}
+                  radius="xl"
+                >
+                  Save
+                </Button>
               </Group>
-            )}
+            </Stack>
+          ) : (
+            <Text size="md" style={{ lineHeight: 1.6 }} c="dark.7" mb="lg">
+              {post.content}
+            </Text>
+          )}
 
-            {/* Actions */}
-            <Group justify="space-between" pt="md">
-              <Group gap="lg">
-                {/* Upvote/Downvote */}
-                <Group gap={4}>
-                  <ActionIcon
-                    variant={post?.isUpvoted ? "filled" : "subtle"}
-                    color={post?.isUpvoted ? "green" : "gray"}
-                    onClick={handleUpvote}
-                    style={{
-                      cursor: isAuthenticated ? "pointer" : "not-allowed",
-                      opacity: isAuthenticated ? 1 : 0.6,
-                    }}
-                  >
-                    <IconArrowUp size={18} />
-                  </ActionIcon>
-                  <Text
-                    fw={500}
-                    style={{ minWidth: "30px", textAlign: "center" }}
-                  >
-                    {post?.upvotesCount - post?.downvotesCount}
-                  </Text>
-                  <ActionIcon
-                    variant={post?.isDownvoted ? "filled" : "subtle"}
-                    color={post?.isDownvoted ? "red" : "gray"}
-                    onClick={handleDownvote}
-                    style={{
-                      cursor: isAuthenticated ? "pointer" : "not-allowed",
-                      opacity: isAuthenticated ? 1 : 0.6,
-                    }}
-                  >
-                    <IconArrowDown size={18} />
-                  </ActionIcon>
-                </Group>
-
-                {/* Like */}
+          {/* Media */}
+          {post?.media && post?.media?.length > 0 && (
+            <Box mb="lg">
+              {post?.media?.length === 1 ? (
+                <Image
+                  src={post.media[0].url}
+                  alt={post.media[0].filename}
+                  radius="lg"
+                  style={{ maxHeight: 400, objectFit: "cover" }}
+                />
+              ) : (
                 <Group gap="xs">
+                  {post?.media?.map((media) => (
+                    <Image
+                      key={media.id}
+                      src={media.url}
+                      alt={media.filename}
+                      radius="md"
+                      style={{ height: 180, objectFit: "cover", flex: 1 }}
+                    />
+                  ))}
+                </Group>
+              )}
+            </Box>
+          )}
+
+          {/* Hashtags */}
+          {post?.hashtags && post?.hashtags?.length > 0 && (
+            <Group gap="xs" mb="lg">
+              {post?.hashtags?.map((hashtag: string) => (
+                <Badge
+                  key={hashtag}
+                  variant="light"
+                  color="blue"
+                  size="sm"
+                  radius="md"
+                  style={{ cursor: "pointer" }}
+                >
+                  #{hashtag}
+                </Badge>
+              ))}
+            </Group>
+          )}
+        </Box>
+
+        {/* Actions Bar */}
+        <Box px="xl" pb="lg">
+          <Divider mb="lg" />
+          <Group justify="space-between">
+            <Group gap="xl">
+              {/* Vote Score */}
+              <Group gap="xs">
+                <ActionIcon
+                  variant={post?.isUpvoted ? "filled" : "subtle"}
+                  color={post?.isUpvoted ? "green" : "gray"}
+                  onClick={handleUpvote}
+                  disabled={!isAuthenticated}
+                  size="lg"
+                  radius="xl"
+                >
+                  <IconChevronUp size={18} />
+                </ActionIcon>
+                <Text
+                  fw={600}
+                  size="sm"
+                  c={netScore > 0 ? "green" : netScore < 0 ? "red" : "dimmed"}
+                >
+                  {netScore > 0 ? `+${netScore}` : netScore}
+                </Text>
+                <ActionIcon
+                  variant={post?.isDownvoted ? "filled" : "subtle"}
+                  color={post?.isDownvoted ? "red" : "gray"}
+                  onClick={handleDownvote}
+                  disabled={!isAuthenticated}
+                  size="lg"
+                  radius="xl"
+                >
+                  <IconChevronDown size={18} />
+                </ActionIcon>
+              </Group>
+
+              {/* Interactions */}
+              <Group gap="lg">
+                <Group gap="xs" style={{ cursor: "pointer" }}>
                   <ActionIcon
                     variant={post?.isLiked ? "filled" : "subtle"}
                     color={post?.isLiked ? "red" : "gray"}
                     onClick={handleLike}
-                    style={{
-                      cursor: isAuthenticated ? "pointer" : "not-allowed",
-                      opacity: isAuthenticated ? 1 : 0.6,
-                    }}
+                    disabled={!isAuthenticated}
+                    size="lg"
+                    radius="xl"
                   >
                     <IconHeart size={18} />
                   </ActionIcon>
-                  <Text>{post?.likesCount}</Text>
+                  <Text size="sm" c="dimmed">
+                    {post?.likesCount}
+                  </Text>
                 </Group>
 
-                {/* Comments */}
-                <Group gap="xs">
-                  <ActionIcon variant="subtle" color="gray">
+                <Group
+                  gap="xs"
+                  style={{ cursor: "pointer" }}
+                  onClick={() => setShowCommentInput(true)}
+                >
+                  <ActionIcon
+                    variant="subtle"
+                    color="gray"
+                    size="lg"
+                    radius="xl"
+                  >
                     <IconMessageCircle size={18} />
                   </ActionIcon>
-                  <Text>{post?.commentsCount}</Text>
+                  <Text size="sm" c="dimmed">
+                    {post?.commentsCount}
+                  </Text>
                 </Group>
 
-                {/* Share */}
-                <Group gap="xs">
+                <Group gap="xs" style={{ cursor: "pointer" }}>
                   <ActionIcon
                     variant="subtle"
                     color="gray"
                     onClick={handleShare}
-                    style={{
-                      cursor: isAuthenticated ? "pointer" : "not-allowed",
-                      opacity: isAuthenticated ? 1 : 0.6,
-                    }}
+                    disabled={!isAuthenticated}
+                    size="lg"
+                    radius="xl"
                   >
                     <IconShare size={18} />
                   </ActionIcon>
-                  <Text>{post?.sharesCount}</Text>
+                  <Text size="sm" c="dimmed">
+                    {post?.sharesCount}
+                  </Text>
                 </Group>
               </Group>
-
-              {/* Bookmark */}
-              <ActionIcon
-                variant={post?.isBookmarked ? "filled" : "subtle"}
-                color={post?.isBookmarked ? "yellow" : "gray"}
-                onClick={handleBookmark}
-                style={{
-                  cursor: isAuthenticated ? "pointer" : "not-allowed",
-                  opacity: isAuthenticated ? 1 : 0.6,
-                }}
-              >
-                <IconBookmark size={18} />
-              </ActionIcon>
             </Group>
-          </Stack>
-        </Card>
 
-        {/* Comment Input */}
-        {isAuthenticated && (
-          <Card withBorder p="md" radius="md" mb="md">
-            <TextInput
-              placeholder="Add a comment..."
-              value={commentContent}
-              onChange={(e) => setCommentContent(e.currentTarget.value)}
-              rightSection={
-                <ActionIcon
-                  onClick={handleComment}
-                  loading={isCommenting}
-                  disabled={!commentContent.trim()}
-                  color="blue"
-                >
-                  <IconSend size={16} />
-                </ActionIcon>
-              }
-              onKeyPress={(e) => e.key === "Enter" && handleComment()}
-            />
-          </Card>
-        )}
-
-        {!isAuthenticated && (
-          <Card
-            withBorder
-            p="md"
-            radius="md"
-            mb="md"
-            style={{ backgroundColor: "var(--mantine-color-blue-0)" }}
-          >
-            <Text size="sm" c="blue" ta="center">
-              Sign in to like, comment, and interact with this post
-            </Text>
-          </Card>
-        )}
-
-        {/* Comments */}
-        <Stack gap="md">
-          {commentsLoading && comments.length === 0 ? (
-            <CommentSkeletonList count={3} />
-          ) : comments.length === 0 ? (
-            <Card withBorder p="md" radius="md">
-              <Text c="dimmed" ta="center">
-                Be the first to comment!
-              </Text>
-            </Card>
-          ) : (
-            <>
-              {comments.map((comment) => (
-                <CommentCard
-                  key={comment.id}
-                  comment={comment}
-                  postId={post.id}
-                />
-              ))}
-
-              {/* Load more comments */}
-              {hasNextPage && (
-                <Box ta="center">
-                  {isFetchingNextPage ? (
-                    <InfiniteScrollLoader count={2} variant="comments" />
-                  ) : (
-                    <Button variant="light" onClick={() => fetchNextPage()}>
-                      Load more comments
-                    </Button>
-                  )}
-                </Box>
-              )}
-            </>
-          )}
-        </Stack>
-      </Box>
-
-      {/* Edit Modal */}
-      <Modal
-        opened={isEditing}
-        onClose={() => setIsEditing(false)}
-        title="Edit Post"
-        size="lg"
-      >
-        <Stack gap="md">
-          <Textarea
-            placeholder="What's on your mind?"
-            value={editContent}
-            onChange={(e) => setEditContent(e.currentTarget.value)}
-            minRows={3}
-            maxRows={8}
-            autosize
-          />
-          <Group justify="flex-end">
-            <Button variant="light" onClick={() => setIsEditing(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleSaveEdit} loading={isSubmitting}>
-              Save Changes
-            </Button>
+            {/* Bookmark */}
+            <ActionIcon
+              variant={post?.isBookmarked ? "filled" : "subtle"}
+              color={post?.isBookmarked ? "yellow" : "gray"}
+              onClick={handleBookmark}
+              disabled={!isAuthenticated}
+              size="lg"
+              radius="xl"
+            >
+              <IconBookmark size={18} />
+            </ActionIcon>
           </Group>
-        </Stack>
-      </Modal>
+        </Box>
+      </Paper>
+
+      {/* Comment Input */}
+      <Transition
+        mounted={showCommentInput && isAuthenticated}
+        transition="slide-up"
+      >
+        {(styles) => (
+          <Paper withBorder radius="xl" p="md" mb="xl" style={styles}>
+            <Group>
+              <Avatar src={user?.avatar} size="md" radius="xl">
+                {user?.firstName?.charAt(0) || "U"}
+              </Avatar>
+              <TextInput
+                placeholder="Write a comment..."
+                value={commentContent}
+                onChange={(e) => setCommentContent(e.currentTarget.value)}
+                style={{ flex: 1 }}
+                radius="xl"
+                rightSection={
+                  <ActionIcon
+                    onClick={handleComment}
+                    loading={isCommenting}
+                    disabled={!commentContent.trim()}
+                    color="blue"
+                    variant={commentContent.trim() ? "filled" : "subtle"}
+                    radius="xl"
+                  >
+                    <IconSend size={16} />
+                  </ActionIcon>
+                }
+                onKeyPress={(e) => e.key === "Enter" && handleComment()}
+              />
+            </Group>
+          </Paper>
+        )}
+      </Transition>
+
+      {/* Auth Prompt */}
+      {!isAuthenticated && (
+        <Paper
+          withBorder
+          radius="xl"
+          p="lg"
+          mb="xl"
+          bg="blue.0"
+          style={{ borderColor: "var(--mantine-color-blue-2)" }}
+        >
+          <Center>
+            <Text size="sm" c="blue.7" fw={500}>
+              Sign in to interact with this post
+            </Text>
+          </Center>
+        </Paper>
+      )}
+
+      {/* Comments Section */}
+      <Box>
+        <Text fw={600} size="lg" mb="lg" c="dark.7">
+          Comments ({post?.commentsCount})
+        </Text>
+
+        {commentsLoading && comments.length === 0 ? (
+          <CommentSkeletonList count={3} />
+        ) : comments.length === 0 ? (
+          <Center py="xl">
+            <Paper p="lg" radius="lg" bg="gray.0" w="100%" maw={300}>
+              <Center>
+                <Stack align="center" gap="sm">
+                  <Box
+                    w={40}
+                    h={40}
+                    bg="gray.2"
+                    style={{
+                      borderRadius: "50%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <IconMessageCircle
+                      size={20}
+                      color="var(--mantine-color-gray-6)"
+                    />
+                  </Box>
+                  <Text c="dimmed" size="sm" ta="center">
+                    No comments yet. Be the first!
+                  </Text>
+                </Stack>
+              </Center>
+            </Paper>
+          </Center>
+        ) : (
+          <Stack gap="md">
+            {comments.map((comment) => (
+              <CommentCard
+                key={comment.id}
+                comment={comment}
+                postId={post.id}
+              />
+            ))}
+
+            {hasNextPage && (
+              <Center pt="md">
+                {isFetchingNextPage ? (
+                  <Loader size="sm" />
+                ) : (
+                  <Button
+                    variant="subtle"
+                    onClick={() => fetchNextPage()}
+                    radius="xl"
+                    size="sm"
+                  >
+                    Load more comments
+                  </Button>
+                )}
+              </Center>
+            )}
+          </Stack>
+        )}
+      </Box>
 
       {/* Delete Confirmation Modal */}
       <Modal
         opened={showDeleteConfirm}
         onClose={() => setShowDeleteConfirm(false)}
         title="Delete Post"
-        size="sm"
+        radius="lg"
+        centered
       >
-        <Stack gap="md">
-          <Text>
-            Are you sure you want to delete this post? This action cannot be
-            undone.
+        <Stack gap="lg">
+          <Text c="dimmed">
+            This action cannot be undone. Your post will be permanently deleted.
           </Text>
-          <Group justify="flex-end">
-            <Button variant="light" onClick={() => setShowDeleteConfirm(false)}>
+          <Group justify="flex-end" gap="sm">
+            <Button
+              variant="subtle"
+              color="gray"
+              onClick={() => setShowDeleteConfirm(false)}
+              radius="xl"
+            >
               Cancel
             </Button>
-            <Button color="red" onClick={handleDelete} loading={isSubmitting}>
-              Delete Post
+            <Button
+              color="red"
+              onClick={handleDelete}
+              loading={isSubmitting}
+              radius="xl"
+            >
+              Delete
             </Button>
           </Group>
         </Stack>
       </Modal>
-    </>
+    </Box>
   );
 }

@@ -5,6 +5,8 @@ import {
   Box,
   Button,
   Card,
+  Collapse,
+  Divider,
   Group,
   Image,
   Menu,
@@ -13,17 +15,20 @@ import {
   Text,
   Textarea,
   TextInput,
+  UnstyledButton,
 } from "@mantine/core";
 import {
   IconArrowDown,
   IconArrowUp,
   IconBookmark,
+  IconBookmarkFilled,
   IconChevronDown,
   IconChevronUp,
   IconDotsVertical,
   IconEdit,
   IconFlag,
   IconHeart,
+  IconHeartFilled,
   IconMessageCircle,
   IconSend,
   IconShare,
@@ -52,13 +57,13 @@ import { CommentCard } from "./CommentCard";
 interface PostCardProps {
   post: Post;
   onUpdate?: (post: Post) => void;
+  isFirst?: boolean;
 }
 
-export function PostCard({ post, onUpdate }: PostCardProps) {
+export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuthStore();
 
-  // React Query mutations
   const likePostMutation = useLikePost();
   const unlikePostMutation = useUnlikePost();
   const bookmarkPostMutation = useBookmarkPost();
@@ -70,7 +75,6 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
   const deletePostMutation = useDeletePost();
   const createCommentMutation = useCreateComment();
 
-  // Get comments for this post
   const { data: commentsData, isLoading: commentsLoading } = useComments(
     post.id,
     { limit: 3 }
@@ -83,7 +87,6 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
   const [showComments, setShowComments] = useState(false);
   const [commentContent, setCommentContent] = useState("");
 
-  // Loading states from mutations
   const isSubmitting =
     updatePostMutation.isPending || deletePostMutation.isPending;
   const isCommenting = createCommentMutation.isPending;
@@ -91,20 +94,19 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
-    const diffInHours = Math.floor(
-      (now.getTime() - date.getTime()) / (1000 * 60 * 60)
+    const diffInMinutes = Math.floor(
+      (now.getTime() - date.getTime()) / (1000 * 60)
     );
 
-    if (diffInHours < 1) return "Just now";
-    if (diffInHours < 24) return `${diffInHours}h ago`;
-    if (diffInHours < 168) return `${Math.floor(diffInHours / 24)}d ago`;
+    if (diffInMinutes < 1) return "now";
+    if (diffInMinutes < 60) return `${diffInMinutes}m`;
+    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h`;
+    if (diffInMinutes < 10080) return `${Math.floor(diffInMinutes / 1440)}d`;
     return date.toLocaleDateString();
   };
 
   const handleLike = () => {
-    if (!isAuthenticated) {
-      return;
-    }
+    if (!isAuthenticated) return;
 
     if (post.isLiked) {
       unlikePostMutation.mutate(post.id);
@@ -114,9 +116,7 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
   };
 
   const handleBookmark = () => {
-    if (!isAuthenticated) {
-      return;
-    }
+    if (!isAuthenticated) return;
 
     if (post.isBookmarked) {
       unbookmarkPostMutation.mutate(post.id);
@@ -126,17 +126,12 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
   };
 
   const handleShare = () => {
-    if (!isAuthenticated) {
-      return;
-    }
-
+    if (!isAuthenticated) return;
     sharePostMutation.mutate({ id: post.id });
   };
 
   const handleUpvote = () => {
-    if (!isAuthenticated) {
-      return;
-    }
+    if (!isAuthenticated) return;
 
     if (post.isUpvoted) {
       removeVoteMutation.mutate(post.id);
@@ -146,9 +141,7 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
   };
 
   const handleDownvote = () => {
-    if (!isAuthenticated) {
-      return;
-    }
+    if (!isAuthenticated) return;
 
     if (post.isDownvoted) {
       removeVoteMutation.mutate(post.id);
@@ -167,21 +160,14 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
   };
 
   const handleSaveEdit = async () => {
-    if (!editContent.trim()) {
-      return;
-    }
+    if (!editContent.trim()) return;
 
     updatePostMutation.mutate(
       { id: post.id, data: { content: editContent.trim() } },
       {
         onSuccess: (updatedPost) => {
-          if (onUpdate) {
-            onUpdate(updatedPost);
-          }
+          if (onUpdate) onUpdate(updatedPost);
           setIsEditing(false);
-        },
-        onError: (error) => {
-          console.error("Failed to update post:", error);
         },
       }
     );
@@ -189,19 +175,12 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
 
   const handleDelete = async () => {
     deletePostMutation.mutate(post.id, {
-      onSuccess: () => {
-        setShowDeleteConfirm(false);
-      },
-      onError: (error) => {
-        console.error("Failed to delete post:", error);
-      },
+      onSuccess: () => setShowDeleteConfirm(false),
     });
   };
 
   const handleComment = async () => {
-    if (!commentContent.trim()) {
-      return;
-    }
+    if (!commentContent.trim()) return;
 
     const commentData: CreateCommentRequest = {
       content: commentContent.trim(),
@@ -211,64 +190,85 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
       { postId: post.id, data: commentData },
       {
         onSuccess: () => {
-          // Clear input
           setCommentContent("");
-
-          // Show comments if not already visible
-          if (!showComments) {
-            setShowComments(true);
-          }
-        },
-        onError: (error) => {
-          console.error("Failed to post comment:", error);
+          if (!showComments) setShowComments(true);
         },
       }
     );
   };
 
   const isAuthor = user?.id === post?.author?.id;
+  const voteScore = post?.upvotesCount - post?.downvotesCount;
 
   return (
     <>
-      <Card withBorder p="md" radius="md">
-        <Stack gap="md">
-          <Group justify="space-between">
-            <Group>
+      <Card
+        style={{
+          border: "1px solid var(--mantine-color-gray-2)",
+          background: "#ffffff",
+          transition: "all 0.2s ease",
+          marginBottom: isFirst ? "0.5rem" : "0",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.05)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.boxShadow = "none";
+        }}
+      >
+        <Stack gap="lg">
+          <Group justify="space-between" align="flex-start">
+            <Group gap="sm">
               <Avatar
                 src={post.author?.avatar}
                 alt={post.author?.firstName || "User"}
-                size="md"
+                size={42}
                 radius="xl"
+                style={{
+                  border: "2px solid var(--mantine-color-gray-1)",
+                }}
               >
                 {(post.author?.firstName || "U").charAt(0)}
               </Avatar>
+
               <Box>
-                <Group gap="xs" align="center">
-                  <Text fw={500} size="sm">
+                <Group gap={6} align="center">
+                  <Text fw={600} size="sm" c="dark.8">
                     {post.author?.firstName} {post.author?.lastName}
                   </Text>
                   {post.author?.isVerified && (
-                    <Badge size="xs" color="blue" variant="light">
-                      Verified
+                    <Badge
+                      size="xs"
+                      variant="gradient"
+                      gradient={{ from: "blue", to: "cyan" }}
+                      radius="xl"
+                    >
+                      ✓
                     </Badge>
                   )}
                 </Group>
-                <Text c="dimmed" size="xs">
-                  @{post.author?.username || post.author?.phoneNumber} •{" "}
-                  {formatDate(post?.createdAt)}
-                  {post?.updatedAt !== post?.createdAt && " (edited)"}
-                </Text>
+                <Group gap={4} align="center">
+                  <Text c="dimmed" size="xs">
+                    @{post.author?.username || post.author?.phoneNumber}
+                  </Text>
+                  <Text c="dimmed" size="xs">
+                    •
+                  </Text>
+                  <Text c="dimmed" size="xs">
+                    {formatDate(post?.createdAt)}
+                    {post?.updatedAt !== post?.createdAt && " (edited)"}
+                  </Text>
+                </Group>
               </Box>
             </Group>
 
             {isAuthenticated && (
-              <Menu shadow="md" width={200} position="bottom-end">
+              <Menu shadow="lg" width={180} position="bottom-end" radius="lg">
                 <Menu.Target>
-                  <ActionIcon variant="subtle" size="sm">
+                  <ActionIcon variant="subtle" size="sm" radius="xl">
                     <IconDotsVertical size={16} />
                   </ActionIcon>
                 </Menu.Target>
-
                 <Menu.Dropdown>
                   {isAuthor && (
                     <>
@@ -299,16 +299,15 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
             )}
           </Group>
 
-          <Text
-            size="sm"
+          <UnstyledButton
+            onClick={handlePostClick}
             style={{
-              lineHeight: 1.6,
-              cursor: "pointer",
-              padding: "8px",
-              borderRadius: "var(--mantine-radius-sm)",
+              textAlign: "left",
+              borderRadius: "var(--mantine-radius-md)",
+              padding: "0.5rem",
+              margin: "-0.5rem",
               transition: "background-color 0.2s ease",
             }}
-            onClick={handlePostClick}
             onMouseEnter={(e) => {
               e.currentTarget.style.backgroundColor =
                 "var(--mantine-color-gray-0)";
@@ -317,8 +316,10 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
               e.currentTarget.style.backgroundColor = "transparent";
             }}
           >
-            {post.content}
-          </Text>
+            <Text size="sm" style={{ lineHeight: 1.6 }}>
+              {post.content}
+            </Text>
+          </UnstyledButton>
 
           {post?.media && post?.media?.length > 0 && (
             <Box>
@@ -326,19 +327,19 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
                 <Image
                   src={post?.media[0]?.url}
                   alt={post?.media[0]?.filename}
-                  radius="md"
+                  radius="lg"
                   style={{
                     maxHeight: 400,
                     objectFit: "cover",
                     cursor: "pointer",
-                    transition: "opacity 0.2s ease",
+                    transition: "transform 0.2s ease",
                   }}
                   onClick={handlePostClick}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.opacity = "0.9";
+                    e.currentTarget.style.transform = "scale(1.01)";
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.opacity = "1";
+                    e.currentTarget.style.transform = "scale(1)";
                   }}
                 />
               ) : (
@@ -351,19 +352,19 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
                       <Image
                         src={media.url}
                         alt={media.filename}
-                        radius="sm"
+                        radius="md"
                         style={{
                           height: 150,
                           objectFit: "cover",
                           cursor: "pointer",
-                          transition: "opacity 0.2s ease",
+                          transition: "transform 0.2s ease",
                         }}
                         onClick={handlePostClick}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.opacity = "0.9";
+                          e.currentTarget.style.transform = "scale(1.02)";
                         }}
                         onMouseLeave={(e) => {
-                          e.currentTarget.style.opacity = "1";
+                          e.currentTarget.style.transform = "scale(1)";
                         }}
                       />
                       {index === 3 &&
@@ -380,7 +381,7 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",
-                              borderRadius: "var(--mantine-radius-sm)",
+                              borderRadius: "var(--mantine-radius-md)",
                             }}
                           >
                             <Text size="lg" fw={600} c="white">
@@ -398,129 +399,165 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
           {post?.hashtags && post?.hashtags?.length > 0 && (
             <Group gap="xs">
               {post?.hashtags?.map((hashtag: string) => (
-                <Badge key={hashtag} variant="light" color="blue" size="sm">
+                <Badge
+                  key={hashtag}
+                  variant="light"
+                  color="blue"
+                  size="sm"
+                  radius="xl"
+                  style={{ cursor: "pointer" }}
+                >
                   #{hashtag}
                 </Badge>
               ))}
             </Group>
           )}
 
-          <Group justify="space-between">
-            <Group gap="xs">
-              {/* Upvote/Downvote Section */}
-              <Group gap={2}>
+          <Divider />
+
+          <Group justify="space-between" align="center">
+            <Group gap="lg">
+              <Group gap={4}>
                 <ActionIcon
                   variant={post?.isUpvoted ? "filled" : "subtle"}
                   color={post?.isUpvoted ? "green" : "gray"}
                   onClick={handleUpvote}
-                  size="sm"
+                  size="lg"
+                  radius="xl"
+                  disabled={!isAuthenticated}
                   style={{
-                    cursor: isAuthenticated ? "pointer" : "not-allowed",
-                    opacity: isAuthenticated ? 1 : 0.6,
+                    transition: "all 0.2s ease",
                   }}
                 >
-                  <IconArrowUp size={14} />
+                  <IconArrowUp size={16} />
                 </ActionIcon>
+
                 <Text
-                  size="xs"
-                  c="dimmed"
-                  fw={500}
-                  style={{ minWidth: "20px", textAlign: "center" }}
+                  size="sm"
+                  fw={600}
+                  c={voteScore > 0 ? "green" : voteScore < 0 ? "red" : "dimmed"}
+                  style={{ minWidth: "24px", textAlign: "center" }}
                 >
-                  {post?.upvotesCount - post?.downvotesCount}
+                  {voteScore}
                 </Text>
+
                 <ActionIcon
                   variant={post?.isDownvoted ? "filled" : "subtle"}
                   color={post?.isDownvoted ? "red" : "gray"}
                   onClick={handleDownvote}
-                  size="sm"
+                  size="lg"
+                  radius="xl"
+                  disabled={!isAuthenticated}
                   style={{
-                    cursor: isAuthenticated ? "pointer" : "not-allowed",
-                    opacity: isAuthenticated ? 1 : 0.6,
+                    transition: "all 0.2s ease",
                   }}
                 >
-                  <IconArrowDown size={14} />
+                  <IconArrowDown size={16} />
                 </ActionIcon>
               </Group>
 
-              <ActionIcon
-                variant={post?.isLiked ? "filled" : "subtle"}
-                color={post?.isLiked ? "red" : "gray"}
-                onClick={handleLike}
-                style={{
-                  cursor: isAuthenticated ? "pointer" : "not-allowed",
-                  opacity: isAuthenticated ? 1 : 0.6,
-                }}
-              >
-                <IconHeart size={16} />
-              </ActionIcon>
-              <Text size="xs" c="dimmed">
-                {post?.likesCount}
-              </Text>
+              <Group gap={4}>
+                <ActionIcon
+                  variant={post?.isLiked ? "filled" : "subtle"}
+                  color="red"
+                  onClick={handleLike}
+                  size="lg"
+                  radius="xl"
+                  disabled={!isAuthenticated}
+                  style={{
+                    transition: "all 0.2s ease",
+                  }}
+                >
+                  {post?.isLiked ? (
+                    <IconHeartFilled size={16} />
+                  ) : (
+                    <IconHeart size={16} />
+                  )}
+                </ActionIcon>
+                <Text size="sm" c="dimmed" fw={500}>
+                  {post?.likesCount}
+                </Text>
+              </Group>
 
-              <ActionIcon
-                variant="subtle"
-                color="gray"
-                onClick={() => setShowComments(!showComments)}
-                style={{
-                  cursor: "pointer",
-                }}
-              >
-                <IconMessageCircle size={16} />
-              </ActionIcon>
-              <Text size="xs" c="dimmed">
-                {post?.commentsCount}
-              </Text>
+              <Group gap={4}>
+                <ActionIcon
+                  variant="subtle"
+                  color="gray"
+                  onClick={() => setShowComments(!showComments)}
+                  size="lg"
+                  radius="xl"
+                  style={{
+                    transition: "all 0.2s ease",
+                  }}
+                >
+                  <IconMessageCircle size={16} />
+                </ActionIcon>
+                <Text size="sm" c="dimmed" fw={500}>
+                  {post?.commentsCount}
+                </Text>
+              </Group>
 
-              <ActionIcon
-                variant="subtle"
-                color="gray"
-                onClick={handleShare}
-                style={{
-                  cursor: isAuthenticated ? "pointer" : "not-allowed",
-                  opacity: isAuthenticated ? 1 : 0.6,
-                }}
-              >
-                <IconShare size={16} />
-              </ActionIcon>
-              <Text size="xs" c="dimmed">
-                {post?.sharesCount}
-              </Text>
+              <Group gap={4}>
+                <ActionIcon
+                  variant="subtle"
+                  color="gray"
+                  onClick={handleShare}
+                  size="lg"
+                  radius="xl"
+                  disabled={!isAuthenticated}
+                  style={{
+                    transition: "all 0.2s ease",
+                  }}
+                >
+                  <IconShare size={16} />
+                </ActionIcon>
+                <Text size="sm" c="dimmed" fw={500}>
+                  {post?.sharesCount}
+                </Text>
+              </Group>
             </Group>
 
             <ActionIcon
               variant={post?.isBookmarked ? "filled" : "subtle"}
-              color={post?.isBookmarked ? "yellow" : "gray"}
+              color="yellow"
               onClick={handleBookmark}
+              size="lg"
+              radius="xl"
+              disabled={!isAuthenticated}
               style={{
-                cursor: isAuthenticated ? "pointer" : "not-allowed",
-                opacity: isAuthenticated ? 1 : 0.6,
+                transition: "all 0.2s ease",
               }}
             >
-              <IconBookmark size={16} />
+              {post?.isBookmarked ? (
+                <IconBookmarkFilled size={16} />
+              ) : (
+                <IconBookmark size={16} />
+              )}
             </ActionIcon>
           </Group>
 
           {!isAuthenticated && (
             <Box
-              p="sm"
+              p="md"
               style={{
-                backgroundColor: "var(--mantine-color-blue-0)",
-                borderRadius: "var(--mantine-radius-sm)",
+                background: "linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)",
+                borderRadius: "var(--mantine-radius-lg)",
                 border: "1px solid var(--mantine-color-blue-2)",
               }}
             >
-              <Text size="xs" c="blue" ta="center">
-                Sign in to like, comment, and interact with posts
+              <Text size="sm" c="blue.7" ta="center" fw={500}>
+                Sign in to interact with posts
               </Text>
             </Box>
           )}
 
-          {/* Comment Input */}
           {isAuthenticated && (
-            <Box>
+            <Group gap="sm">
+              <Avatar size="sm" src={user?.avatar} radius="xl">
+                {user?.firstName?.charAt(0)}
+              </Avatar>
               <TextInput
-                placeholder="Add a comment..."
+                placeholder="Write a comment..."
                 value={commentContent}
                 onChange={(e) => setCommentContent(e.currentTarget.value)}
                 rightSection={
@@ -529,20 +566,23 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
                     loading={isCommenting}
                     disabled={!commentContent.trim()}
                     color="blue"
+                    variant="subtle"
+                    radius="xl"
                   >
-                    <IconSend size={16} />
+                    <IconSend size={14} />
                   </ActionIcon>
                 }
                 onKeyPress={(e) => e.key === "Enter" && handleComment()}
+                radius="xl"
+                style={{ flex: 1 }}
               />
-            </Box>
+            </Group>
           )}
 
-          {/* Comments Section */}
-          {showComments && (
-            <Box>
-              <Group justify="space-between" align="center" mb="sm">
-                <Text size="sm" fw={500}>
+          <Collapse in={showComments}>
+            <Stack gap="md">
+              <Group justify="space-between" align="center">
+                <Text size="sm" fw={600} c="dark.6">
                   Comments ({post?.commentsCount})
                 </Text>
                 <Button
@@ -556,6 +596,7 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
                     )
                   }
                   onClick={() => setShowComments(!showComments)}
+                  radius="xl"
                 >
                   {showComments ? "Hide" : "Show"}
                 </Button>
@@ -573,26 +614,26 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
                         postId={post.id}
                       />
                     ))}
-
                     {post?.commentsCount > 3 && (
                       <Button
                         variant="light"
-                        size="xs"
+                        size="sm"
                         onClick={handlePostClick}
                         style={{ alignSelf: "center" }}
+                        radius="xl"
                       >
                         View all {post?.commentsCount} comments
                       </Button>
                     )}
                   </>
                 ) : (
-                  <Text size="sm" c="dimmed" ta="center" py="md">
-                    Be the first to comment!
+                  <Text size="sm" c="dimmed" ta="center" py="lg">
+                    Be the first to comment! 💬
                   </Text>
                 )}
               </Stack>
-            </Box>
-          )}
+            </Stack>
+          </Collapse>
         </Stack>
       </Card>
 
@@ -601,21 +642,34 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
         onClose={() => setIsEditing(false)}
         title="Edit Post"
         size="lg"
+        radius="xl"
+        centered
       >
-        <Stack gap="md">
+        <Stack gap="lg">
           <Textarea
             placeholder="What's on your mind?"
             value={editContent}
             onChange={(e) => setEditContent(e.currentTarget.value)}
-            minRows={3}
-            maxRows={8}
+            minRows={4}
+            maxRows={10}
             autosize
+            radius="lg"
           />
-          <Group justify="flex-end">
-            <Button variant="light" onClick={() => setIsEditing(false)}>
+          <Group justify="flex-end" gap="sm">
+            <Button
+              variant="light"
+              onClick={() => setIsEditing(false)}
+              radius="xl"
+            >
               Cancel
             </Button>
-            <Button onClick={handleSaveEdit} loading={isSubmitting}>
+            <Button
+              onClick={handleSaveEdit}
+              loading={isSubmitting}
+              radius="xl"
+              variant="gradient"
+              gradient={{ from: "blue", to: "cyan" }}
+            >
               Save Changes
             </Button>
           </Group>
@@ -627,17 +681,28 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
         onClose={() => setShowDeleteConfirm(false)}
         title="Delete Post"
         size="sm"
+        radius="xl"
+        centered
       >
-        <Stack gap="md">
+        <Stack gap="lg">
           <Text>
             Are you sure you want to delete this post? This action cannot be
             undone.
           </Text>
-          <Group justify="flex-end">
-            <Button variant="light" onClick={() => setShowDeleteConfirm(false)}>
+          <Group justify="flex-end" gap="sm">
+            <Button
+              variant="light"
+              onClick={() => setShowDeleteConfirm(false)}
+              radius="xl"
+            >
               Cancel
             </Button>
-            <Button color="red" onClick={handleDelete} loading={isSubmitting}>
+            <Button
+              color="red"
+              onClick={handleDelete}
+              loading={isSubmitting}
+              radius="xl"
+            >
               Delete Post
             </Button>
           </Group>
