@@ -7,7 +7,6 @@ import {
   Card,
   Group,
   Image,
-  LoadingOverlay,
   Menu,
   Modal,
   Stack,
@@ -32,6 +31,7 @@ import {
 } from "@tabler/icons-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { CommentSkeletonList } from "../../components/ui";
 import { useComments, useCreateComment } from "../../hooks/useComments";
 import {
   useBookmarkPost,
@@ -71,7 +71,10 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
   const createCommentMutation = useCreateComment();
 
   // Get comments for this post
-  const { data: commentsData } = useComments(post.id, { limit: 3 });
+  const { data: commentsData, isLoading: commentsLoading } = useComments(
+    post.id,
+    { limit: 3 }
+  );
   const comments = commentsData?.comments || [];
 
   const [isEditing, setIsEditing] = useState(false);
@@ -536,7 +539,7 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
           )}
 
           {/* Comments Section */}
-          {showComments && comments.length > 0 && (
+          {showComments && (
             <Box>
               <Group justify="space-between" align="center" mb="sm">
                 <Text size="sm" fw={500}>
@@ -559,23 +562,33 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
               </Group>
 
               <Stack gap="sm">
-                {comments.slice(0, 3).map((comment: any) => (
-                  <CommentCard
-                    key={comment.id}
-                    comment={comment}
-                    postId={post.id}
-                  />
-                ))}
+                {commentsLoading ? (
+                  <CommentSkeletonList count={2} />
+                ) : comments.length > 0 ? (
+                  <>
+                    {comments.slice(0, 3).map((comment: any) => (
+                      <CommentCard
+                        key={comment.id}
+                        comment={comment}
+                        postId={post.id}
+                      />
+                    ))}
 
-                {post?.commentsCount > 3 && (
-                  <Button
-                    variant="light"
-                    size="xs"
-                    onClick={handlePostClick}
-                    style={{ alignSelf: "center" }}
-                  >
-                    View all {post?.commentsCount} comments
-                  </Button>
+                    {post?.commentsCount > 3 && (
+                      <Button
+                        variant="light"
+                        size="xs"
+                        onClick={handlePostClick}
+                        style={{ alignSelf: "center" }}
+                      >
+                        View all {post?.commentsCount} comments
+                      </Button>
+                    )}
+                  </>
+                ) : (
+                  <Text size="sm" c="dimmed" ta="center" py="md">
+                    Be the first to comment!
+                  </Text>
                 )}
               </Stack>
             </Box>
@@ -589,7 +602,6 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
         title="Edit Post"
         size="lg"
       >
-        <LoadingOverlay visible={isSubmitting} />
         <Stack gap="md">
           <Textarea
             placeholder="What's on your mind?"
@@ -616,7 +628,6 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
         title="Delete Post"
         size="sm"
       >
-        <LoadingOverlay visible={isSubmitting} />
         <Stack gap="md">
           <Text>
             Are you sure you want to delete this post? This action cannot be

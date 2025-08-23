@@ -5,11 +5,8 @@ import {
   Box,
   Button,
   Card,
-  Center,
   Group,
   Image,
-  Loader,
-  LoadingOverlay,
   Menu,
   Modal,
   Stack,
@@ -33,6 +30,11 @@ import {
 } from "@tabler/icons-react";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import {
+  CommentSkeletonList,
+  InfiniteScrollLoader,
+  PostDetailSkeleton,
+} from "../../components/ui";
 import { useCreateComment, useInfiniteComments } from "../../hooks/useComments";
 import {
   useBookmarkPost,
@@ -96,14 +98,7 @@ export function PostDetail() {
   const comments = commentsData?.pages.flatMap((page) => page.comments) || [];
 
   if (postLoading) {
-    return (
-      <Center py="xl">
-        <Stack align="center" gap="md">
-          <Loader size="lg" />
-          <Text c="dimmed">Loading post...</Text>
-        </Stack>
-      </Center>
-    );
+    return <PostDetailSkeleton />;
   }
 
   if (postError || !post) {
@@ -515,18 +510,11 @@ export function PostDetail() {
         {/* Comments */}
         <Stack gap="md">
           {commentsLoading && comments.length === 0 ? (
-            <Center py="md">
-              <Stack align="center" gap="sm">
-                <Loader size="sm" />
-                <Text size="sm" c="dimmed">
-                  Loading comments...
-                </Text>
-              </Stack>
-            </Center>
+            <CommentSkeletonList count={3} />
           ) : comments.length === 0 ? (
             <Card withBorder p="md" radius="md">
               <Text c="dimmed" ta="center">
-                No comments yet. Be the first to comment!
+                Be the first to comment!
               </Text>
             </Card>
           ) : (
@@ -541,15 +529,15 @@ export function PostDetail() {
 
               {/* Load more comments */}
               {hasNextPage && (
-                <Center>
-                  <Button
-                    variant="light"
-                    onClick={() => fetchNextPage()}
-                    loading={isFetchingNextPage}
-                  >
-                    {isFetchingNextPage ? "Loading..." : "Load more comments"}
-                  </Button>
-                </Center>
+                <Box ta="center">
+                  {isFetchingNextPage ? (
+                    <InfiniteScrollLoader count={2} variant="comments" />
+                  ) : (
+                    <Button variant="light" onClick={() => fetchNextPage()}>
+                      Load more comments
+                    </Button>
+                  )}
+                </Box>
               )}
             </>
           )}
@@ -563,7 +551,6 @@ export function PostDetail() {
         title="Edit Post"
         size="lg"
       >
-        <LoadingOverlay visible={isSubmitting} />
         <Stack gap="md">
           <Textarea
             placeholder="What's on your mind?"
@@ -591,7 +578,6 @@ export function PostDetail() {
         title="Delete Post"
         size="sm"
       >
-        <LoadingOverlay visible={isSubmitting} />
         <Stack gap="md">
           <Text>
             Are you sure you want to delete this post? This action cannot be

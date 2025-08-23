@@ -5,7 +5,6 @@ import {
   Card,
   Center,
   Group,
-  Loader,
   Stack,
   Text,
   Title,
@@ -13,6 +12,7 @@ import {
 import { useIntersection } from "@mantine/hooks";
 import { IconPlus, IconTrendingUp } from "@tabler/icons-react";
 import { useState } from "react";
+import { InfiniteScrollLoader, PostSkeletonList } from "../../components/ui";
 import { useInfinitePosts } from "../../hooks/usePosts";
 import { useAuthStore } from "../../stores/authStore";
 import { CreatePost } from "./CreatePost";
@@ -92,14 +92,9 @@ export function HomePage() {
           </Card>
         )}
 
-        {!isLoading && posts.length === 0 ? (
-          <Center py="xl">
-            <Stack align="center" gap="md">
-              <Loader size="lg" />
-              <Text c="dimmed">Loading posts...</Text>
-            </Stack>
-          </Center>
-        ) : posts.length === 0 && !isLoading ? (
+        {isLoading ? (
+          <PostSkeletonList count={5} />
+        ) : posts.length === 0 ? (
           <Stack p="xl" style={{ borderColor: "var(--mantine-color-gray-3)" }}>
             <Stack align="center" gap="md">
               <Text size="lg" fw={500}>
@@ -128,14 +123,7 @@ export function HomePage() {
             {hasNextPage && (
               <div ref={ref}>
                 {isFetchingNextPage && (
-                  <Center py="md">
-                    <Stack align="center" gap="sm">
-                      <Loader size="sm" />
-                      <Text size="sm" c="dimmed">
-                        Loading more posts...
-                      </Text>
-                    </Stack>
-                  </Center>
+                  <InfiniteScrollLoader count={2} variant="posts" />
                 )}
               </div>
             )}

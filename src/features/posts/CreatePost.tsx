@@ -5,7 +5,6 @@ import {
   Button,
   Group,
   Image,
-  LoadingOverlay,
   Modal,
   Stack,
   Text,
@@ -20,9 +19,9 @@ import {
   IconX,
 } from "@tabler/icons-react";
 import { useRef, useState } from "react";
-import { useAuthStore } from "../../stores/authStore";
 import { useCreatePost } from "../../hooks/usePosts";
 import { CreatePostRequest } from "../../services/api";
+import { useAuthStore } from "../../stores/authStore";
 
 interface CreatePostProps {
   opened: boolean;
@@ -145,8 +144,6 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
       closeOnClickOutside={false}
       closeOnEscape={false}
     >
-      <LoadingOverlay visible={isSubmitting} />
-
       <Stack gap="md">
         <Group gap="sm">
           <Box
