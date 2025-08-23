@@ -19,13 +19,13 @@ import { OTPVerification } from "./features/auth/OTPVerification";
 import { PhoneAuth } from "./features/auth/PhoneAuth";
 import { ProfileCompletion } from "./features/auth/ProfileCompletion";
 
+import { ChatPage } from "./features/chat/ChatPage";
 import { NotificationsPage } from "./features/notifications/NotificationsPage";
 import { HomePage } from "./features/posts/HomePage";
 import { PostDetail } from "./features/posts/PostDetail";
 import { ProfilePage } from "./features/profile/ProfilePage";
 import { ExplorePage } from "./features/search/ExplorePage";
 import { StatusesPage } from "./features/statuses/StatusesPage";
-import { ChatPage } from "./features/chat/ChatPage";
 
 import "./styles/globals.css";
 
@@ -56,8 +56,8 @@ function App() {
             <Route
               path="/verify-otp"
               element={
-                !isAuthenticated ? (
-                  !user?.isProfileComplete ? (
+                isAuthenticated ? (
+                  user?.isProfileComplete ? (
                     <Navigate to="/dashboard" replace />
                   ) : (
                     <Navigate to="/complete-profile" replace />
@@ -82,8 +82,15 @@ function App() {
               }
             />
 
-            {/* Public Dashboard - Accessible to all users */}
-            <Route path="/dashboard" element={<AppShell />}>
+            {/* Protected Dashboard - Require authentication and complete profile */}
+            <Route
+              path="/dashboard"
+              element={
+                <AuthGuard>
+                  <AppShell />
+                </AuthGuard>
+              }
+            >
               <Route index element={<HomePage />} />
               <Route path="explore" element={<ExplorePage />} />
               <Route path="statuses" element={<StatusesPage />} />
@@ -91,25 +98,6 @@ function App() {
               <Route path="notifications" element={<NotificationsPage />} />
               <Route path="profile" element={<ProfilePage />} />
               <Route path="post/:postId" element={<PostDetail />} />
-            </Route>
-
-            {/* Protected routes - Require authentication */}
-            <Route
-              path="/protected"
-              element={
-                <AuthGuard>
-                  <AppShell />
-                </AuthGuard>
-              }
-            >
-              <Route
-                path="create-post"
-                element={<div>Create Post (Protected)</div>}
-              />
-              <Route
-                path="edit-profile"
-                element={<div>Edit Profile (Protected)</div>}
-              />
             </Route>
 
             <Route path="*" element={<Navigate to="/" replace />} />

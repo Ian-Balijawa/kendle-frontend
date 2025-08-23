@@ -4,9 +4,10 @@ import {
   Button,
   Center,
   Container,
-  LoadingOverlay, Stack,
+  LoadingOverlay,
+  Stack,
   Text,
-  TextInput
+  TextInput,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import {
@@ -17,9 +18,9 @@ import {
 import { zodResolver } from "mantine-form-zod-resolver";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
-import { useAuthStore } from "../../stores/authStore";
-import { SendOTPRequest } from "../../services/api";
 import { useSendOTP } from "../../hooks/useAuth";
+import { SendOTPRequest } from "../../services/api";
+import { useAuthStore } from "../../stores/authStore";
 interface PhoneAuthFormData {
   phoneNumber: string;
 }
@@ -128,7 +129,7 @@ export function PhoneAuth() {
                   disabled={sendOTPMutation.isPending}
                   className="auth-button"
                 >
-                  Send Verification Code
+                  Sign In
                 </Button>
               </Stack>
             </form>

@@ -1,16 +1,16 @@
 import { useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query";
+import { queryClient } from "../lib/queryClient";
 import {
   apiService,
+  BookmarkRequest,
   CreatePostRequest,
   GetPostsParams,
+  ShareRequest,
   UpdatePostRequest,
   VoteRequest,
-  ShareRequest,
-  BookmarkRequest,
 } from "../services/api";
-import { Post, PostsResponse } from "../types";
 import { useAuthStore } from "../stores/authStore";
-import { queryClient } from "../lib/queryClient";
+import { Post, PostsResponse } from "../types";
 
 // Query keys
 export const postKeys = {
@@ -54,14 +54,14 @@ export function usePost(id: string) {
 // Get user posts
 export function useUserPosts(
   userId: string,
-  params: { page?: number; limit?: number } = {},
+  params: { page?: number; limit?: number } = {}
 ) {
   return useInfiniteQuery({
     queryKey: [...postKeys.user(userId), params],
     queryFn: ({ pageParam = 1 }) =>
       apiService.getUserPosts(userId, { ...params, page: pageParam }),
     getNextPageParam: (lastPage: PostsResponse) => {
-      if (lastPage.pagination.page < lastPage.pagination.totalPages) {
+      if (lastPage.pagination?.page < lastPage.pagination?.totalPages) {
         return lastPage.pagination.page + 1;
       }
       return undefined;
@@ -77,7 +77,7 @@ export function useLikedPosts(params: { page?: number; limit?: number } = {}) {
     queryFn: ({ pageParam = 1 }) =>
       apiService.getLikedPosts({ ...params, page: pageParam }),
     getNextPageParam: (lastPage: PostsResponse) => {
-      if (lastPage.pagination.page < lastPage.pagination.totalPages) {
+      if (lastPage.pagination?.page < lastPage.pagination?.totalPages) {
         return lastPage.pagination.page + 1;
       }
       return undefined;
@@ -88,7 +88,7 @@ export function useLikedPosts(params: { page?: number; limit?: number } = {}) {
 
 // Get bookmarked posts
 export function useBookmarkedPosts(
-  params: { page?: number; limit?: number } = {},
+  params: { page?: number; limit?: number } = {}
 ) {
   return useInfiniteQuery({
     queryKey: [...postKeys.bookmarked(), params],
@@ -205,7 +205,7 @@ export function useCreatePost() {
                   return {
                     ...page,
                     data: page.data.filter(
-                      (post: Post) => post.id !== context.optimisticPost.id,
+                      (post: Post) => post.id !== context.optimisticPost.id
                     ),
                     pagination: {
                       ...page.pagination,
@@ -216,7 +216,7 @@ export function useCreatePost() {
                 return page;
               }),
             };
-          },
+          }
         );
       }
     },
@@ -235,14 +235,14 @@ export function useCreatePost() {
                   return {
                     ...page,
                     data: page.data.map((post: Post) =>
-                      post.id === context.optimisticPost.id ? newPost : post,
+                      post.id === context.optimisticPost.id ? newPost : post
                     ),
                   };
                 }
                 return page;
               }),
             };
-          },
+          }
         );
       }
 
@@ -287,7 +287,7 @@ export function useUpdatePost() {
             data: page.data.map((post: Post) =>
               post.id === id
                 ? { ...post, ...data, updatedAt: new Date().toISOString() }
-                : post,
+                : post
             ),
           })),
         };
@@ -392,7 +392,7 @@ export function useLikePost() {
           pages: old.pages.map((page: PostsResponse) => ({
             ...page,
             data: page.data.map((post: Post) =>
-              post.id === id ? updatePost(post) : post,
+              post.id === id ? updatePost(post) : post
             ),
           })),
         };
@@ -440,7 +440,7 @@ export function useUnlikePost() {
           pages: old.pages.map((page: PostsResponse) => ({
             ...page,
             data: page.data.map((post: Post) =>
-              post.id === id ? updatePost(post) : post,
+              post.id === id ? updatePost(post) : post
             ),
           })),
         };
@@ -481,7 +481,7 @@ export function useBookmarkPost() {
           pages: old.pages.map((page: PostsResponse) => ({
             ...page,
             data: page.data.map((post: Post) =>
-              post.id === id ? updatePost(post) : post,
+              post.id === id ? updatePost(post) : post
             ),
           })),
         };
@@ -523,7 +523,7 @@ export function useUnbookmarkPost() {
           pages: old.pages.map((page: PostsResponse) => ({
             ...page,
             data: page.data.map((post: Post) =>
-              post.id === id ? updatePost(post) : post,
+              post.id === id ? updatePost(post) : post
             ),
           })),
         };
@@ -607,7 +607,7 @@ export function useVotePost() {
           pages: old.pages.map((page: PostsResponse) => ({
             ...page,
             data: page.data.map((post: Post) =>
-              post.id === id ? updatePost(post) : post,
+              post.id === id ? updatePost(post) : post
             ),
           })),
         };
@@ -656,7 +656,7 @@ export function useRemoveVote() {
           pages: old.pages.map((page: PostsResponse) => ({
             ...page,
             data: page.data.map((post: Post) =>
-              post.id === id ? updatePost(post) : post,
+              post.id === id ? updatePost(post) : post
             ),
           })),
         };
@@ -700,7 +700,7 @@ export function useSharePost() {
           pages: old.pages.map((page: PostsResponse) => ({
             ...page,
             data: page.data.map((post: Post) =>
-              post.id === id ? updatePost(post) : post,
+              post.id === id ? updatePost(post) : post
             ),
           })),
         };

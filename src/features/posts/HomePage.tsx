@@ -3,20 +3,20 @@ import {
   Box,
   Button,
   Card,
+  Center,
   Group,
+  Loader,
   Stack,
   Text,
   Title,
-  Loader,
-  Center,
 } from "@mantine/core";
+import { useIntersection } from "@mantine/hooks";
 import { IconPlus, IconTrendingUp } from "@tabler/icons-react";
 import { useState } from "react";
+import { useInfinitePosts } from "../../hooks/usePosts";
 import { useAuthStore } from "../../stores/authStore";
 import { CreatePost } from "./CreatePost";
 import { PostCard } from "./PostCard";
-import { useInfinitePosts } from "../../hooks/usePosts";
-import { useIntersection } from "@mantine/hooks";
 
 export function HomePage() {
   const { isAuthenticated } = useAuthStore();
@@ -92,7 +92,7 @@ export function HomePage() {
           </Card>
         )}
 
-        {isLoading && posts.length === 0 ? (
+        {!isLoading && posts.length === 0 ? (
           <Center py="xl">
             <Stack align="center" gap="md">
               <Loader size="lg" />
@@ -100,7 +100,7 @@ export function HomePage() {
             </Stack>
           </Center>
         ) : posts.length === 0 && !isLoading ? (
-          <Card withBorder p="xl" radius="md">
+          <Stack p="xl" style={{ borderColor: "var(--mantine-color-gray-3)" }}>
             <Stack align="center" gap="md">
               <Text size="lg" fw={500}>
                 Welcome to Kendle!
@@ -117,7 +117,7 @@ export function HomePage() {
                 </Button>
               )}
             </Stack>
-          </Card>
+          </Stack>
         ) : (
           <>
             {posts.map((post) => (

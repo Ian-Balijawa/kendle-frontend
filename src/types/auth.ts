@@ -18,6 +18,7 @@ export interface User {
   followersCount: number;
   followingCount: number;
   postsCount: number;
+  status?: string;
   // Optional fields for when viewing other users
   isFollowing?: boolean;
   isBlocked?: boolean;
@@ -35,32 +36,40 @@ export interface OTPVerificationData {
 
 export interface ProfileCompletionData {
   username: string;
+  firstName?: string;
+  lastName?: string;
   email: string;
   whatsapp: string;
   twitterLink: string;
   tiktokLink: string;
   instagramLink: string;
+  bio?: string;
 }
 
 export interface AuthResponse {
   user: User;
-  token: string;
-  refreshToken: string;
-  isNewUser: boolean;
+  accessToken: string;
+  success: boolean;
+  message: string;
 }
 
 export interface OTPResponse {
   success: boolean;
   message: string;
+  isNewUser: boolean;
+  phoneNumber: string;
   expiresIn: number;
 }
 
 export interface ProfileData {
   username: string;
+  firstName?: string;
+  lastName?: string;
   email: string;
   whatsapp: string;
   twitterLink: string;
   tiktokLink: string;
   instagramLink: string;
-  avatar: File;
+  bio?: string;
+  avatar?: File;
 }

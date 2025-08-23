@@ -57,7 +57,7 @@ export function useSendOTP() {
 
 // Verify OTP mutation
 export function useVerifyOTP() {
-  const { setLoading, setError, updateProfile } = useAuthStore();
+  const { setLoading, setError, setAuthData } = useAuthStore();
 
   return useMutation({
     mutationFn: (data: VerifyOTPRequest) => apiService.verifyOTP(data),
@@ -66,13 +66,8 @@ export function useVerifyOTP() {
       setError(null);
     },
     onSuccess: (response: AuthResponse) => {
-      // Update auth store with user data and tokens
-      updateProfile({
-        user: response.user,
-        token: response.token,
-        refreshToken: response.refreshToken,
-        isAuthenticated: true,
-      });
+      // Update auth store with user data and access token
+      setAuthData(response.user, response.accessToken);
 
       // Cache the user data
       queryClient.setQueryData(authKeys.me(), response.user);
@@ -117,7 +112,7 @@ export function useResendOTP() {
 
 // Login mutation
 export function useLogin() {
-  const { setLoading, setError, updateProfile } = useAuthStore();
+  const { setLoading, setError, setAuthData } = useAuthStore();
 
   return useMutation({
     mutationFn: (data: LoginRequest) => apiService.login(data),
@@ -126,13 +121,8 @@ export function useLogin() {
       setError(null);
     },
     onSuccess: (response: AuthResponse) => {
-      // Update auth store with user data and tokens
-      updateProfile({
-        user: response.user,
-        token: response.token,
-        refreshToken: response.refreshToken,
-        isAuthenticated: true,
-      });
+      // Update auth store with user data and access token
+      setAuthData(response.user, response.accessToken);
 
       // Cache the user data
       queryClient.setQueryData(authKeys.me(), response.user);
@@ -151,7 +141,7 @@ export function useLogin() {
 
 // Complete profile mutation
 export function useCompleteProfile() {
-  const { user, setLoading, setError, updateProfile } = useAuthStore();
+  const { user, token, setLoading, setError, setAuthData } = useAuthStore();
 
   return useMutation({
     mutationFn: (data: CompleteProfileRequest) =>
@@ -176,7 +166,7 @@ export function useCompleteProfile() {
         };
 
         queryClient.setQueryData(authKeys.me(), updatedUser);
-        updateProfile({ user: updatedUser });
+        setAuthData(updatedUser, token || "");
       }
 
       return { previousUser };
@@ -185,7 +175,7 @@ export function useCompleteProfile() {
       // Revert the optimistic update
       if (context?.previousUser) {
         queryClient.setQueryData(authKeys.me(), context.previousUser);
-        updateProfile({ user: context.previousUser as User });
+        setAuthData(context.previousUser as User, token || "");
       }
 
       const errorMessage =
@@ -198,7 +188,7 @@ export function useCompleteProfile() {
     onSuccess: (updatedUser) => {
       // Update with the server response
       queryClient.setQueryData(authKeys.me(), updatedUser);
-      updateProfile({ user: updatedUser });
+      setAuthData(updatedUser, token || "");
       setLoading(false);
     },
   });

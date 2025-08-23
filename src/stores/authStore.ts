@@ -20,6 +20,7 @@ interface AuthStore {
   clearError: () => void;
   setOTPSent: (sent: boolean) => void;
   setPhoneNumber: (phone: string) => void;
+  setAuthData: (user: User, accessToken: string) => void;
 }
 
 export const useAuthStore = create<AuthStore>()(
@@ -71,6 +72,16 @@ export const useAuthStore = create<AuthStore>()(
 
       setPhoneNumber: (phone: string) => {
         set({ phoneNumber: phone });
+      },
+
+      setAuthData: (user: User, accessToken: string) => {
+        set({
+          user,
+          token: accessToken,
+          isAuthenticated: true,
+          otpSent: false,
+          error: null,
+        });
       },
     }),
     {

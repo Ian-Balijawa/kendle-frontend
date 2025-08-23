@@ -4,17 +4,18 @@ import {
   Box,
   Button,
   Card,
+  Center,
   Group,
+  Loader,
+  Modal,
   Stack,
   Tabs,
   Text,
-  Title,
-  Loader,
-  Center,
-  Modal,
   TextInput,
   Textarea,
+  Title,
 } from "@mantine/core";
+import { useForm } from "@mantine/form";
 import {
   IconCalendar,
   IconLink,
@@ -24,12 +25,11 @@ import {
 } from "@tabler/icons-react";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
-import { useAuthStore } from "../../stores/authStore";
-import { useUser, useUserProfile, useUpdateProfile } from "../../hooks/useUser";
 import { useUserPosts } from "../../hooks/usePosts";
-import { PostCard } from "../posts/PostCard";
+import { useUpdateProfile, useUser, useUserProfile } from "../../hooks/useUser";
 import { UpdateProfileRequest } from "../../services/api";
-import { useForm } from "@mantine/form";
+import { useAuthStore } from "../../stores/authStore";
+import { PostCard } from "../posts/PostCard";
 
 export function ProfilePage() {
   const { userId } = useParams<{ userId?: string }>();
@@ -53,7 +53,7 @@ export function ProfilePage() {
     profileUserId!,
     {
       limit: 10,
-    },
+    }
   );
 
   // Update profile mutation
@@ -103,7 +103,7 @@ export function ProfilePage() {
   const formatNumber = (num: number) => {
     if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
     if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
-    return num.toString();
+    return num?.toString();
   };
 
   const handleFollow = () => {

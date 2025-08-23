@@ -7,25 +7,23 @@ import {
   Container,
   LoadingOverlay,
   Paper,
+  PinInput,
   Stack,
   Text,
-  TextInput,
-  Title,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import {
   IconAlertCircle,
   IconArrowLeft,
   IconBrandTwitter,
-  IconKey,
 } from "@tabler/icons-react";
 import { zodResolver } from "mantine-form-zod-resolver";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { z } from "zod";
-import { useAuthStore } from "../../stores/authStore";
-import { useVerifyOTP, useResendOTP } from "../../hooks/useAuth";
+import { useResendOTP, useVerifyOTP } from "../../hooks/useAuth";
 import { VerifyOTPRequest } from "../../services/api";
+import { useAuthStore } from "../../stores/authStore";
 
 interface OTPVerificationFormData {
   otp: string;
@@ -35,7 +33,7 @@ const otpSchema = z.object({
   otp: z
     .string()
     .min(1, "OTP is required")
-    .regex(/^\d{6}$/, "Please enter a valid 6-digit OTP"),
+    .regex(/^\d{5}$/, "Please enter a valid 5-digit OTP"),
 });
 
 export function OTPVerification() {
@@ -46,8 +44,9 @@ export function OTPVerification() {
   // React Query mutations
   const verifyOTPMutation = useVerifyOTP();
   const resendOTPMutation = useResendOTP();
+  const isSubmitting =
+    verifyOTPMutation.isPending || resendOTPMutation.isPending;
 
-  const isSubmitting = verifyOTPMutation.isPending;
   const [countdown, setCountdown] = useState(300); // 5 minutes
   const [canResend, setCanResend] = useState(false);
 
@@ -58,7 +57,6 @@ export function OTPVerification() {
       navigate("/dashboard", { replace: true });
       return;
     }
-
     const timer = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
@@ -68,7 +66,6 @@ export function OTPVerification() {
         return prev - 1;
       });
     }, 1000);
-
     return () => clearInterval(timer);
   }, [phoneNumber, navigate]);
 
@@ -86,35 +83,36 @@ export function OTPVerification() {
     validate: zodResolver(otpSchema) as any,
   });
 
-  const handleSubmit = async (values: OTPVerificationFormData) => {
-    if (!phoneNumber) return;
+  const handleSubmit = useCallback(
+    async (values: OTPVerificationFormData) => {
+      if (!phoneNumber || isSubmitting) return;
 
-    clearError();
+      clearError();
+      const verifyData: VerifyOTPRequest = {
+        phoneNumber: phoneNumber,
+        otp: values.otp,
+      };
 
-    const verifyData: VerifyOTPRequest = {
-      identifier: phoneNumber,
-      otp: values.otp,
-    };
-
-    verifyOTPMutation.mutate(verifyData, {
-      onSuccess: (response) => {
-        if (response.user.isProfileComplete) {
-          navigate("/dashboard", { replace: true });
-        } else {
-          navigate("/complete-profile", { replace: true });
-        }
-      },
-      onError: (err) => {
-        console.error("OTP verification failed:", err);
-      },
-    });
-  };
+      verifyOTPMutation.mutate(verifyData, {
+        onSuccess: (response) => {
+          if (response.user.isProfileComplete) {
+            navigate("/dashboard", { replace: true });
+          } else {
+            navigate("/complete-profile", { replace: true });
+          }
+        },
+        onError: (err) => {
+          console.error("OTP verification failed:", err);
+        },
+      });
+    },
+    [phoneNumber, clearError, verifyOTPMutation, navigate, isSubmitting]
+  );
 
   const handleResendOTP = async () => {
     if (!phoneNumber) return;
-
     resendOTPMutation.mutate(
-      { identifier: phoneNumber },
+      { phoneNumber: phoneNumber },
       {
         onSuccess: () => {
           setCountdown(300);
@@ -123,7 +121,7 @@ export function OTPVerification() {
         onError: (err) => {
           console.error("Failed to resend OTP:", err);
         },
-      },
+      }
     );
   };
 
@@ -136,8 +134,6 @@ export function OTPVerification() {
       <Container size="xs" style={{ width: "100%", maxWidth: "400px" }}>
         <Paper className="auth-paper" p="xl" withBorder>
           <LoadingOverlay visible={isSubmitting} />
-
-          {/* Decorative background elements */}
           <Box
             className="auth-decoration"
             style={{
@@ -160,7 +156,6 @@ export function OTPVerification() {
                 "linear-gradient(135deg, var(--mantine-color-secondary-2), var(--mantine-color-secondary-3))",
             }}
           />
-
           <Stack
             gap="xl"
             style={{ position: "relative", zIndex: 1 }}
@@ -171,21 +166,11 @@ export function OTPVerification() {
                 <IconBrandTwitter size={32} color="white" />
               </Box>
             </Center>
-
             <div style={{ textAlign: "center" }}>
-              <Title
-                order={1}
-                size="h2"
-                className="text-gradient"
-                style={{ marginBottom: "var(--mantine-spacing-xs)" }}
-              >
-                Enter Verification Code
-              </Title>
               <Text c="dimmed" size="sm">
-                We've sent a 6-digit code to {phoneNumber}
+                We've sent a 5-digit code to {phoneNumber}
               </Text>
             </div>
-
             {error && (
               <Alert
                 icon={<IconAlertCircle size={16} />}
@@ -197,42 +182,23 @@ export function OTPVerification() {
                 {error}
               </Alert>
             )}
-
-            <form onSubmit={form.onSubmit(handleSubmit)}>
-              <Stack gap="lg">
-                <TextInput
-                  label="Verification Code"
-                  placeholder="123456"
-                  leftSection={<IconKey size={18} />}
-                  required
-                  size="md"
-                  radius="md"
-                  maxLength={6}
-                  classNames={{
-                    input: "auth-input",
-                    label: "auth-label",
-                  }}
-                  {...form.getInputProps("otp")}
-                />
-
-                <Button
-                  type="submit"
-                  fullWidth
-                  size="lg"
-                  loading={isSubmitting}
-                  disabled={isSubmitting}
-                  className="auth-button"
-                >
-                  Verify Code
-                </Button>
-              </Stack>
-            </form>
-
+            <PinInput
+              length={5}
+              size="xl"
+              radius="md"
+              variant="filled"
+              classNames={{
+                input: "auth-input",
+              }}
+              {...form.getInputProps("otp")}
+              onComplete={(value) => {
+                handleSubmit({ otp: value });
+              }}
+            />
             <Stack gap="md" align="center">
               <Text size="sm" c="dimmed" ta="center">
                 Didn't receive the code?
               </Text>
-
               {canResend ? (
                 <Button
                   variant="subtle"
@@ -247,7 +213,6 @@ export function OTPVerification() {
                   Resend available in {formatTime(countdown)}
                 </Text>
               )}
-
               <Anchor
                 component={Link}
                 to="/"

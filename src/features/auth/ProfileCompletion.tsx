@@ -31,6 +31,8 @@ import { CompleteProfileRequest } from "../../services/api";
 
 const profileSchema = z.object({
   username: z.string().min(2, "Username must be at least 2 characters"),
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
   email: z.string().email("Please enter a valid email address"),
   whatsapp: z
     .string()
@@ -53,6 +55,7 @@ const profileSchema = z.object({
       /^https?:\/\/(www\.)?instagram\.com\/\w+/,
       "Please enter a valid Instagram profile URL",
     ),
+  bio: z.string().optional(),
 });
 
 export function ProfileCompletion() {
@@ -66,11 +69,14 @@ export function ProfileCompletion() {
     mode: "uncontrolled",
     initialValues: {
       username: "",
+      firstName: "",
+      lastName: "",
       email: "",
       whatsapp: "",
       twitterLink: "",
       tiktokLink: "",
       instagramLink: "",
+      bio: "",
     },
     validate: zodResolver(profileSchema) as any,
   });
@@ -163,6 +169,37 @@ export function ProfileCompletion() {
             <form onSubmit={form.onSubmit(handleSubmit as any)}>
               <Stack gap="lg">
                 <Grid>
+                  <Grid.Col span={6}>
+                    <TextInput
+                      placeholder="Enter your first name"
+                      leftSection={<IconUser size={18} />}
+                      required
+                      size="md"
+                      radius="md"
+                      classNames={{
+                        input: "auth-input",
+                        label: "auth-label",
+                      }}
+                      {...form.getInputProps("firstName")}
+                    />
+                  </Grid.Col>
+                  <Grid.Col span={6}>
+                    <TextInput
+                      placeholder="Enter your last name"
+                      leftSection={<IconUser size={18} />}
+                      required
+                      size="md"
+                      radius="md"
+                      classNames={{
+                        input: "auth-input",
+                        label: "auth-label",
+                      }}
+                      {...form.getInputProps("lastName")}
+                    />
+                  </Grid.Col>
+                </Grid>
+
+                <Grid>
                   <Grid.Col span={12}>
                     <TextInput
                       placeholder="Enter your username"
@@ -237,6 +274,18 @@ export function ProfileCompletion() {
                     label: "auth-label",
                   }}
                   {...form.getInputProps("instagramLink")}
+                />
+
+                <TextInput
+                  placeholder="Enter your bio (optional)"
+                  leftSection={<IconUser size={18} />}
+                  size="md"
+                  radius="md"
+                  classNames={{
+                    input: "auth-input",
+                    label: "auth-label",
+                  }}
+                  {...form.getInputProps("bio")}
                 />
 
                 <Button
