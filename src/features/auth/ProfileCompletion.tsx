@@ -18,9 +18,6 @@ import {
 import { useForm } from "@mantine/form";
 import {
   IconAlertCircle,
-  IconBrandInstagram,
-  IconBrandTiktok,
-  IconBrandTwitter,
   IconBrandWhatsapp,
   IconCheck,
   IconInfoCircle,
@@ -130,7 +127,7 @@ export function ProfileCompletion() {
   const progress = getCompletionProgress();
 
   return (
-    <Container size="sm">
+    <Container p={4} size="sm">
       <Paper
         shadow="xl"
         radius="xl"
@@ -343,89 +340,6 @@ export function ProfileCompletion() {
                 />
               </Grid.Col>
             </Grid>
-
-            <Group align="center" my="xs">
-              <IconBrandTwitter size={18} style={{ color: "#667eea" }} />
-              <Text my="xs" fw={600} size="sm" c="gray.8">
-                Social Media
-              </Text>
-              <Text size="xs" c="gray.6">
-                Optional
-              </Text>
-            </Group>
-
-            <Grid gutter="md">
-              <Grid.Col span={{ base: 12, sm: 6 }}>
-                <TextInput
-                  label="Twitter Profile"
-                  placeholder="https://twitter.com/username"
-                  leftSection={<IconBrandTwitter size={16} />}
-                  size="md"
-                  radius="md"
-                  styles={{
-                    label: { marginBottom: "0.5rem", fontWeight: 500 },
-                    input: {
-                      border: "1px solid #e9ecef",
-                      "&:focus": {
-                        borderColor: "#667eea",
-                        boxShadow: "0 0 0 2px rgba(102, 126, 234, 0.1)",
-                      },
-                    },
-                  }}
-                  {...form.getInputProps("twitterLink")}
-                />
-              </Grid.Col>
-              <Grid.Col span={{ base: 12, sm: 6 }}>
-                <TextInput
-                  label="Instagram Profile"
-                  placeholder="https://instagram.com/username"
-                  leftSection={<IconBrandInstagram size={16} />}
-                  size="md"
-                  radius="md"
-                  styles={{
-                    label: { marginBottom: "0.5rem", fontWeight: 500 },
-                    input: {
-                      border: "1px solid #e9ecef",
-                      "&:focus": {
-                        borderColor: "#667eea",
-                        boxShadow: "0 0 0 2px rgba(102, 126, 234, 0.1)",
-                      },
-                    },
-                  }}
-                  {...form.getInputProps("instagramLink")}
-                />
-              </Grid.Col>
-            </Grid>
-
-            <TextInput
-              label="TikTok Profile"
-              placeholder="https://tiktok.com/@username"
-              leftSection={<IconBrandTiktok size={16} />}
-              size="md"
-              radius="md"
-              mt="md"
-              styles={{
-                label: { marginBottom: "0.5rem", fontWeight: 500 },
-                input: {
-                  border: "1px solid #e9ecef",
-                  "&:focus": {
-                    borderColor: "#667eea",
-                    boxShadow: "0 0 0 2px rgba(102, 126, 234, 0.1)",
-                  },
-                },
-              }}
-              {...form.getInputProps("tiktokLink")}
-            />
-
-            <Group align="center" my="xs">
-              <IconUser size={18} style={{ color: "#667eea" }} />
-              <Text my="xs" fw={600} size="sm" c="gray.8">
-                About You
-              </Text>
-              <Text size="xs" c="gray.6">
-                Optional
-              </Text>
-            </Group>
 
             <Textarea
               label="Bio"

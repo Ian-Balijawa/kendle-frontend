@@ -1,15 +1,15 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { queryClient } from "../lib/queryClient";
 import {
   apiService,
+  CompleteProfileRequest,
+  LoginRequest,
+  ResendOTPRequest,
   SendOTPRequest,
   VerifyOTPRequest,
-  ResendOTPRequest,
-  LoginRequest,
-  CompleteProfileRequest,
 } from "../services/api";
-import { AuthResponse, User } from "../types";
 import { useAuthStore } from "../stores/authStore";
-import { queryClient } from "../lib/queryClient";
+import { AuthResponse, User } from "../types";
 
 // Query keys
 export const authKeys = {
@@ -190,26 +190,6 @@ export function useCompleteProfile() {
       queryClient.setQueryData(authKeys.me(), updatedUser);
       setAuthData(updatedUser, token || "");
       setLoading(false);
-    },
-  });
-}
-
-// Logout mutation
-export function useLogout() {
-  const { logout } = useAuthStore();
-
-  return useMutation({
-    mutationFn: async () => {
-      // Here you could call a logout endpoint if needed
-      // await apiService.logout();
-      return Promise.resolve();
-    },
-    onSuccess: () => {
-      // Clear all cached data
-      queryClient.clear();
-
-      // Update auth store
-      logout();
     },
   });
 }
