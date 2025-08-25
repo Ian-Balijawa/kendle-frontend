@@ -95,7 +95,7 @@ export function HeaderContent() {
         backdropFilter: "blur(10px)",
       }}
     >
-      <Group justify="space-between" h={60} gap="md">
+      <Group  justify="space-between" h={60} gap="md">
         <Group gap="xl">
           <UnstyledButton
             onClick={() => navigate("/dashboard")}

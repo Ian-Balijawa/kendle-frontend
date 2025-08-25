@@ -4,11 +4,9 @@ import {
   Button,
   Center,
   Container,
-  Image,
-  LoadingOverlay,
-  Stack,
+  Image, Stack,
   Text,
-  TextInput,
+  TextInput
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { IconAlertCircle, IconPhone } from "@tabler/icons-react";
@@ -55,8 +53,6 @@ export function PhoneAuth() {
     <Box className="auth-container">
       <Container size="xs" style={{ width: "100%", maxWidth: "400px" }}>
         <Stack className="auth-paper" p="xl">
-          <LoadingOverlay visible={sendOTPMutation.isPending} />
-
           <Box
             className="auth-decoration"
             style={{

@@ -82,6 +82,8 @@ export function ChatWindow({
     (p) => p.id !== user?.id
   );
 
+console.log("conversation.participants", conversation)
+
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     if (scrollAreaRef.current) {

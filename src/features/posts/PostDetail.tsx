@@ -273,7 +273,7 @@ export function PostDetail() {
           <IconArrowLeft size={18} />
         </ActionIcon>
         <Text fw={600} size="lg" c="dark.7">
-          Post
+          {post.content.slice(0,post.content.length * 0.2) + "..."}
         </Text>
         <Box w={40} />
       </Group>
