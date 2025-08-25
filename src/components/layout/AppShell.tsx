@@ -1,12 +1,13 @@
 import {
-  Box,
-  Container,
-  AppShell as MantineAppShell,
-  ScrollArea,
+    Box,
+    Container,
+    AppShell as MantineAppShell,
+    ScrollArea,
 } from "@mantine/core";
 import { Outlet } from "react-router-dom";
 import { FooterContent } from "./Footer";
 import { HeaderContent } from "./Header";
+import { FloatingChatWidget } from "../../features/chat/FloatingChatWidget";
 
 export function AppShell() {
   return (
@@ -57,6 +58,9 @@ export function AppShell() {
                 <Outlet />
               </Box>
             </Container>
+
+            {/* Floating Chat Widget */}
+            <FloatingChatWidget />
 
             <Box
               style={{

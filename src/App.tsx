@@ -1,7 +1,6 @@
 import { MantineProvider } from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import {
   Navigate,
   Route,
@@ -19,7 +18,7 @@ import { OTPVerification } from "./features/auth/OTPVerification";
 import { PhoneAuth } from "./features/auth/PhoneAuth";
 import { ProfileCompletion } from "./features/auth/ProfileCompletion";
 
-import { ChatPage } from "./features/chat/ChatPage";
+
 import { NotificationsPage } from "./features/notifications/NotificationsPage";
 import { HomePage } from "./features/posts/HomePage";
 import { PostDetail } from "./features/posts/PostDetail";
@@ -94,7 +93,6 @@ function App() {
               <Route index element={<HomePage />} />
               <Route path="explore" element={<ExplorePage />} />
               <Route path="statuses" element={<StatusesPage />} />
-              <Route path="chat" element={<ChatPage />} />
               <Route path="notifications" element={<NotificationsPage />} />
               <Route path="profile" element={<ProfilePage />} />
               <Route path="post/:postId" element={<PostDetail />} />
@@ -104,7 +102,7 @@ function App() {
           </Routes>
         </Router>
       </MantineProvider>
-      <ReactQueryDevtools initialIsOpen={false} />
+      {/* <ReactQueryDevtools initialIsOpen={false} /> */}
     </QueryClientProvider>
   );
 }
