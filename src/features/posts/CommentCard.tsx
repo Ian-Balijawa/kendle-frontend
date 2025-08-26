@@ -273,17 +273,25 @@ export function CommentCard({ comment }: CommentCardProps) {
               </Stack>
             </Group>
 
-            <Text
-              size="sm"
-              style={{
-                lineHeight: 1.5,
-                wordBreak: "break-word",
-              }}
-              c="dark.7"
-              mb="sm"
-            >
-              {comment.content}
-            </Text>
+            <Box mb="sm">
+              {comment.content.split("\n").map((line, index) => (
+                <Text
+                  key={index}
+                  size="sm"
+                  style={{
+                    lineHeight: 1.5,
+                    wordBreak: "break-word",
+                    marginBottom:
+                      index < comment.content.split("\n").length - 1
+                        ? "0.25rem"
+                        : 0,
+                  }}
+                  c="dark.7"
+                >
+                  {line || "\u00A0"}
+                </Text>
+              ))}
+            </Box>
 
             <Group gap="md">
               <Group

@@ -260,6 +260,34 @@ export function PostDetail() {
   const isAuthor = user?.id === post?.author?.id;
   const netScore = post?.upvotesCount - post?.downvotesCount;
 
+  // Helper function to render formatted text with newlines
+  const renderFormattedText = (
+    text: string,
+    size: "sm" | "md" | "lg" = "md",
+    spacing: "xs" | "sm" | "md" = "sm"
+  ) => {
+    const lines = text.split("\n");
+    const spacingMap = { xs: "0.25rem", sm: "0.5rem", md: "0.75rem" };
+
+    return (
+      <Box>
+        {lines.map((line, index) => (
+          <Text
+            key={index}
+            size={size}
+            style={{
+              lineHeight: 1.6,
+              marginBottom: index < lines.length - 1 ? spacingMap[spacing] : 0,
+            }}
+            c="dark.7"
+          >
+            {line || "\u00A0"}
+          </Text>
+        ))}
+      </Box>
+    );
+  };
+
   return (
     <Box mx="auto" p="md">
       {/* Header */}
@@ -272,8 +300,9 @@ export function PostDetail() {
         >
           <IconArrowLeft size={18} />
         </ActionIcon>
-        <Text fw={600} size="lg" c="dark.7">
-          {post.content.slice(0,post.content.length * 0.2) + "..."}
+        <Text fw={600} size="lg" c="dark.7" style={{ maxWidth: "60%" }}>
+          {post.content.split("\n")[0].slice(0, 50)}
+          {post.content.split("\n")[0].length > 50 ? "..." : ""}
         </Text>
         <Box w={40} />
       </Group>
@@ -370,7 +399,7 @@ export function PostDetail() {
           {isEditing ? (
             <Stack gap="md">
               <Textarea
-                placeholder="What's on your mind?"
+                placeholder="What's on your mind? Use Enter for new lines..."
                 value={editContent}
                 onChange={(e) => setEditContent(e.currentTarget.value)}
                 minRows={4}
@@ -379,6 +408,24 @@ export function PostDetail() {
                 radius="md"
                 style={{ fontSize: rem(15) }}
               />
+
+              {/* Preview of edited content */}
+              {editContent.trim() && (
+                <Box
+                  p="md"
+                  style={{
+                    backgroundColor: "var(--mantine-color-gray-0)",
+                    borderRadius: "var(--mantine-radius-md)",
+                    border: "1px solid var(--mantine-color-gray-2)",
+                  }}
+                >
+                  <Text size="xs" c="dimmed" mb="xs" fw={500}>
+                    Preview:
+                  </Text>
+                  {renderFormattedText(editContent, "md", "sm")}
+                </Box>
+              )}
+
               <Group justify="flex-end" gap="sm">
                 <Button
                   variant="subtle"
@@ -398,9 +445,7 @@ export function PostDetail() {
               </Group>
             </Stack>
           ) : (
-            <Text size="md" style={{ lineHeight: 1.6 }} c="dark.7" mb="lg">
-              {post.content}
-            </Text>
+            <Box mb="lg">{renderFormattedText(post.content, "md", "sm")}</Box>
           )}
 
           {/* Media */}

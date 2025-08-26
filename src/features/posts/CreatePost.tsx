@@ -172,7 +172,7 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
         </Group>
 
         <Textarea
-          placeholder="What's on your mind?"
+          placeholder="What's on your mind? Use Enter for new lines..."
           value={content}
           onChange={(e) => setContent(e.currentTarget.value)}
           minRows={3}
@@ -183,9 +183,41 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
               border: "none",
               fontSize: "16px",
               padding: 0,
+              lineHeight: "1.6",
             },
           }}
         />
+
+        {/* Preview of how the text will look */}
+        {content.trim() && (
+          <Box
+            p="md"
+            style={{
+              backgroundColor: "var(--mantine-color-gray-0)",
+              borderRadius: "var(--mantine-radius-md)",
+              border: "1px solid var(--mantine-color-gray-2)",
+            }}
+          >
+            <Text size="xs" c="dimmed" mb="xs" fw={500}>
+              Preview:
+            </Text>
+            <Box>
+              {content.split("\n").map((line, index) => (
+                <Text
+                  key={index}
+                  size="sm"
+                  style={{
+                    lineHeight: 1.6,
+                    marginBottom:
+                      index < content.split("\n").length - 1 ? "0.25rem" : 0,
+                  }}
+                >
+                  {line || "\u00A0"}
+                </Text>
+              ))}
+            </Box>
+          </Box>
+        )}
 
         {/* Media Preview */}
         {media.length > 0 && (

@@ -191,6 +191,33 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
   const isAuthor = user?.id === post?.author?.id;
   const voteScore = post?.upvotesCount - post?.downvotesCount;
 
+  // Helper function to render formatted text with newlines
+  const renderFormattedText = (
+    text: string,
+    size: "sm" | "md" | "lg" = "sm",
+    spacing: "xs" | "sm" | "md" = "xs"
+  ) => {
+    const lines = text.split("\n");
+    const spacingMap = { xs: "0.25rem", sm: "0.5rem", md: "0.75rem" };
+
+    return (
+      <Box>
+        {lines.map((line, index) => (
+          <Text
+            key={index}
+            size={size}
+            style={{
+              lineHeight: 1.6,
+              marginBottom: index < lines.length - 1 ? spacingMap[spacing] : 0,
+            }}
+          >
+            {line || "\u00A0"}
+          </Text>
+        ))}
+      </Box>
+    );
+  };
+
   return (
     <>
       <Card
@@ -307,9 +334,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
               e.currentTarget.style.backgroundColor = "transparent";
             }}
           >
-            <Text size="sm" style={{ lineHeight: 1.6 }}>
-              {post.content}
-            </Text>
+            {renderFormattedText(post.content, "sm", "xs")}
           </UnstyledButton>
 
           {post?.media && post?.media?.length > 0 && (
@@ -617,7 +642,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
       >
         <Stack gap="lg">
           <Textarea
-            placeholder="What's on your mind?"
+            placeholder="What's on your mind? Use Enter for new lines..."
             value={editContent}
             onChange={(e) => setEditContent(e.currentTarget.value)}
             minRows={4}
@@ -625,6 +650,24 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
             autosize
             radius="lg"
           />
+
+          {/* Preview of edited content */}
+          {editContent.trim() && (
+            <Box
+              p="md"
+              style={{
+                backgroundColor: "var(--mantine-color-gray-0)",
+                borderRadius: "var(--mantine-radius-md)",
+                border: "1px solid var(--mantine-color-gray-2)",
+              }}
+            >
+              <Text size="xs" c="dimmed" mb="xs" fw={500}>
+                Preview:
+              </Text>
+              {renderFormattedText(editContent, "sm", "xs")}
+            </Box>
+          )}
+
           <Group justify="flex-end" gap="sm">
             <Button
               variant="light"
