@@ -3,13 +3,14 @@ import {
   Avatar,
   Badge,
   Box,
-  Card, Group,
+  Card,
+  Group,
   Loader,
   Stack,
   Tabs,
   Text,
   TextInput,
-  Title
+  Title,
 } from "@mantine/core";
 import {
   IconHash,
@@ -24,7 +25,6 @@ import { useState } from "react";
 import { ProfileSwipe } from "../../components/ui";
 import { useSuggestedUsers } from "../../hooks/useFollow";
 import { useInfinitePosts } from "../../hooks/usePosts";
-import { useAuthStore } from "../../stores/authStore";
 
 const mockTrendingHashtags = [
   { name: "Kendle", postsCount: 15420 },
@@ -35,28 +35,25 @@ const mockTrendingHashtags = [
 ];
 
 export function ExplorePage() {
-  const { isAuthenticated } = useAuthStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("trending");
 
   // Get suggested users for people discovery
-  const { data: suggestedUsers, isLoading: usersLoading } = useSuggestedUsers(15);
+  const { data: suggestedUsers, isLoading: usersLoading } =
+    useSuggestedUsers(15);
 
   // Get trending posts
-  const {
-    data: trendingPosts,
-    isLoading: postsLoading,
-  } = useInfinitePosts({
+  const { data: trendingPosts, isLoading: postsLoading } = useInfinitePosts({
     limit: 10,
     sortBy: "likes",
-    sortOrder: "desc"
+    sortOrder: "desc",
   });
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
     const diffInHours = Math.floor(
-      (now.getTime() - date.getTime()) / (1000 * 60 * 60),
+      (now.getTime() - date.getTime()) / (1000 * 60 * 60)
     );
 
     if (diffInHours < 1) return "Just now";
@@ -117,7 +114,8 @@ export function ExplorePage() {
                 <Group justify="center" py="xl">
                   <Loader size="lg" />
                 </Group>
-              ) : trendingPosts?.pages[0]?.posts?.length && trendingPosts.pages[0].posts.length > 0 ? (
+              ) : trendingPosts?.pages[0]?.posts?.length &&
+                trendingPosts.pages[0].posts.length > 0 ? (
                 trendingPosts.pages[0].posts.map((post) => (
                   <Card key={post.id} withBorder p="md">
                     <Stack gap="md">
@@ -226,7 +224,8 @@ export function ExplorePage() {
                       No users to discover
                     </Text>
                     <Text c="dimmed" ta="center" size="sm">
-                      More amazing people will appear here as they join the community!
+                      More amazing people will appear here as they join the
+                      community!
                     </Text>
                   </Stack>
                 </Stack>
