@@ -3,14 +3,13 @@ import {
   Avatar,
   Badge,
   Box,
-  Card,
-  Grid,
-  Group,
+  Card, Group,
+  Loader,
   Stack,
   Tabs,
   Text,
   TextInput,
-  Title,
+  Title
 } from "@mantine/core";
 import {
   IconHash,
@@ -22,57 +21,10 @@ import {
   IconUsers,
 } from "@tabler/icons-react";
 import { useState } from "react";
-
-const mockTrendingPosts = [
-  {
-    id: "1",
-    content: "Amazing sunset at the beach today! 🌅 #Sunset #Beach #Nature",
-    author: {
-      id: "1",
-      username: "naturelover",
-      firstName: "Sarah",
-      lastName: "Wilson",
-      avatar: null,
-    },
-    createdAt: "2024-01-15T08:30:00Z",
-    _count: { likes: 156, comments: 23, shares: 12 },
-  },
-  {
-    id: "2",
-    content:
-      "Just finished reading this incredible book! Highly recommend. 📚 #Books #Reading",
-    author: {
-      id: "2",
-      username: "bookworm",
-      firstName: "Mike",
-      lastName: "Johnson",
-      avatar: null,
-    },
-    createdAt: "2024-01-15T07:15:00Z",
-    _count: { likes: 89, comments: 15, shares: 8 },
-  },
-];
-
-const mockTrendingUsers = [
-  {
-    id: "1",
-    username: "techguru",
-    firstName: "Alex",
-    lastName: "Chen",
-    avatar: null,
-    followersCount: 15420,
-    isFollowing: false,
-  },
-  {
-    id: "2",
-    username: "travelbug",
-    firstName: "Emma",
-    lastName: "Davis",
-    avatar: null,
-    followersCount: 8920,
-    isFollowing: true,
-  },
-];
+import { ProfileSwipe } from "../../components/ui";
+import { useSuggestedUsers } from "../../hooks/useFollow";
+import { useInfinitePosts } from "../../hooks/usePosts";
+import { useAuthStore } from "../../stores/authStore";
 
 const mockTrendingHashtags = [
   { name: "Kendle", postsCount: 15420 },
@@ -83,8 +35,22 @@ const mockTrendingHashtags = [
 ];
 
 export function ExplorePage() {
+  const { isAuthenticated } = useAuthStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("trending");
+
+  // Get suggested users for people discovery
+  const { data: suggestedUsers, isLoading: usersLoading } = useSuggestedUsers(15);
+
+  // Get trending posts
+  const {
+    data: trendingPosts,
+    isLoading: postsLoading,
+  } = useInfinitePosts({
+    limit: 10,
+    sortBy: "likes",
+    sortOrder: "desc"
+  });
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -147,101 +113,125 @@ export function ExplorePage() {
 
           <Tabs.Panel value="trending" pt="md">
             <Stack gap="md">
-              {mockTrendingPosts.map((post) => (
-                <Card key={post.id} withBorder p="md">
-                  <Stack gap="md">
-                    <Group justify="space-between">
-                      <Group>
-                        <Avatar
-                          src={post.author.avatar}
-                          alt={post.author.firstName}
-                          size="md"
-                        >
-                          {post.author.firstName.charAt(0)}
-                        </Avatar>
-                        <Box>
-                          <Text fw={500} size="sm">
-                            {post.author.firstName} {post.author.lastName}
-                          </Text>
-                          <Text c="dimmed" size="xs">
-                            @{post.author.username} •{" "}
-                            {formatDate(post.createdAt)}
-                          </Text>
-                        </Box>
+              {postsLoading ? (
+                <Group justify="center" py="xl">
+                  <Loader size="lg" />
+                </Group>
+              ) : trendingPosts?.pages[0]?.posts?.length && trendingPosts.pages[0].posts.length > 0 ? (
+                trendingPosts.pages[0].posts.map((post) => (
+                  <Card key={post.id} withBorder p="md">
+                    <Stack gap="md">
+                      <Group justify="space-between">
+                        <Group>
+                          <Avatar
+                            src={post.author.avatar}
+                            alt={post.author.firstName}
+                            size="md"
+                          >
+                            {post.author.firstName?.charAt(0)}
+                          </Avatar>
+                          <Box>
+                            <Text fw={500} size="sm">
+                              {post.author.firstName} {post.author.lastName}
+                            </Text>
+                            <Text c="dimmed" size="xs">
+                              @{post.author.username} •{" "}
+                              {formatDate(post.createdAt)}
+                            </Text>
+                          </Box>
+                        </Group>
                       </Group>
-                    </Group>
 
-                    <Text size="sm" style={{ lineHeight: 1.6 }}>
-                      {post.content}
-                    </Text>
+                      <Text size="sm" style={{ lineHeight: 1.6 }}>
+                        {post.content}
+                      </Text>
 
-                    <Group justify="space-between">
-                      <Group gap="xs">
-                        <ActionIcon variant="subtle" color="gray">
-                          <IconHeart size={16} />
-                        </ActionIcon>
-                        <Text size="xs" c="dimmed">
-                          {formatNumber(post._count.likes)}
-                        </Text>
+                      <Group justify="space-between">
+                        <Group gap="xs">
+                          <ActionIcon variant="subtle" color="gray">
+                            <IconHeart size={16} />
+                          </ActionIcon>
+                          <Text size="xs" c="dimmed">
+                            {formatNumber(post.likesCount || 0)}
+                          </Text>
 
-                        <ActionIcon variant="subtle" color="gray">
-                          <IconMessageCircle size={16} />
-                        </ActionIcon>
-                        <Text size="xs" c="dimmed">
-                          {formatNumber(post._count.comments)}
-                        </Text>
+                          <ActionIcon variant="subtle" color="gray">
+                            <IconMessageCircle size={16} />
+                          </ActionIcon>
+                          <Text size="xs" c="dimmed">
+                            {formatNumber(post.commentsCount || 0)}
+                          </Text>
 
-                        <ActionIcon variant="subtle" color="gray">
-                          <IconShare size={16} />
-                        </ActionIcon>
-                        <Text size="xs" c="dimmed">
-                          {formatNumber(post._count.shares)}
-                        </Text>
+                          <ActionIcon variant="subtle" color="gray">
+                            <IconShare size={16} />
+                          </ActionIcon>
+                          <Text size="xs" c="dimmed">
+                            {formatNumber(post.sharesCount || 0)}
+                          </Text>
+                        </Group>
                       </Group>
-                    </Group>
+                    </Stack>
+                  </Card>
+                ))
+              ) : (
+                <Card
+                  p="xl"
+                  radius="xl"
+                  style={{
+                    background: "linear-gradient(135deg, #f8f9ff, #f1f3ff)",
+                    border: "none",
+                  }}
+                >
+                  <Stack align="center" gap="md">
+                    <IconTrendingUp size={48} color="#667eea" />
+                    <Stack align="center" gap="xs">
+                      <Text fw={600} size="lg">
+                        No trending posts yet
+                      </Text>
+                      <Text c="dimmed" ta="center" size="sm">
+                        Trending posts will appear here when available.
+                      </Text>
+                    </Stack>
                   </Stack>
                 </Card>
-              ))}
+              )}
             </Stack>
           </Tabs.Panel>
 
           <Tabs.Panel value="people" pt="md">
-            <Grid>
-              {mockTrendingUsers.map((user) => (
-                <Grid.Col key={user.id} span={{ base: 12, sm: 6, md: 4 }}>
-                  <Card withBorder p="md">
-                    <Group>
-                      <Avatar
-                        src={user.avatar}
-                        alt={user.firstName}
-                        size="lg"
-                        radius="xl"
-                      >
-                        {user.firstName.charAt(0)}
-                      </Avatar>
-                      <Box style={{ flex: 1 }}>
-                        <Text fw={500} size="sm">
-                          {user.firstName} {user.lastName}
-                        </Text>
-                        <Text c="dimmed" size="xs">
-                          @{user.username}
-                        </Text>
-                        <Text size="xs" c="dimmed">
-                          {formatNumber(user.followersCount)} followers
-                        </Text>
-                      </Box>
-                      <Badge
-                        variant={user.isFollowing ? "filled" : "light"}
-                        color={user.isFollowing ? "gray" : "blue"}
-                        size="sm"
-                      >
-                        {user.isFollowing ? "Following" : "Follow"}
-                      </Badge>
-                    </Group>
-                  </Card>
-                </Grid.Col>
-              ))}
-            </Grid>
+            {usersLoading ? (
+              <Group justify="center" py="xl">
+                <Loader size="lg" />
+              </Group>
+            ) : suggestedUsers && suggestedUsers.length > 0 ? (
+              <ProfileSwipe
+                users={suggestedUsers}
+                title="Discover Amazing People"
+                subtitle="Connect with creators and influencers in your community"
+                showStats={true}
+              />
+            ) : (
+              <Card
+                p="xl"
+                radius="xl"
+                style={{
+                  background: "linear-gradient(135deg, #f0f9ff, #e0f2fe)",
+                  border: "none",
+                }}
+              >
+                <Stack align="center" gap="md">
+                  <IconUsers size={48} color="#0ea5e9" />
+                  <Stack align="center" gap="xs">
+                    <Text fw={600} size="lg">
+                      No users to discover
+                    </Text>
+                    <Text c="dimmed" ta="center" size="sm">
+                      More amazing people will appear here as they join the community!
+                    </Text>
+                  </Stack>
+                </Stack>
+              </Card>
+            )}
           </Tabs.Panel>
 
           <Tabs.Panel value="hashtags" pt="md">

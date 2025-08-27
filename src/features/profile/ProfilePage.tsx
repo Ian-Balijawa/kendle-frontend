@@ -1,45 +1,46 @@
 import {
-  Avatar,
-  Badge,
-  Box,
-  Button,
-  Card,
-  Center,
-  Container,
-  Divider,
-  Grid,
-  Group,
-  Loader,
-  Modal,
-  Stack,
-  Tabs,
-  Text,
-  TextInput,
-  Textarea,
-  Title,
-  UnstyledButton,
-  rem,
+    Avatar,
+    Badge,
+    Box,
+    Button,
+    Card,
+    Center,
+    Container,
+    Divider,
+    Grid,
+    Group,
+    Loader,
+    Modal,
+    Stack,
+    Tabs,
+    Text,
+    TextInput,
+    Textarea,
+    Title,
+    UnstyledButton,
+    rem,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import {
-  IconBrandInstagram,
-  IconBrandTiktok,
-  IconBrandTwitter,
-  IconBrandWhatsapp,
-  IconCalendar,
-  IconCheck,
-  IconEdit,
-  IconExternalLink,
-  IconHeart,
-  IconMessage,
-  IconPhoto,
-  IconUserCheck,
-  IconUserPlus,
+    IconBrandInstagram,
+    IconBrandTiktok,
+    IconBrandTwitter,
+    IconBrandWhatsapp,
+    IconCalendar,
+    IconCheck,
+    IconEdit,
+    IconExternalLink,
+    IconHeart,
+    IconMessage,
+    IconPhoto,
+    IconUserCheck,
+    IconUserPlus,
 } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useUserPosts } from "../../hooks/usePosts";
 import { useUpdateProfile, useUser, useUserProfile } from "../../hooks/useUser";
+import { useFollowStatus, useToggleFollow } from "../../hooks/useFollow";
 import { UpdateProfileRequest } from "../../services/api";
 import { useAuthStore } from "../../stores/authStore";
 import { User } from "../../types/auth";
@@ -66,6 +67,10 @@ export function ProfilePage() {
       limit: 10,
     }
   );
+
+  // Follow functionality
+  const { data: followStatus } = useFollowStatus(profileUserId!);
+  const { toggleFollow, isLoading: followLoading } = useToggleFollow();
 
   const updateProfileMutation = useUpdateProfile();
 
@@ -116,8 +121,9 @@ export function ProfilePage() {
     return num?.toString();
   };
 
-  const handleFollow = () => {
-    console.log("Follow/Unfollow user");
+  const handleFollow = async () => {
+    if (!profileUserId) return;
+    await toggleFollow(profileUserId, followStatus?.isFollowing || false);
   };
 
   const handleEditProfile = () => {
@@ -319,18 +325,19 @@ export function ProfilePage() {
               </Button>
             ) : (
               <Button
-                variant={user?.isFollowing ? "light" : "filled"}
+                variant={followStatus?.isFollowing ? "light" : "filled"}
                 leftSection={
-                  user?.isFollowing ? (
+                  followStatus?.isFollowing ? (
                     <IconUserCheck size={18} />
                   ) : (
                     <IconUserPlus size={18} />
                   )
                 }
                 onClick={handleFollow}
+                loading={followLoading}
                 radius="xl"
                 style={
-                  user?.isFollowing
+                  followStatus?.isFollowing
                     ? { color: "#667eea", borderColor: "#667eea" }
                     : {
                         background: "linear-gradient(135deg, #667eea, #764ba2)",
@@ -338,7 +345,7 @@ export function ProfilePage() {
                       }
                 }
               >
-                {user?.isFollowing ? "Following" : "Follow"}
+                {followStatus?.isFollowing ? "Following" : "Follow"}
               </Button>
             )}
           </Group>

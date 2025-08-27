@@ -20,7 +20,9 @@ import {
 } from "@tabler/icons-react";
 import { useState } from "react";
 import { InfiniteScrollLoader, PostSkeletonList } from "../../components/ui";
+import { ProfileSwipe } from "../../components/ui/ProfileSwipe";
 import { useInfinitePosts } from "../../hooks/usePosts";
+import { useSuggestedUsers } from "../../hooks/useFollow";
 import { useAuthStore } from "../../stores/authStore";
 import { CreatePost } from "./CreatePost";
 import { PostCard } from "./PostCard";
@@ -40,6 +42,9 @@ export function HomePage() {
     error,
     refetch,
   } = useInfinitePosts({ limit: 10, sortBy: "createdAt", sortOrder: "desc" });
+
+  // Get suggested users for discovery
+  const { data: suggestedUsers } = useSuggestedUsers(10);
 
   // Intersection observer for infinite scroll
   const { ref, entry } = useIntersection({
@@ -102,6 +107,19 @@ export function HomePage() {
 
         <Divider />
       </Box>
+
+      {/* Profile Discovery Section */}
+      {isAuthenticated && suggestedUsers && suggestedUsers.length > 0 && (
+        <Box mb="lg">
+          <ProfileSwipe
+            users={suggestedUsers}
+            title="Discover People"
+            subtitle="Find interesting people to follow"
+            showStats={true}
+          />
+          <Divider mt="xl" />
+        </Box>
+      )}
 
       {/* Content Section */}
       <Stack gap="lg">
