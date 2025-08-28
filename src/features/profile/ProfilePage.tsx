@@ -1,44 +1,45 @@
 import {
-    Avatar,
-    Badge,
-    Box,
-    Button,
-    Card,
-    Center,
-    Container,
-    Divider,
-    Grid,
-    Group,
-    Loader,
-    Modal,
-    Stack,
-    Tabs,
-    Text,
-    TextInput,
-    Textarea,
-    Title,
-    UnstyledButton,
-    rem,
+  Avatar,
+  Badge,
+  Box,
+  Button,
+  Card,
+  Center,
+  Container,
+  Divider,
+  Grid,
+  Group,
+  Loader,
+  Modal,
+  Stack,
+  Tabs,
+  Text,
+  TextInput,
+  Textarea,
+  Title,
+  UnstyledButton,
+  rem,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import {
-    IconBrandInstagram,
-    IconBrandTiktok,
-    IconBrandTwitter,
-    IconBrandWhatsapp,
-    IconCalendar,
-    IconCheck,
-    IconEdit,
-    IconExternalLink,
-    IconHeart,
-    IconMessage,
-    IconPhoto,
-    IconUserCheck,
-    IconUserPlus,
+  IconBookmark,
+  IconBrandInstagram,
+  IconBrandTiktok,
+  IconBrandTwitter,
+  IconBrandWhatsapp,
+  IconCalendar,
+  IconCheck,
+  IconEdit,
+  IconExternalLink,
+  IconHeart,
+  IconMessage,
+  IconPhoto,
+  IconUserCheck,
+  IconUserPlus,
 } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { useUserPosts } from "../../hooks/usePosts";
+import { useUserPosts, useUserLikedPosts, useUserBookmarkedPosts } from "../../hooks/usePosts";
 import { useUpdateProfile, useUser, useUserProfile } from "../../hooks/useUser";
 import { useFollowStatus, useToggleFollow } from "../../hooks/useFollow";
 import { UpdateProfileRequest } from "../../services/api";
@@ -62,6 +63,20 @@ export function ProfilePage() {
   } = isOwnProfile ? useUserProfile() : useUser(profileUserId!);
 
   const { data: postsData, isLoading: postsLoading } = useUserPosts(
+    profileUserId!,
+    {
+      limit: 10,
+    }
+  );
+
+  const { data: likedPostsData, isLoading: likedPostsLoading } = useUserLikedPosts(
+    profileUserId!,
+    {
+      limit: 10,
+    }
+  );
+
+  const { data: bookmarkedPostsData, isLoading: bookmarkedPostsLoading } = useUserBookmarkedPosts(
     profileUserId!,
     {
       limit: 10,
@@ -105,6 +120,8 @@ export function ProfilePage() {
   }, [user]);
 
   const posts = postsData?.pages.flatMap((page) => page.posts) || [];
+  const likedPosts = likedPostsData?.pages.flatMap((page) => page.posts) || [];
+  const bookmarkedPosts = bookmarkedPostsData?.pages.flatMap((page) => page.posts) || [];
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -507,6 +524,16 @@ export function ProfilePage() {
           >
             Likes
           </Tabs.Tab>
+          <Tabs.Tab
+            value="bookmarks"
+            leftSection={<IconBookmark size={16} />}
+            style={{
+              borderRadius: "12px",
+              fontWeight: 500,
+            }}
+          >
+            Bookmarks
+          </Tabs.Tab>
         </Tabs.List>
 
         <Tabs.Panel value="posts" pt="xl">
@@ -562,73 +589,161 @@ export function ProfilePage() {
         </Tabs.Panel>
 
         <Tabs.Panel value="media" pt="xl">
-          <Card
-            p="xl"
-            radius="xl"
-            style={{
-              background: "linear-gradient(135deg, #fff8f0, #fff0e6)",
-              border: "none",
-            }}
-          >
-            <Stack align="center" gap="md">
-              <Box
+          <Stack gap="lg">
+            {postsLoading ? (
+              <Center py={60}>
+                <Stack align="center" gap="md">
+                  <Loader size="lg" />
+                  <Text size="sm" c="dimmed" fw={500}>
+                    Loading media posts...
+                  </Text>
+                </Stack>
+              </Center>
+            ) : posts.filter(post => post.media && post.media.length > 0).length === 0 ? (
+              <Card
+                p="xl"
+                radius="xl"
                 style={{
-                  width: 80,
-                  height: 80,
-                  borderRadius: "50%",
-                  background: "rgba(253, 126, 20, 0.1)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
+                  background: "linear-gradient(135deg, #fff8f0, #fff0e6)",
+                  border: "none",
                 }}
               >
-                <IconPhoto size={32} color="#fd7e14" />
-              </Box>
-              <Stack align="center" gap="xs">
-                <Text fw={600} size="lg">
-                  No media posts yet
-                </Text>
-                <Text c="dimmed" ta="center" size="sm">
-                  Media posts will appear here when available.
-                </Text>
-              </Stack>
-            </Stack>
-          </Card>
+                <Stack align="center" gap="md">
+                  <Box
+                    style={{
+                      width: 80,
+                      height: 80,
+                      borderRadius: "50%",
+                      background: "rgba(253, 126, 20, 0.1)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <IconPhoto size={32} color="#fd7e14" />
+                  </Box>
+                  <Stack align="center" gap="xs">
+                    <Text fw={600} size="lg">
+                      No media posts yet
+                    </Text>
+                    <Text c="dimmed" ta="center" size="sm">
+                      {isOwnProfile
+                        ? "Posts with media will appear here!"
+                        : "This user hasn't posted any media yet."}
+                    </Text>
+                  </Stack>
+                </Stack>
+              </Card>
+            ) : (
+              posts
+                .filter(post => post.media && post.media.length > 0)
+                .map((post) => <PostCard key={post.id} post={post} />)
+            )}
+          </Stack>
         </Tabs.Panel>
 
         <Tabs.Panel value="likes" pt="xl">
-          <Card
-            p="xl"
-            radius="xl"
-            style={{
-              background: "linear-gradient(135deg, #fff5f5, #ffe0e6)",
-              border: "none",
-            }}
-          >
-            <Stack align="center" gap="md">
-              <Box
+          <Stack gap="lg">
+            {likedPostsLoading ? (
+              <Center py={60}>
+                <Stack align="center" gap="md">
+                  <Loader size="lg" />
+                  <Text size="sm" c="dimmed" fw={500}>
+                    Loading liked posts...
+                  </Text>
+                </Stack>
+              </Center>
+            ) : likedPosts.length === 0 ? (
+              <Card
+                p="xl"
+                radius="xl"
                 style={{
-                  width: 80,
-                  height: 80,
-                  borderRadius: "50%",
-                  background: "rgba(224, 49, 49, 0.1)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
+                  background: "linear-gradient(135deg, #fff5f5, #ffe0e6)",
+                  border: "none",
                 }}
               >
-                <IconHeart size={32} color="#e03131" />
-              </Box>
-              <Stack align="center" gap="xs">
-                <Text fw={600} size="lg">
-                  No liked posts yet
-                </Text>
-                <Text c="dimmed" ta="center" size="sm">
-                  Liked posts will appear here when available.
-                </Text>
-              </Stack>
-            </Stack>
-          </Card>
+                <Stack align="center" gap="md">
+                  <Box
+                    style={{
+                      width: 80,
+                      height: 80,
+                      borderRadius: "50%",
+                      background: "rgba(224, 49, 49, 0.1)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <IconHeart size={32} color="#e03131" />
+                  </Box>
+                  <Stack align="center" gap="xs">
+                    <Text fw={600} size="lg">
+                      No liked posts yet
+                    </Text>
+                    <Text c="dimmed" ta="center" size="sm">
+                      {isOwnProfile
+                        ? "Posts you like will appear here!"
+                        : "This user hasn't liked any posts yet."}
+                    </Text>
+                  </Stack>
+                </Stack>
+              </Card>
+            ) : (
+              likedPosts.map((post) => <PostCard key={post.id} post={post} />)
+            )}
+          </Stack>
+        </Tabs.Panel>
+
+        <Tabs.Panel value="bookmarks" pt="xl">
+          <Stack gap="lg">
+            {bookmarkedPostsLoading ? (
+              <Center py={60}>
+                <Stack align="center" gap="md">
+                  <Loader size="lg" />
+                  <Text size="sm" c="dimmed" fw={500}>
+                    Loading bookmarked posts...
+                  </Text>
+                </Stack>
+              </Center>
+            ) : bookmarkedPosts.length === 0 ? (
+              <Card
+                p="xl"
+                radius="xl"
+                style={{
+                  background: "linear-gradient(135deg, #fff8f0, #fff0e6)",
+                  border: "none",
+                }}
+              >
+                <Stack align="center" gap="md">
+                  <Box
+                    style={{
+                      width: 80,
+                      height: 80,
+                      borderRadius: "50%",
+                      background: "rgba(253, 126, 20, 0.1)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <IconBookmark size={32} color="#fd7e14" />
+                  </Box>
+                  <Stack align="center" gap="xs">
+                    <Text fw={600} size="lg">
+                      No bookmarked posts yet
+                    </Text>
+                    <Text c="dimmed" ta="center" size="sm">
+                      {isOwnProfile
+                        ? "Posts you bookmark will appear here!"
+                        : "This user hasn't bookmarked any posts yet."}
+                    </Text>
+                  </Stack>
+                </Stack>
+              </Card>
+            ) : (
+              bookmarkedPosts.map((post) => <PostCard key={post.id} post={post} />)
+            )}
+          </Stack>
         </Tabs.Panel>
       </Tabs>
 

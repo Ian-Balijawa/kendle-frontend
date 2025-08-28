@@ -1,53 +1,49 @@
 import {
-  ActionIcon,
-  Avatar,
-  Badge,
-  Box,
-  Button,
-  Center,
-  Divider,
-  Group,
-  Image,
-  Loader,
-  Menu,
-  Modal,
-  Paper,
-  rem,
-  Stack,
-  Text,
-  Textarea,
-  TextInput,
-  Transition,
+    ActionIcon,
+    Avatar,
+    Badge,
+    Box,
+    Button,
+    Center,
+    Divider,
+    Group,
+    Image,
+    Loader,
+    Menu,
+    Modal,
+    Paper,
+    rem,
+    Stack,
+    Text,
+    Textarea,
+    TextInput,
+    Transition,
 } from "@mantine/core";
 import {
-  IconArrowLeft,
-  IconBookmark,
-  IconChevronDown,
-  IconChevronUp,
-  IconDotsVertical,
-  IconEdit,
-  IconFlag,
-  IconHeart,
-  IconMessageCircle,
-  IconSend,
-  IconShare,
-  IconTrash,
+    IconArrowLeft,
+    IconBookmark,
+    IconChevronDown, IconDotsVertical,
+    IconEdit,
+    IconFlag,
+    IconHeart,
+    IconMessageCircle,
+    IconSend,
+    IconShare,
+    IconTrash
 } from "@tabler/icons-react";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { CommentSkeletonList, PostDetailSkeleton } from "../../components/ui";
 import { useCreateComment, useInfiniteComments } from "../../hooks/useComments";
 import {
-  useBookmarkPost,
-  useDeletePost,
-  useLikePost,
-  usePost,
-  useRemoveVote,
-  useSharePost,
-  useUnbookmarkPost,
-  useUnlikePost,
-  useUpdatePost,
-  useVotePost,
+    useBookmarkPost,
+    useDeletePost,
+    useReactToPost,
+    useRemoveReaction,
+    usePost,
+    useSharePost,
+    useUnbookmarkPost,
+    useUpdatePost,
 } from "../../hooks/usePosts";
 import { CreateCommentRequest, UpdatePostRequest } from "../../services/api";
 import { useAuthStore } from "../../stores/authStore";
@@ -73,12 +69,10 @@ export function PostDetail() {
   } = useInfiniteComments(postId!, { limit: 20 });
 
   // Mutations
-  const likePostMutation = useLikePost();
-  const unlikePostMutation = useUnlikePost();
+  const reactToPostMutation = useReactToPost();
+  const removeReactionMutation = useRemoveReaction();
   const bookmarkPostMutation = useBookmarkPost();
   const unbookmarkPostMutation = useUnbookmarkPost();
-  const votePostMutation = useVotePost();
-  const removeVoteMutation = useRemoveVote();
   const sharePostMutation = useSharePost();
   const updatePostMutation = useUpdatePost();
   const deletePostMutation = useDeletePost();
@@ -161,9 +155,18 @@ export function PostDetail() {
   const handleLike = () => {
     if (!isAuthenticated) return;
     if (post.isLiked) {
-      unlikePostMutation.mutate(post.id);
+      removeReactionMutation.mutate(post.id);
     } else {
-      likePostMutation.mutate(post.id);
+      reactToPostMutation.mutate({ id: post.id, data: { reactionType: "like" } });
+    }
+  };
+
+  const handleDislike = () => {
+    if (!isAuthenticated) return;
+    if (post.isDisliked) {
+      removeReactionMutation.mutate(post.id);
+    } else {
+      reactToPostMutation.mutate({ id: post.id, data: { reactionType: "dislike" } });
     }
   };
 
@@ -181,23 +184,7 @@ export function PostDetail() {
     sharePostMutation.mutate({ id: post.id });
   };
 
-  const handleUpvote = () => {
-    if (!isAuthenticated) return;
-    if (post.isUpvoted) {
-      removeVoteMutation.mutate(post.id);
-    } else {
-      votePostMutation.mutate({ id: post.id, data: { voteType: "upvote" } });
-    }
-  };
 
-  const handleDownvote = () => {
-    if (!isAuthenticated) return;
-    if (post.isDownvoted) {
-      removeVoteMutation.mutate(post.id);
-    } else {
-      votePostMutation.mutate({ id: post.id, data: { voteType: "downvote" } });
-    }
-  };
 
   const handleEdit = () => {
     setEditContent(post.content);
@@ -258,7 +245,7 @@ export function PostDetail() {
   };
 
   const isAuthor = user?.id === post?.author?.id;
-  const netScore = post?.upvotesCount - post?.downvotesCount;
+
 
   // Helper function to render formatted text with newlines
   const renderFormattedText = (
@@ -498,35 +485,39 @@ export function PostDetail() {
           <Divider mb="lg" />
           <Group justify="space-between">
             <Group gap="xl">
-              {/* Vote Score */}
-              <Group gap="xs">
-                <ActionIcon
-                  variant={post?.isUpvoted ? "filled" : "subtle"}
-                  color={post?.isUpvoted ? "green" : "gray"}
-                  onClick={handleUpvote}
-                  disabled={!isAuthenticated}
-                  size="lg"
-                  radius="xl"
-                >
-                  <IconChevronUp size={18} />
-                </ActionIcon>
-                <Text
-                  fw={600}
-                  size="sm"
-                  c={netScore > 0 ? "green" : netScore < 0 ? "red" : "dimmed"}
-                >
-                  {netScore > 0 ? `+${netScore}` : netScore}
-                </Text>
-                <ActionIcon
-                  variant={post?.isDownvoted ? "filled" : "subtle"}
-                  color={post?.isDownvoted ? "red" : "gray"}
-                  onClick={handleDownvote}
-                  disabled={!isAuthenticated}
-                  size="lg"
-                  radius="xl"
-                >
-                  <IconChevronDown size={18} />
-                </ActionIcon>
+              {/* Reactions */}
+              <Group gap="lg">
+                <Group gap="xs" style={{ cursor: "pointer" }}>
+                  <ActionIcon
+                    variant={post?.isLiked ? "filled" : "subtle"}
+                    color={post?.isLiked ? "red" : "gray"}
+                    onClick={handleLike}
+                    disabled={!isAuthenticated}
+                    size="lg"
+                    radius="xl"
+                  >
+                    <IconHeart size={18} />
+                  </ActionIcon>
+                  <Text size="sm" c="dimmed">
+                    {post?.likesCount}
+                  </Text>
+                </Group>
+
+                <Group gap="xs" style={{ cursor: "pointer" }}>
+                  <ActionIcon
+                    variant={post?.isDisliked ? "filled" : "subtle"}
+                    color="gray"
+                    onClick={handleDislike}
+                    disabled={!isAuthenticated}
+                    size="lg"
+                    radius="xl"
+                  >
+                    <IconChevronDown size={18} />
+                  </ActionIcon>
+                  <Text size="sm" c="dimmed">
+                    {post?.dislikesCount}
+                  </Text>
+                </Group>
               </Group>
 
               {/* Interactions */}

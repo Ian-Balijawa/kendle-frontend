@@ -11,17 +11,16 @@ export interface Post {
   allowLikes: boolean;
   allowShares: boolean;
   allowBookmarks: boolean;
-  allowVoting: boolean;
+  allowReactions: boolean;
   isRepost: boolean;
   isQuote: boolean;
   isArticle: boolean;
   isStory: boolean;
   likesCount: number;
+  dislikesCount: number;
   commentsCount: number;
   sharesCount: number;
   bookmarksCount: number;
-  upvotesCount: number;
-  downvotesCount: number;
   viewsCount: number;
   createdAt: string;
   updatedAt: string;
@@ -41,40 +40,40 @@ export interface Post {
   eventLocation?: string | null;
   eventCapacity?: number | null;
   eventAttendees?: any | null;
-  
-  // Legacy fields for backward compatibility
+
+  // Media and content
   media?: Media[];
+  tags?: Tag[];
+  mentions?: Mention[];
+
+  // Legacy fields for backward compatibility
   hashtags?: string[];
   likes?: Like[];
   comments?: Comment[];
   shares?: Share[];
-  upvotes?: Vote[];
-  downvotes?: Vote[];
   isLiked?: boolean;
+  isDisliked?: boolean;
   isShared?: boolean;
   isBookmarked?: boolean;
-  isUpvoted?: boolean;
-  isDownvoted?: boolean;
   _count?: {
     likes: number;
+    dislikes: number;
     comments: number;
     shares: number;
-    upvotes: number;
-    downvotes: number;
   };
 }
 
 export interface CreatePostData {
   content: string;
   media?: File[];
-  hashtags?: string[];
+  tags?: string[];
   mentions?: string[];
 }
 
 export interface UpdatePostData {
   content?: string;
   media?: File[];
-  hashtags?: string[];
+  tags?: string[];
   mentions?: string[];
 }
 
@@ -92,15 +91,14 @@ export interface Comment {
   allowLikes: boolean;
   allowShares: boolean;
   allowBookmarks: boolean;
-  allowVoting: boolean;
+  allowReactions: boolean;
   isRepost: boolean;
   isQuote: boolean;
   likesCount: number;
+  dislikesCount: number;
   repliesCount: number;
   sharesCount: number;
   bookmarksCount: number;
-  upvotesCount: number;
-  downvotesCount: number;
   viewsCount: number;
   createdAt: string;
   updatedAt: string;
@@ -111,13 +109,15 @@ export interface Comment {
   pollOptions?: string[] | null;
   pollEndDate?: string | null;
   pollResults?: string | null;
-  
+
   // Legacy fields for backward compatibility
   replies?: Comment[];
   likes?: Like[];
   isLiked?: boolean;
+  isDisliked?: boolean;
   _count?: {
     likes: number;
+    dislikes: number;
     replies: number;
   };
 }
@@ -127,6 +127,7 @@ export interface Like {
   userId: string;
   postId?: string;
   commentId?: string;
+  reactionType: "like" | "dislike";
   createdAt: string;
 }
 
@@ -137,31 +138,47 @@ export interface Share {
   createdAt: string;
 }
 
-export interface Vote {
-  id: string;
-  userId: string;
-  postId: string;
-  type: "upvote" | "downvote";
-  createdAt: string;
-}
-
 export interface Media {
   id: string;
   url: string;
   type: "image" | "video";
   filename: string;
   size: number;
+  thumbnailUrl?: string;
+  altText?: string;
+  caption?: string;
+  duration?: number;
+  width?: number;
+  height?: number;
+  format?: string;
   createdAt: string;
 }
 
-export interface Hashtag {
+export interface Tag {
   id: string;
   name: string;
+  description?: string;
   postsCount: number;
 }
 
 export interface Mention {
   id: string;
+  mentionedUserId: string;
+  postId?: string;
+  commentId?: string;
   username: string;
   userId: string;
+}
+
+export interface ReactionRequest {
+  reactionType: "like" | "dislike";
+}
+
+export interface BookmarkRequest {
+  note?: string;
+}
+
+export interface ShareRequest {
+  shareContent?: string;
+  platform?: string;
 }

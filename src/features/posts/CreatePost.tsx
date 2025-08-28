@@ -1,22 +1,22 @@
 import {
-  ActionIcon,
-  Badge,
-  Box,
-  Button,
-  Group,
-  Image,
-  Modal,
-  Stack,
-  Text,
-  Textarea,
-  TextInput,
+    ActionIcon,
+    Badge,
+    Box,
+    Button,
+    Group,
+    Image,
+    Modal,
+    Stack,
+    Text,
+    Textarea,
+    TextInput,
 } from "@mantine/core";
 import {
-  IconHash,
-  IconPhoto,
-  IconSend,
-  IconVideo,
-  IconX,
+    IconHash,
+    IconPhoto,
+    IconSend,
+    IconVideo,
+    IconX,
 } from "@tabler/icons-react";
 import { useRef, useState } from "react";
 import { useCreatePost } from "../../hooks/usePosts";
@@ -100,7 +100,7 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
       allowLikes: true,
       allowShares: true,
       allowBookmarks: true,
-      allowVoting: true,
+      allowReactions: true,
     };
 
     createPostMutation.mutate(postData, {

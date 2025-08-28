@@ -1,50 +1,46 @@
 import {
-  ActionIcon,
-  Avatar,
-  Badge,
-  Box,
-  Button,
-  Card,
-  Collapse,
-  Group,
-  Image,
-  Menu,
-  Modal,
-  Stack,
-  Text,
-  Textarea,
-  TextInput,
-  UnstyledButton,
+    ActionIcon,
+    Avatar,
+    Badge,
+    Box,
+    Button,
+    Card,
+    Collapse,
+    Group,
+    Image,
+    Menu,
+    Modal,
+    Stack,
+    Text,
+    Textarea,
+    TextInput,
+    UnstyledButton,
 } from "@mantine/core";
 import {
-  IconArrowDown,
-  IconArrowUp,
-  IconBookmark,
-  IconBookmarkFilled,
-  IconChevronDown,
-  IconChevronUp,
-  IconDotsVertical,
-  IconEdit,
-  IconFlag,
-  IconHeart,
-  IconHeartFilled,
-  IconMessageCircle,
-  IconSend,
-  IconTrash,
+    IconArrowDown, IconBookmark,
+    IconBookmarkFilled,
+    IconChevronDown,
+    IconChevronUp,
+    IconDotsVertical,
+    IconEdit,
+    IconFlag,
+    IconHeart,
+    IconHeartFilled,
+    IconMessageCircle,
+    IconSend,
+    IconTrash
 } from "@tabler/icons-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CommentSkeletonList } from "../../components/ui";
 import { useComments, useCreateComment } from "../../hooks/useComments";
 import {
-  useBookmarkPost,
-  useDeletePost,
-  useLikePost,
-  useRemoveVote,
-  useUnbookmarkPost,
-  useUnlikePost,
-  useUpdatePost,
-  useVotePost,
+    useBookmarkPost,
+    useDeletePost,
+    useReactToPost,
+    useRemoveReaction,
+    useUnbookmarkPost,
+    useUpdatePost,
 } from "../../hooks/usePosts";
 import { CreateCommentRequest } from "../../services/api";
 import { useAuthStore } from "../../stores/authStore";
@@ -61,12 +57,10 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuthStore();
 
-  const likePostMutation = useLikePost();
-  const unlikePostMutation = useUnlikePost();
+  const reactToPostMutation = useReactToPost();
+  const removeReactionMutation = useRemoveReaction();
   const bookmarkPostMutation = useBookmarkPost();
   const unbookmarkPostMutation = useUnbookmarkPost();
-  const votePostMutation = useVotePost();
-  const removeVoteMutation = useRemoveVote();
   const updatePostMutation = useUpdatePost();
   const deletePostMutation = useDeletePost();
   const createCommentMutation = useCreateComment();
@@ -105,9 +99,19 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
     if (!isAuthenticated) return;
 
     if (post.isLiked) {
-      unlikePostMutation.mutate(post.id);
+      removeReactionMutation.mutate(post.id);
     } else {
-      likePostMutation.mutate(post.id);
+      reactToPostMutation.mutate({ id: post.id, data: { reactionType: "like" } });
+    }
+  };
+
+  const handleDislike = () => {
+    if (!isAuthenticated) return;
+
+    if (post.isDisliked) {
+      removeReactionMutation.mutate(post.id);
+    } else {
+      reactToPostMutation.mutate({ id: post.id, data: { reactionType: "dislike" } });
     }
   };
 
@@ -118,26 +122,6 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
       unbookmarkPostMutation.mutate(post.id);
     } else {
       bookmarkPostMutation.mutate({ id: post.id });
-    }
-  };
-
-  const handleUpvote = () => {
-    if (!isAuthenticated) return;
-
-    if (post.isUpvoted) {
-      removeVoteMutation.mutate(post.id);
-    } else {
-      votePostMutation.mutate({ id: post.id, data: { voteType: "upvote" } });
-    }
-  };
-
-  const handleDownvote = () => {
-    if (!isAuthenticated) return;
-
-    if (post.isDownvoted) {
-      removeVoteMutation.mutate(post.id);
-    } else {
-      votePostMutation.mutate({ id: post.id, data: { voteType: "downvote" } });
     }
   };
 
@@ -189,7 +173,6 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
   };
 
   const isAuthor = user?.id === post?.author?.id;
-  const voteScore = post?.upvotesCount - post?.downvotesCount;
 
   // Helper function to render formatted text with newlines
   const renderFormattedText = (
@@ -433,45 +416,6 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
             <Group gap="lg">
               <Group gap={4}>
                 <ActionIcon
-                  variant={post?.isUpvoted ? "filled" : "subtle"}
-                  color={post?.isUpvoted ? "green" : "gray"}
-                  onClick={handleUpvote}
-                  size="lg"
-                  radius="xl"
-                  disabled={!isAuthenticated}
-                  style={{
-                    transition: "all 0.2s ease",
-                  }}
-                >
-                  <IconArrowUp size={16} />
-                </ActionIcon>
-
-                <Text
-                  size="sm"
-                  fw={600}
-                  c={voteScore > 0 ? "green" : voteScore < 0 ? "red" : "dimmed"}
-                  style={{ minWidth: "24px", textAlign: "center" }}
-                >
-                  {voteScore}
-                </Text>
-
-                <ActionIcon
-                  variant={post?.isDownvoted ? "filled" : "subtle"}
-                  color={post?.isDownvoted ? "red" : "gray"}
-                  onClick={handleDownvote}
-                  size="lg"
-                  radius="xl"
-                  disabled={!isAuthenticated}
-                  style={{
-                    transition: "all 0.2s ease",
-                  }}
-                >
-                  <IconArrowDown size={16} />
-                </ActionIcon>
-              </Group>
-
-              <Group gap={4}>
-                <ActionIcon
                   variant={post?.isLiked ? "filled" : "subtle"}
                   color="red"
                   onClick={handleLike}
@@ -490,6 +434,25 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                 </ActionIcon>
                 <Text size="sm" c="dimmed" fw={500}>
                   {post?.likesCount}
+                </Text>
+              </Group>
+
+              <Group gap={4}>
+                <ActionIcon
+                  variant={post?.isDisliked ? "filled" : "subtle"}
+                  color="gray"
+                  onClick={handleDislike}
+                  size="lg"
+                  radius="xl"
+                  disabled={!isAuthenticated}
+                  style={{
+                    transition: "all 0.2s ease",
+                  }}
+                >
+                  <IconArrowDown size={16} />
+                </ActionIcon>
+                <Text size="sm" c="dimmed" fw={500}>
+                  {post?.dislikesCount}
                 </Text>
               </Group>
 

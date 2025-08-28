@@ -56,7 +56,7 @@ export interface CreatePostRequest {
   allowLikes?: boolean;
   allowShares?: boolean;
   allowBookmarks?: boolean;
-  allowVoting?: boolean;
+  allowReactions?: boolean;
   isRepost?: boolean;
   isQuote?: boolean;
   isArticle?: boolean;
@@ -105,7 +105,7 @@ export interface UpdatePostRequest {
   allowLikes?: boolean;
   allowShares?: boolean;
   allowBookmarks?: boolean;
-  allowVoting?: boolean;
+  allowReactions?: boolean;
   isRepost?: boolean;
   isQuote?: boolean;
   isArticle?: boolean;
@@ -187,17 +187,17 @@ export interface GetCommentsParams {
   sortOrder?: "asc" | "desc";
 }
 
-export interface VoteRequest {
-  voteType: "upvote" | "downvote";
+export interface ReactionRequest {
+  reactionType: "like" | "dislike";
+}
+
+export interface BookmarkRequest {
+  note?: string;
 }
 
 export interface ShareRequest {
   shareContent?: string;
   platform?: string;
-}
-
-export interface BookmarkRequest {
-  note?: string;
 }
 
 // Authentication request/response types
@@ -433,12 +433,12 @@ class ApiService {
     await this.api.delete( `/posts/${id}/bookmark` );
   }
 
-  async votePost( id: string, data: VoteRequest ): Promise<void> {
-    await this.api.post( `/posts/${id}/vote`, data );
+  async reactToPost( id: string, data: ReactionRequest ): Promise<void> {
+    await this.api.post( `/posts/${id}/react`, data );
   }
 
-  async removeVotePost( id: string ): Promise<void> {
-    await this.api.delete( `/posts/${id}/vote` );
+  async removeReaction( id: string ): Promise<void> {
+    await this.api.delete( `/posts/${id}/react` );
   }
 
   async sharePost( id: string, data?: ShareRequest ): Promise<void> {
@@ -458,7 +458,7 @@ class ApiService {
 
     const response: AxiosResponse<ApiResponse<PostsResponse>> =
       await this.api.get(
-        `/posts?authorId=${userId}&${searchParams.toString()}`
+        `/posts/user/${userId}?${searchParams.toString()}`
       );
     return response.data.data;
   }
@@ -474,7 +474,22 @@ class ApiService {
     } );
 
     const response: AxiosResponse<ApiResponse<PostsResponse>> =
-      await this.api.get( `/posts?liked=true&${searchParams.toString()}` );
+      await this.api.get( `/posts/user/liked?${searchParams.toString()}` );
+    return response.data.data;
+  }
+
+  async getDislikedPosts(
+    params: { page?: number; limit?: number } = {}
+  ): Promise<PostsResponse> {
+    const searchParams = new URLSearchParams();
+    Object.entries( params ).forEach( ( [key, value] ) => {
+      if ( value !== undefined && value !== null ) {
+        searchParams.append( key, String( value ) );
+      }
+    } );
+
+    const response: AxiosResponse<ApiResponse<PostsResponse>> =
+      await this.api.get( `/posts/user/disliked?${searchParams.toString()}` );
     return response.data.data;
   }
 
@@ -489,7 +504,7 @@ class ApiService {
     } );
 
     const response: AxiosResponse<ApiResponse<PostsResponse>> =
-      await this.api.get( `/posts?bookmarked=true&${searchParams.toString()}` );
+      await this.api.get( `/posts/user/bookmarked?${searchParams.toString()}` );
     return response.data.data;
   }
 
@@ -504,7 +519,7 @@ class ApiService {
     } );
 
     const response: AxiosResponse<ApiResponse<PostsResponse>> =
-      await this.api.get( `/posts?myPosts=true&${searchParams.toString()}` );
+      await this.api.get( `/posts/user/me?${searchParams.toString()}` );
     return response.data.data;
   }
 
@@ -904,6 +919,54 @@ class ApiService {
       isFollowing: boolean;
       followRelationship: any;
     }>> = await this.api.get( `/user/${targetUserId}/follow-status` );
+    return response.data.data;
+  }
+
+  async getUserLikedPosts(
+    userId: string,
+    params: { page?: number; limit?: number } = {}
+  ): Promise<PostsResponse> {
+    const searchParams = new URLSearchParams();
+    Object.entries( params ).forEach( ( [key, value] ) => {
+      if ( value !== undefined && value !== null ) {
+        searchParams.append( key, String( value ) );
+      }
+    } );
+
+    const response: AxiosResponse<ApiResponse<PostsResponse>> =
+      await this.api.get( `/posts/user/${userId}/liked?${searchParams.toString()}` );
+    return response.data.data;
+  }
+
+  async getUserDislikedPosts(
+    userId: string,
+    params: { page?: number; limit?: number } = {}
+  ): Promise<PostsResponse> {
+    const searchParams = new URLSearchParams();
+    Object.entries( params ).forEach( ( [key, value] ) => {
+      if ( value !== undefined && value !== null ) {
+        searchParams.append( key, String( value ) );
+      }
+    } );
+
+    const response: AxiosResponse<ApiResponse<PostsResponse>> =
+      await this.api.get( `/posts/user/${userId}/disliked?${searchParams.toString()}` );
+    return response.data.data;
+  }
+
+  async getUserBookmarkedPosts(
+    userId: string,
+    params: { page?: number; limit?: number } = {}
+  ): Promise<PostsResponse> {
+    const searchParams = new URLSearchParams();
+    Object.entries( params ).forEach( ( [key, value] ) => {
+      if ( value !== undefined && value !== null ) {
+        searchParams.append( key, String( value ) );
+      }
+    } );
+
+    const response: AxiosResponse<ApiResponse<PostsResponse>> =
+      await this.api.get( `/posts/user/${userId}/bookmarked?${searchParams.toString()}` );
     return response.data.data;
   }
 
