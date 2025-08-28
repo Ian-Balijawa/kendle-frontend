@@ -1,6 +1,4 @@
 import {
-  ActionIcon,
-  Avatar,
   Badge,
   Box,
   Card,
@@ -14,10 +12,7 @@ import {
 } from "@mantine/core";
 import {
   IconHash,
-  IconHeart,
-  IconMessageCircle,
   IconSearch,
-  IconShare,
   IconTrendingUp,
   IconUsers,
 } from "@tabler/icons-react";
@@ -25,6 +20,7 @@ import { useState } from "react";
 import { ProfileSwipe } from "../../components/ui";
 import { useSuggestedUsers } from "../../hooks/useFollow";
 import { useInfinitePosts } from "../../hooks/usePosts";
+import { PostCard } from "../posts/PostCard";
 
 const mockTrendingHashtags = [
   { name: "Kendle", postsCount: 15420 },
@@ -45,28 +41,9 @@ export function ExplorePage() {
   // Get trending posts
   const { data: trendingPosts, isLoading: postsLoading } = useInfinitePosts({
     limit: 10,
-    sortBy: "likes",
+    sortBy: "likesCount",
     sortOrder: "desc",
   });
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInHours = Math.floor(
-      (now.getTime() - date.getTime()) / (1000 * 60 * 60)
-    );
-
-    if (diffInHours < 1) return "Just now";
-    if (diffInHours < 24) return `${diffInHours}h ago`;
-    if (diffInHours < 168) return `${Math.floor(diffInHours / 24)}d ago`;
-    return date.toLocaleDateString();
-  };
-
-  const formatNumber = (num: number) => {
-    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
-    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
-    return num.toString();
-  };
 
   return (
     <>
@@ -116,60 +93,12 @@ export function ExplorePage() {
                 </Group>
               ) : trendingPosts?.pages[0]?.posts?.length &&
                 trendingPosts.pages[0].posts.length > 0 ? (
-                trendingPosts.pages[0].posts.map((post) => (
-                  <Card key={post.id} withBorder p="md">
-                    <Stack gap="md">
-                      <Group justify="space-between">
-                        <Group>
-                          <Avatar
-                            src={post.author.avatar}
-                            alt={post.author.firstName}
-                            size="md"
-                          >
-                            {post.author.firstName?.charAt(0)}
-                          </Avatar>
-                          <Box>
-                            <Text fw={500} size="sm">
-                              {post.author.firstName} {post.author.lastName}
-                            </Text>
-                            <Text c="dimmed" size="xs">
-                              @{post.author.username} •{" "}
-                              {formatDate(post.createdAt)}
-                            </Text>
-                          </Box>
-                        </Group>
-                      </Group>
-
-                      <Text size="sm" style={{ lineHeight: 1.6 }}>
-                        {post.content}
-                      </Text>
-
-                      <Group justify="space-between">
-                        <Group gap="xs">
-                          <ActionIcon variant="subtle" color="gray">
-                            <IconHeart size={16} />
-                          </ActionIcon>
-                          <Text size="xs" c="dimmed">
-                            {formatNumber(post.likesCount || 0)}
-                          </Text>
-
-                          <ActionIcon variant="subtle" color="gray">
-                            <IconMessageCircle size={16} />
-                          </ActionIcon>
-                          <Text size="xs" c="dimmed">
-                            {formatNumber(post.commentsCount || 0)}
-                          </Text>
-
-                          <ActionIcon variant="subtle" color="gray">
-                            <IconShare size={16} />
-                          </ActionIcon>
-                          <Text size="xs" c="dimmed">
-                            {formatNumber(post.sharesCount || 0)}
-                          </Text>
-                        </Group>
-                      </Group>
-                    </Stack>
-                  </Card>
+                trendingPosts.pages[0].posts.map((post, index) => (
+                  <PostCard
+                    key={post.id}
+                    post={post}
+                    isFirst={index === 0}
+                  />
                 ))
               ) : (
                 <Card
@@ -243,7 +172,11 @@ export function ExplorePage() {
                         #{hashtag.name}
                       </Badge>
                       <Text size="sm" c="dimmed">
-                        {formatNumber(hashtag.postsCount)} posts
+                        {hashtag.postsCount >= 1000000
+                          ? `${(hashtag.postsCount / 1000000).toFixed(1)}M`
+                          : hashtag.postsCount >= 1000
+                          ? `${(hashtag.postsCount / 1000).toFixed(1)}K`
+                          : hashtag.postsCount} posts
                       </Text>
                     </Group>
                     <Text size="xs" c="dimmed" fw={500}>
