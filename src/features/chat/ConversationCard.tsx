@@ -9,6 +9,7 @@ import {
   Text,
   UnstyledButton,
   useMantineTheme,
+  Tooltip,
 } from "@mantine/core";
 import {
   IconArchive,
@@ -17,6 +18,10 @@ import {
   IconPinFilled,
   IconTrash,
   IconVolumeOff,
+  IconVolume,
+  IconCheck,
+  IconChecks,
+  IconClock,
 } from "@tabler/icons-react";
 import { useState } from "react";
 import { useUpdateConversation } from "../../hooks/useChat";
@@ -44,9 +49,9 @@ export function ConversationCard({
     conversation.participants.find((p) => p.id !== user?.id) ||
     conversation.participants[0];
 
-  // TODO: Get online status from WebSocket or API
-  const isOnline = false; // This would come from WebSocket events
-  const lastSeen = participant?.updatedAt;
+  // Get online status and last seen
+  const isOnline = participant?.isOnline || false;
+  const lastSeen = participant?.lastSeen || participant?.updatedAt;
 
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
@@ -137,6 +142,26 @@ export function ConversationCard({
     return `${prefix}${message.messageType}`;
   };
 
+  const getMessageStatusIcon = () => {
+    if (!conversation.lastMessage || conversation.lastMessage.senderId !== user?.id) {
+      return null;
+    }
+
+    const message = conversation.lastMessage;
+    switch (message.status) {
+      case "sending":
+        return <IconClock size={12} color={theme.colors.gray[5]} />;
+      case "delivered":
+        return <IconCheck size={12} color={theme.colors.gray[6]} />;
+      case "read":
+        return <IconChecks size={12} color={theme.colors.blue[6]} />;
+      case "failed":
+        return <IconClock size={12} color={theme.colors.red[6]} />;
+      default:
+        return <IconClock size={12} color={theme.colors.gray[5]} />;
+    }
+  };
+
   return (
     <UnstyledButton
       onClick={onClick}
@@ -150,6 +175,7 @@ export function ConversationCard({
           : "3px solid transparent",
         position: "relative",
         transition: "all 0.2s ease",
+        cursor: "pointer",
       }}
       onMouseEnter={(e) => {
         if (!isSelected) {
@@ -214,6 +240,7 @@ export function ConversationCard({
                   alignItems: "center",
                   justifyContent: "center",
                   padding: "0 4px",
+                  boxShadow: theme.shadows.sm,
                 }}
               >
                 <Text size="xs" c="white" fw={600}>
@@ -243,31 +270,37 @@ export function ConversationCard({
               </Text>
 
               {participant?.isVerified && (
-                <Badge
-                  size="xs"
-                  color="blue"
-                  variant="filled"
-                  radius="xl"
-                  style={{ fontSize: rem(10) }}
-                >
-                  ✓
-                </Badge>
+                <Tooltip label="Verified User">
+                  <Badge
+                    size="xs"
+                    color="blue"
+                    variant="filled"
+                    radius="xl"
+                    style={{ fontSize: rem(10) }}
+                  >
+                    ✓
+                  </Badge>
+                </Tooltip>
               )}
 
               {conversation.isPinned && (
-                <IconPinFilled
-                  size={14}
-                  color={theme.colors.blue[6]}
-                  style={{ opacity: 0.8 }}
-                />
+                <Tooltip label="Pinned conversation">
+                  <IconPinFilled
+                    size={14}
+                    color={theme.colors.blue[6]}
+                    style={{ opacity: 0.8 }}
+                  />
+                </Tooltip>
               )}
 
               {conversation.isMuted && (
-                <IconVolumeOff
-                  size={14}
-                  color={theme.colors.gray[5]}
-                  style={{ opacity: 0.6 }}
-                />
+                <Tooltip label="Muted conversation">
+                  <IconVolumeOff
+                    size={14}
+                    color={theme.colors.gray[5]}
+                    style={{ opacity: 0.6 }}
+                  />
+                </Tooltip>
               )}
             </Group>
 
@@ -280,16 +313,37 @@ export function ConversationCard({
                 whiteSpace: "nowrap",
                 lineHeight: 1.4,
                 fontSize: rem(13),
+                marginBottom: 4,
               }}
             >
               {getDisplayMessage()}
             </Text>
 
-            {!isOnline && lastSeen && (
-              <Text size="xs" c="dimmed" mt={2} style={{ fontSize: rem(11) }}>
-                Last seen {formatLastSeen(lastSeen)}
-              </Text>
-            )}
+            {/* Online status or last seen */}
+            <Group gap="xs" align="center">
+              {isOnline ? (
+                <Group gap={4}>
+                  <Box
+                    style={{
+                      width: 6,
+                      height: 6,
+                      borderRadius: "50%",
+                      backgroundColor: theme.colors.green[5],
+                    }}
+                  />
+                  <Text size="xs" c="green" style={{ fontSize: rem(11) }}>
+                    Online
+                  </Text>
+                </Group>
+              ) : lastSeen ? (
+                <Group gap={4}>
+                  <IconClock size={10} color={theme.colors.gray[5]} />
+                  <Text size="xs" c="dimmed" style={{ fontSize: rem(11) }}>
+                    Last seen {formatLastSeen(lastSeen)}
+                  </Text>
+                </Group>
+              ) : null}
+            </Group>
           </Box>
         </Group>
 
@@ -303,13 +357,16 @@ export function ConversationCard({
         >
           <Group gap="xs" align="center">
             {conversation.lastMessage && (
-              <Text
-                size="xs"
-                c={isSelected ? theme.colors.blue[6] : "dimmed"}
-                style={{ fontSize: rem(11) }}
-              >
-                {formatTime(conversation.lastMessage.createdAt)}
-              </Text>
+              <Group gap={4} align="center">
+                {getMessageStatusIcon()}
+                <Text
+                  size="xs"
+                  c={isSelected ? theme.colors.blue[6] : "dimmed"}
+                  style={{ fontSize: rem(11) }}
+                >
+                  {formatTime(conversation.lastMessage.createdAt)}
+                </Text>
+              </Group>
             )}
 
             <Menu
@@ -354,7 +411,13 @@ export function ConversationCard({
                 </Menu.Item>
 
                 <Menu.Item
-                  leftSection={<IconVolumeOff size={14} />}
+                  leftSection={
+                    conversation.isMuted ? (
+                      <IconVolumeOff size={14} />
+                    ) : (
+                      <IconVolume size={14} />
+                    )
+                  }
                   onClick={handleMute}
                 >
                   {conversation.isMuted ? "Unmute" : "Mute"}

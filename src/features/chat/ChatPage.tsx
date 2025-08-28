@@ -16,6 +16,7 @@ import {
   TextInput,
   Title,
   useMantineTheme,
+  Tooltip
 } from "@mantine/core";
 import {
   IconArchive,
@@ -23,6 +24,9 @@ import {
   IconPlus,
   IconSearch,
   IconSettings,
+  IconUsers,
+  IconMessageCircle,
+  IconBell
 } from "@tabler/icons-react";
 import { useEffect, useMemo, useState } from "react";
 import { useConversations, useUnreadCount } from "../../hooks/useChat";
@@ -32,7 +36,7 @@ import { ChatWindow } from "./ChatWindow";
 import { ConversationCard } from "./ConversationCard";
 
 export function ChatPage() {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
   const theme = useMantineTheme();
 
   // React Query hooks
@@ -44,7 +48,7 @@ export function ChatPage() {
   const { data: unreadData } = useUnreadCount();
 
   // WebSocket integration
-  const { isConnected, connectionState } = useWebSocketIntegration();
+  const { connectionState } = useWebSocketIntegration();
 
   const [selectedConversationId, setSelectedConversationId] = useState<
     string | null
@@ -54,30 +58,33 @@ export function ChatPage() {
   const [showNewChatModal, setShowNewChatModal] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [filterType, setFilterType] = useState<"all" | "unread" | "pinned">("all");
 
-  // Filter conversations based on search query
+  // Filter conversations based on search query and filter type
   const filteredConversations = useMemo(() => {
-    if (!searchQuery.trim()) {
-      return conversations.sort((a, b) => {
-        // Pinned conversations first
-        if (a.isPinned && !b.isPinned) return -1;
-        if (!a.isPinned && b.isPinned) return 1;
+    let filtered = conversations;
 
-        // Then by last update time
-        return (
-          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-        );
-      });
+    // Apply filter type
+    switch (filterType) {
+      case "unread":
+        filtered = filtered.filter(conv => conv.unreadCount > 0);
+        break;
+      case "pinned":
+        filtered = filtered.filter(conv => conv.isPinned);
+        break;
+      default:
+        break;
     }
 
-    const query = searchQuery.toLowerCase();
-    return conversations
-      .filter((conv) => {
-        const participant = conv.participants[0];
-        const participantName =
-          `${participant.firstName} ${participant.lastName}`.toLowerCase();
-        const lastMessageContent =
-          conv.lastMessage?.content.toLowerCase() || "";
+    // Apply search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter((conv) => {
+        const participant = conv.participants.find(p => p.id !== user?.id);
+        const participantName = participant
+          ? `${participant.firstName} ${participant.lastName}`.toLowerCase()
+          : "";
+        const lastMessageContent = conv.lastMessage?.content.toLowerCase() || "";
         const conversationName = conv.name?.toLowerCase() || "";
 
         return (
@@ -85,12 +92,21 @@ export function ChatPage() {
           lastMessageContent.includes(query) ||
           conversationName.includes(query)
         );
-      })
-      .sort(
-        (a, b) =>
-          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+      });
+    }
+
+    // Sort conversations
+    return filtered.sort((a, b) => {
+      // Pinned conversations first
+      if (a.isPinned && !b.isPinned) return -1;
+      if (!a.isPinned && b.isPinned) return 1;
+
+      // Then by last update time
+      return (
+        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
       );
-  }, [conversations, searchQuery]);
+    });
+  }, [conversations, searchQuery, filterType, user?.id]);
 
   const selectedConversation = conversations.find(
     (conv) => conv.id === selectedConversationId
@@ -133,6 +149,32 @@ export function ChatPage() {
 
   const handleNewChat = () => {
     setShowNewChatModal(true);
+  };
+
+  const getConnectionStatusColor = () => {
+    switch (connectionState) {
+      case "connected":
+        return "green";
+      case "connecting":
+        return "yellow";
+      case "disconnected":
+        return "red";
+      default:
+        return "gray";
+    }
+  };
+
+  const getConnectionStatusText = () => {
+    switch (connectionState) {
+      case "connected":
+        return "Connected";
+      case "connecting":
+        return "Connecting...";
+      case "disconnected":
+        return "Disconnected";
+      default:
+        return "Unknown";
+    }
   };
 
   if (!isAuthenticated) {
@@ -189,55 +231,60 @@ export function ChatPage() {
               <Title order={3} fw={600} c={theme.colors.gray[8]}>
                 {selectedConversation
                   ? selectedConversation.name ||
-                    `${selectedConversation.participants[0]?.firstName} ${selectedConversation.participants[0]?.lastName}`
+                    `${selectedConversation.participants.find(p => p.id !== user?.id)?.firstName} ${selectedConversation.participants.find(p => p.id !== user?.id)?.lastName}`
                   : "Messages"}
               </Title>
-              {unreadCount > 0 && (
+              <Group gap="xs" mt={4}>
+                {unreadCount > 0 && (
+                  <Badge
+                    size="sm"
+                    color="blue"
+                    variant="light"
+                    style={{ fontSize: rem(11) }}
+                  >
+                    {unreadCount} unread
+                  </Badge>
+                )}
                 <Badge
-                  size="sm"
-                  color="blue"
-                  variant="light"
-                  mt={4}
-                  style={{ fontSize: rem(11) }}
+                  size="xs"
+                  color={getConnectionStatusColor()}
+                  variant="dot"
+                  style={{ fontSize: rem(10) }}
                 >
-                  {unreadCount} unread
+                  {getConnectionStatusText()}
                 </Badge>
-              )}
+              </Group>
             </div>
           </Group>
 
           <Group>
-            <Badge
-              size="xs"
-              color={isConnected ? "green" : "red"}
-              variant="dot"
-              style={{ fontSize: rem(10) }}
-            >
-              {connectionState}
-            </Badge>
-            <ActionIcon
-              variant="subtle"
-              onClick={handleNewChat}
-              radius="xl"
-              size="lg"
-              style={{
-                backgroundColor: theme.colors.blue[1],
-                color: theme.colors.blue[6],
-              }}
-            >
-              <IconPlus size={18} />
-            </ActionIcon>
-            <ActionIcon
-              variant="subtle"
-              radius="xl"
-              size="lg"
-              style={{
-                backgroundColor: theme.colors.gray[1],
-                color: theme.colors.gray[6],
-              }}
-            >
-              <IconSettings size={18} />
-            </ActionIcon>
+            <Tooltip label="New Chat">
+              <ActionIcon
+                variant="subtle"
+                onClick={handleNewChat}
+                radius="xl"
+                size="lg"
+                style={{
+                  backgroundColor: theme.colors.blue[1],
+                  color: theme.colors.blue[6],
+                }}
+              >
+                <IconPlus size={18} />
+              </ActionIcon>
+            </Tooltip>
+            <Tooltip label="Chat Settings">
+              <ActionIcon
+                variant="subtle"
+                radius="xl"
+                size="lg"
+                style={{
+                  backgroundColor: theme.colors.gray[1],
+                  color: theme.colors.gray[6],
+                }}
+              >
+                <IconSettings size={18} />
+              </ActionIcon>
+            </Tooltip>
           </Group>
         </Group>
       </Paper>
@@ -256,7 +303,7 @@ export function ChatPage() {
               backgroundColor: theme.white,
             }}
           >
-            {/* Search */}
+            {/* Search and Filters */}
             <Box
               p="md"
               style={{
@@ -264,21 +311,53 @@ export function ChatPage() {
                 backgroundColor: theme.colors.gray[0],
               }}
             >
-              <TextInput
-                placeholder="Search conversations..."
-                leftSection={<IconSearch size={16} />}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.currentTarget.value)}
-                size="sm"
-                radius="xl"
-                styles={{
-                  input: {
-                    border: `1px solid ${theme.colors.gray[3]}`,
-                    backgroundColor: theme.white,
-                    fontSize: rem(14),
-                  },
-                }}
-              />
+              <Stack gap="sm">
+                <TextInput
+                  placeholder="Search conversations..."
+                  leftSection={<IconSearch size={16} />}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.currentTarget.value)}
+                  size="sm"
+                  radius="xl"
+                  styles={{
+                    input: {
+                      border: `1px solid ${theme.colors.gray[3]}`,
+                      backgroundColor: theme.white,
+                      fontSize: rem(14),
+                    },
+                  }}
+                />
+
+                {/* Filter Tabs */}
+                <Group gap="xs">
+                  <Button
+                    size="xs"
+                    variant={filterType === "all" ? "filled" : "subtle"}
+                    radius="xl"
+                    onClick={() => setFilterType("all")}
+                  >
+                    All
+                  </Button>
+                  <Button
+                    size="xs"
+                    variant={filterType === "unread" ? "filled" : "subtle"}
+                    radius="xl"
+                    onClick={() => setFilterType("unread")}
+                    leftSection={<IconBell size={12} />}
+                  >
+                    Unread
+                  </Button>
+                  <Button
+                    size="xs"
+                    variant={filterType === "pinned" ? "filled" : "subtle"}
+                    radius="xl"
+                    onClick={() => setFilterType("pinned")}
+                    leftSection={<IconMenu2 size={12} />}
+                  >
+                    Pinned
+                  </Button>
+                </Group>
+              </Stack>
             </Box>
 
             {/* Conversations */}
@@ -318,26 +397,36 @@ export function ChatPage() {
                         backgroundColor: theme.colors.gray[1],
                       }}
                     >
-                      <IconMenu2 size={48} color={theme.colors.gray[4]} />
+                      <IconMessageCircle size={48} color={theme.colors.gray[4]} />
                     </Paper>
                     <div style={{ textAlign: "center" }}>
                       <Text size="lg" fw={600} c={theme.colors.gray[7]} mb={8}>
-                        No conversations yet
+                        {filterType === "all"
+                          ? "No conversations yet"
+                          : filterType === "unread"
+                            ? "No unread messages"
+                            : "No pinned conversations"}
                       </Text>
                       <Text size="sm" c="dimmed" mb="lg">
-                        Start a new conversation to begin messaging
+                        {filterType === "all"
+                          ? "Start a new conversation to begin messaging"
+                          : filterType === "unread"
+                            ? "All caught up! No unread messages"
+                            : "Pin important conversations to see them here"}
                       </Text>
                     </div>
-                    <Button
-                      leftSection={<IconPlus size={16} />}
-                      onClick={handleNewChat}
-                      variant="filled"
-                      color="blue"
-                      radius="xl"
-                      size="md"
-                    >
-                      New Chat
-                    </Button>
+                    {filterType === "all" && (
+                      <Button
+                        leftSection={<IconPlus size={16} />}
+                        onClick={handleNewChat}
+                        variant="filled"
+                        color="blue"
+                        radius="xl"
+                        size="md"
+                      >
+                        New Chat
+                      </Button>
+                    )}
                   </Stack>
                 </Center>
               ) : (
@@ -383,7 +472,7 @@ export function ChatPage() {
                       border: `2px solid ${theme.colors.blue[2]}`,
                     }}
                   >
-                    <IconMenu2 size={64} color={theme.colors.blue[6]} />
+                    <IconMessageCircle size={64} color={theme.colors.blue[6]} />
                   </Paper>
                   <div style={{ textAlign: "center" }}>
                     <Text size="xl" fw={600} c={theme.colors.gray[8]} mb={8}>
@@ -466,7 +555,7 @@ export function ChatPage() {
             }}
           >
             <Stack align="center" gap="md">
-              <IconSearch size={32} color={theme.colors.gray[4]} />
+              <IconUsers size={32} color={theme.colors.gray[4]} />
               <Text size="sm" c="dimmed" ta="center" fw={500}>
                 Start typing to search for users
               </Text>

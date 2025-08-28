@@ -12,6 +12,7 @@ import {
   Text,
   Textarea,
   useMantineTheme,
+  Tooltip,
 } from "@mantine/core";
 import {
   IconAlertCircle,
@@ -23,6 +24,7 @@ import {
   IconMessageReply,
   IconMoodSmile,
   IconTrash,
+  IconClock,
 } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import {
@@ -41,6 +43,7 @@ interface MessageCardProps {
   showAvatar?: boolean;
   previousMessage?: Message;
   nextMessage?: Message;
+  onReply?: (message: Message) => void;
 }
 
 export function MessageCard({
@@ -49,6 +52,7 @@ export function MessageCard({
   showAvatar = false,
   previousMessage,
   nextMessage,
+  onReply,
 }: MessageCardProps) {
   const { user } = useAuthStore();
   const theme = useMantineTheme();
@@ -127,8 +131,9 @@ export function MessageCard({
   };
 
   const handleReply = () => {
-    // TODO: Implement reply functionality
-    console.log("Reply to message:", message.id);
+    if (onReply) {
+      onReply(message);
+    }
     setShowMenu(false);
   };
 
@@ -162,15 +167,15 @@ export function MessageCard({
 
     switch (message.status) {
       case "sending":
-        return <IconCheck size={12} color="var(--mantine-color-gray-5)" />;
+        return <IconClock size={12} color={theme.colors.gray[5]} />;
       case "delivered":
-        return <IconCheck size={12} color="var(--mantine-color-gray-6)" />;
+        return <IconCheck size={12} color={theme.colors.gray[6]} />;
       case "read":
-        return <IconChecks size={12} color="var(--mantine-color-blue-6)" />;
+        return <IconChecks size={12} color={theme.colors.blue[6]} />;
       case "failed":
-        return <IconAlertCircle size={12} color="var(--mantine-color-red-6)" />;
+        return <IconAlertCircle size={12} color={theme.colors.red[6]} />;
       default:
-        return <IconCheck size={12} color="var(--mantine-color-gray-5)" />;
+        return <IconClock size={12} color={theme.colors.gray[5]} />;
     }
   };
 
@@ -286,6 +291,11 @@ export function MessageCard({
               backgroundColor: "var(--mantine-color-gray-0)",
               borderLeft: "3px solid var(--mantine-color-blue-6)",
               borderRadius: "var(--mantine-radius-sm)",
+              cursor: "pointer",
+            }}
+            onClick={() => {
+              // TODO: Scroll to replied message
+              console.log("Scroll to message:", message.replyToId);
             }}
           >
             <Text size="xs" c="dimmed">
@@ -431,21 +441,23 @@ export function MessageCard({
             }}
           >
             <Group gap="xs">
-              <ActionIcon
-                size="sm"
-                radius="xl"
-                variant="filled"
-                color="gray"
-                onClick={() => setShowReactions(!showReactions)}
-                style={{
-                  boxShadow: theme.shadows.sm,
-                  backgroundColor: theme.white,
-                  color: theme.colors.gray[6],
-                  border: `1px solid ${theme.colors.gray[3]}`,
-                }}
-              >
-                <IconMoodSmile size={12} />
-              </ActionIcon>
+              <Tooltip label="Add reaction">
+                <ActionIcon
+                  size="sm"
+                  radius="xl"
+                  variant="filled"
+                  color="gray"
+                  onClick={() => setShowReactions(!showReactions)}
+                  style={{
+                    boxShadow: theme.shadows.sm,
+                    backgroundColor: theme.white,
+                    color: theme.colors.gray[6],
+                    border: `1px solid ${theme.colors.gray[3]}`,
+                  }}
+                >
+                  <IconMoodSmile size={12} />
+                </ActionIcon>
+              </Tooltip>
 
               <Menu
                 opened={showMenu}
@@ -456,21 +468,23 @@ export function MessageCard({
                 radius="lg"
               >
                 <Menu.Target>
-                  <ActionIcon
-                    size="sm"
-                    radius="xl"
-                    variant="filled"
-                    color="gray"
-                    onClick={() => setShowMenu(!showMenu)}
-                    style={{
-                      boxShadow: theme.shadows.sm,
-                      backgroundColor: theme.white,
-                      color: theme.colors.gray[6],
-                      border: `1px solid ${theme.colors.gray[3]}`,
-                    }}
-                  >
-                    <IconDotsVertical size={12} />
-                  </ActionIcon>
+                  <Tooltip label="More options">
+                    <ActionIcon
+                      size="sm"
+                      radius="xl"
+                      variant="filled"
+                      color="gray"
+                      onClick={() => setShowMenu(!showMenu)}
+                      style={{
+                        boxShadow: theme.shadows.sm,
+                        backgroundColor: theme.white,
+                        color: theme.colors.gray[6],
+                        border: `1px solid ${theme.colors.gray[3]}`,
+                      }}
+                    >
+                      <IconDotsVertical size={12} />
+                    </ActionIcon>
+                  </Tooltip>
                 </Menu.Target>
 
                 <Menu.Dropdown>
@@ -531,29 +545,30 @@ export function MessageCard({
             }}
           >
             <Group gap="xs">
-              {["❤️", "👍", "👎", "😂", "😮", "😢", "😡"].map((emoji) => (
-                <ActionIcon
-                  key={emoji}
-                  variant="subtle"
-                  radius="xl"
-                  size="md"
-                  onClick={() => handleReaction(emoji)}
-                  loading={addReactionMutation.isPending}
-                  style={{
-                    transition: "all 0.2s ease",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = "scale(1.2)";
-                    e.currentTarget.style.backgroundColor =
-                      theme.colors.gray[1];
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = "scale(1)";
-                    e.currentTarget.style.backgroundColor = "transparent";
-                  }}
-                >
-                  <Text size="lg">{emoji}</Text>
-                </ActionIcon>
+              {["❤️", "👍", "👎", "😂", "😮", "😢", "😡", "🎉", "🔥", "💯"].map((emoji) => (
+                <Tooltip key={emoji} label={emoji}>
+                  <ActionIcon
+                    variant="subtle"
+                    radius="xl"
+                    size="md"
+                    onClick={() => handleReaction(emoji)}
+                    loading={addReactionMutation.isPending}
+                    style={{
+                      transition: "all 0.2s ease",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = "scale(1.2)";
+                      e.currentTarget.style.backgroundColor =
+                        theme.colors.gray[1];
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = "scale(1)";
+                      e.currentTarget.style.backgroundColor = "transparent";
+                    }}
+                  >
+                    <Text size="lg">{emoji}</Text>
+                  </ActionIcon>
+                </Tooltip>
               ))}
             </Group>
           </Paper>

@@ -1,38 +1,48 @@
 import {
-  ActionIcon,
-  Avatar,
-  Box,
-  Button,
-  Center,
-  Group,
-  Loader,
-  Menu,
-  Paper,
-  rem,
-  ScrollArea,
-  Stack,
-  Text,
-  Textarea,
-  useMantineTheme,
+    ActionIcon,
+    Avatar,
+    Box,
+    Button,
+    Center,
+    Group,
+    Loader,
+    Menu,
+    Paper,
+    rem,
+    ScrollArea,
+    Stack,
+    Text,
+    Textarea,
+    useMantineTheme,
+    Tooltip,
+    Badge,
 } from "@mantine/core";
 import {
-  IconArrowLeft,
-  IconDotsVertical,
-  IconFile,
-  IconMoodSmile,
-  IconPaperclip,
-  IconPhone,
-  IconPhoto,
-  IconSend,
-  IconVideo,
+    IconArrowLeft,
+    IconDotsVertical,
+    IconFile,
+    IconMoodSmile,
+    IconPaperclip,
+    IconPhone,
+    IconPhoto,
+    IconSend,
+    IconVideo,
+    IconPin,
+    IconPinFilled,
+    IconVolumeOff,
+    IconVolume,
+    IconArchive,
+    IconTrash,
+    IconMessageReply,
 } from "@tabler/icons-react";
 import { useEffect, useRef, useState } from "react";
 import {
-  useInfiniteMessages,
-  useMarkConversationAsRead,
-  useSendMessage,
-  useUpdateConversation,
+    useInfiniteMessages,
+    useMarkConversationAsRead,
+    useSendMessage,
+    useUpdateConversation,
 } from "../../hooks/useChat";
+import { useWebSocketIntegration } from "../../hooks/useWebSocket";
 import { SendMessageRequest } from "../../services/api";
 import { useAuthStore } from "../../stores/authStore";
 import { Conversation } from "../../types/chat";
@@ -65,10 +75,18 @@ export function ChatWindow({
   const markConversationAsReadMutation = useMarkConversationAsRead();
   const updateConversationMutation = useUpdateConversation();
 
+  // WebSocket integration
+  const { sendTypingIndicator, joinConversation, leaveConversation } = useWebSocketIntegration();
+
   const [messageText, setMessageText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showAttachmentMenu, setShowAttachmentMenu] = useState(false);
+  const [replyToMessage, setReplyToMessage] = useState<{
+    id: string;
+    content: string;
+    senderId: string;
+  } | null>(null);
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const messageInputRef = useRef<HTMLTextAreaElement>(null);
@@ -81,8 +99,6 @@ export function ChatWindow({
   const otherParticipant = conversation.participants.find(
     (p) => p.id !== user?.id
   );
-
-console.log("conversation.participants", conversation)
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -105,14 +121,20 @@ console.log("conversation.participants", conversation)
     markConversationAsReadMutation,
   ]);
 
+  // Join/leave conversation for WebSocket events
+  useEffect(() => {
+    joinConversation(conversation.id);
+    return () => leaveConversation(conversation.id);
+  }, [conversation.id, joinConversation, leaveConversation]);
+
   // Handle typing indicators
   useEffect(() => {
     if (messageText.trim() && !isTyping) {
       setIsTyping(true);
-      // TODO: Send typing indicator via WebSocket
+      sendTypingIndicator(conversation.id, true);
     } else if (!messageText.trim() && isTyping) {
       setIsTyping(false);
-      // TODO: Stop typing indicator via WebSocket
+      sendTypingIndicator(conversation.id, false);
     }
 
     // Clear typing timeout
@@ -124,7 +146,7 @@ console.log("conversation.participants", conversation)
     if (messageText.trim()) {
       typingTimeoutRef.current = window.setTimeout(() => {
         setIsTyping(false);
-        // TODO: Stop typing indicator via WebSocket
+        sendTypingIndicator(conversation.id, false);
       }, 2000);
     }
 
@@ -133,7 +155,7 @@ console.log("conversation.participants", conversation)
         window.clearTimeout(typingTimeoutRef.current);
       }
     };
-  }, [messageText, isTyping]);
+  }, [messageText, isTyping, conversation.id, sendTypingIndicator]);
 
   const handleSendMessage = () => {
     if (!messageText.trim() || !otherParticipant) return;
@@ -143,6 +165,7 @@ console.log("conversation.participants", conversation)
       receiverId: otherParticipant.id,
       conversationId: conversation.id,
       messageType: "text",
+      replyToId: replyToMessage?.id,
     };
 
     sendMessageMutation.mutate(
@@ -151,6 +174,7 @@ console.log("conversation.participants", conversation)
         onSuccess: () => {
           setMessageText("");
           setIsTyping(false);
+          setReplyToMessage(null);
 
           // Focus back on input
           messageInputRef.current?.focus();
@@ -194,6 +218,19 @@ console.log("conversation.participants", conversation)
       id: conversation.id,
       data: { isArchived: !conversation.isArchived },
     });
+  };
+
+  const handleReplyToMessage = (message: any) => {
+    setReplyToMessage({
+      id: message.id,
+      content: message.content,
+      senderId: message.senderId,
+    });
+    messageInputRef.current?.focus();
+  };
+
+  const cancelReply = () => {
+    setReplyToMessage(null);
   };
 
   return (
@@ -245,25 +282,62 @@ console.log("conversation.participants", conversation)
               </Avatar>
 
               <Box>
-                <Text fw={600} size="sm" c={theme.colors.gray[8]}>
-                  {conversation.name ||
-                    (otherParticipant
-                      ? `${otherParticipant.firstName} ${otherParticipant.lastName}`
-                      : "Unknown User")}
-                </Text>
+                <Group gap="xs" align="center">
+                  <Text fw={600} size="sm" c={theme.colors.gray[8]}>
+                    {conversation.name ||
+                      (otherParticipant
+                        ? `${otherParticipant.firstName} ${otherParticipant.lastName}`
+                        : "Unknown User")}
+                  </Text>
+
+                  {otherParticipant?.isVerified && (
+                    <Badge
+                      size="xs"
+                      color="blue"
+                      variant="filled"
+                      radius="xl"
+                      style={{ fontSize: rem(10) }}
+                    >
+                      ✓
+                    </Badge>
+                  )}
+
+                  {conversation.isPinned && (
+                    <Tooltip label="Pinned conversation">
+                      <IconPinFilled
+                        size={14}
+                        color={theme.colors.blue[6]}
+                        style={{ opacity: 0.8 }}
+                      />
+                    </Tooltip>
+                  )}
+
+                  {conversation.isMuted && (
+                    <Tooltip label="Muted conversation">
+                      <IconVolumeOff
+                        size={14}
+                        color={theme.colors.gray[5]}
+                        style={{ opacity: 0.6 }}
+                      />
+                    </Tooltip>
+                  )}
+                </Group>
+
                 <Group gap={4}>
                   <Box
                     style={{
                       width: 8,
                       height: 8,
                       borderRadius: "50%",
-                      backgroundColor: theme.colors.green[5],
+                      backgroundColor: otherParticipant?.isOnline
+                        ? theme.colors.green[5]
+                        : theme.colors.gray[5],
                     }}
                   />
                   <Text size="xs" c="dimmed">
-                    {otherParticipant
-                      ? `@${otherParticipant.username || otherParticipant.phoneNumber}`
-                      : ""}
+                    {otherParticipant?.isOnline
+                      ? "Online"
+                      : `@${otherParticipant?.username || otherParticipant?.phoneNumber}`}
                   </Text>
                 </Group>
               </Box>
@@ -271,28 +345,33 @@ console.log("conversation.participants", conversation)
           </Group>
 
           <Group>
-            <ActionIcon
-              variant="subtle"
-              radius="xl"
-              size="lg"
-              style={{
-                backgroundColor: theme.colors.green[1],
-                color: theme.colors.green[7],
-              }}
-            >
-              <IconPhone size={18} />
-            </ActionIcon>
-            <ActionIcon
-              variant="subtle"
-              radius="xl"
-              size="lg"
-              style={{
-                backgroundColor: theme.colors.blue[1],
-                color: theme.colors.blue[7],
-              }}
-            >
-              <IconVideo size={18} />
-            </ActionIcon>
+            <Tooltip label="Voice Call">
+              <ActionIcon
+                variant="subtle"
+                radius="xl"
+                size="lg"
+                style={{
+                  backgroundColor: theme.colors.green[1],
+                  color: theme.colors.green[7],
+                }}
+              >
+                <IconPhone size={18} />
+              </ActionIcon>
+            </Tooltip>
+
+            <Tooltip label="Video Call">
+              <ActionIcon
+                variant="subtle"
+                radius="xl"
+                size="lg"
+                style={{
+                  backgroundColor: theme.colors.blue[1],
+                  color: theme.colors.blue[7],
+                }}
+              >
+                <IconVideo size={18} />
+              </ActionIcon>
+            </Tooltip>
 
             <Menu shadow="md" width={200} position="bottom-end" radius="lg">
               <Menu.Target>
@@ -312,19 +391,31 @@ console.log("conversation.participants", conversation)
               <Menu.Dropdown>
                 <Menu.Item
                   onClick={handleTogglePin}
-                  leftSection={<IconDotsVertical size={14} />}
+                  leftSection={
+                    conversation.isPinned ? (
+                      <IconPinFilled size={14} />
+                    ) : (
+                      <IconPin size={14} />
+                    )
+                  }
                 >
                   {conversation.isPinned ? "Unpin" : "Pin"} Conversation
                 </Menu.Item>
                 <Menu.Item
                   onClick={handleToggleMute}
-                  leftSection={<IconDotsVertical size={14} />}
+                  leftSection={
+                    conversation.isMuted ? (
+                      <IconVolumeOff size={14} />
+                    ) : (
+                      <IconVolume size={14} />
+                    )
+                  }
                 >
                   {conversation.isMuted ? "Unmute" : "Mute"} Conversation
                 </Menu.Item>
                 <Menu.Item
                   onClick={handleToggleArchive}
-                  leftSection={<IconDotsVertical size={14} />}
+                  leftSection={<IconArchive size={14} />}
                 >
                   {conversation.isArchived ? "Unarchive" : "Archive"}{" "}
                   Conversation
@@ -332,7 +423,7 @@ console.log("conversation.participants", conversation)
                 <Menu.Divider />
                 <Menu.Item
                   color="red"
-                  leftSection={<IconDotsVertical size={14} />}
+                  leftSection={<IconTrash size={14} />}
                 >
                   Delete Conversation
                 </Menu.Item>
@@ -341,6 +432,36 @@ console.log("conversation.participants", conversation)
           </Group>
         </Group>
       </Paper>
+
+      {/* Reply Preview */}
+      {replyToMessage && (
+        <Paper
+          p="xs"
+          style={{
+            backgroundColor: theme.colors.blue[0],
+            borderBottom: `1px solid ${theme.colors.blue[2]}`,
+            borderRadius: 0,
+          }}
+        >
+          <Group justify="space-between" align="center">
+            <Group gap="xs">
+              <IconMessageReply size={14} color={theme.colors.blue[6]} />
+              <Text size="xs" c="dimmed">
+                Replying to: {replyToMessage.content.substring(0, 50)}
+                {replyToMessage.content.length > 50 && "..."}
+              </Text>
+            </Group>
+            <ActionIcon
+              size="sm"
+              variant="subtle"
+              onClick={cancelReply}
+              color="gray"
+            >
+              ×
+            </ActionIcon>
+          </Group>
+        </Paper>
+      )}
 
       {/* Messages Area */}
       <ScrollArea
@@ -434,13 +555,14 @@ console.log("conversation.participants", conversation)
                   showAvatar={message.senderId !== user?.id}
                   previousMessage={previousMessage}
                   nextMessage={nextMessage}
+                  onReply={handleReplyToMessage}
                 />
               );
             })
           )}
 
           {/* Typing Indicators */}
-          {isTyping && (
+          {conversation.typingUsers && conversation.typingUsers.length > 0 && (
             <Group gap="sm" align="center" p="sm">
               <Avatar size="sm" radius="xl">
                 {(otherParticipant?.firstName || "U").charAt(0)}

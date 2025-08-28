@@ -55,6 +55,48 @@ export interface Conversation {
   updatedAt: string;
 }
 
+// API Request/Response types
+export interface CreateConversationRequest {
+  participantIds: string[];
+  name?: string;
+  description?: string;
+}
+
+export interface UpdateConversationRequest {
+  isArchived?: boolean;
+  isMuted?: boolean;
+  isPinned?: boolean;
+  name?: string;
+  description?: string;
+}
+
+export interface SendMessageRequest {
+  content: string;
+  receiverId: string;
+  conversationId: string;
+  messageType?: "text" | "image" | "video" | "audio" | "file";
+  replyToId?: string;
+  metadata?: any;
+}
+
+export interface UpdateMessageRequest {
+  content: string;
+}
+
+export interface AddReactionRequest {
+  emoji: string;
+  messageId: string;
+}
+
+export interface GetMessagesParams {
+  limit?: number;
+  offset?: number;
+}
+
+export interface UnreadCountResponse {
+  count: number;
+}
+
 export interface CreateMessageData {
   content: string;
   receiverId: string;
@@ -114,4 +156,20 @@ export interface ChatSettings {
   showOnlineStatus: boolean;
   showReadReceipts: boolean;
   showTypingIndicator: boolean;
+}
+
+// Enhanced types for better UI experience
+export interface ConversationWithMetadata extends Conversation {
+  isOnline?: boolean;
+  lastSeen?: string;
+  typingUsers?: string[];
+  unreadMessages?: Message[];
+}
+
+export interface MessageWithMetadata extends Message {
+  sender?: User;
+  isGroupedWithPrevious?: boolean;
+  isGroupedWithNext?: boolean;
+  showTimestamp?: boolean;
+  showAvatar?: boolean;
 }

@@ -23,6 +23,9 @@ export interface User {
   isFollowing?: boolean;
   isBlocked?: boolean;
   isBlockedBy?: boolean;
+  // Online status fields for chat
+  isOnline?: boolean;
+  lastSeen?: string;
 }
 
 export interface PhoneAuthData {

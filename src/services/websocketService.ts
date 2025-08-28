@@ -15,12 +15,19 @@ class WebSocketService {
   >();
   private heartbeatInterval: number | null = null;
   private userId: string | null = null;
+  private connectionPromise: Promise<void> | null = null;
 
   constructor() {
-    this.url = import.meta.env.VITE_API_URL_WS;
+    // Use WebSocket URL from environment or fallback to HTTP URL
+    const baseUrl = import.meta.env.VITE_API_URL_WS || import.meta.env.VITE_API_URL?.replace('http', 'ws');
+    this.url = `${baseUrl}/chat/ws`;
   }
 
-  connect(userId: string): Promise<void> {
+  async connect(userId: string): Promise<void> {
+    if (this.connectionPromise) {
+      return this.connectionPromise;
+    }
+
     if (
       this.isConnecting ||
       (this.ws && this.ws.readyState === WebSocket.OPEN)
@@ -31,12 +38,13 @@ class WebSocketService {
     this.userId = userId;
     this.isConnecting = true;
 
-    return new Promise((resolve, reject) => {
+    this.connectionPromise = new Promise((resolve, reject) => {
       try {
-        this.ws = new WebSocket(`${this.url}?userId=${userId}`);
+        // Connect to WebSocket with user authentication
+        this.ws = new WebSocket(`${this.url}?userId=${userId}&token=${this.getAuthToken()}`);
 
         this.ws.onopen = () => {
-          console.log("WebSocket connected");
+          console.log("WebSocket connected successfully");
           this.isConnecting = false;
           this.reconnectAttempts = 0;
           this.startHeartbeat();
@@ -56,6 +64,7 @@ class WebSocketService {
           console.log("WebSocket disconnected:", event.code, event.reason);
           this.isConnecting = false;
           this.stopHeartbeat();
+          this.connectionPromise = null;
 
           if (
             !event.wasClean &&
@@ -68,13 +77,22 @@ class WebSocketService {
         this.ws.onerror = (error) => {
           console.error("WebSocket error:", error);
           this.isConnecting = false;
+          this.connectionPromise = null;
           reject(error);
         };
       } catch (error) {
         this.isConnecting = false;
+        this.connectionPromise = null;
         reject(error);
       }
     });
+
+    return this.connectionPromise;
+  }
+
+  private getAuthToken(): string {
+    // Get token from localStorage or auth store
+    return localStorage.getItem('auth_token') || '';
   }
 
   disconnect(): void {
@@ -84,6 +102,7 @@ class WebSocketService {
     }
     this.stopHeartbeat();
     this.userId = null;
+    this.connectionPromise = null;
   }
 
   sendMessage(type: WebSocketEventType, data: any): void {
@@ -117,17 +136,19 @@ class WebSocketService {
     }
   }
 
-  // Specific message sending methods
+  // Specific message sending methods for better API integration
   sendTextMessage(
     conversationId: string,
     receiverId: string,
     content: string,
+    replyToId?: string
   ): void {
     this.sendMessage("message_sent", {
       conversationId,
       receiverId,
       content,
       messageType: "text",
+      replyToId,
     });
   }
 
@@ -155,13 +176,30 @@ class WebSocketService {
     this.sendMessage("message_reaction_added", {
       messageId,
       emoji,
+      userId: this.userId,
     });
   }
 
-  removeMessageReaction(messageId: string, emoji: string): void {
+  removeMessageReaction(messageId: string, reactionId: string): void {
     this.sendMessage("message_reaction_removed", {
       messageId,
-      emoji,
+      reactionId,
+      userId: this.userId,
+    });
+  }
+
+  // New methods for better conversation management
+  joinConversation(conversationId: string): void {
+    this.sendMessage("conversation_joined", {
+      conversationId,
+      userId: this.userId,
+    });
+  }
+
+  leaveConversation(conversationId: string): void {
+    this.sendMessage("conversation_left", {
+      conversationId,
+      userId: this.userId,
     });
   }
 
@@ -175,7 +213,7 @@ class WebSocketService {
   private startHeartbeat(): void {
     this.heartbeatInterval = window.setInterval(() => {
       if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-        this.ws.send(JSON.stringify({ type: "ping" }));
+        this.ws.send(JSON.stringify({ type: "ping", timestamp: new Date().toISOString() }));
       }
     }, 30000); // Send ping every 30 seconds
   }
@@ -235,6 +273,7 @@ export class MockWebSocketService {
     WebSocketEventHandler[]
   >();
   private connected = false;
+  private typingUsers = new Map<string, Set<string>>();
 
   async connect(userId: string): Promise<void> {
     console.log("Mock WebSocket connected for user:", userId);
@@ -255,6 +294,13 @@ export class MockWebSocketService {
       setTimeout(() => {
         this.simulateMessageReceived(data);
       }, 100);
+    }
+
+    // Simulate typing indicators
+    if (type === "typing_start" || type === "typing_stop") {
+      setTimeout(() => {
+        this.simulateTypingIndicator(data);
+      }, 50);
     }
   }
 
@@ -279,12 +325,14 @@ export class MockWebSocketService {
     conversationId: string,
     receiverId: string,
     content: string,
+    replyToId?: string
   ): void {
     this.sendMessage("message_sent", {
       conversationId,
       receiverId,
       content,
       messageType: "text",
+      replyToId,
     });
   }
 
@@ -306,8 +354,16 @@ export class MockWebSocketService {
     this.sendMessage("message_reaction_added", { messageId, emoji });
   }
 
-  removeMessageReaction(messageId: string, emoji: string): void {
-    this.sendMessage("message_reaction_removed", { messageId, emoji });
+  removeMessageReaction(messageId: string, reactionId: string): void {
+    this.sendMessage("message_reaction_removed", { messageId, reactionId });
+  }
+
+  joinConversation(conversationId: string): void {
+    this.sendMessage("conversation_joined", { conversationId });
+  }
+
+  leaveConversation(conversationId: string): void {
+    this.sendMessage("conversation_left", { conversationId });
   }
 
   private simulateMessageReceived(sentData: any): void {
@@ -319,11 +375,31 @@ export class MockWebSocketService {
         isRead: false,
         isDelivered: true,
         createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        reactions: [],
       },
       timestamp: new Date().toISOString(),
     };
 
     const handlers = this.eventHandlers.get("message_received");
+    if (handlers) {
+      handlers.forEach((handler) => handler(mockEvent));
+    }
+  }
+
+  private simulateTypingIndicator(data: any): void {
+    const mockEvent: WebSocketEvent = {
+      type: data.isTyping ? "typing_start" : "typing_stop",
+      data: {
+        userId: data.userId || "mock-user",
+        conversationId: data.conversationId,
+        isTyping: data.isTyping,
+      },
+      timestamp: new Date().toISOString(),
+    };
+
+    const eventType = data.isTyping ? "typing_start" : "typing_stop";
+    const handlers = this.eventHandlers.get(eventType);
     if (handlers) {
       handlers.forEach((handler) => handler(mockEvent));
     }
