@@ -1,46 +1,46 @@
 import {
-    ActionIcon,
-    Avatar,
-    Badge,
-    Box,
-    Button,
-    Card,
-    Collapse,
-    Group,
-    Image,
-    Menu,
-    Modal,
-    Stack,
-    Text,
-    Textarea,
-    TextInput,
-    UnstyledButton,
+  ActionIcon,
+  Avatar,
+  Badge,
+  Box,
+  Button,
+  Card,
+  Collapse,
+  Group,
+  Image,
+  Menu,
+  Modal,
+  Stack,
+  Text,
+  Textarea,
+  TextInput,
+  UnstyledButton,
 } from "@mantine/core";
 import {
-    IconArrowDown, IconBookmark,
-    IconBookmarkFilled,
-    IconChevronDown,
-    IconChevronUp,
-    IconDotsVertical,
-    IconEdit,
-    IconFlag,
-    IconHeart,
-    IconHeartFilled,
-    IconMessageCircle,
-    IconSend,
-    IconTrash
+  IconArrowDown, IconBookmark,
+  IconBookmarkFilled,
+  IconChevronDown,
+  IconChevronUp,
+  IconDotsVertical,
+  IconEdit,
+  IconFlag,
+  IconHeart,
+  IconHeartFilled,
+  IconMessageCircle,
+  IconSend,
+  IconTrash
 } from "@tabler/icons-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CommentSkeletonList } from "../../components/ui";
 import { useComments, useCreateComment } from "../../hooks/useComments";
 import {
-    useBookmarkPost,
-    useDeletePost,
-    useReactToPost,
-    useRemoveReaction,
-    useUnbookmarkPost,
-    useUpdatePost,
+  useBookmarkPost,
+  useDeletePost,
+  useReactToPost,
+  useRemoveReaction,
+  useUnbookmarkPost,
+  useUpdatePost,
 } from "../../hooks/usePosts";
 import { CreateCommentRequest } from "../../services/api";
 import { useAuthStore } from "../../stores/authStore";
@@ -126,7 +126,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
   };
 
   const handlePostClick = () => {
-    navigate(`//post/${post.id}`);
+    navigate(`/post/${post.id}`);
   };
 
   const handleEdit = () => {

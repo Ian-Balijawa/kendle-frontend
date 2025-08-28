@@ -21,15 +21,15 @@ import { useUIStore } from "../../stores/uiStore";
 
 const mobileNavItems = [
   { label: "Home", icon: IconHome, path: "/" },
-  { label: "Explore", icon: IconCompass, path: "//explore" },
+  { label: "Explore", icon: IconCompass, path: "/explore" },
   {
     label: "Create",
     icon: IconPlus,
-    path: "//create",
+    path: "/create",
     isCreate: true,
   },
-  { label: "Messages", icon: IconMessageCircle, path: "//chat" },
-  { label: "Profile", icon: IconUser, path: "//profile" },
+  { label: "Messages", icon: IconMessageCircle, path: "/chat" },
+  { label: "Profile", icon: IconUser, path: "/profile" },
 ];
 
 export function FooterContent() {
@@ -71,7 +71,7 @@ export function FooterContent() {
       item.path.includes("create");
     const canAccess = !needsAuth || isAuthenticated;
     const showUnread =
-      item.path === "//chat" && unreadCount > 0 && isAuthenticated;
+      item.path === "/chat" && unreadCount > 0 && isAuthenticated;
 
     return (
       <Transition
