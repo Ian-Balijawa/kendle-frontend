@@ -29,6 +29,8 @@ export function CommentSkeleton() {
         <Group gap="xs">
           <Skeleton height={20} width={20} />
           <Skeleton height={12} width={20} />
+          <Skeleton height={20} width={20} />
+          <Skeleton height={12} width={20} />
         </Group>
       </Stack>
     </Box>

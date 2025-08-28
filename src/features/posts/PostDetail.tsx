@@ -129,7 +129,7 @@ export function PostDetail() {
               variant="light"
               size="md"
               leftSection={<IconArrowLeft size={16} />}
-              onClick={() => navigate("/dashboard")}
+              onClick={() => navigate("/")}
             >
               Back to Home
             </Button>
@@ -215,7 +215,7 @@ export function PostDetail() {
     deletePostMutation.mutate(post.id, {
       onSuccess: () => {
         setShowDeleteConfirm(false);
-        navigate("/dashboard");
+        navigate("/");
       },
       onError: (error) => {
         console.error("Failed to delete post:", error);

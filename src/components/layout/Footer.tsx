@@ -1,18 +1,18 @@
 import {
-  ActionIcon,
-  Box,
-  Group,
-  Indicator,
-  Paper,
-  Text,
-  Transition,
+    ActionIcon,
+    Box,
+    Group,
+    Indicator,
+    Paper,
+    Text,
+    Transition,
 } from "@mantine/core";
 import {
-  IconCompass,
-  IconHome,
-  IconMessageCircle,
-  IconPlus,
-  IconUser,
+    IconCompass,
+    IconHome,
+    IconMessageCircle,
+    IconPlus,
+    IconUser,
 } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -20,16 +20,16 @@ import { useAuthStore } from "../../stores/authStore";
 import { useUIStore } from "../../stores/uiStore";
 
 const mobileNavItems = [
-  { label: "Home", icon: IconHome, path: "/dashboard" },
-  { label: "Explore", icon: IconCompass, path: "/dashboard/explore" },
+  { label: "Home", icon: IconHome, path: "/" },
+  { label: "Explore", icon: IconCompass, path: "//explore" },
   {
     label: "Create",
     icon: IconPlus,
-    path: "/dashboard/create",
+    path: "//create",
     isCreate: true,
   },
-  { label: "Messages", icon: IconMessageCircle, path: "/dashboard/chat" },
-  { label: "Profile", icon: IconUser, path: "/dashboard/profile" },
+  { label: "Messages", icon: IconMessageCircle, path: "//chat" },
+  { label: "Profile", icon: IconUser, path: "//profile" },
 ];
 
 export function FooterContent() {
@@ -44,8 +44,8 @@ export function FooterContent() {
   }, []);
 
   const isActive = (path: string) => {
-    if (path === "/dashboard") {
-      return location.pathname === "/dashboard";
+    if (path === "/") {
+      return location.pathname === "/";
     }
     return location.pathname.startsWith(path);
   };
@@ -71,7 +71,7 @@ export function FooterContent() {
       item.path.includes("create");
     const canAccess = !needsAuth || isAuthenticated;
     const showUnread =
-      item.path === "/dashboard/chat" && unreadCount > 0 && isAuthenticated;
+      item.path === "//chat" && unreadCount > 0 && isAuthenticated;
 
     return (
       <Transition

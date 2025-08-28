@@ -1,16 +1,16 @@
 import {
-  Alert,
-  Anchor,
-  Box,
-  Button,
-  Center,
-  Container,
-  Image,
-  LoadingOverlay,
-  Paper,
-  PinInput,
-  Stack,
-  Text,
+    Alert,
+    Anchor,
+    Box,
+    Button,
+    Center,
+    Container,
+    Image,
+    LoadingOverlay,
+    Paper,
+    PinInput,
+    Stack,
+    Text,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { IconAlertCircle, IconArrowLeft } from "@tabler/icons-react";
@@ -51,7 +51,7 @@ export function OTPVerification() {
 
   useEffect(() => {
     if (!phoneNumber) {
-      navigate("/dashboard", { replace: true });
+      navigate("/", { replace: true });
       return;
     }
     const timer = setInterval(() => {
@@ -93,7 +93,7 @@ export function OTPVerification() {
       verifyOTPMutation.mutate(verifyData, {
         onSuccess: (response) => {
           if (response.user.isProfileComplete) {
-            navigate("/dashboard", { replace: true });
+            navigate("/", { replace: true });
           } else {
             navigate("/complete-profile", { replace: true });
           }

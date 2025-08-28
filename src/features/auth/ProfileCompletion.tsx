@@ -1,29 +1,29 @@
 import {
-  Alert,
-  Box,
-  Button,
-  Center,
-  Container,
-  Grid,
-  Group,
-  LoadingOverlay,
-  Paper,
-  Progress,
-  Text,
-  Textarea,
-  TextInput,
-  Title,
-  Tooltip,
+    Alert,
+    Box,
+    Button,
+    Center,
+    Container,
+    Grid,
+    Group,
+    LoadingOverlay,
+    Paper,
+    Progress,
+    Text,
+    Textarea,
+    TextInput,
+    Title,
+    Tooltip,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import {
-  IconAlertCircle,
-  IconBrandWhatsapp,
-  IconCheck,
-  IconInfoCircle,
-  IconMail,
-  IconSparkles,
-  IconUser,
+    IconAlertCircle,
+    IconBrandWhatsapp,
+    IconCheck,
+    IconInfoCircle,
+    IconMail,
+    IconSparkles,
+    IconUser,
 } from "@tabler/icons-react";
 import { zodResolver } from "mantine-form-zod-resolver";
 import { useNavigate } from "react-router-dom";
@@ -105,7 +105,7 @@ export function ProfileCompletion() {
       {
         onSuccess: () => {
           console.log("Profile completed!");
-          navigate("/dashboard", { replace: true });
+          navigate("/", { replace: true });
         },
         onError: (err) => {
           console.error("Profile completion failed:", err);
@@ -120,7 +120,7 @@ export function ProfileCompletion() {
   }
 
   if (user.isProfileComplete) {
-    navigate("/dashboard", { replace: true });
+    navigate("/", { replace: true });
     return null;
   }
 
@@ -386,7 +386,7 @@ export function ProfileCompletion() {
               <Button
                 variant="subtle"
                 size="lg"
-                onClick={() => navigate("/dashboard", { replace: true })}
+                onClick={() => navigate("/", { replace: true })}
                 disabled={isSubmitting}
                 c="gray.7"
                 radius="md"

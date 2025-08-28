@@ -43,7 +43,7 @@ function App() {
               element={
                 isAuthenticated ? (
                   user?.isProfileComplete ? (
-                    <Navigate to="/dashboard" replace />
+                    <Navigate to="/" replace />
                   ) : (
                     <Navigate to="/complete-profile" replace />
                   )
@@ -57,7 +57,7 @@ function App() {
               element={
                 isAuthenticated ? (
                   user?.isProfileComplete ? (
-                    <Navigate to="/dashboard" replace />
+                    <Navigate to="/" replace />
                   ) : (
                     <Navigate to="/complete-profile" replace />
                   )
@@ -71,7 +71,7 @@ function App() {
               element={
                 isAuthenticated ? (
                   user?.isProfileComplete ? (
-                    <Navigate to="/dashboard" replace />
+                    <Navigate to="/" replace />
                   ) : (
                     <ProfileCompletion />
                   )
@@ -83,7 +83,7 @@ function App() {
 
             {/* Protected Dashboard - Require authentication and complete profile */}
             <Route
-              path="/dashboard"
+              path="/"
               element={
                 <AuthGuard>
                   <AppShell />

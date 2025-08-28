@@ -573,12 +573,12 @@ class ApiService {
     await this.api.delete( `/comments/${commentId}` );
   }
 
-  async likeComment( id: string ): Promise<void> {
-    await this.api.post( `/comments/${id}/like` );
+  async reactToComment( id: string, data: ReactionRequest ): Promise<void> {
+    await this.api.post( `/comments/${id}/react`, data );
   }
 
-  async unlikeComment( id: string ): Promise<void> {
-    await this.api.delete( `/comments/${id}/like` );
+  async removeCommentReaction( id: string ): Promise<void> {
+    await this.api.delete( `/comments/${id}/react` );
   }
 
   async getMyComments(

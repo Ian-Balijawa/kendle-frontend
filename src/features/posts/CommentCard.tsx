@@ -15,6 +15,7 @@ import {
 } from "@mantine/core";
 import {
   IconCheck,
+  IconChevronDown,
   IconDotsVertical,
   IconEdit,
   IconFlag,
@@ -25,8 +26,8 @@ import {
 import { useState } from "react";
 import {
   useDeleteComment,
-  useLikeComment,
-  useUnlikeComment,
+  useReactToComment,
+  useRemoveReaction,
   useUpdateComment,
 } from "../../hooks/useComments";
 import { UpdateCommentRequest } from "../../services/api";
@@ -43,8 +44,8 @@ export function CommentCard({ comment }: CommentCardProps) {
 
   const updateCommentMutation = useUpdateComment();
   const deleteCommentMutation = useDeleteComment();
-  const likeCommentMutation = useLikeComment();
-  const unlikeCommentMutation = useUnlikeComment();
+  const reactToCommentMutation = useReactToComment();
+  const removeReactionMutation = useRemoveReaction();
 
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(comment.content);
@@ -111,9 +112,19 @@ export function CommentCard({ comment }: CommentCardProps) {
     if (!isAuthenticated) return;
 
     if (comment.isLiked) {
-      unlikeCommentMutation.mutate(comment.id);
+      removeReactionMutation.mutate(comment.id);
     } else {
-      likeCommentMutation.mutate(comment.id);
+      reactToCommentMutation.mutate({ id: comment.id, data: { reactionType: "like" } });
+    }
+  };
+
+  const handleDislike = () => {
+    if (!isAuthenticated) return;
+
+    if (comment.isDisliked) {
+      removeReactionMutation.mutate(comment.id);
+    } else {
+      reactToCommentMutation.mutate({ id: comment.id, data: { reactionType: "dislike" } });
     }
   };
 
@@ -325,6 +336,41 @@ export function CommentCard({ comment }: CommentCardProps) {
                     fw={comment.isLiked ? 500 : 400}
                   >
                     {comment.likesCount}
+                  </Text>
+                )}
+              </Group>
+
+              <Group
+                gap="xs"
+                style={{ cursor: isAuthenticated ? "pointer" : "default" }}
+                onClick={handleDislike}
+              >
+                <ActionIcon
+                  variant={comment.isDisliked ? "filled" : "subtle"}
+                  color="gray"
+                  size="sm"
+                  radius="xl"
+                  disabled={!isAuthenticated}
+                  style={{
+                    transition: "all 150ms ease",
+                    transform: comment.isDisliked ? "scale(1.1)" : "scale(1)",
+                  }}
+                >
+                  <IconChevronDown
+                    size={14}
+                    style={{
+                      fill: comment.isDisliked ? "currentColor" : "none",
+                    }}
+                  />
+                </ActionIcon>
+
+                {comment.dislikesCount > 0 && (
+                  <Text
+                    size="xs"
+                    c={comment.isDisliked ? "gray.6" : "dimmed"}
+                    fw={comment.isDisliked ? 500 : 400}
+                  >
+                    {comment.dislikesCount}
                   </Text>
                 )}
               </Group>

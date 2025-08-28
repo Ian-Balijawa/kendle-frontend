@@ -1,31 +1,31 @@
 import {
-  ActionIcon,
-  Avatar,
-  Box,
-  Button,
-  Group,
-  Image,
-  Indicator,
-  Menu,
-  Paper,
-  Stack,
-  Text,
-  TextInput,
-  Tooltip,
-  UnstyledButton,
+    ActionIcon,
+    Avatar,
+    Box,
+    Button,
+    Group,
+    Image,
+    Indicator,
+    Menu,
+    Paper,
+    Stack,
+    Text,
+    TextInput,
+    Tooltip,
+    UnstyledButton,
 } from "@mantine/core";
 import {
-  IconBell,
-  IconCompass,
-  IconHome,
-  IconLogout,
-  IconMenu2,
-  IconMessageCircle,
-  IconPhoto,
-  IconPlus,
-  IconSearch,
-  IconSettings,
-  IconUser,
+    IconBell,
+    IconCompass,
+    IconHome,
+    IconLogout,
+    IconMenu2,
+    IconMessageCircle,
+    IconPhoto,
+    IconPlus,
+    IconSearch,
+    IconSettings,
+    IconUser,
 } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -33,10 +33,10 @@ import { useAuthStore } from "../../stores/authStore";
 import { useUIStore } from "../../stores/uiStore";
 
 const navigationItems = [
-  { label: "Home", icon: IconHome, path: "/dashboard" },
-  { label: "Explore", icon: IconCompass, path: "/dashboard/explore" },
-  { label: "Create", icon: IconPhoto, path: "/dashboard/create" },
-  { label: "Messages", icon: IconMessageCircle, path: "/dashboard/chat" },
+  { label: "Home", icon: IconHome, path: "/" },
+  { label: "Explore", icon: IconCompass, path: "//explore" },
+  { label: "Create", icon: IconPhoto, path: "//create" },
+  { label: "Messages", icon: IconMessageCircle, path: "//chat" },
 ];
 
 export function HeaderContent() {
@@ -60,7 +60,7 @@ export function HeaderContent() {
     event.preventDefault();
     if (searchQuery.trim()) {
       navigate(
-        `/dashboard/explore?q=${encodeURIComponent(searchQuery.trim())}`
+        `//explore?q=${encodeURIComponent(searchQuery.trim())}`
       );
       setSearchFocused(false);
     }
@@ -72,8 +72,8 @@ export function HeaderContent() {
   };
 
   const isActive = (path: string) => {
-    if (path === "/dashboard") {
-      return location.pathname === "/dashboard";
+    if (path === "/") {
+      return location.pathname === "/";
     }
     return location.pathname.startsWith(path);
   };
@@ -98,7 +98,7 @@ export function HeaderContent() {
       <Group  justify="space-between" h={60} gap="md">
         <Group gap="xl">
           <UnstyledButton
-            onClick={() => navigate("/dashboard")}
+            onClick={() => navigate("/")}
             style={{
               padding: "8px 12px",
               borderRadius: "12px",
@@ -139,7 +139,7 @@ export function HeaderContent() {
                     }}
                   >
                     <item.icon size={20} stroke={1.5} />
-                    {item.path === "/dashboard/chat" &&
+                    {item.path === "//chat" &&
                       unreadCount > 0 &&
                       isAuthenticated && (
                         <Indicator
@@ -231,7 +231,7 @@ export function HeaderContent() {
                 gradient={{ from: "blue", to: "cyan" }}
                 size="lg"
                 radius="xl"
-                onClick={() => navigate("/dashboard/statuses")}
+                onClick={() => navigate("//statuses")}
                 hiddenFrom="md"
               >
                 <IconPlus size={20} />
@@ -248,7 +248,7 @@ export function HeaderContent() {
                   variant="subtle"
                   size="lg"
                   radius="xl"
-                  onClick={() => navigate("/dashboard/notifications")}
+                  onClick={() => navigate("//notifications")}
                   style={{ transition: "all 0.2s ease" }}
                 >
                   <IconBell size={20} />
@@ -300,14 +300,14 @@ export function HeaderContent() {
 
                   <Menu.Item
                     leftSection={<IconUser size={16} />}
-                    onClick={() => navigate("/dashboard/profile")}
+                    onClick={() => navigate("//profile")}
                   >
                     Your Profile
                   </Menu.Item>
 
                   <Menu.Item
                     leftSection={<IconSettings size={16} />}
-                    onClick={() => navigate("/dashboard/settings")}
+                    onClick={() => navigate("//settings")}
                   >
                     Settings
                   </Menu.Item>

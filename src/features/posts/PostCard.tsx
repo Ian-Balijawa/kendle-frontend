@@ -126,7 +126,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
   };
 
   const handlePostClick = () => {
-    navigate(`/dashboard/post/${post.id}`);
+    navigate(`//post/${post.id}`);
   };
 
   const handleEdit = () => {
