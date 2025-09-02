@@ -18,7 +18,6 @@ import { OTPVerification } from "./features/auth/OTPVerification";
 import { PhoneAuth } from "./features/auth/PhoneAuth";
 import { ProfileCompletion } from "./features/auth/ProfileCompletion";
 
-
 import { NotificationsPage } from "./features/notifications/NotificationsPage";
 import { HomePage } from "./features/posts/HomePage";
 import { PostDetail } from "./features/posts/PostDetail";
@@ -37,13 +36,13 @@ function App() {
         <Notifications position="top-right" />
         <Router>
           <Routes>
-            {/* Public routes - Phone Authentication Flow */}
+            {/* Public routes */}
             <Route
-              path="/"
+              path="/auth"
               element={
                 isAuthenticated ? (
                   user?.isProfileComplete ? (
-                    <Navigate to="/" replace />
+                    <Navigate to="/dashboard" replace />
                   ) : (
                     <Navigate to="/complete-profile" replace />
                   )
@@ -52,12 +51,13 @@ function App() {
                 )
               }
             />
+            
             <Route
               path="/verify-otp"
               element={
                 isAuthenticated ? (
                   user?.isProfileComplete ? (
-                    <Navigate to="/" replace />
+                    <Navigate to="/dashboard" replace />
                   ) : (
                     <Navigate to="/complete-profile" replace />
                   )
@@ -66,24 +66,25 @@ function App() {
                 )
               }
             />
+            
             <Route
               path="/complete-profile"
               element={
                 isAuthenticated ? (
                   user?.isProfileComplete ? (
-                    <Navigate to="/" replace />
+                    <Navigate to="/dashboard" replace />
                   ) : (
                     <ProfileCompletion />
                   )
                 ) : (
-                  <Navigate to="/" replace />
+                  <Navigate to="/auth" replace />
                 )
               }
             />
 
-            {/* Protected Dashboard - Require authentication and complete profile */}
+            {/* Protected routes */}
             <Route
-              path="/"
+              path="/dashboard"
               element={
                 <AuthGuard>
                   <AppShell />
@@ -98,11 +99,27 @@ function App() {
               <Route path="post/:postId" element={<PostDetail />} />
             </Route>
 
+            {/* Root redirect */}
+            <Route
+              path="/"
+              element={
+                isAuthenticated ? (
+                  user?.isProfileComplete ? (
+                    <Navigate to="/dashboard" replace />
+                  ) : (
+                    <Navigate to="/complete-profile" replace />
+                  )
+                ) : (
+                  <Navigate to="/auth" replace />
+                )
+              }
+            />
+
+            {/* Catch all */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Router>
       </MantineProvider>
-      {/* <ReactQueryDevtools initialIsOpen={false} /> */}
     </QueryClientProvider>
   );
 }
