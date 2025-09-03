@@ -216,37 +216,40 @@ export function useCreateComment() {
         },
       };
 
-      // Optimistically update comments list
-      queryClient.setQueriesData(
-        { queryKey: commentKeys.list( postId ) },
-        ( old: any ) => {
-          if ( !old ) return old;
+      // Get all comment queries for this post and update them
+      const allCommentQueries = queryClient.getQueriesData({ queryKey: commentKeys.lists() });
+      
+      allCommentQueries.forEach(([queryKey]) => {
+        if (queryKey.includes(postId)) {
+          queryClient.setQueryData(queryKey, (old: any) => {
+            if (!old) return old;
 
-          // Handle infinite query
-          if ( old.pages ) {
+            // Handle infinite query
+            if (old.pages) {
+              return {
+                ...old,
+                pages: old.pages.map((page: CommentsResponse, index: number) => {
+                  if (index === 0) {
+                    return {
+                      ...page,
+                      comments: [optimisticComment, ...page.comments],
+                      total: page.total + 1,
+                    };
+                  }
+                  return page;
+                }),
+              };
+            }
+
+            // Handle regular query
             return {
               ...old,
-              pages: old.pages.map( ( page: CommentsResponse, index: number ) => {
-                if ( index === 0 ) {
-                  return {
-                    ...page,
-                    comments: [optimisticComment, ...page.comments],
-                    total: page.total + 1,
-                  };
-                }
-                return page;
-              } ),
+              comments: [optimisticComment, ...old.comments],
+              total: old.total + 1,
             };
-          }
-
-          // Handle regular query
-          return {
-            ...old,
-            comments: [optimisticComment, ...old.comments],
-            total: old.total + 1,
-          };
-        },
-      );
+          });
+        }
+      });
 
       // Optimistically update post comment count
       queryClient.setQueryData( postKeys.detail( postId ), ( old: any ) => {
@@ -290,44 +293,43 @@ export function useCreateComment() {
     onError: ( _err, { postId }, context ) => {
       // Revert the optimistic updates
       if ( context?.optimisticComment ) {
-        queryClient.setQueriesData(
-          { queryKey: commentKeys.list( postId ) },
-          ( old: any ) => {
-            if ( !old ) return old;
+        const allCommentQueries = queryClient.getQueriesData({ queryKey: commentKeys.lists() });
+        
+        allCommentQueries.forEach(([queryKey]) => {
+          if (queryKey.includes(postId)) {
+            queryClient.setQueryData(queryKey, (old: any) => {
+              if (!old) return old;
 
-            // Handle infinite query
-            if ( old.pages ) {
-              return {
-                ...old,
-                pages: old.pages.map(
-                  ( page: CommentsResponse, index: number ) => {
-                    if ( index === 0 ) {
+              // Handle infinite query
+              if (old.pages) {
+                return {
+                  ...old,
+                  pages: old.pages.map((page: CommentsResponse, index: number) => {
+                    if (index === 0) {
                       return {
                         ...page,
                         comments: page.comments.filter(
-                          ( comment: Comment ) =>
-                            comment.id !== context.optimisticComment.id,
+                          (comment: Comment) => comment.id !== context.optimisticComment.id
                         ),
-                        total: Math.max( 0, page.total - 1 ),
+                        total: Math.max(0, page.total - 1),
                       };
                     }
                     return page;
-                  },
-                ),
-              };
-            }
+                  }),
+                };
+              }
 
-            // Handle regular query
-            return {
-              ...old,
-              comments: old.comments.filter(
-                ( comment: Comment ) =>
-                  comment.id !== context.optimisticComment.id,
-              ),
-              total: Math.max( 0, old.total - 1 ),
-            };
-          },
-        );
+              // Handle regular query
+              return {
+                ...old,
+                comments: old.comments.filter(
+                  (comment: Comment) => comment.id !== context.optimisticComment.id
+                ),
+                total: Math.max(0, old.total - 1),
+              };
+            });
+          }
+        });
 
         // Revert post comment count
         queryClient.setQueryData( postKeys.detail( postId ), ( old: any ) => {
@@ -346,48 +348,45 @@ export function useCreateComment() {
     onSuccess: ( newComment, { postId }, context ) => {
       // Replace the optimistic comment with the real one
       if ( context?.optimisticComment ) {
-        queryClient.setQueriesData(
-          { queryKey: commentKeys.list( postId ) },
-          ( old: any ) => {
-            if ( !old ) return old;
+        const allCommentQueries = queryClient.getQueriesData({ queryKey: commentKeys.lists() });
+        
+        allCommentQueries.forEach(([queryKey]) => {
+          if (queryKey.includes(postId)) {
+            queryClient.setQueryData(queryKey, (old: any) => {
+              if (!old) return old;
 
-            // Handle infinite query
-            if ( old.pages ) {
-              return {
-                ...old,
-                pages: old.pages.map(
-                  ( page: CommentsResponse, index: number ) => {
-                    if ( index === 0 ) {
+              // Handle infinite query
+              if (old.pages) {
+                return {
+                  ...old,
+                  pages: old.pages.map((page: CommentsResponse, index: number) => {
+                    if (index === 0) {
                       return {
                         ...page,
-                        comments: page.comments.map( ( comment: Comment ) =>
-                          comment.id === context.optimisticComment.id
-                            ? newComment
-                            : comment,
+                        comments: page.comments.map((comment: Comment) =>
+                          comment.id === context.optimisticComment.id ? newComment : comment
                         ),
                       };
                     }
                     return page;
-                  },
+                  }),
+                };
+              }
+
+              // Handle regular query
+              return {
+                ...old,
+                comments: old.comments.map((comment: Comment) =>
+                  comment.id === context.optimisticComment.id ? newComment : comment
                 ),
               };
-            }
-
-            // Handle regular query
-            return {
-              ...old,
-              comments: old.comments.map( ( comment: Comment ) =>
-                comment.id === context.optimisticComment.id
-                  ? newComment
-                  : comment,
-              ),
-            };
-          },
-        );
+            });
+          }
+        });
       }
 
       // Invalidate and refetch
-      queryClient.invalidateQueries( { queryKey: commentKeys.list( postId ) } );
+      queryClient.invalidateQueries( { queryKey: commentKeys.lists() } );
       queryClient.invalidateQueries( { queryKey: postKeys.detail( postId ) } );
       queryClient.invalidateQueries( { queryKey: postKeys.lists() } );
       queryClient.invalidateQueries( { queryKey: commentKeys.me() } );

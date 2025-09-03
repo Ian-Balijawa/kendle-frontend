@@ -20,7 +20,6 @@ import {
   IconHome,
   IconLogout,
   IconMenu2,
-  IconMessageCircle,
   IconPhoto,
   IconPlus,
   IconSearch,
@@ -35,8 +34,7 @@ import { useUIStore } from "../../stores/uiStore";
 const navigationItems = [
   { label: "Home", icon: IconHome, path: "/" },
   { label: "Explore", icon: IconCompass, path: "/explore" },
-  { label: "Create", icon: IconPhoto, path: "/create" },
-  { label: "Messages", icon: IconMessageCircle, path: "/chat" },
+  { label: "Create", icon: IconPhoto, path: "/statuses" },
 ];
 
 export function HeaderContent() {
@@ -113,7 +111,7 @@ export function HeaderContent() {
             {navigationItems.map((item) => {
               const isCurrentActive = isActive(item.path);
               const needsAuth =
-                item.path.includes("chat") || item.path.includes("create");
+                item.path.includes("chat") || item.path.includes("statuses");
               const canAccess = !needsAuth || isAuthenticated;
 
               return (
@@ -129,7 +127,7 @@ export function HeaderContent() {
                     size="lg"
                     radius="xl"
                     onClick={() =>
-                      canAccess ? navigate(item.path) : navigate("/")
+                      canAccess ? navigate(item.path) : navigate("/auth")
                     }
                     disabled={!canAccess}
                     style={{
@@ -210,14 +208,14 @@ export function HeaderContent() {
                 variant="light"
                 size="sm"
                 radius="xl"
-                onClick={() => navigate("/")}
+                onClick={() => navigate("/auth")}
               >
                 Sign In
               </Button>
               <Button
                 size="sm"
                 radius="xl"
-                onClick={() => navigate("/")}
+                onClick={() => navigate("/auth")}
                 gradient={{ from: "blue", to: "cyan" }}
                 variant="gradient"
               >
@@ -307,7 +305,7 @@ export function HeaderContent() {
 
                   <Menu.Item
                     leftSection={<IconSettings size={16} />}
-                    onClick={() => navigate("/settings")}
+                    onClick={() => navigate("/profile")}
                   >
                     Settings
                   </Menu.Item>

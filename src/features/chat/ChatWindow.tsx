@@ -1,739 +1,203 @@
-import {
-    ActionIcon,
-    Avatar,
-    Box,
-    Button,
-    Center,
-    Group,
-    Loader,
-    Menu,
-    Paper,
-    rem,
-    ScrollArea,
-    Stack,
-    Text,
-    Textarea,
-    useMantineTheme,
-    Tooltip,
-    Badge,
-} from "@mantine/core";
-import {
-    IconArrowLeft,
-    IconDotsVertical,
-    IconFile,
-    IconMoodSmile,
-    IconPaperclip,
-    IconPhone,
-    IconPhoto,
-    IconSend,
-    IconVideo,
-    IconPin,
-    IconPinFilled,
-    IconVolumeOff,
-    IconVolume,
-    IconArchive,
-    IconTrash,
-    IconMessageReply,
-} from "@tabler/icons-react";
-import { useEffect, useRef, useState } from "react";
-import {
-    useInfiniteMessages,
-    useMarkConversationAsRead,
-    useSendMessage,
-    useUpdateConversation,
-} from "../../hooks/useChat";
-import { useWebSocketIntegration } from "../../hooks/useWebSocket";
-import { SendMessageRequest } from "../../services/api";
-import { useAuthStore } from "../../stores/authStore";
-import { Conversation } from "../../types/chat";
-import { MessageCard } from "./MessageCard";
+import { useState, useRef, useEffect } from 'react';
+import { Box, Paper, Group, Text, ActionIcon } from '@mantine/core';
+import { IconMinus, IconX, IconMaximize } from '@tabler/icons-react';
+import { useFloatingChatStore } from '../../stores/chatStore';
+import { useConversation } from '../../hooks/useChat';
+import { useAuthStore } from '../../stores/authStore';
+import { ChatMessages } from './ChatMessages';
+import { ChatInput } from './ChatInput';
 
 interface ChatWindowProps {
-  conversation: Conversation;
-  onBack?: () => void;
-  showBackButton?: boolean;
+  conversationId: string;
+  position: { x: number; y: number };
+  size: { width: number; height: number };
+  zIndex: number;
 }
 
-export function ChatWindow({
-  conversation,
-  onBack,
-  showBackButton = false,
-}: ChatWindowProps) {
-  const { user } = useAuthStore();
-  const theme = useMantineTheme();
-
-  // React Query hooks
+export function ChatWindow({ conversationId, position, size, zIndex }: ChatWindowProps) {
   const {
-    data: messagesData,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    isLoading: messagesLoading,
-  } = useInfiniteMessages(conversation.id, { limit: 20 });
+    minimizeChatWindow,
+    closeChatWindow,
+    focusChatWindow,
+    updateChatWindowPosition,
+    updateChatWindowSize,
+  } = useFloatingChatStore();
+  
+  const { data: conversation } = useConversation(conversationId);
+  const { user } = useAuthStore();
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [isResizing, setIsResizing] = useState(false);
+  const windowRef = useRef<HTMLDivElement>(null);
 
-  const sendMessageMutation = useSendMessage();
-  const markConversationAsReadMutation = useMarkConversationAsRead();
-  const updateConversationMutation = useUpdateConversation();
+  const participant = conversation?.participants.find(p => p.id !== user?.id);
 
-  // WebSocket integration
-  const { sendTypingIndicator, joinConversation, leaveConversation } = useWebSocketIntegration();
+  // Handle window dragging
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (e.target === windowRef.current || (e.target as HTMLElement).closest('[data-drag-handle]')) {
+      setIsDragging(true);
+      const rect = windowRef.current?.getBoundingClientRect();
+      if (rect) {
+        setDragOffset({
+          x: e.clientX - rect.left,
+          y: e.clientY - rect.top,
+        });
+      }
+      focusChatWindow(conversationId);
+    }
+  };
 
-  const [messageText, setMessageText] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [showAttachmentMenu, setShowAttachmentMenu] = useState(false);
-  const [replyToMessage, setReplyToMessage] = useState<{
-    id: string;
-    content: string;
-    senderId: string;
-  } | null>(null);
-
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
-  const messageInputRef = useRef<HTMLTextAreaElement>(null);
-  const typingTimeoutRef = useRef<number | undefined>(undefined);
-
-  // Flatten messages from all pages
-  const messages = messagesData?.pages.flatMap((page) => page) || [];
-
-  // Get the other participant for direct conversations
-  const otherParticipant = conversation.participants.find(
-    (p) => p.id !== user?.id
-  );
-
-  // Auto-scroll to bottom when new messages arrive
-  useEffect(() => {
-    if (scrollAreaRef.current) {
-      scrollAreaRef.current.scrollTo({
-        top: scrollAreaRef.current.scrollHeight,
-        behavior: "smooth",
+  const handleMouseMove = (e: MouseEvent) => {
+    if (isDragging && windowRef.current) {
+      const newX = e.clientX - dragOffset.x;
+      const newY = e.clientY - dragOffset.y;
+      
+      // Constrain to viewport
+      const maxX = window.innerWidth - size.width;
+      const maxY = window.innerHeight - size.height;
+      
+      updateChatWindowPosition(conversationId, {
+        x: Math.max(0, Math.min(newX, maxX)),
+        y: Math.max(0, Math.min(newY, maxY)),
       });
     }
-  }, [messages.length]);
+  };
 
-  // Mark conversation as read when opened
+  const handleMouseUp = () => {
+    setIsDragging(false);
+    setIsResizing(false);
+  };
+
+  // Handle window resizing
+  const handleResizeMouseDown = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsResizing(true);
+    focusChatWindow(conversationId);
+  };
+
+  const handleResizeMouseMove = (e: MouseEvent) => {
+    if (isResizing && windowRef.current) {
+      const rect = windowRef.current.getBoundingClientRect();
+      const newWidth = e.clientX - rect.left;
+      const newHeight = e.clientY - rect.top;
+      
+      // Minimum size constraints
+      const minWidth = 300;
+      const minHeight = 400;
+      const maxWidth = window.innerWidth - position.x;
+      const maxHeight = window.innerHeight - position.y;
+      
+      updateChatWindowSize(conversationId, {
+        width: Math.max(minWidth, Math.min(newWidth, maxWidth)),
+        height: Math.max(minHeight, Math.min(newHeight, maxHeight)),
+      });
+    }
+  };
+
   useEffect(() => {
-    if (conversation.unreadCount > 0) {
-      markConversationAsReadMutation.mutate(conversation.id);
+    if (isDragging || isResizing) {
+      document.addEventListener('mousemove', isDragging ? handleMouseMove : handleResizeMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      
+      return () => {
+        document.removeEventListener('mousemove', isDragging ? handleMouseMove : handleResizeMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+      };
     }
-  }, [
-    conversation.id,
-    conversation.unreadCount,
-    markConversationAsReadMutation,
-  ]);
+  }, [isDragging, isResizing, dragOffset, position, size]);
 
-  // Join/leave conversation for WebSocket events
-  useEffect(() => {
-    joinConversation(conversation.id);
-    return () => leaveConversation(conversation.id);
-  }, [conversation.id, joinConversation, leaveConversation]);
-
-  // Handle typing indicators
-  useEffect(() => {
-    if (messageText.trim() && !isTyping) {
-      setIsTyping(true);
-      sendTypingIndicator(conversation.id, true);
-    } else if (!messageText.trim() && isTyping) {
-      setIsTyping(false);
-      sendTypingIndicator(conversation.id, false);
-    }
-
-    // Clear typing timeout
-    if (typingTimeoutRef.current) {
-      window.clearTimeout(typingTimeoutRef.current);
-    }
-
-    // Set new timeout to stop typing indicator
-    if (messageText.trim()) {
-      typingTimeoutRef.current = window.setTimeout(() => {
-        setIsTyping(false);
-        sendTypingIndicator(conversation.id, false);
-      }, 2000);
-    }
-
-    return () => {
-      if (typingTimeoutRef.current) {
-        window.clearTimeout(typingTimeoutRef.current);
-      }
-    };
-  }, [messageText, isTyping, conversation.id, sendTypingIndicator]);
-
-  const handleSendMessage = () => {
-    if (!messageText.trim() || !otherParticipant) return;
-
-    const messageData: SendMessageRequest = {
-      content: messageText.trim(),
-      receiverId: otherParticipant.id,
-      conversationId: conversation.id,
-      messageType: "text",
-      replyToId: replyToMessage?.id,
-    };
-
-    sendMessageMutation.mutate(
-      { conversationId: conversation.id, data: messageData },
-      {
-        onSuccess: () => {
-          setMessageText("");
-          setIsTyping(false);
-          setReplyToMessage(null);
-
-          // Focus back on input
-          messageInputRef.current?.focus();
-        },
-        onError: (error) => {
-          console.error("Failed to send message:", error);
-        },
-      }
-    );
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
-    }
-  };
-
-  const handleLoadMoreMessages = () => {
-    if (hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
-    }
-  };
-
-  const handleTogglePin = () => {
-    updateConversationMutation.mutate({
-      id: conversation.id,
-      data: { isPinned: !conversation.isPinned },
-    });
-  };
-
-  const handleToggleMute = () => {
-    updateConversationMutation.mutate({
-      id: conversation.id,
-      data: { isMuted: !conversation.isMuted },
-    });
-  };
-
-  const handleToggleArchive = () => {
-    updateConversationMutation.mutate({
-      id: conversation.id,
-      data: { isArchived: !conversation.isArchived },
-    });
-  };
-
-  const handleReplyToMessage = (message: any) => {
-    setReplyToMessage({
-      id: message.id,
-      content: message.content,
-      senderId: message.senderId,
-    });
-    messageInputRef.current?.focus();
-  };
-
-  const cancelReply = () => {
-    setReplyToMessage(null);
-  };
+  if (!conversation) return null;
 
   return (
-    <Box
+    <Paper
+      ref={windowRef}
+      shadow="lg"
       style={{
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-        backgroundColor: theme.colors.gray[0],
+        position: 'fixed',
+        left: position.x,
+        top: position.y,
+        width: size.width,
+        height: size.height,
+        zIndex,
+        display: 'flex',
+        flexDirection: 'column',
+        cursor: isDragging ? 'grabbing' : 'default',
+        userSelect: 'none',
       }}
+      onMouseDown={handleMouseDown}
     >
-      {/* Chat Header */}
-      <Paper
-        p="md"
-        shadow="sm"
+      {/* Header */}
+      <Group
+        justify="space-between"
+        p="xs"
         style={{
-          borderBottom: `1px solid ${theme.colors.gray[2]}`,
-          backgroundColor: theme.white,
+          borderBottom: '1px solid var(--mantine-color-gray-3)',
+          backgroundColor: 'var(--mantine-color-gray-0)',
+          cursor: 'grab',
         }}
+        data-drag-handle
       >
-        <Group justify="space-between">
-          <Group>
-            {showBackButton && (
-              <ActionIcon
-                variant="subtle"
-                onClick={onBack}
-                radius="xl"
-                size="lg"
-                style={{
-                  backgroundColor: theme.colors.gray[1],
-                  color: theme.colors.gray[7],
-                }}
-              >
-                <IconArrowLeft size={18} />
-              </ActionIcon>
-            )}
-
-            <Group gap="sm">
-              <Avatar
-                src={otherParticipant?.avatar}
-                alt={otherParticipant?.firstName || "User"}
-                size="md"
-                radius="xl"
-                style={{
-                  border: `2px solid ${theme.colors.gray[2]}`,
-                }}
-              >
-                {(otherParticipant?.firstName || "U").charAt(0)}
-              </Avatar>
-
-              <Box>
-                <Group gap="xs" align="center">
-                  <Text fw={600} size="sm" c={theme.colors.gray[8]}>
-                    {conversation.name ||
-                      (otherParticipant
-                        ? `${otherParticipant.firstName} ${otherParticipant.lastName}`
-                        : "Unknown User")}
-                  </Text>
-
-                  {otherParticipant?.isVerified && (
-                    <Badge
-                      size="xs"
-                      color="blue"
-                      variant="filled"
-                      radius="xl"
-                      style={{ fontSize: rem(10) }}
-                    >
-                      ✓
-                    </Badge>
-                  )}
-
-                  {conversation.isPinned && (
-                    <Tooltip label="Pinned conversation">
-                      <IconPinFilled
-                        size={14}
-                        color={theme.colors.blue[6]}
-                        style={{ opacity: 0.8 }}
-                      />
-                    </Tooltip>
-                  )}
-
-                  {conversation.isMuted && (
-                    <Tooltip label="Muted conversation">
-                      <IconVolumeOff
-                        size={14}
-                        color={theme.colors.gray[5]}
-                        style={{ opacity: 0.6 }}
-                      />
-                    </Tooltip>
-                  )}
-                </Group>
-
-                <Group gap={4}>
-                  <Box
-                    style={{
-                      width: 8,
-                      height: 8,
-                      borderRadius: "50%",
-                      backgroundColor: otherParticipant?.isOnline
-                        ? theme.colors.green[5]
-                        : theme.colors.gray[5],
-                    }}
-                  />
-                  <Text size="xs" c="dimmed">
-                    {otherParticipant?.isOnline
-                      ? "Online"
-                      : `@${otherParticipant?.username || otherParticipant?.phoneNumber}`}
-                  </Text>
-                </Group>
-              </Box>
-            </Group>
-          </Group>
-
-          <Group>
-            <Tooltip label="Voice Call">
-              <ActionIcon
-                variant="subtle"
-                radius="xl"
-                size="lg"
-                style={{
-                  backgroundColor: theme.colors.green[1],
-                  color: theme.colors.green[7],
-                }}
-              >
-                <IconPhone size={18} />
-              </ActionIcon>
-            </Tooltip>
-
-            <Tooltip label="Video Call">
-              <ActionIcon
-                variant="subtle"
-                radius="xl"
-                size="lg"
-                style={{
-                  backgroundColor: theme.colors.blue[1],
-                  color: theme.colors.blue[7],
-                }}
-              >
-                <IconVideo size={18} />
-              </ActionIcon>
-            </Tooltip>
-
-            <Menu shadow="md" width={200} position="bottom-end" radius="lg">
-              <Menu.Target>
-                <ActionIcon
-                  variant="subtle"
-                  radius="xl"
-                  size="lg"
-                  style={{
-                    backgroundColor: theme.colors.gray[1],
-                    color: theme.colors.gray[6],
-                  }}
-                >
-                  <IconDotsVertical size={18} />
-                </ActionIcon>
-              </Menu.Target>
-
-              <Menu.Dropdown>
-                <Menu.Item
-                  onClick={handleTogglePin}
-                  leftSection={
-                    conversation.isPinned ? (
-                      <IconPinFilled size={14} />
-                    ) : (
-                      <IconPin size={14} />
-                    )
-                  }
-                >
-                  {conversation.isPinned ? "Unpin" : "Pin"} Conversation
-                </Menu.Item>
-                <Menu.Item
-                  onClick={handleToggleMute}
-                  leftSection={
-                    conversation.isMuted ? (
-                      <IconVolumeOff size={14} />
-                    ) : (
-                      <IconVolume size={14} />
-                    )
-                  }
-                >
-                  {conversation.isMuted ? "Unmute" : "Mute"} Conversation
-                </Menu.Item>
-                <Menu.Item
-                  onClick={handleToggleArchive}
-                  leftSection={<IconArchive size={14} />}
-                >
-                  {conversation.isArchived ? "Unarchive" : "Archive"}{" "}
-                  Conversation
-                </Menu.Item>
-                <Menu.Divider />
-                <Menu.Item
-                  color="red"
-                  leftSection={<IconTrash size={14} />}
-                >
-                  Delete Conversation
-                </Menu.Item>
-              </Menu.Dropdown>
-            </Menu>
-          </Group>
+        <Group gap="xs">
+          <Text size="sm" fw={500} truncate>
+            {conversation.name || participant?.firstName || 'Chat'}
+          </Text>
+          {participant?.isOnline && (
+            <Box
+              style={{
+                width: 8,
+                height: 8,
+                borderRadius: '50%',
+                backgroundColor: '#44ff44',
+              }}
+            />
+          )}
         </Group>
-      </Paper>
-
-      {/* Reply Preview */}
-      {replyToMessage && (
-        <Paper
-          p="xs"
-          style={{
-            backgroundColor: theme.colors.blue[0],
-            borderBottom: `1px solid ${theme.colors.blue[2]}`,
-            borderRadius: 0,
-          }}
-        >
-          <Group justify="space-between" align="center">
-            <Group gap="xs">
-              <IconMessageReply size={14} color={theme.colors.blue[6]} />
-              <Text size="xs" c="dimmed">
-                Replying to: {replyToMessage.content.substring(0, 50)}
-                {replyToMessage.content.length > 50 && "..."}
-              </Text>
-            </Group>
-            <ActionIcon
-              size="sm"
-              variant="subtle"
-              onClick={cancelReply}
-              color="gray"
-            >
-              ×
-            </ActionIcon>
-          </Group>
-        </Paper>
-      )}
+        
+        <Group gap={4}>
+          <ActionIcon
+            size="sm"
+            variant="subtle"
+            onClick={() => minimizeChatWindow(conversationId)}
+          >
+            <IconMinus size={14} />
+          </ActionIcon>
+          <ActionIcon
+            size="sm"
+            variant="subtle"
+            onClick={() => closeChatWindow(conversationId)}
+          >
+            <IconX size={14} />
+          </ActionIcon>
+        </Group>
+      </Group>
 
       {/* Messages Area */}
-      <ScrollArea
-        ref={scrollAreaRef}
-        style={{ flex: 1 }}
-        scrollbarSize={4}
-        offsetScrollbars
-        styles={{
-          viewport: {
-            backgroundColor: theme.colors.gray[0],
-          },
-        }}
-      >
-        <Stack gap="xs" p="md" style={{ minHeight: "100%" }}>
-          {/* Load more messages button */}
-          {hasNextPage && (
-            <Center pb="md">
-              <Button
-                variant="subtle"
-                size="xs"
-                radius="xl"
-                onClick={handleLoadMoreMessages}
-                loading={isFetchingNextPage}
-                styles={{
-                  root: {
-                    backgroundColor: theme.colors.gray[1],
-                    color: theme.colors.gray[7],
-                  },
-                }}
-              >
-                {isFetchingNextPage ? "Loading..." : "Load older messages"}
-              </Button>
-            </Center>
-          )}
+      <Box style={{ flex: 1, overflow: 'hidden' }}>
+        <ChatMessages conversationId={conversationId} />
+      </Box>
 
-          {messagesLoading && messages.length === 0 ? (
-            <Center py="xl" style={{ height: "100%" }}>
-              <Stack align="center" gap="lg">
-                <Loader size="lg" color="blue" />
-                <Text c="dimmed" fw={500}>
-                  Loading messages...
-                </Text>
-              </Stack>
-            </Center>
-          ) : messages.length === 0 ? (
-            <Center py="xl" style={{ height: "100%" }}>
-              <Stack align="center" gap="lg" style={{ maxWidth: 300 }}>
-                <Paper
-                  p="xl"
-                  radius="xl"
-                  style={{
-                    background: `linear-gradient(135deg, ${theme.colors.blue[1]} 0%, ${theme.colors.cyan[1]} 100%)`,
-                  }}
-                >
-                  <Avatar size="lg" color="blue" radius="xl">
-                    {(otherParticipant?.firstName || "U").charAt(0)}
-                  </Avatar>
-                </Paper>
-                <div style={{ textAlign: "center" }}>
-                  <Text size="lg" fw={600} c={theme.colors.gray[8]} mb={8}>
-                    Start the conversation
-                  </Text>
-                  <Text size="sm" c="dimmed" mb="lg">
-                    Send a message to{" "}
-                    {otherParticipant?.firstName || "this user"} to get started
-                  </Text>
-                </div>
-                <Button
-                  variant="filled"
-                  color="blue"
-                  radius="xl"
-                  size="md"
-                  onClick={() => messageInputRef.current?.focus()}
-                  style={{
-                    boxShadow: theme.shadows.md,
-                  }}
-                >
-                  Send First Message
-                </Button>
-              </Stack>
-            </Center>
-          ) : (
-            messages.map((message, index) => {
-              const previousMessage = messages[index - 1];
-              const nextMessage = messages[index + 1];
-              return (
-                <MessageCard
-                  key={message.id}
-                  message={message}
-                  isOwn={message.senderId === user?.id}
-                  showAvatar={message.senderId !== user?.id}
-                  previousMessage={previousMessage}
-                  nextMessage={nextMessage}
-                  onReply={handleReplyToMessage}
-                />
-              );
-            })
-          )}
+      {/* Input Area */}
+      <Box p="xs" style={{ borderTop: '1px solid var(--mantine-color-gray-3)' }}>
+        <ChatInput conversationId={conversationId} />
+      </Box>
 
-          {/* Typing Indicators */}
-          {conversation.typingUsers && conversation.typingUsers.length > 0 && (
-            <Group gap="sm" align="center" p="sm">
-              <Avatar size="sm" radius="xl">
-                {(otherParticipant?.firstName || "U").charAt(0)}
-              </Avatar>
-              <Paper
-                p="xs"
-                radius="lg"
-                style={{
-                  backgroundColor: theme.colors.gray[2],
-                }}
-              >
-                <Text size="xs" c="dimmed" fw={500}>
-                  {otherParticipant?.firstName || "User"} is typing...
-                </Text>
-              </Paper>
-            </Group>
-          )}
-        </Stack>
-      </ScrollArea>
-
-      {/* Message Input */}
-      <Paper
-        p="md"
-        shadow="sm"
+      {/* Resize Handle */}
+      <Box
         style={{
-          borderTop: `1px solid ${theme.colors.gray[2]}`,
-          backgroundColor: theme.white,
+          position: 'absolute',
+          bottom: 0,
+          right: 0,
+          width: 20,
+          height: 20,
+          cursor: 'nw-resize',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
         }}
+        onMouseDown={handleResizeMouseDown}
       >
-        <Group gap="xs" align="flex-end">
-          {/* Attachment Menu */}
-          <Menu
-            opened={showAttachmentMenu}
-            onChange={setShowAttachmentMenu}
-            position="top-start"
-            shadow="md"
-            radius="lg"
-          >
-            <Menu.Target>
-              <ActionIcon
-                variant="subtle"
-                size="lg"
-                radius="xl"
-                onClick={() => setShowAttachmentMenu(!showAttachmentMenu)}
-                style={{
-                  backgroundColor: theme.colors.gray[1],
-                  color: theme.colors.gray[6],
-                }}
-              >
-                <IconPaperclip size={18} />
-              </ActionIcon>
-            </Menu.Target>
-
-            <Menu.Dropdown>
-              <Menu.Item
-                leftSection={<IconPhoto size={16} />}
-                onClick={() => setShowAttachmentMenu(false)}
-              >
-                Photo
-              </Menu.Item>
-              <Menu.Item
-                leftSection={<IconVideo size={16} />}
-                onClick={() => setShowAttachmentMenu(false)}
-              >
-                Video
-              </Menu.Item>
-              <Menu.Item
-                leftSection={<IconFile size={16} />}
-                onClick={() => setShowAttachmentMenu(false)}
-              >
-                File
-              </Menu.Item>
-            </Menu.Dropdown>
-          </Menu>
-
-          {/* Message Input */}
-          <Textarea
-            ref={messageInputRef}
-            placeholder="Type a message..."
-            value={messageText}
-            onChange={(e) => setMessageText(e.currentTarget.value)}
-            onKeyPress={handleKeyPress}
-            style={{ flex: 1 }}
-            autosize
-            minRows={1}
-            maxRows={4}
-            radius="xl"
-            styles={{
-              input: {
-                border: `2px solid ${theme.colors.gray[2]}`,
-                backgroundColor: theme.colors.gray[0],
-                fontSize: rem(14),
-                padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-              },
-            }}
-            rightSection={
-              <Group gap="xs">
-                <ActionIcon
-                  variant="subtle"
-                  radius="xl"
-                  size="md"
-                  onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                  style={{
-                    backgroundColor: theme.colors.yellow[1],
-                    color: theme.colors.yellow[7],
-                  }}
-                >
-                  <IconMoodSmile size={16} />
-                </ActionIcon>
-                <ActionIcon
-                  color="blue"
-                  radius="xl"
-                  size="md"
-                  onClick={handleSendMessage}
-                  disabled={!messageText.trim()}
-                  loading={sendMessageMutation.isPending}
-                  style={{
-                    backgroundColor: messageText.trim()
-                      ? theme.colors.blue[6]
-                      : theme.colors.gray[2],
-                    color: theme.white,
-                  }}
-                >
-                  <IconSend size={16} />
-                </ActionIcon>
-              </Group>
-            }
-          />
-        </Group>
-
-        {/* Emoji Picker */}
-        {showEmojiPicker && (
-          <Paper
-            mt="xs"
-            p="sm"
-            radius="lg"
-            shadow="sm"
-            style={{
-              border: `1px solid ${theme.colors.gray[2]}`,
-              backgroundColor: theme.white,
-            }}
-          >
-            <Group gap="xs">
-              {["😀", "😂", "❤️", "👍", "👎", "😮", "😢", "😡"].map((emoji) => (
-                <ActionIcon
-                  key={emoji}
-                  variant="subtle"
-                  radius="xl"
-                  size="md"
-                  onClick={() => {
-                    setMessageText((prev) => prev + emoji);
-                    setShowEmojiPicker(false);
-                  }}
-                  style={{
-                    transition: "all 0.2s ease",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor =
-                      theme.colors.gray[1];
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = "transparent";
-                  }}
-                >
-                  <Text size="lg">{emoji}</Text>
-                </ActionIcon>
-              ))}
-            </Group>
-          </Paper>
-        )}
-      </Paper>
-    </Box>
+        <IconMaximize size={12} style={{ opacity: 0.5 }} />
+      </Box>
+    </Paper>
   );
 }

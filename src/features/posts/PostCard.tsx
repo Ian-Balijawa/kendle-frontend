@@ -26,6 +26,7 @@ import {
   IconFlag,
   IconHeart,
   IconHeartFilled,
+  IconMapPin,
   IconMessageCircle,
   IconSend,
   IconTrash
@@ -33,7 +34,7 @@ import {
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CommentSkeletonList } from "../../components/ui";
-import { useComments, useCreateComment } from "../../hooks/useComments";
+import { useInfiniteComments, useCreateComment } from "../../hooks/useComments";
 import {
   useBookmarkPost,
   useDeletePost,
@@ -54,8 +55,15 @@ interface PostCardProps {
 }
 
 export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
-  const navigate = useNavigate();
-  const { user, isAuthenticated } = useAuthStore();
+  try {
+    const navigate = useNavigate();
+    const { user, isAuthenticated } = useAuthStore();
+
+    // Defensive programming - ensure post exists and has required properties
+    if (!post || !post.id) {
+      console.error("PostCard: Invalid post data", post);
+      return null;
+    }
 
   const reactToPostMutation = useReactToPost();
   const removeReactionMutation = useRemoveReaction();
@@ -65,11 +73,11 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
   const deletePostMutation = useDeletePost();
   const createCommentMutation = useCreateComment();
 
-  const { data: commentsData, isLoading: commentsLoading } = useComments(
+  const { data: commentsData, isLoading: commentsLoading } = useInfiniteComments(
     post.id,
     { limit: 3 }
   );
-  const comments = commentsData?.comments || [];
+  const comments = commentsData?.pages.flatMap((page) => page.comments) || [];
 
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(post.content);
@@ -174,6 +182,12 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
 
   const isAuthor = user?.id === post?.author?.id;
 
+  // Ensure author data exists
+  if (!post.author) {
+    console.error("PostCard: Missing author data for post", post.id);
+    return null;
+  }
+
   // Helper function to render formatted text with newlines
   const renderFormattedText = (
     text: string,
@@ -222,20 +236,25 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
             <Group gap="sm">
               <Avatar
                 src={post.author?.avatar}
-                alt={post.author?.firstName || "User"}
+                alt={post.author?.firstName || post.author?.username || "User"}
                 size={42}
                 radius="xl"
                 style={{
                   border: "2px solid var(--mantine-color-gray-1)",
                 }}
               >
-                {(post.author?.firstName || "U").charAt(0)}
+                {(post.author?.firstName || post.author?.username || post.author?.phoneNumber || "U").charAt(0).toUpperCase()}
               </Avatar>
 
               <Box>
                 <Group gap={6} align="center">
                   <Text fw={600} size="sm" c="dark.8">
-                    {post.author?.firstName} {post.author?.lastName}
+                    {post.author?.firstName && post.author?.lastName 
+                      ? `${post.author.firstName} ${post.author.lastName}`
+                      : post.author?.username 
+                        ? post.author.username
+                        : post.author?.phoneNumber || "Unknown User"
+                    }
                   </Text>
                   {post.author?.isVerified && (
                     <Badge
@@ -247,10 +266,20 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                       ✓
                     </Badge>
                   )}
+                  {post.author?.isProfileComplete === false && (
+                    <Badge
+                      size="xs"
+                      variant="light"
+                      color="orange"
+                      radius="xl"
+                    >
+                      Incomplete
+                    </Badge>
+                  )}
                 </Group>
                 <Group gap={4} align="center">
                   <Text c="dimmed" size="xs">
-                    @{post.author?.username || post.author?.phoneNumber}
+                    @{post.author?.username || post.author?.phoneNumber || "unknown"}
                   </Text>
                   <Text c="dimmed" size="xs">
                     •
@@ -259,6 +288,21 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                     {formatDate(post?.createdAt)}
                     {post?.updatedAt !== post?.createdAt && " (edited)"}
                   </Text>
+                  {post.author?.status && (
+                    <>
+                      <Text c="dimmed" size="xs">
+                        •
+                      </Text>
+                      <Badge
+                        size="xs"
+                        variant="light"
+                        color={post.author.status === "active" ? "green" : "yellow"}
+                        radius="sm"
+                      >
+                        {post.author.status}
+                      </Badge>
+                    </>
+                  )}
                 </Group>
               </Box>
             </Group>
@@ -300,6 +344,43 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
             )}
           </Group>
 
+          {/* Post Type and Status Indicators */}
+          <Group gap="xs" mb="xs">
+            <Badge
+              size="xs"
+              variant="light"
+              color={
+                post.type === "text" ? "blue" :
+                post.type === "image" ? "green" :
+                post.type === "video" ? "purple" :
+                post.type === "poll" ? "orange" :
+                post.type === "event" ? "cyan" :
+                "gray"
+              }
+              radius="sm"
+            >
+              {post.type}
+            </Badge>
+            <Badge
+              size="xs"
+              variant="light"
+              color={post.status === "published" ? "green" : "yellow"}
+              radius="sm"
+            >
+              {post.status}
+            </Badge>
+            {!post.isPublic && (
+              <Badge
+                size="xs"
+                variant="light"
+                color="red"
+                radius="sm"
+              >
+                Private
+              </Badge>
+            )}
+          </Group>
+
           <UnstyledButton
             onClick={handlePostClick}
             style={{
@@ -325,7 +406,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
               {post?.media?.length === 1 ? (
                 <Image
                   src={post?.media[0]?.url}
-                  alt={post?.media[0]?.filename}
+                  alt={post?.media[0]?.filename || "Post media"}
                   radius="lg"
                   style={{
                     maxHeight: 400,
@@ -340,17 +421,21 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                   onMouseLeave={(e) => {
                     e.currentTarget.style.transform = "scale(1)";
                   }}
+                  onError={(e) => {
+                    console.error("Failed to load image:", post?.media?.[0]?.url);
+                    e.currentTarget.style.display = "none";
+                  }}
                 />
               ) : (
                 <Group gap="xs">
                   {post?.media?.slice(0, 4).map((media, index) => (
                     <Box
-                      key={media.id}
+                      key={media.id || `media-${index}`}
                       style={{ position: "relative", flex: 1 }}
                     >
                       <Image
                         src={media.url}
-                        alt={media.filename}
+                        alt={media.filename || "Post media"}
                         radius="md"
                         style={{
                           height: 150,
@@ -364,6 +449,10 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                         }}
                         onMouseLeave={(e) => {
                           e.currentTarget.style.transform = "scale(1)";
+                        }}
+                        onError={(e) => {
+                          console.error("Failed to load image:", media.url);
+                          e.currentTarget.style.display = "none";
                         }}
                       />
                       {index === 3 &&
@@ -395,6 +484,25 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
             </Box>
           )}
 
+          {/* Tags */}
+          {post?.tags && post?.tags?.length > 0 && (
+            <Group gap="xs">
+              {post?.tags?.map((tag: any) => (
+                <Badge
+                  key={tag.id || tag.name}
+                  variant="light"
+                  color="blue"
+                  size="sm"
+                  radius="xl"
+                  style={{ cursor: "pointer" }}
+                >
+                  #{tag.name}
+                </Badge>
+              ))}
+            </Group>
+          )}
+
+          {/* Legacy hashtags for backward compatibility */}
           {post?.hashtags && post?.hashtags?.length > 0 && (
             <Group gap="xs">
               {post?.hashtags?.map((hashtag: string) => (
@@ -412,6 +520,115 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
             </Group>
           )}
 
+          {/* Mentions */}
+          {post?.mentions && post?.mentions?.length > 0 && (
+            <Group gap="xs">
+              {post?.mentions?.map((mention: any) => (
+                <Badge
+                  key={mention.id || mention.mentionedUserId}
+                  variant="light"
+                  color="green"
+                  size="sm"
+                  radius="xl"
+                  style={{ cursor: "pointer" }}
+                >
+                  @{mention.username || mention.mentionedUserId}
+                </Badge>
+              ))}
+            </Group>
+          )}
+
+          {/* Location */}
+          {post?.location && (
+            <Group gap="xs">
+              <IconMapPin size={14} color="var(--mantine-color-blue-6)" />
+              <Text size="xs" c="blue.6">
+                {post.location}
+              </Text>
+            </Group>
+          )}
+
+          {/* Poll Display */}
+          {post?.type === "poll" && post?.pollQuestion && (
+            <Card withBorder p="sm" radius="md" bg="gray.0">
+              <Stack gap="xs">
+                <Text size="sm" fw={600}>
+                  {post.pollQuestion}
+                </Text>
+                {post.pollOptions && post.pollOptions.length > 0 && (
+                  <Stack gap="xs">
+                    {post.pollOptions.map((option: string, index: number) => (
+                      <Text key={index} size="xs" c="dimmed">
+                        • {option}
+                      </Text>
+                    ))}
+                  </Stack>
+                )}
+                {post.pollEndDate && (
+                  <Text size="xs" c="dimmed">
+                    Ends: {new Date(post.pollEndDate).toLocaleDateString()}
+                  </Text>
+                )}
+              </Stack>
+            </Card>
+          )}
+
+          {/* Event Display */}
+          {post?.type === "event" && post?.eventTitle && (
+            <Card withBorder p="sm" radius="md" bg="blue.0">
+              <Stack gap="xs">
+                <Text size="sm" fw={600} c="blue.7">
+                  {post.eventTitle}
+                </Text>
+                {post.eventDescription && (
+                  <Text size="xs" c="dimmed">
+                    {post.eventDescription}
+                  </Text>
+                )}
+                {post.eventStartDate && (
+                  <Text size="xs" c="blue.6">
+                    📅 {new Date(post.eventStartDate).toLocaleDateString()}
+                  </Text>
+                )}
+                {post.eventLocation && (
+                  <Text size="xs" c="blue.6">
+                    📍 {post.eventLocation}
+                  </Text>
+                )}
+                {post.eventCapacity && (
+                  <Text size="xs" c="blue.6">
+                    👥 Capacity: {post.eventCapacity}
+                  </Text>
+                )}
+              </Stack>
+            </Card>
+          )}
+
+          {/* Post Statistics */}
+          <Group gap="md" mb="sm">
+            <Text size="xs" c="dimmed">
+              👀 {post.viewsCount || 0} views
+            </Text>
+            <Text size="xs" c="dimmed">
+              📊 {post.sharesCount || 0} shares
+            </Text>
+            <Text size="xs" c="dimmed">
+              🔖 {post.bookmarksCount || 0} bookmarks
+            </Text>
+          </Group>
+
+          {/* Interaction Settings */}
+          {(!post.allowComments || !post.allowLikes || !post.allowShares || !post.allowBookmarks || !post.allowReactions) && (
+            <Group gap="xs" mb="sm">
+              <Text size="xs" c="dimmed">Restrictions:</Text>
+              {!post.allowComments && <Badge size="xs" variant="light" color="red">No Comments</Badge>}
+              {!post.allowLikes && <Badge size="xs" variant="light" color="red">No Likes</Badge>}
+              {!post.allowShares && <Badge size="xs" variant="light" color="red">No Shares</Badge>}
+              {!post.allowBookmarks && <Badge size="xs" variant="light" color="red">No Bookmarks</Badge>}
+              {!post.allowReactions && <Badge size="xs" variant="light" color="red">No Reactions</Badge>}
+            </Group>
+          )}
+
           <Group justify="space-between" align="center">
             <Group gap="lg">
               <Group gap={4}>
@@ -421,7 +638,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                   onClick={handleLike}
                   size="lg"
                   radius="xl"
-                  disabled={!isAuthenticated}
+                  disabled={!isAuthenticated || !post.allowLikes}
                   style={{
                     transition: "all 0.2s ease",
                   }}
@@ -444,7 +661,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                   onClick={handleDislike}
                   size="lg"
                   radius="xl"
-                  disabled={!isAuthenticated}
+                  disabled={!isAuthenticated || !post.allowReactions}
                   style={{
                     transition: "all 0.2s ease",
                   }}
@@ -463,6 +680,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                   onClick={() => setShowComments(!showComments)}
                   size="lg"
                   radius="xl"
+                  disabled={!post.allowComments}
                   style={{
                     transition: "all 0.2s ease",
                   }}
@@ -481,7 +699,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
               onClick={handleBookmark}
               size="lg"
               radius="xl"
-              disabled={!isAuthenticated}
+              disabled={!isAuthenticated || !post.allowBookmarks}
               style={{
                 transition: "all 0.2s ease",
               }}
@@ -567,7 +785,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                   <>
                     {comments.slice(0, 3).map((comment: any) => (
                       <CommentCard
-                        key={comment.id}
+                        key={comment.id || `comment-${Math.random()}`}
                         comment={comment}
                         postId={post.id}
                       />
@@ -605,7 +823,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
       >
         <Stack gap="lg">
           <Textarea
-            placeholder="What's on your mind? Use Enter for new lines..."
+            placeholder="What's on your mind? "
             value={editContent}
             onChange={(e) => setEditContent(e.currentTarget.value)}
             minRows={4}
@@ -686,4 +904,14 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
       </Modal>
     </>
   );
+  } catch (error) {
+    console.error("PostCard: Error rendering post", error, post);
+    return (
+      <Card withBorder p="md" radius="md" mb="md">
+        <Text c="red" size="sm">
+          Error loading post. Please try refreshing the page.
+        </Text>
+      </Card>
+    );
+  }
 }

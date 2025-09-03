@@ -1,303 +1,240 @@
-import {
-  ActionIcon,
-  Avatar, Box,
-  Group,
-  Paper,
-  Text,
-  useMantineTheme,
-  Tooltip,
-  Transition
-} from "@mantine/core";
-import {
-  IconX,
-  IconMinus,
-  IconMaximize,
-  IconPhone,
-  IconVideo
-} from "@tabler/icons-react";
-import { useState } from "react";
-import { useFloatingChatStore } from "../../stores/chatStore";
-import { Conversation } from "../../types/chat";
-import { rem } from "@mantine/core";
+import { Box, Portal, Transition, ActionIcon, Badge } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
+import { IconMessage, IconX } from '@tabler/icons-react';
+import { useAuthStore } from '../../stores/authStore';
+import { useWebSocketIntegration } from '../../hooks/useWebSocket';
+import { useUnreadCount } from '../../hooks/useChat';
+import { ChatHeads } from './ChatHeads';
+import { ChatWidget } from './ChatWidget';
+import { ChatWindows } from './ChatWindows';
 
-interface FloatingChatWidgetProps {
-  conversation: Conversation;
-  onClose?: () => void;
-}
+export function FloatingChatWidget() {
+  const { isAuthenticated, user } = useAuthStore();
+  const [opened, { open, close }] = useDisclosure(false);
+  const { isConnected } = useWebSocketIntegration();
+  const { data: unreadCount } = useUnreadCount();
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
-export function FloatingChatWidget({
-  conversation,
-  onClose,
-}: FloatingChatWidgetProps) {
-  const theme = useMantineTheme();
-  const { openChatWindow, closeChatWindow } = useFloatingChatStore();
-  const [isHovered, setIsHovered] = useState(false);
+  // Don't render if user is not authenticated
+  if (!isAuthenticated || !user) {
+    return null;
+  }
 
-  const otherParticipant = conversation?.participants?.find(
-    (p) => p.id !== conversation?.participants?.[0]?.id
-  );
-
-  const handleOpenChat = () => {
-    openChatWindow(conversation.id);
-  };
-
-  const handleClose = () => {
-    closeChatWindow(conversation.id);
-    onClose?.();
-  };
-
-  return (
-    <Transition
-      mounted={true}
-      transition="slide-up"
-      duration={300}
-      timingFunction="ease"
-    >
-      {(styles) => (
-        <Paper
-          shadow="lg"
-          radius="xl"
-          p="md"
+  if (isMobile) {
+    return (
+      <Portal>
+        <Box
           style={{
-            ...styles,
-            position: "fixed",
+            position: 'fixed',
             bottom: 20,
             right: 20,
-            width: 280,
-            backgroundColor: theme.white,
-            border: `1px solid ${theme.colors.gray[2]}`,
-            cursor: "pointer",
             zIndex: 1000,
+            pointerEvents: 'none',
           }}
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-          onClick={handleOpenChat}
         >
-          <Group justify="space-between" align="center">
-            <Group gap="sm">
-              <Box style={{ position: "relative" }}>
-                <Avatar
-                  src={otherParticipant?.avatar}
-                  alt={otherParticipant?.firstName || "User"}
-                  size="md"
-                  radius="xl"
-                  style={{
-                    border: `2px solid ${theme.colors.gray[2]}`,
-                  }}
-                >
-                  {(otherParticipant?.firstName || "U").charAt(0)}
-                </Avatar>
+          {/* Chat Heads - Always visible */}
+          <ChatHeads />
 
-                {/* Online Status Indicator */}
-                {otherParticipant?.isOnline && (
-                  <Box
-                    style={{
-                      position: "absolute",
-                      bottom: -2,
-                      right: -2,
-                      width: 12,
-                      height: 12,
-                      borderRadius: "50%",
-                      backgroundColor: theme.colors.green[5],
-                      border: `2px solid ${theme.white}`,
-                      boxShadow: `0 0 0 1px ${theme.colors.green[2]}`,
-                    }}
-                  />
-                )}
-
-                {/* Unread Count Badge */}
-                {conversation?.unreadCount > 0 && (
-                  <Box
-                    style={{
-                      position: "absolute",
-                      top: -4,
-                      right: -4,
-                      minWidth: 18,
-                      height: 18,
-                      borderRadius: "50%",
-                      backgroundColor: theme.colors.red[5],
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      padding: "0 4px",
-                      boxShadow: theme.shadows.sm,
-                    }}
-                  >
-                    <Text size="xs" c="white" fw={600}>
-                      {conversation?.unreadCount > 99
-                        ? "99+"
-                        : conversation?.unreadCount}
-                    </Text>
-                  </Box>
-                )}
-              </Box>
-
-              <Box style={{ flex: 1, minWidth: 0 }}>
-                <Text
-                  fw={600}
-                  size="sm"
-                  c={theme.colors.gray[8]}
-                  style={{
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                    fontSize: rem(14),
-                  }}
-                >
-                  {conversation?.name ||
-                    `${otherParticipant?.firstName} ${otherParticipant?.lastName}`}
-                </Text>
-
-                {conversation?.lastMessage && (
-                  <Text
-                    size="xs"
-                    c="dimmed"
-                    style={{
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      fontSize: rem(12),
-                    }}
-                  >
-                    {conversation?.lastMessage?.content?.substring(0, 40)}
-                    {conversation?.lastMessage?.content?.length > 40 && "..."}
-                  </Text>
-                )}
-              </Box>
-            </Group>
-
-            <Group gap="xs">
-              {/* Quick Actions */}
-              <Transition
-                mounted={isHovered}
-                transition="fade"
-                duration={200}
-              >
-                {(styles) => (
-                  <Group gap="xs" style={styles}>
-                    <Tooltip label="Voice Call">
-                      <ActionIcon
-                        size="sm"
-                        variant="subtle"
-                        radius="xl"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          // TODO: Implement voice call
-                        }}
-                        style={{
-                          backgroundColor: theme.colors.green[1],
-                          color: theme.colors.green[7],
-                        }}
-                      >
-                        <IconPhone size={14} />
-                      </ActionIcon>
-                    </Tooltip>
-
-                    <Tooltip label="Video Call">
-                      <ActionIcon
-                        size="sm"
-                        variant="subtle"
-                        radius="xl"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          // TODO: Implement video call
-                        }}
-                        style={{
-                          backgroundColor: theme.colors.blue[1],
-                          color: theme.colors.blue[7],
-                        }}
-                      >
-                        <IconVideo size={14} />
-                      </ActionIcon>
-                    </Tooltip>
-                  </Group>
-                )}
-              </Transition>
-
-              {/* Control Buttons */}
-              <Group gap="xs">
-                <Tooltip label="Minimize">
-                  <ActionIcon
-                    size="sm"
-                    variant="subtle"
-                    radius="xl"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      // TODO: Implement minimize
-                    }}
-                    style={{
-                      backgroundColor: theme.colors.gray[1],
-                      color: theme.colors.gray[6],
-                    }}
-                  >
-                    <IconMinus size={14} />
-                  </ActionIcon>
-                </Tooltip>
-
-                <Tooltip label="Maximize">
-                  <ActionIcon
-                    size="sm"
-                    variant="subtle"
-                    radius="xl"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleOpenChat();
-                    }}
-                    style={{
-                      backgroundColor: theme.colors.blue[1],
-                      color: theme.colors.blue[7],
-                    }}
-                  >
-                    <IconMaximize size={14} />
-                  </ActionIcon>
-                </Tooltip>
-
-                <Tooltip label="Close">
-                  <ActionIcon
-                    size="sm"
-                    variant="subtle"
-                    radius="xl"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleClose();
-                    }}
-                    style={{
-                      backgroundColor: theme.colors.red[1],
-                      color: theme.colors.red[7],
-                    }}
-                  >
-                    <IconX size={14} />
-                  </ActionIcon>
-                </Tooltip>
-              </Group>
-            </Group>
-          </Group>
-
-          {/* Progress Bar for Unread Messages */}
-          {conversation?.unreadCount > 0 && (
-            <Box
-              mt="sm"
+          {/* Main Chat Button */}
+          <Box
+            style={{
+              pointerEvents: 'auto',
+              marginTop: 10,
+            }}
+          >
+            <ActionIcon
+              size="lg"
+              variant="filled"
+              color="primary"
+              onClick={open}
               style={{
-                width: "100%",
-                height: 3,
-                backgroundColor: theme.colors.gray[2],
-                borderRadius: theme.radius.xl,
-                overflow: "hidden",
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                transition: 'all 0.2s ease',
               }}
             >
+              <IconMessage size={20} />
+            </ActionIcon>
+
+            {/* Unread count badge */}
+            {unreadCount && unreadCount.count > 0 && (
+              <Badge
+                size="xs"
+                variant="filled"
+                color="red"
+                style={{
+                  position: 'absolute',
+                  top: -8,
+                  right: -8,
+                  minWidth: 20,
+                  height: 20,
+                  borderRadius: 10,
+                  fontSize: 10,
+                  fontWeight: 'bold',
+                }}
+              >
+                {unreadCount.count > 99 ? '99+' : unreadCount.count}
+              </Badge>
+            )}
+          </Box>
+
+          {/* Mobile Chat Widget - Full screen overlay */}
+          <Transition
+            mounted={opened}
+            transition="slide-up"
+            duration={300}
+            timingFunction="ease"
+          >
+            {(styles) => (
               <Box
                 style={{
-                  width: `${Math.min((conversation?.unreadCount / 10) * 100, 100)}%`,
-                  height: "100%",
-                  backgroundColor: theme.colors.blue[5],
-                  borderRadius: theme.radius.xl,
-                  transition: "width 0.3s ease",
+                  ...styles,
+                  position: 'fixed',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                  zIndex: 2000,
+                  pointerEvents: 'auto',
                 }}
-              />
+                onClick={close}
+              >
+                <Box
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'white',
+                    borderRadius: '20px 20px 0 0',
+                    marginTop: '10%',
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {/* Mobile Header */}
+                  <Box
+                    style={{
+                      padding: '16px',
+                      borderBottom: '1px solid var(--mantine-color-gray-3)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                    }}
+                  >
+                    <Box style={{ width: 40 }} />
+                    <Box style={{ textAlign: 'center' }}>
+                      <strong>Messages</strong>
+                    </Box>
+                    <ActionIcon variant="subtle" onClick={close}>
+                      <IconX size={20} />
+                    </ActionIcon>
+                  </Box>
+
+                  {/* Mobile Chat Content */}
+                  <Box style={{ height: 'calc(100% - 60px)' }}>
+                    <ChatWidget onClose={close} />
+                  </Box>
+                </Box>
+              </Box>
+            )}
+          </Transition>
+        </Box>
+      </Portal>
+    );
+  }
+
+  // Desktop version
+  return (
+    <Portal>
+      <Box
+        style={{
+          position: 'fixed',
+          bottom: 20,
+          right: 20,
+          zIndex: 1000,
+          pointerEvents: 'none',
+        }}
+      >
+        {/* Chat Heads - Always visible */}
+        <ChatHeads />
+
+        {/* Chat Windows - Floating windows */}
+        <ChatWindows />
+
+        {/* Main Chat Button */}
+        <Box
+          style={{
+            pointerEvents: 'auto',
+            marginTop: 10,
+          }}
+        >
+          <ActionIcon
+            size="lg"
+            variant="filled"
+            color="primary"
+            onClick={open}
+            style={{
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+              transition: 'all 0.2s ease',
+            }}
+          >
+            <IconMessage size={20} />
+          </ActionIcon>
+
+          {/* Unread count badge */}
+          {unreadCount && unreadCount.count > 0 && (
+            <Badge
+              size="xs"
+              variant="filled"
+              color="red"
+              style={{
+                position: 'absolute',
+                top: -8,
+                right: -8,
+                minWidth: 20,
+                height: 20,
+                borderRadius: 10,
+                fontSize: 10,
+                fontWeight: 'bold',
+              }}
+            >
+              {unreadCount.count > 99 ? '99+' : unreadCount.count}
+            </Badge>
+          )}
+        </Box>
+
+        {/* Main Chat Widget - Opens when clicked */}
+        <Transition
+          mounted={opened}
+          transition="slide-up"
+          duration={300}
+          timingFunction="ease"
+        >
+          {(styles) => (
+            <Box style={styles}>
+              <ChatWidget onClose={close} />
             </Box>
           )}
-        </Paper>
-      )}
-    </Transition>
+        </Transition>
+
+        {/* Connection Status Indicator */}
+        {!isConnected && (
+          <Box
+            style={{
+              position: 'absolute',
+              top: -8,
+              right: -8,
+              width: 12,
+              height: 12,
+              borderRadius: '50%',
+              backgroundColor: '#ff4444',
+              border: '2px solid white',
+              pointerEvents: 'none',
+            }}
+          />
+        )}
+      </Box>
+    </Portal>
   );
 }

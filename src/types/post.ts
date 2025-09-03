@@ -65,9 +65,57 @@ export interface Post {
 
 export interface CreatePostData {
   content: string;
-  media?: File[];
-  tags?: string[];
-  mentions?: string[];
+  media?: MediaInput[];
+  location?: string;
+  tags?: TagInput[];
+  mentions?: MentionInput[];
+  type?: "text" | "image" | "video" | "poll" | "event" | "repost" | "quote" | "article" | "story";
+  isPublic?: boolean;
+  allowComments?: boolean;
+  allowLikes?: boolean;
+  allowShares?: boolean;
+  allowBookmarks?: boolean;
+  allowReactions?: boolean;
+  isRepost?: boolean;
+  isQuote?: boolean;
+  isArticle?: boolean;
+  isStory?: boolean;
+  pollQuestion?: string;
+  pollOptions?: string[];
+  pollEndDate?: string;
+  eventTitle?: string;
+  eventDescription?: string;
+  eventStartDate?: string;
+  eventEndDate?: string;
+  eventLocation?: string;
+  eventCapacity?: number;
+  originalPostId?: string;
+  repostContent?: string;
+  scheduledAt?: string;
+}
+
+export interface MediaInput {
+  type: "image" | "video";
+  url: string;
+  thumbnailUrl?: string;
+  altText?: string;
+  caption?: string;
+  fileSize: number;
+  duration?: number;
+  width?: number;
+  height?: number;
+  format?: string;
+}
+
+export interface TagInput {
+  name: string;
+  description?: string;
+}
+
+export interface MentionInput {
+  mentionedUserId: string;
+  postId?: string;
+  commentId?: string;
 }
 
 export interface UpdatePostData {

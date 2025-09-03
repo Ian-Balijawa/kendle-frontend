@@ -4,6 +4,7 @@ import {
     Badge,
     Box,
     Button,
+    Card,
     Center,
     Divider,
     Group,
@@ -26,6 +27,7 @@ import {
     IconEdit,
     IconFlag,
     IconHeart,
+    IconMapPin,
     IconMessageCircle,
     IconSend,
     IconShare,
@@ -53,6 +55,8 @@ export function PostDetail() {
   const { postId } = useParams<{ postId: string }>();
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuthStore();
+
+  try {
 
   // React Query hooks
   const {
@@ -308,7 +312,7 @@ export function PostDetail() {
             <Group gap="md">
               <Avatar
                 src={post?.author?.avatar}
-                alt={post?.author?.firstName || "User"}
+                alt={post?.author?.firstName || post?.author?.username || "User"}
                 size={48}
                 radius="xl"
                 style={{
@@ -317,22 +321,32 @@ export function PostDetail() {
                     : "none",
                 }}
               >
-                {(post?.author?.firstName || "U").charAt(0)}
+                {(post?.author?.firstName || post?.author?.username || post?.author?.phoneNumber || "U").charAt(0).toUpperCase()}
               </Avatar>
               <Box>
                 <Group gap="xs" align="center">
                   <Text fw={600} size="md" c="dark.8">
-                    {post?.author?.firstName} {post?.author?.lastName}
+                    {post?.author?.firstName && post?.author?.lastName 
+                      ? `${post.author.firstName} ${post.author.lastName}`
+                      : post?.author?.username 
+                        ? post.author.username
+                        : post?.author?.phoneNumber || "Unknown User"
+                    }
                   </Text>
                   {post?.author?.isVerified && (
                     <Badge size="xs" color="blue" radius="sm" variant="filled">
                       ✓
                     </Badge>
                   )}
+                  {post?.author?.isProfileComplete === false && (
+                    <Badge size="xs" variant="light" color="orange" radius="sm">
+                      Incomplete
+                    </Badge>
+                  )}
                 </Group>
                 <Group gap="xs" align="center">
                   <Text c="dimmed" size="sm">
-                    @{post?.author?.username || post?.author?.phoneNumber}
+                    @{post?.author?.username || post?.author?.phoneNumber || "unknown"}
                   </Text>
                   <Text c="dimmed" size="xs">
                     •
@@ -341,6 +355,21 @@ export function PostDetail() {
                     {formatDate(post?.createdAt)}
                     {post?.updatedAt !== post?.createdAt && " (edited)"}
                   </Text>
+                  {post?.author?.status && (
+                    <>
+                      <Text c="dimmed" size="xs">
+                        •
+                      </Text>
+                      <Badge
+                        size="xs"
+                        variant="light"
+                        color={post.author.status === "active" ? "green" : "yellow"}
+                        radius="sm"
+                      >
+                        {post.author.status}
+                      </Badge>
+                    </>
+                  )}
                 </Group>
               </Box>
             </Group>
@@ -382,11 +411,58 @@ export function PostDetail() {
             )}
           </Group>
 
+          {/* Post Type and Status Indicators */}
+          <Group gap="xs" mb="md">
+            <Badge
+              size="sm"
+              variant="light"
+              color={
+                post.type === "text" ? "blue" :
+                post.type === "image" ? "green" :
+                post.type === "video" ? "purple" :
+                post.type === "poll" ? "orange" :
+                post.type === "event" ? "cyan" :
+                "gray"
+              }
+              radius="sm"
+            >
+              {post.type}
+            </Badge>
+            <Badge
+              size="sm"
+              variant="light"
+              color={post.status === "published" ? "green" : "yellow"}
+              radius="sm"
+            >
+              {post.status}
+            </Badge>
+            {!post.isPublic && (
+              <Badge
+                size="sm"
+                variant="light"
+                color="red"
+                radius="sm"
+              >
+                Private
+              </Badge>
+            )}
+            {post.scheduledAt && (
+              <Badge
+                size="sm"
+                variant="light"
+                color="purple"
+                radius="sm"
+              >
+                Scheduled
+              </Badge>
+            )}
+          </Group>
+
           {/* Post Content */}
           {isEditing ? (
             <Stack gap="md">
               <Textarea
-                placeholder="What's on your mind? Use Enter for new lines..."
+                placeholder="What's on your mind? "
                 value={editContent}
                 onChange={(e) => setEditContent(e.currentTarget.value)}
                 minRows={4}
@@ -461,7 +537,25 @@ export function PostDetail() {
             </Box>
           )}
 
-          {/* Hashtags */}
+          {/* Tags */}
+          {post?.tags && post?.tags?.length > 0 && (
+            <Group gap="xs" mb="lg">
+              {post?.tags?.map((tag: any) => (
+                <Badge
+                  key={tag.id || tag.name}
+                  variant="light"
+                  color="blue"
+                  size="sm"
+                  radius="md"
+                  style={{ cursor: "pointer" }}
+                >
+                  #{tag.name}
+                </Badge>
+              ))}
+            </Group>
+          )}
+
+          {/* Legacy hashtags for backward compatibility */}
           {post?.hashtags && post?.hashtags?.length > 0 && (
             <Group gap="xs" mb="lg">
               {post?.hashtags?.map((hashtag: string) => (
@@ -478,6 +572,127 @@ export function PostDetail() {
               ))}
             </Group>
           )}
+
+          {/* Mentions */}
+          {post?.mentions && post?.mentions?.length > 0 && (
+            <Group gap="xs" mb="lg">
+              {post?.mentions?.map((mention: any) => (
+                <Badge
+                  key={mention.id || mention.mentionedUserId}
+                  variant="light"
+                  color="green"
+                  size="sm"
+                  radius="md"
+                  style={{ cursor: "pointer" }}
+                >
+                  @{mention.username || mention.mentionedUserId}
+                </Badge>
+              ))}
+            </Group>
+          )}
+
+          {/* Location */}
+          {post?.location && (
+            <Group gap="xs" mb="lg">
+              <IconMapPin size={16} color="var(--mantine-color-blue-6)" />
+              <Text size="sm" c="blue.6">
+                {post.location}
+              </Text>
+            </Group>
+          )}
+
+          {/* Poll Display */}
+          {post?.type === "poll" && post?.pollQuestion && (
+            <Card withBorder p="md" radius="md" bg="gray.0" mb="lg">
+              <Stack gap="md">
+                <Text size="md" fw={600}>
+                  {post.pollQuestion}
+                </Text>
+                {post.pollOptions && post.pollOptions.length > 0 && (
+                  <Stack gap="sm">
+                    {post.pollOptions.map((option: string, index: number) => (
+                      <Text key={index} size="sm" c="dimmed">
+                        • {option}
+                      </Text>
+                    ))}
+                  </Stack>
+                )}
+                {post.pollEndDate && (
+                  <Text size="sm" c="dimmed">
+                    Poll ends: {new Date(post.pollEndDate).toLocaleDateString()}
+                  </Text>
+                )}
+              </Stack>
+            </Card>
+          )}
+
+          {/* Event Display */}
+          {post?.type === "event" && post?.eventTitle && (
+            <Card withBorder p="md" radius="md" bg="blue.0" mb="lg">
+              <Stack gap="md">
+                <Text size="md" fw={600} c="blue.7">
+                  {post.eventTitle}
+                </Text>
+                {post.eventDescription && (
+                  <Text size="sm" c="dimmed">
+                    {post.eventDescription}
+                  </Text>
+                )}
+                <Group gap="md">
+                  {post.eventStartDate && (
+                    <Text size="sm" c="blue.6">
+                      📅 {new Date(post.eventStartDate).toLocaleDateString()}
+                    </Text>
+                  )}
+                  {post.eventLocation && (
+                    <Text size="sm" c="blue.6">
+                      📍 {post.eventLocation}
+                    </Text>
+                  )}
+                  {post.eventCapacity && (
+                    <Text size="sm" c="blue.6">
+                      👥 Capacity: {post.eventCapacity}
+                    </Text>
+                  )}
+                </Group>
+              </Stack>
+            </Card>
+          )}
+        </Box>
+
+        {/* Post Statistics */}
+        <Box px="xl" pb="md">
+          <Group gap="lg" mb="md">
+            <Text size="sm" c="dimmed">
+              👀 {post.viewsCount || 0} views
+            </Text>
+            <Text size="sm" c="dimmed">
+              📊 {post.sharesCount || 0} shares
+            </Text>
+            <Text size="sm" c="dimmed">
+              🔖 {post.bookmarksCount || 0} bookmarks
+            </Text>
+            <Text size="sm" c="dimmed">
+              📅 Created: {new Date(post.createdAt).toLocaleString()}
+            </Text>
+            {post.updatedAt !== post.createdAt && (
+              <Text size="sm" c="dimmed">
+                ✏️ Updated: {new Date(post.updatedAt).toLocaleString()}
+              </Text>
+            )}
+          </Group>
+
+          {/* Interaction Settings */}
+          {(!post.allowComments || !post.allowLikes || !post.allowShares || !post.allowBookmarks || !post.allowReactions) && (
+            <Group gap="xs" mb="md">
+              <Text size="sm" c="dimmed">Restrictions:</Text>
+              {!post.allowComments && <Badge size="sm" variant="light" color="red">No Comments</Badge>}
+              {!post.allowLikes && <Badge size="sm" variant="light" color="red">No Likes</Badge>}
+              {!post.allowShares && <Badge size="sm" variant="light" color="red">No Shares</Badge>}
+              {!post.allowBookmarks && <Badge size="sm" variant="light" color="red">No Bookmarks</Badge>}
+              {!post.allowReactions && <Badge size="sm" variant="light" color="red">No Reactions</Badge>}
+            </Group>
+          )}
         </Box>
 
         {/* Actions Bar */}
@@ -492,7 +707,7 @@ export function PostDetail() {
                     variant={post?.isLiked ? "filled" : "subtle"}
                     color={post?.isLiked ? "red" : "gray"}
                     onClick={handleLike}
-                    disabled={!isAuthenticated}
+                    disabled={!isAuthenticated || !post.allowLikes}
                     size="lg"
                     radius="xl"
                   >
@@ -508,7 +723,7 @@ export function PostDetail() {
                     variant={post?.isDisliked ? "filled" : "subtle"}
                     color="gray"
                     onClick={handleDislike}
-                    disabled={!isAuthenticated}
+                    disabled={!isAuthenticated || !post.allowReactions}
                     size="lg"
                     radius="xl"
                   >
@@ -522,22 +737,6 @@ export function PostDetail() {
 
               {/* Interactions */}
               <Group gap="lg">
-                <Group gap="xs" style={{ cursor: "pointer" }}>
-                  <ActionIcon
-                    variant={post?.isLiked ? "filled" : "subtle"}
-                    color={post?.isLiked ? "red" : "gray"}
-                    onClick={handleLike}
-                    disabled={!isAuthenticated}
-                    size="lg"
-                    radius="xl"
-                  >
-                    <IconHeart size={18} />
-                  </ActionIcon>
-                  <Text size="sm" c="dimmed">
-                    {post?.likesCount}
-                  </Text>
-                </Group>
-
                 <Group
                   gap="xs"
                   style={{ cursor: "pointer" }}
@@ -548,6 +747,7 @@ export function PostDetail() {
                     color="gray"
                     size="lg"
                     radius="xl"
+                    disabled={!post.allowComments}
                   >
                     <IconMessageCircle size={18} />
                   </ActionIcon>
@@ -561,7 +761,7 @@ export function PostDetail() {
                     variant="subtle"
                     color="gray"
                     onClick={handleShare}
-                    disabled={!isAuthenticated}
+                    disabled={!isAuthenticated || !post.allowShares}
                     size="lg"
                     radius="xl"
                   >
@@ -579,7 +779,7 @@ export function PostDetail() {
               variant={post?.isBookmarked ? "filled" : "subtle"}
               color={post?.isBookmarked ? "yellow" : "gray"}
               onClick={handleBookmark}
-              disabled={!isAuthenticated}
+              disabled={!isAuthenticated || !post.allowBookmarks}
               size="lg"
               radius="xl"
             >
@@ -681,13 +881,15 @@ export function PostDetail() {
           </Center>
         ) : (
           <Stack gap="md">
-            {comments.map((comment) => (
-              <CommentCard
-                key={comment.id}
-                comment={comment}
-                postId={post.id}
-              />
-            ))}
+            {comments
+              .filter((comment) => comment && comment.id) // Filter out invalid comments
+              .map((comment, index) => (
+                <CommentCard
+                  key={comment.id || `comment-${index}-${Math.random()}`}
+                  comment={comment}
+                  postId={post.id}
+                />
+              ))}
 
             {hasNextPage && (
               <Center pt="md">
@@ -743,4 +945,46 @@ export function PostDetail() {
       </Modal>
     </Box>
   );
+  } catch (error) {
+    console.error("PostDetail: Error rendering component", error);
+    return (
+      <Center py={60}>
+        <Paper p="xl" radius="lg" withBorder w="100%" maw={400}>
+          <Stack align="center" gap="lg">
+            <Box
+              w={60}
+              h={60}
+              bg="red.1"
+              style={{
+                borderRadius: "50%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Text size="xl" c="red.6">
+                !
+              </Text>
+            </Box>
+            <Stack gap="xs" align="center">
+              <Text size="lg" fw={600} c="red.6">
+                Something went wrong
+              </Text>
+              <Text c="dimmed" ta="center" size="sm">
+                There was an error loading this post. Please try refreshing the page.
+              </Text>
+            </Stack>
+            <Button
+              variant="light"
+              size="md"
+              leftSection={<IconArrowLeft size={16} />}
+              onClick={() => navigate("/")}
+            >
+              Back to Home
+            </Button>
+          </Stack>
+        </Paper>
+      </Center>
+    );
+  }
 }

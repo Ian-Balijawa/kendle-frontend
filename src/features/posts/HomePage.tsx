@@ -109,10 +109,10 @@ export function HomePage() {
       </Box>
 
       {/* Profile Discovery Section */}
-      {isAuthenticated && suggestedUsers && suggestedUsers.length > 0 && (
+      {isAuthenticated && suggestedUsers && suggestedUsers.suggestions.length > 0 && (
         <Box mb="lg">
           <ProfileSwipe
-            users={suggestedUsers}
+            users={suggestedUsers.suggestions}
             title="Discover People"
             subtitle="Find interesting people to follow"
             showStats={true}
@@ -197,7 +197,7 @@ export function HomePage() {
         {!isLoading && posts.length > 0 && (
           <>
             {posts.map((post, index) => (
-              <PostCard key={post.id} post={post} isFirst={index === 0} />
+              <PostCard key={`post-${post.id}-${index}`} post={post} isFirst={index === 0} />
             ))}
 
             {/* Infinite scroll trigger */}

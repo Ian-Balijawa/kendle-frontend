@@ -188,22 +188,21 @@ export interface LoginRequest {
 }
 
 export interface CompleteProfileRequest {
-	username: string
-	firstName?: string
-	lastName?: string
-	email: string
-	whatsapp: string
-	twitterLink: string
-	tiktokLink: string
-	instagramLink: string
-	bio?: string
+	firstName: string
+	lastName: string
+	email: string | null
+	whatsapp: string | null
+	twitterLink: string | null
+	tiktokLink: string | null
+	instagramLink: string | null
+	bio: string | null
 }
 
 // User profile request/response types
 export interface UpdateProfileRequest {
 	firstName?: string
 	lastName?: string
-	bio?: string
+	bio?: string | null
 	username?: string
 	email?: string
 	whatsapp?: string
@@ -213,12 +212,14 @@ export interface UpdateProfileRequest {
 }
 
 export interface UserProfileCompleteRequest {
-	username: string
-	email: string
-	whatsapp: string
-	twitterLink: string
-	tiktokLink: string
-	instagramLink: string
+	firstName: string
+	lastName: string
+	email: string | null
+	whatsapp: string | null
+	twitterLink: string | null
+	tiktokLink: string | null
+	instagramLink: string | null
+	bio: string | null
 }
 
 // Chat request/response types
@@ -710,7 +711,7 @@ class ApiService {
 		page = 1,
 		limit = 20,
 	): Promise<{
-		followers: string[]
+		followers: User[]
 		totalCount: number
 		currentPage: number
 		totalPages: number
@@ -718,7 +719,7 @@ class ApiService {
 	}> {
 		const response: AxiosResponse<
 			ApiResponse<{
-				followers: string[]
+				followers: User[]
 				totalCount: number
 				currentPage: number
 				totalPages: number
@@ -733,7 +734,7 @@ class ApiService {
 		page = 1,
 		limit = 20,
 	): Promise<{
-		following: string[]
+		following: User[]
 		totalCount: number
 		currentPage: number
 		totalPages: number
@@ -741,7 +742,7 @@ class ApiService {
 	}> {
 		const response: AxiosResponse<
 			ApiResponse<{
-				following: string[]
+				following: User[]
 				totalCount: number
 				currentPage: number
 				totalPages: number
@@ -800,8 +801,8 @@ class ApiService {
 		return response.data.data
 	}
 
-	async getSuggestedUsers(limit = 10): Promise<User[]> {
-		const response: AxiosResponse<ApiResponse<User[]>> = await this.api.get(`/user/suggestions?limit=${limit}`)
+	async getSuggestedUsers(limit = 10): Promise<{ suggestions: User[]; count: number }> {
+		const response: AxiosResponse<ApiResponse<{ suggestions: User[]; count: number }>> = await this.api.get(`/user/suggestions?limit=${limit}`)
 		return response.data.data
 	}
 }

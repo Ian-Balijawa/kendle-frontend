@@ -70,6 +70,7 @@ export function useUpdateProfile() {
         const updatedUser: User = {
           ...user,
           ...updateData,
+          bio: updateData.bio || undefined,
           updatedAt: new Date().toISOString(),
         };
 
@@ -136,6 +137,12 @@ export function useCompleteUserProfile() {
         const updatedUser: User = {
           ...user,
           ...profileData,
+          email: profileData.email ?? undefined,
+          whatsapp: profileData.whatsapp ?? undefined,
+          twitterLink: profileData.twitterLink ?? undefined,
+          tiktokLink: profileData.tiktokLink ?? undefined,
+          instagramLink: profileData.instagramLink ?? undefined,
+          bio: profileData.bio ?? undefined,
           isProfileComplete: true,
           updatedAt: new Date().toISOString(),
         };
@@ -145,10 +152,6 @@ export function useCompleteUserProfile() {
 
         // Also update in user detail cache
         queryClient.setQueryData(userKeys.detail(user.id), updatedUser);
-        queryClient.setQueryData(
-          userKeys.username(profileData.username),
-          updatedUser
-        );
       }
 
       return { previousUser };

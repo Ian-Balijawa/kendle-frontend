@@ -40,7 +40,20 @@ interface CommentCardProps {
 }
 
 export function CommentCard({ comment }: CommentCardProps) {
-  const { user, isAuthenticated } = useAuthStore();
+  try {
+    // Defensive programming - check if comment exists
+    if (!comment || !comment.id) {
+      console.error("CommentCard: Invalid comment data", comment);
+      return null;
+    }
+
+    // Check if author exists
+    if (!comment.author) {
+      console.error("CommentCard: Missing author data for comment", comment.id);
+      return null;
+    }
+
+    const { user, isAuthenticated } = useAuthStore();
 
   const updateCommentMutation = useUpdateComment();
   const deleteCommentMutation = useDeleteComment();
@@ -48,7 +61,7 @@ export function CommentCard({ comment }: CommentCardProps) {
   const removeReactionMutation = useRemoveReaction();
 
   const [isEditing, setIsEditing] = useState(false);
-  const [editContent, setEditContent] = useState(comment.content);
+  const [editContent, setEditContent] = useState(comment.content || "");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const isSubmitting =
@@ -68,7 +81,7 @@ export function CommentCard({ comment }: CommentCardProps) {
   };
 
   const handleEdit = () => {
-    setEditContent(comment.content);
+    setEditContent(comment.content || "");
     setIsEditing(true);
   };
 
@@ -94,7 +107,7 @@ export function CommentCard({ comment }: CommentCardProps) {
 
   const handleCancelEdit = () => {
     setIsEditing(false);
-    setEditContent(comment.content);
+    setEditContent(comment.content || "");
   };
 
   const handleDelete = async () => {
@@ -128,7 +141,7 @@ export function CommentCard({ comment }: CommentCardProps) {
     }
   };
 
-  const isAuthor = user?.id === comment.author.id;
+  const isAuthor = user?.id === comment.author?.id;
 
   if (isEditing) {
     return (
@@ -145,11 +158,11 @@ export function CommentCard({ comment }: CommentCardProps) {
           <Group gap="sm">
             <Avatar
               src={comment.author?.avatar}
-              alt={comment.author?.firstName || "User"}
+              alt={comment.author?.firstName || comment.author?.username || "User"}
               size={36}
               radius="xl"
             >
-              {(comment.author?.firstName || "U").charAt(0)}
+              {(comment.author?.firstName || comment.author?.username || comment.author?.phoneNumber || "U").charAt(0).toUpperCase()}
             </Avatar>
             <Text size="sm" fw={500} c="blue.7">
               Editing comment...
@@ -199,7 +212,7 @@ export function CommentCard({ comment }: CommentCardProps) {
         <Group align="flex-start" gap="md">
           <Avatar
             src={comment.author?.avatar}
-            alt={comment.author?.firstName || "User"}
+            alt={comment.author?.firstName || comment.author?.username || "User"}
             size={36}
             radius="xl"
             style={{
@@ -209,14 +222,19 @@ export function CommentCard({ comment }: CommentCardProps) {
               flexShrink: 0,
             }}
           >
-            {(comment.author?.firstName || "U").charAt(0)}
+            {(comment.author?.firstName || comment.author?.username || comment.author?.phoneNumber || "U").charAt(0).toUpperCase()}
           </Avatar>
 
           <Box style={{ flex: 1, minWidth: 0 }}>
             <Group justify="space-between" align="flex-start" mb="xs">
               <Group gap="xs" align="center" style={{ flex: 1, minWidth: 0 }}>
                 <Text fw={600} size="sm" c="dark.8" truncate>
-                  {comment.author?.firstName} {comment.author?.lastName}
+                  {comment.author?.firstName && comment.author?.lastName
+                    ? `${comment.author.firstName} ${comment.author.lastName}`
+                    : comment.author?.username
+                      ? comment.author.username
+                      : comment.author?.phoneNumber || "Unknown User"
+                  }
                 </Text>
 
                 {comment.author?.isVerified && (
@@ -285,7 +303,7 @@ export function CommentCard({ comment }: CommentCardProps) {
             </Group>
 
             <Box mb="sm">
-              {comment.content.split("\n").map((line, index) => (
+              {(comment.content || "").split("\n").map((line, index) => (
                 <Text
                   key={index}
                   size="sm"
@@ -293,7 +311,7 @@ export function CommentCard({ comment }: CommentCardProps) {
                     lineHeight: 1.5,
                     wordBreak: "break-word",
                     marginBottom:
-                      index < comment.content.split("\n").length - 1
+                      index < (comment.content || "").split("\n").length - 1
                         ? "0.25rem"
                         : 0,
                   }}
@@ -417,4 +435,14 @@ export function CommentCard({ comment }: CommentCardProps) {
       </Modal>
     </>
   );
+  } catch (error) {
+    console.error("CommentCard: Error rendering comment", error, comment);
+    return (
+      <Paper withBorder radius="lg" p="md" style={{ borderColor: "var(--mantine-color-red-3)" }}>
+        <Text c="red" size="sm">
+          Error loading comment. Please try refreshing the page.
+        </Text>
+      </Paper>
+    );
+  }
 }

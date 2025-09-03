@@ -25,7 +25,7 @@ const mobileNavItems = [
   {
     label: "Create",
     icon: IconPlus,
-    path: "/create",
+    path: "/statuses",
     isCreate: true,
   },
   { label: "Messages", icon: IconMessageCircle, path: "/chat" },
@@ -54,10 +54,10 @@ export function FooterContent() {
     const needsAuth =
       path.includes("chat") ||
       path.includes("profile") ||
-      path.includes("create");
+      path.includes("statuses");
 
     if (!isAuthenticated && needsAuth) {
-      navigate("/");
+      navigate("/auth");
       return;
     }
     navigate(path);
@@ -68,7 +68,7 @@ export function FooterContent() {
     const needsAuth =
       item.path.includes("chat") ||
       item.path.includes("profile") ||
-      item.path.includes("create");
+      item.path.includes("statuses");
     const canAccess = !needsAuth || isAuthenticated;
     const showUnread =
       item.path === "/chat" && unreadCount > 0 && isAuthenticated;

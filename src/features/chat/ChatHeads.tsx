@@ -1,153 +1,159 @@
-import { ActionIcon, Avatar, Badge, Group, Paper, rem, Text, Transition } from "@mantine/core";
-import { IconX } from "@tabler/icons-react";
-import { useConversations } from "../../hooks/useChat";
-import { useFloatingChatStore } from "../../stores/chatStore";
-import { useAuthStore } from "../../stores/authStore";
+import { useState } from 'react';
+import { Box, Avatar, Badge, Tooltip, Transition, Stack } from '@mantine/core';
+import { useFloatingChatStore } from '../../stores/chatStore';
+import { useConversations } from '../../hooks/useChat';
+import { useAuthStore } from '../../stores/authStore';
+import { Conversation } from '../../types';
 
 export function ChatHeads() {
-  const { user } = useAuthStore();
-  const { data: conversations = [] } = useConversations();
   const { chatHeads, openChatWindow, removeChatHead } = useFloatingChatStore();
+  const { data: conversations } = useConversations();
+  const { user } = useAuthStore();
+  const [hoveredHead, setHoveredHead] = useState<string | null>(null);
 
-  // Get conversations that should show as heads
-  const headConversations = conversations.filter(conv => chatHeads.includes(conv.id));
+  // Get conversation data for chat heads
+  const getConversationData = (conversationId: string): Conversation | undefined => {
+    return conversations?.find(conv => conv.id === conversationId);
+  };
 
-  if (headConversations.length === 0) {
+  if (chatHeads.length === 0) {
     return null;
   }
 
   return (
-    <>
-      {headConversations.map((conversation, index) => {
-        const otherParticipant = conversation.participants.find(p => p.id !== user?.id);
-        const unreadCount = conversation.unreadCount;
+    <Stack
+      gap="xs"
+      style={{
+        pointerEvents: 'auto',
+        marginBottom: 10,
+      }}
+    >
+      {chatHeads.map((conversationId, index) => {
+        const conversation = getConversationData(conversationId);
+        if (!conversation) return null;
+
+        const participant = conversation.participants.find(p => p.id !== user?.id);
+        const isOnline = participant?.isOnline || false;
+        const unreadCount = conversation.unreadCount || 0;
 
         return (
           <Transition
-            key={conversation.id}
+            key={conversationId}
             mounted={true}
-            transition="slide-right"
-            duration={300}
+            transition="scale"
+            duration={200}
             timingFunction="ease"
           >
             {(styles) => (
-              <Paper
-                shadow="md"
-                className="chat-head"
-                style={{
-                  ...styles,
-                  position: "fixed",
-                  bottom: rem(20 + index * 60),
-                  right: rem(20),
-                  zIndex: 1000 + index,
-                  borderRadius: "50%",
-                  overflow: "visible",
-                }}
-              >
-                <Group gap={0} align="center">
-                  <ActionIcon
-                    variant="filled"
-                    color="blue"
-                    size="lg"
-                    radius="xl"
-                    className={unreadCount > 0 ? "chat-head-new-message" : ""}
+              <Box style={styles}>
+                <Tooltip
+                  label={conversation.name || participant?.firstName || 'Chat'}
+                  position="left"
+                  withArrow
+                >
+                  <Box
                     style={{
-                      position: "relative",
-                      border: "2px solid white",
-                      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
+                      position: 'relative',
+                      cursor: 'pointer',
+                      transform: `translateX(${index * 10}px)`,
                     }}
-                    onClick={() => openChatWindow(conversation.id)}
+                    onMouseEnter={() => setHoveredHead(conversationId)}
+                    onMouseLeave={() => setHoveredHead(null)}
+                    onClick={() => openChatWindow(conversationId)}
                   >
                     <Avatar
-                      src={otherParticipant?.avatar}
-                      alt={otherParticipant?.firstName || "User"}
-                      size="sm"
-                      radius="xl"
+                      size="lg"
+                      src={conversation.avatar || participant?.avatar}
+                      alt={conversation.name || participant?.firstName}
+                      style={{
+                        border: '3px solid white',
+                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+                        transition: 'all 0.2s ease',
+                        transform: hoveredHead === conversationId ? 'scale(1.1)' : 'scale(1)',
+                      }}
                     >
-                      {(otherParticipant?.firstName || "U").charAt(0)}
+                      {participant?.firstName?.charAt(0) || 'U'}
                     </Avatar>
+
+                    {/* Online indicator */}
+                    {isOnline && (
+                      <Box
+                        style={{
+                          position: 'absolute',
+                          bottom: 2,
+                          right: 2,
+                          width: 12,
+                          height: 12,
+                          borderRadius: '50%',
+                          backgroundColor: '#44ff44',
+                          border: '2px solid white',
+                        }}
+                      />
+                    )}
 
                     {/* Unread count badge */}
                     {unreadCount > 0 && (
                       <Badge
                         size="xs"
-                        color="red"
                         variant="filled"
+                        color="red"
                         style={{
-                          position: "absolute",
-                          top: -4,
-                          right: -4,
-                          minWidth: 18,
-                          height: 18,
-                          borderRadius: "50%",
-                          padding: 0,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
+                          position: 'absolute',
+                          top: -5,
+                          right: -5,
+                          minWidth: 20,
+                          height: 20,
+                          borderRadius: 10,
+                          fontSize: 10,
+                          fontWeight: 'bold',
                         }}
                       >
-                        {unreadCount > 99 ? "99+" : unreadCount}
+                        {unreadCount > 99 ? '99+' : unreadCount}
                       </Badge>
                     )}
-                  </ActionIcon>
 
-                  {/* Close button */}
-                  <ActionIcon
-                    variant="subtle"
-                    color="gray"
-                    size="xs"
-                    radius="xl"
-                    style={{
-                      position: "absolute",
-                      top: -2,
-                      right: -2,
-                      backgroundColor: "white",
-                      border: "1px solid var(--mantine-color-gray-3)",
-                    }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      removeChatHead(conversation.id);
-                    }}
-                  >
-                    <IconX size={10} />
-                  </ActionIcon>
-                </Group>
-
-                {/* Tooltip on hover */}
-                <Paper
-                  shadow="sm"
-                  p="xs"
-                  style={{
-                    position: "absolute",
-                    right: "100%",
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    marginRight: 8,
-                    backgroundColor: "var(--mantine-color-gray-9)",
-                    color: "white",
-                    whiteSpace: "nowrap",
-                    opacity: 0,
-                    pointerEvents: "none",
-                    transition: "opacity 0.2s ease",
-                    zIndex: 1001,
-                  }}
-                  className="chat-head-tooltip"
-                >
-                  <Text size="xs" fw={500}>
-                    {conversation.name ||
-                      `${otherParticipant?.firstName} ${otherParticipant?.lastName}`}
-                  </Text>
-                  {conversation.lastMessage && (
-                    <Text size="xs" opacity={0.7} lineClamp={1}>
-                      {conversation.lastMessage.content}
-                    </Text>
-                  )}
-                </Paper>
-              </Paper>
+                    {/* Close button on hover */}
+                    <Transition
+                      mounted={hoveredHead === conversationId}
+                      transition="fade"
+                      duration={150}
+                    >
+                      {(tooltipStyles) => (
+                        <Box
+                          style={{
+                            ...tooltipStyles,
+                            position: 'absolute',
+                            top: -8,
+                            right: -8,
+                            width: 20,
+                            height: 20,
+                            borderRadius: '50%',
+                            backgroundColor: '#ff4444',
+                            color: 'white',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: 12,
+                            cursor: 'pointer',
+                            border: '2px solid white',
+                            zIndex: 10,
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeChatHead(conversationId);
+                          }}
+                        >
+                          ×
+                        </Box>
+                      )}
+                    </Transition>
+                  </Box>
+                </Tooltip>
+              </Box>
             )}
           </Transition>
         );
       })}
-    </>
+    </Stack>
   );
 }

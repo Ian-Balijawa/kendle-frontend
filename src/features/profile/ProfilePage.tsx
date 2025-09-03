@@ -49,19 +49,22 @@ import { PostCard } from "../posts/PostCard";
 
 export function ProfilePage() {
   const { userId } = useParams<{ userId?: string }>();
-  const { user: currentUser } = useAuthStore();
+  const { user: currentUser, isAuthenticated } = useAuthStore();
   const [activeTab, setActiveTab] = useState("posts");
   const [editModalOpen, setEditModalOpen] = useState(false);
 
+  // Determine if this is the current user's own profile
   const isOwnProfile = !userId || userId === currentUser?.id;
   const profileUserId = userId || currentUser?.id;
 
+  // Fetch user data - use different hooks based on whether it's own profile or another user's
   const {
     data: user,
     isLoading: userLoading,
     error: userError,
   } = isOwnProfile ? useUserProfile() : useUser(profileUserId!);
 
+  // Only fetch posts and follow data if we have a valid profileUserId
   const { data: postsData, isLoading: postsLoading } = useUserPosts(
     profileUserId!,
     {
@@ -83,7 +86,7 @@ export function ProfilePage() {
     }
   );
 
-  // Follow functionality
+  // Follow functionality - only for other users' profiles
   const { data: followStatus } = useFollowStatus(profileUserId!);
   const { toggleFollow, isLoading: followLoading } = useToggleFollow();
 
@@ -93,7 +96,7 @@ export function ProfilePage() {
     initialValues: {
       firstName: user?.firstName || "",
       lastName: user?.lastName || "",
-      bio: user?.bio || "",
+      bio: user?.bio || null,
       username: user?.username || "",
       email: user?.email || "",
       whatsapp: user?.whatsapp || "",
@@ -108,7 +111,7 @@ export function ProfilePage() {
       editForm.setValues({
         firstName: user.firstName || "",
         lastName: user.lastName || "",
-        bio: user.bio || "",
+        bio: user.bio || null,
         username: user.username || "",
         email: user.email || "",
         whatsapp: user.whatsapp || "",
@@ -139,9 +142,21 @@ export function ProfilePage() {
   };
 
   const handleFollow = async () => {
-    if (!profileUserId) return;
+    if (!profileUserId || isOwnProfile) return;
     await toggleFollow(profileUserId, followStatus?.isFollowing || false);
   };
+
+  // Debug logging
+  console.log("ProfilePage Debug:", {
+    userId,
+    currentUserId: currentUser?.id,
+    profileUserId,
+    isOwnProfile,
+    isAuthenticated,
+    userLoading,
+    userError,
+    user: user ? { id: user.id, username: user.username, firstName: user.firstName } : null,
+  });
 
   const handleEditProfile = () => {
     setEditModalOpen(true);
@@ -188,6 +203,88 @@ export function ProfilePage() {
       color: "#000000",
     },
   ].filter((link) => user?.[link.key as keyof User]);
+
+  // Handle unauthenticated users trying to view profiles
+  if (!isAuthenticated && !isOwnProfile) {
+    return (
+      <Container size="xl">
+        <Center py={100}>
+          <Card
+            withBorder
+            p="xl"
+            radius="xl"
+            shadow="sm"
+            style={{ maxWidth: 400, width: "100%" }}
+          >
+            <Stack align="center" gap="lg">
+              <Box
+                style={{
+                  width: 80,
+                  height: 80,
+                  borderRadius: "50%",
+                  background: "linear-gradient(135deg, #ff6b6b, #ee5a24)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <IconUserCheck size={40} color="white" />
+              </Box>
+              <Stack align="center" gap="xs">
+                <Text size="xl" fw={600} c="red">
+                  Authentication Required
+                </Text>
+                <Text c="dimmed" ta="center" size="sm">
+                  Please sign in to view user profiles.
+                </Text>
+              </Stack>
+            </Stack>
+          </Card>
+        </Center>
+      </Container>
+    );
+  }
+
+  // Handle missing profileUserId
+  if (!profileUserId) {
+    return (
+      <Container size="xl">
+        <Center py={100}>
+          <Card
+            withBorder
+            p="xl"
+            radius="xl"
+            shadow="sm"
+            style={{ maxWidth: 400, width: "100%" }}
+          >
+            <Stack align="center" gap="lg">
+              <Box
+                style={{
+                  width: 80,
+                  height: 80,
+                  borderRadius: "50%",
+                  background: "linear-gradient(135deg, #ff6b6b, #ee5a24)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <IconUserCheck size={40} color="white" />
+              </Box>
+              <Stack align="center" gap="xs">
+                <Text size="xl" fw={600} c="red">
+                  Profile Not Found
+                </Text>
+                <Text c="dimmed" ta="center" size="sm">
+                  Unable to determine which profile to display.
+                </Text>
+              </Stack>
+            </Stack>
+          </Card>
+        </Center>
+      </Container>
+    );
+  }
 
   if (userLoading) {
     return (
@@ -261,7 +358,7 @@ export function ProfilePage() {
       >
         <Avatar
           src={user.avatar || "/user.png"}
-          alt={user.firstName || ""}
+          alt={user.firstName || user.username || "User"}
           size={120}
           radius="50%"
           style={{
@@ -273,8 +370,7 @@ export function ProfilePage() {
           }}
         >
           <Text size="2rem" fw={600} c="white">
-            {user.firstName?.charAt(0)}
-            {user.lastName?.charAt(0)}
+            {(user.firstName || user.username || user.phoneNumber || "U").charAt(0).toUpperCase()}
           </Text>
         </Avatar>
       </Box>
@@ -284,7 +380,12 @@ export function ProfilePage() {
           <Box style={{ flex: 1 }}>
             <Group gap="sm" align="center" mb="xs">
               <Title order={1} size={rem(28)} fw={700}>
-                {user.firstName} {user.lastName}
+                {user.firstName && user.lastName
+                  ? `${user.firstName} ${user.lastName}`
+                  : user.username
+                    ? user.username
+                    : user.phoneNumber || "Unknown User"
+                }
               </Title>
               {user.isVerified && (
                 <Badge
@@ -301,10 +402,15 @@ export function ProfilePage() {
                   Verified
                 </Badge>
               )}
+              {user.isProfileComplete === false && (
+                <Badge size="sm" variant="light" color="orange" radius="sm">
+                  Incomplete Profile
+                </Badge>
+              )}
             </Group>
 
             <Text c="dimmed" size="lg" mb="md" fw={500}>
-              @{user.username}
+              @{user.username || user.phoneNumber || "unknown"}
             </Text>
 
             {user.bio && (
@@ -859,6 +965,8 @@ export function ProfilePage() {
                 },
               }}
               {...editForm.getInputProps("bio")}
+              value={editForm.getValues().bio || ""}
+              onChange={(e) => editForm.setFieldValue("bio", e.target.value || null)}
             />
 
             <Divider label="Social Media Links" labelPosition="center" />

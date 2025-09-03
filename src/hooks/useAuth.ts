@@ -161,6 +161,12 @@ export function useCompleteProfile() {
         const updatedUser: User = {
           ...user,
           ...profileData,
+          email: profileData.email || undefined,
+          whatsapp: profileData.whatsapp || undefined,
+          twitterLink: profileData.twitterLink || undefined,
+          tiktokLink: profileData.tiktokLink || undefined,
+          instagramLink: profileData.instagramLink || undefined,
+          bio: profileData.bio || undefined,
           isProfileComplete: true,
           updatedAt: new Date().toISOString(),
         };

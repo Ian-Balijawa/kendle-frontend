@@ -56,6 +56,21 @@ export function useSuggestedUsers(limit = 10) {
     queryFn: () => apiService.getSuggestedUsers(limit),
     enabled: true,
     staleTime: 5 * 60 * 1000, // 5 minutes
+    select: (data) => ({
+      suggestions: data.suggestions || [],
+      count: data.count || 0,
+    }),
+  });
+}
+
+// Get suggested users as a simple array (for easier usage in components)
+export function useSuggestedUsersList(limit = 10) {
+  return useQuery({
+    queryKey: [...followKeys.suggestions(), limit],
+    queryFn: () => apiService.getSuggestedUsers(limit),
+    enabled: true,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    select: (data) => data.suggestions || [],
   });
 }
 

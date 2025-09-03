@@ -19,6 +19,8 @@ export interface Message {
   reactions: MessageReaction[];
   createdAt: string;
   updatedAt: string;
+  // Sender information for display
+  sender?: User;
   // Legacy fields for backward compatibility
   mediaUrl?: string;
   mediaSize?: number;
@@ -53,6 +55,8 @@ export interface Conversation {
   isPinned: boolean;
   createdAt: string;
   updatedAt: string;
+  // Typing indicators
+  typingUsers?: string[];
 }
 
 // API Request/Response types
@@ -122,7 +126,7 @@ export interface OnlineStatus {
   lastSeen: string;
 }
 
-// WebSocket Event Types
+// WebSocket Event Types 
 export type WebSocketEventType =
   | "message_sent"
   | "message_received"
@@ -136,7 +140,9 @@ export type WebSocketEventType =
   | "message_reaction_added"
   | "message_reaction_removed"
   | "message_edited"
-  | "message_deleted";
+  | "message_deleted"
+  | "conversation_joined"
+  | "conversation_left";
 
 export interface WebSocketEvent {
   type: WebSocketEventType;

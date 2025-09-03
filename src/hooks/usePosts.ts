@@ -3,12 +3,13 @@ import { queryClient } from "../lib/queryClient";
 import {
   apiService,
   BookmarkRequest,
-  CreatePostRequest,
+
   GetPostsParams,
   ShareRequest,
   UpdatePostRequest,
   ReactionRequest,
 } from "../services/api";
+import { CreatePostData } from "../types/post";
 import { useAuthStore } from "../stores/authStore";
 import { Post, PostsResponse } from "../types";
 
@@ -208,7 +209,7 @@ export function useCreatePost() {
   const { user } = useAuthStore();
 
   return useMutation( {
-    mutationFn: ( data: CreatePostRequest ) => apiService.createPost( data ),
+    mutationFn: ( data: CreatePostData ) => apiService.createPost( data ),
     onMutate: async ( newPost ) => {
       // Cancel any outgoing refetches
       await queryClient.cancelQueries( { queryKey: postKeys.lists() } );
@@ -230,6 +231,18 @@ export function useCreatePost() {
         isQuote: newPost.isQuote ?? false,
         isArticle: newPost.isArticle ?? false,
         isStory: newPost.isStory ?? false,
+        pollQuestion: newPost.pollQuestion,
+        pollOptions: newPost.pollOptions,
+        pollEndDate: newPost.pollEndDate,
+        eventTitle: newPost.eventTitle,
+        eventDescription: newPost.eventDescription,
+        eventStartDate: newPost.eventStartDate,
+        eventEndDate: newPost.eventEndDate,
+        eventLocation: newPost.eventLocation,
+        eventCapacity: newPost.eventCapacity,
+        originalPost: newPost.originalPostId ? null : undefined,
+        repostContent: newPost.repostContent,
+        scheduledAt: newPost.scheduledAt,
         likesCount: 0,
         commentsCount: 0,
         sharesCount: 0,
@@ -239,13 +252,54 @@ export function useCreatePost() {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         publishedAt: new Date().toISOString(),
-        author: user!,
+        author: user ? {
+          ...user,
+          firstName: user.firstName || undefined,
+          lastName: user.lastName || undefined,
+          username: user.username || undefined,
+          phoneNumber: user.phoneNumber || "",
+          email: user.email || undefined,
+          isVerified: user.isVerified || false,
+          avatar: user.avatar || undefined,
+          bio: user.bio || undefined,
+          followersCount: user.followersCount || 0,
+          followingCount: user.followingCount || 0,
+          postsCount: user.postsCount || 0,
+          isProfileComplete: user.isProfileComplete || false,
+          status: user.status || "active",
+          createdAt: user.createdAt || new Date().toISOString(),
+          updatedAt: user.updatedAt || new Date().toISOString(),
+        } : {
+          id: "unknown",
+          firstName: undefined,
+          lastName: undefined,
+          username: undefined,
+          phoneNumber: "",
+          email: undefined,
+          isVerified: false,
+          avatar: undefined,
+          bio: undefined,
+          followersCount: 0,
+          followingCount: 0,
+          postsCount: 0,
+          isProfileComplete: false,
+          status: "active",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
         media: newPost.media?.map( ( m, index ) => ( {
           id: `temp-media-${index}`,
           url: m.url,
           type: m.type,
           filename: `temp-${index}`,
           size: m.fileSize || 0,
+          thumbnailUrl: m.thumbnailUrl,
+          altText: m.altText,
+          caption: m.caption,
+          duration: m.duration,
+          width: m.width,
+          height: m.height,
+          format: m.format,
           createdAt: new Date().toISOString(),
         } ) ),
         tags: newPost.tags?.map( t => ( {

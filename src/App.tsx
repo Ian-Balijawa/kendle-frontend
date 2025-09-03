@@ -42,7 +42,7 @@ function App() {
               element={
                 isAuthenticated ? (
                   user?.isProfileComplete ? (
-                    <Navigate to="/dashboard" replace />
+                    <Navigate to="/" replace />
                   ) : (
                     <Navigate to="/complete-profile" replace />
                   )
@@ -57,7 +57,7 @@ function App() {
               element={
                 isAuthenticated ? (
                   user?.isProfileComplete ? (
-                    <Navigate to="/dashboard" replace />
+                    <Navigate to="/" replace />
                   ) : (
                     <Navigate to="/complete-profile" replace />
                   )
@@ -72,7 +72,7 @@ function App() {
               element={
                 isAuthenticated ? (
                   user?.isProfileComplete ? (
-                    <Navigate to="/dashboard" replace />
+                    <Navigate to="/" replace />
                   ) : (
                     <ProfileCompletion />
                   )
@@ -84,28 +84,13 @@ function App() {
 
             {/* Protected routes */}
             <Route
-              path="/dashboard"
-              element={
-                <AuthGuard>
-                  <AppShell />
-                </AuthGuard>
-              }
-            >
-              <Route index element={<HomePage />} />
-              <Route path="explore" element={<ExplorePage />} />
-              <Route path="statuses" element={<StatusesPage />} />
-              <Route path="notifications" element={<NotificationsPage />} />
-              <Route path="profile" element={<ProfilePage />} />
-              <Route path="post/:postId" element={<PostDetail />} />
-            </Route>
-
-            {/* Root redirect */}
-            <Route
               path="/"
               element={
                 isAuthenticated ? (
                   user?.isProfileComplete ? (
-                    <Navigate to="/dashboard" replace />
+                    <AuthGuard>
+                      <AppShell />
+                    </AuthGuard>
                   ) : (
                     <Navigate to="/complete-profile" replace />
                   )
@@ -113,7 +98,15 @@ function App() {
                   <Navigate to="/auth" replace />
                 )
               }
-            />
+            >
+              <Route index element={<HomePage />} />
+              <Route path="explore" element={<ExplorePage />} />
+              <Route path="statuses" element={<StatusesPage />} />
+              <Route path="notifications" element={<NotificationsPage />} />
+              <Route path="profile" element={<ProfilePage />} />
+              <Route path="profile/:userId" element={<ProfilePage />} />
+              <Route path="post/:postId" element={<PostDetail />} />
+            </Route>
 
             {/* Catch all */}
             <Route path="*" element={<Navigate to="/" replace />} />

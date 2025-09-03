@@ -1,5 +1,6 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, subscribeWithSelector } from "zustand/middleware";
+import { devtools } from "zustand/middleware";
 import { User } from "../types";
 
 interface AuthStore {
@@ -25,78 +26,98 @@ interface AuthStore {
 }
 
 export const useAuthStore = create<AuthStore>()(
-  persist(
-    (set, _get) => ({
-      user: null,
-      token: null,
-      refreshToken: null,
-      isAuthenticated: false,
-      isLoading: false,
-      error: null,
-      otpSent: false,
-      phoneNumber: null,
-
-      logout: () => {
-        set({
+  devtools(
+    persist(
+      subscribeWithSelector(
+        (set, _get) => ({
           user: null,
           token: null,
           refreshToken: null,
           isAuthenticated: false,
+          isLoading: false,
           error: null,
           otpSent: false,
           phoneNumber: null,
-        });
-      },
 
-      updateProfile: (data: Partial<AuthStore>) => {
-        set((state) => ({
-          ...state,
-          ...data,
-        }));
-      },
+          logout: () => {
+            set(
+              {
+                user: null,
+                token: null,
+                refreshToken: null,
+                isAuthenticated: false,
+                error: null,
+                otpSent: false,
+                phoneNumber: null,
+              },
+              false,
+              "auth/logout"
+            );
+          },
 
-      updateUser: (user: User) => {
-        set({ user });
-      },
+          updateProfile: (data: Partial<AuthStore>) => {
+            set(
+              (state) => ({
+                ...state,
+                ...data,
+              }),
+              false,
+              "auth/updateProfile"
+            );
+          },
 
-      setLoading: (loading: boolean) => {
-        set({ isLoading: loading });
-      },
+          updateUser: (user: User) => {
+            set({ user }, false, "auth/updateUser");
+          },
 
-      setError: (error: string | null) => {
-        set({ error });
-      },
+          setLoading: (loading: boolean) => {
+            set({ isLoading: loading }, false, "auth/setLoading");
+          },
 
-      clearError: () => {
-        set({ error: null });
-      },
+          setError: (error: string | null) => {
+            set({ error }, false, "auth/setError");
+          },
 
-      setOTPSent: (sent: boolean) => {
-        set({ otpSent: sent });
-      },
+          clearError: () => {
+            set({ error: null }, false, "auth/clearError");
+          },
 
-      setPhoneNumber: (phone: string) => {
-        set({ phoneNumber: phone });
-      },
+          setOTPSent: (sent: boolean) => {
+            set({ otpSent: sent }, false, "auth/setOTPSent");
+          },
 
-      setAuthData: (user: User, accessToken: string) => {
-        set({
-          user,
-          token: accessToken,
-          isAuthenticated: true,
-          otpSent: false,
-          error: null,
-        });
-      },
-    }),
+          setPhoneNumber: (phone: string) => {
+            set({ phoneNumber: phone }, false, "auth/setPhoneNumber");
+          },
+
+          setAuthData: (user: User, accessToken: string) => {
+            set(
+              {
+                user,
+                token: accessToken,
+                isAuthenticated: true,
+                otpSent: false,
+                error: null,
+              },
+              false,
+              "auth/setAuthData"
+            );
+          },
+        })
+      ),
+      {
+        name: "auth-storage",
+        partialize: (state) => ({
+          user: state.user,
+          token: state.token,
+          refreshToken: state.refreshToken,
+          isAuthenticated: state.isAuthenticated,
+        }),
+      }
+    ),
     {
-      name: "auth-storage",
-      partialize: (state) => ({
-        user: state.user,
-        token: state.token,
-        refreshToken: state.refreshToken,
-        isAuthenticated: state.isAuthenticated,
-      }),
+      name: "Auth Store",
+      enabled: true,
     }
   )
 );

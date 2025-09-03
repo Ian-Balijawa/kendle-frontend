@@ -1,3 +1,4 @@
+
 import { WebSocketEvent, WebSocketEventType } from "../types/chat";
 
 export type WebSocketEventHandler = (event: WebSocketEvent) => void;
@@ -18,9 +19,9 @@ class WebSocketService {
   private connectionPromise: Promise<void> | null = null;
 
   constructor() {
-    // Use WebSocket URL from environment or fallback to HTTP URL
-    const baseUrl = import.meta.env.VITE_API_URL_WS || import.meta.env.VITE_API_URL?.replace('http', 'ws');
-    this.url = `${baseUrl}/chat/ws`;
+    const baseUrl = import.meta.env.VITE_WS_URL;
+    this.url = baseUrl;
+    console.log("WebSocket URL:", this.url);
   }
 
   async connect(userId: string): Promise<void> {
@@ -41,7 +42,7 @@ class WebSocketService {
     this.connectionPromise = new Promise((resolve, reject) => {
       try {
         // Connect to WebSocket with user authentication
-        this.ws = new WebSocket(`${this.url}?userId=${userId}&token=${this.getAuthToken()}`);
+        this.ws = new WebSocket(this.url);
 
         this.ws.onopen = () => {
           console.log("WebSocket connected successfully");
@@ -88,11 +89,6 @@ class WebSocketService {
     });
 
     return this.connectionPromise;
-  }
-
-  private getAuthToken(): string {
-    // Get token from localStorage or auth store
-    return localStorage.getItem('auth_token') || '';
   }
 
   disconnect(): void {
@@ -267,154 +263,5 @@ class WebSocketService {
 // Create a singleton instance
 export const webSocketService = new WebSocketService();
 
-export class MockWebSocketService {
-  private eventHandlers = new Map<
-    WebSocketEventType,
-    WebSocketEventHandler[]
-  >();
-  private connected = false;
-  private typingUsers = new Map<string, Set<string>>();
-
-  async connect(userId: string): Promise<void> {
-    console.log("Mock WebSocket connected for user:", userId);
-    this.connected = true;
-    return Promise.resolve();
-  }
-
-  disconnect(): void {
-    console.log("Mock WebSocket disconnected");
-    this.connected = false;
-  }
-
-  sendMessage(type: WebSocketEventType, data: any): void {
-    console.log("Mock WebSocket sending:", { type, data });
-
-    // Simulate receiving our own message for testing
-    if (type === "message_sent") {
-      setTimeout(() => {
-        this.simulateMessageReceived(data);
-      }, 100);
-    }
-
-    // Simulate typing indicators
-    if (type === "typing_start" || type === "typing_stop") {
-      setTimeout(() => {
-        this.simulateTypingIndicator(data);
-      }, 50);
-    }
-  }
-
-  on(eventType: WebSocketEventType, handler: WebSocketEventHandler): void {
-    if (!this.eventHandlers.has(eventType)) {
-      this.eventHandlers.set(eventType, []);
-    }
-    this.eventHandlers.get(eventType)!.push(handler);
-  }
-
-  off(eventType: WebSocketEventType, handler: WebSocketEventHandler): void {
-    const handlers = this.eventHandlers.get(eventType);
-    if (handlers) {
-      const index = handlers.indexOf(handler);
-      if (index > -1) {
-        handlers.splice(index, 1);
-      }
-    }
-  }
-
-  sendTextMessage(
-    conversationId: string,
-    receiverId: string,
-    content: string,
-    replyToId?: string
-  ): void {
-    this.sendMessage("message_sent", {
-      conversationId,
-      receiverId,
-      content,
-      messageType: "text",
-      replyToId,
-    });
-  }
-
-  sendTypingIndicator(conversationId: string, isTyping: boolean): void {
-    this.sendMessage(isTyping ? "typing_start" : "typing_stop", {
-      conversationId,
-    });
-  }
-
-  markMessageAsRead(messageId: string, conversationId: string): void {
-    this.sendMessage("message_read", { messageId, conversationId });
-  }
-
-  markMessageAsDelivered(messageId: string): void {
-    this.sendMessage("message_delivered", { messageId });
-  }
-
-  addMessageReaction(messageId: string, emoji: string): void {
-    this.sendMessage("message_reaction_added", { messageId, emoji });
-  }
-
-  removeMessageReaction(messageId: string, reactionId: string): void {
-    this.sendMessage("message_reaction_removed", { messageId, reactionId });
-  }
-
-  joinConversation(conversationId: string): void {
-    this.sendMessage("conversation_joined", { conversationId });
-  }
-
-  leaveConversation(conversationId: string): void {
-    this.sendMessage("conversation_left", { conversationId });
-  }
-
-  private simulateMessageReceived(sentData: any): void {
-    const mockEvent: WebSocketEvent = {
-      type: "message_received",
-      data: {
-        id: Date.now().toString(),
-        ...sentData,
-        isRead: false,
-        isDelivered: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        reactions: [],
-      },
-      timestamp: new Date().toISOString(),
-    };
-
-    const handlers = this.eventHandlers.get("message_received");
-    if (handlers) {
-      handlers.forEach((handler) => handler(mockEvent));
-    }
-  }
-
-  private simulateTypingIndicator(data: any): void {
-    const mockEvent: WebSocketEvent = {
-      type: data.isTyping ? "typing_start" : "typing_stop",
-      data: {
-        userId: data.userId || "mock-user",
-        conversationId: data.conversationId,
-        isTyping: data.isTyping,
-      },
-      timestamp: new Date().toISOString(),
-    };
-
-    const eventType = data.isTyping ? "typing_start" : "typing_stop";
-    const handlers = this.eventHandlers.get(eventType);
-    if (handlers) {
-      handlers.forEach((handler) => handler(mockEvent));
-    }
-  }
-
-  get isConnected(): boolean {
-    return this.connected;
-  }
-
-  get connectionState(): string {
-    return this.connected ? "connected" : "disconnected";
-  }
-}
-
-// Export the appropriate service based on environment
-export const chatService = import.meta.env.DEV
-  ? new MockWebSocketService()
-  : webSocketService;
+// Export the real WebSocket service
+export const chatService = webSocketService;
