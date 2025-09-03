@@ -7,6 +7,7 @@ import { useAuthStore } from '../../stores/authStore';
 import { Conversation } from '../../types';
 import { ChatMessages } from './ChatMessages';
 import { ChatInput } from './ChatInput';
+import { FollowedUsersChat } from './FollowedUsersChat';
 
 interface ChatWidgetProps {
   onClose: () => void;
@@ -188,7 +189,7 @@ export function ChatWidget({ onClose }: ChatWidgetProps) {
       }}
     >
       {/* Header */}
-      <Group justify="space-between" p="md" style={{ borderBottom: '1px solid var(--mantine-color-gray-3)' }}>
+      <Group justify="space-between" p="md">
         <Group gap="xs">
           <IconMessage size={20} />
           <Text fw={600}>Messages</Text>
@@ -207,17 +208,18 @@ export function ChatWidget({ onClose }: ChatWidgetProps) {
           display: activeTab && isMobile ? 'none' : 'block',
         }}>
           <Stack gap={0} style={{ height: '100%' }}>
-            {/* Search bar */}
-            <Box p="xs" style={{ borderBottom: '1px solid var(--mantine-color-gray-3)' }}>
-              <TextInput
-                placeholder="Search conversations..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.currentTarget.value)}
-                leftSection={<IconSearch size={16} />}
-                size="sm"
+                        {/* Search bar */}
+            <TextInput
+              placeholder="Search conversations..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.currentTarget.value)}
+              leftSection={<IconSearch size={16} />}
+              size="sm"
+              m="xs"
+            />
 
-              />
-            </Box>
+            {/* Followed Users Chat Section */}
+            <FollowedUsersChat />
 
             {/* Conversations */}
             <ScrollArea style={{ flex: 1 }}>
@@ -252,7 +254,7 @@ export function ChatWidget({ onClose }: ChatWidgetProps) {
           }}>
             {/* Mobile back button */}
             {isMobile && (
-              <Group p="xs" style={{ borderBottom: '1px solid var(--mantine-color-gray-3)' }}>
+              <Group p="xs">
                 <ActionIcon 
                   variant="subtle" 
                   onClick={() => setActiveTab(null)}
@@ -267,9 +269,7 @@ export function ChatWidget({ onClose }: ChatWidgetProps) {
             )}
             
             <ChatMessages conversationId={activeTab} />
-            <Box p="xs" style={{ borderTop: '1px solid var(--mantine-color-gray-3)' }}>
-              <ChatInput conversationId={activeTab} />
-            </Box>
+            <ChatInput conversationId={activeTab} />
           </Box>
         )}
       </Box>

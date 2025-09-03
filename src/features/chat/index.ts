@@ -7,3 +7,4 @@ export { ChatMessages } from './ChatMessages';
 export { ChatInput } from './ChatInput';
 export { TypingIndicator } from './TypingIndicator';
 export { MessageContextMenu } from './MessageContextMenu';
+export { FollowedUsersChat } from './FollowedUsersChat';

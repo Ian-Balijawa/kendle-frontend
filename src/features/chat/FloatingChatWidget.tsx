@@ -1,9 +1,12 @@
-import { Box, Portal, Transition, ActionIcon, Badge } from '@mantine/core';
+import { Box, Portal, Transition, ActionIcon, Badge, Popover, Stack, Group, Avatar, Text } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { IconMessage, IconX } from '@tabler/icons-react';
+import { IconMessage, IconX, IconUserPlus } from '@tabler/icons-react';
 import { useAuthStore } from '../../stores/authStore';
 import { useWebSocketIntegration } from '../../hooks/useWebSocket';
 import { useUnreadCount } from '../../hooks/useChat';
+import { useFollowing } from '../../hooks/useFollow';
+import { useFindOrCreateDirectConversation } from '../../hooks/useChat';
+import { useFloatingChatStore } from '../../stores/chatStore';
 import { ChatHeads } from './ChatHeads';
 import { ChatWidget } from './ChatWidget';
 import { ChatWindows } from './ChatWindows';
@@ -11,9 +14,23 @@ import { ChatWindows } from './ChatWindows';
 export function FloatingChatWidget() {
   const { isAuthenticated, user } = useAuthStore();
   const [opened, { open, close }] = useDisclosure(false);
+  const [followedUsersOpened, { open: openFollowedUsers, close: closeFollowedUsers }] = useDisclosure(false);
   const { isConnected } = useWebSocketIntegration();
   const { data: unreadCount } = useUnreadCount();
+  const { openChatWindow } = useFloatingChatStore();
+  const { data: followingData } = useFollowing(user?.id || '', 1, 5);
+  const createConversation = useFindOrCreateDirectConversation();
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
+  const handleStartConversation = async (targetUserId: string) => {
+    try {
+      const conversation = await createConversation.mutateAsync(targetUserId);
+      openChatWindow(conversation.id);
+      closeFollowedUsers();
+    } catch (error) {
+      console.error('Failed to start conversation:', error);
+    }
+  };
 
   // Don't render if user is not authenticated
   if (!isAuthenticated || !user) {
@@ -34,6 +51,75 @@ export function FloatingChatWidget() {
         >
           {/* Chat Heads - Always visible */}
           <ChatHeads />
+
+          {/* Followed Users Popover */}
+          {followingData?.following && followingData.following.length > 0 && (
+            <Popover
+              opened={followedUsersOpened}
+              onClose={closeFollowedUsers}
+              position="top-end"
+              withArrow
+              shadow="md"
+            >
+              <Popover.Target>
+                <Box
+                  style={{
+                    pointerEvents: 'auto',
+                    marginTop: 10,
+                  }}
+                >
+                  <ActionIcon
+                    size="md"
+                    variant="light"
+                    color="blue"
+                    onClick={openFollowedUsers}
+                    style={{
+                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                      transition: 'all 0.2s ease',
+                    }}
+                  >
+                    <IconUserPlus size={16} />
+                  </ActionIcon>
+                </Box>
+              </Popover.Target>
+              <Popover.Dropdown>
+                <Stack gap="xs" style={{ minWidth: 200 }}>
+                  <Text size="sm" fw={500}>Start Chat</Text>
+                  {followingData.following.slice(0, 5).map((followedUser) => (
+                    <Group
+                      key={followedUser.id}
+                      gap="sm"
+                      style={{
+                        cursor: 'pointer',
+                        padding: '4px 8px',
+                        borderRadius: 4,
+                        transition: 'background-color 0.2s ease',
+                      }}
+                      onClick={() => handleStartConversation(followedUser.id)}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = 'var(--mantine-color-gray-1)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                      }}
+                    >
+                      <Avatar size="sm" src={followedUser.avatar}>
+                        {followedUser.firstName?.charAt(0) || 'U'}
+                      </Avatar>
+                      <Box style={{ flex: 1, minWidth: 0 }}>
+                        <Text size="sm" truncate>
+                          {followedUser.firstName} {followedUser.lastName}
+                        </Text>
+                        <Text size="xs" c="dimmed" truncate>
+                          @{followedUser.username || 'no-username'}
+                        </Text>
+                      </Box>
+                    </Group>
+                  ))}
+                </Stack>
+              </Popover.Dropdown>
+            </Popover>
+          )}
 
           {/* Main Chat Button */}
           <Box
@@ -161,6 +247,75 @@ export function FloatingChatWidget() {
 
         {/* Chat Windows - Floating windows */}
         <ChatWindows />
+
+        {/* Followed Users Popover */}
+        {followingData?.following && followingData.following.length > 0 && (
+          <Popover
+            opened={followedUsersOpened}
+            onClose={closeFollowedUsers}
+            position="top-end"
+            withArrow
+            shadow="md"
+          >
+            <Popover.Target>
+              <Box
+                style={{
+                  pointerEvents: 'auto',
+                  marginTop: 10,
+                }}
+              >
+                <ActionIcon
+                  size="md"
+                  variant="light"
+                  color="blue"
+                  onClick={openFollowedUsers}
+                  style={{
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  <IconUserPlus size={16} />
+                </ActionIcon>
+              </Box>
+            </Popover.Target>
+            <Popover.Dropdown>
+              <Stack gap="xs" style={{ minWidth: 200 }}>
+                <Text size="sm" fw={500}>Start Chat</Text>
+                {followingData.following.slice(0, 5).map((followedUser) => (
+                  <Group
+                    key={followedUser.id}
+                    gap="sm"
+                    style={{
+                      cursor: 'pointer',
+                      padding: '4px 8px',
+                      borderRadius: 4,
+                      transition: 'background-color 0.2s ease',
+                    }}
+                    onClick={() => handleStartConversation(followedUser.id)}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = 'var(--mantine-color-gray-1)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                    }}
+                  >
+                    <Avatar size="sm" src={followedUser.avatar}>
+                      {followedUser.firstName?.charAt(0) || 'U'}
+                    </Avatar>
+                    <Box style={{ flex: 1, minWidth: 0 }}>
+                      <Text size="sm" truncate>
+                        {followedUser.firstName} {followedUser.lastName}
+                      </Text>
+                      <Text size="xs" c="dimmed" truncate>
+                        @{followedUser.username || 'no-username'}
+                      </Text>
+                    </Box>
+                  </Group>
+                ))}
+              </Stack>
+            </Popover.Dropdown>
+          </Popover>
+        )}
 
         {/* Main Chat Button */}
         <Box

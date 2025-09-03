@@ -56,6 +56,13 @@ Message input component with:
 - Attachment and emoji placeholders
 - Enter key support
 
+### FollowedUsersChat
+Component for starting conversations with followed users:
+- Displays list of users the current user follows
+- Expandable/collapsible section in chat widget
+- Shows online status indicators
+- One-click conversation initiation
+
 ### ChatWidget
 Main chat interface that opens when the chat button is clicked:
 - Conversation list
@@ -123,6 +130,8 @@ Uses Mantine theme and components for consistent styling:
 - **Emoji Picker**: Quick emoji selection in message input
 - **Auto-resize Input**: Textarea that grows with content
 - **Better Message Status**: Enhanced read receipts and delivery status
+- **Follow Integration**: Start conversations with followed users via popover and widget section
+- **Quick Chat Access**: Blue "Start Chat" button shows followed users for easy conversation initiation
 
 ### 🔄 In Progress
 - Message editing and deletion
