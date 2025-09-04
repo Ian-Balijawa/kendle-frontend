@@ -161,7 +161,7 @@ export function ChatWindow({
                 width: 8,
                 height: 8,
                 borderRadius: "50%",
-                backgroundColor: "#44ff44",
+                backgroundColor: "var(--mantine-color-green-5)",
               }}
             />
           )}

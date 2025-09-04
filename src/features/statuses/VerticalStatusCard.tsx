@@ -25,7 +25,7 @@ export function VerticalStatusCard({
           borderRadius: "12px",
           overflow: "hidden",
           cursor: "pointer",
-          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          background: "linear-gradient(135deg, var(--mantine-color-blue-6) 0%, var(--mantine-color-violet-6) 100%)",
           display: "flex",
           flexDirection: "column",
           justifyContent: "center",
@@ -129,7 +129,7 @@ export function VerticalStatusCard({
           ? "0 4px 12px rgba(34, 139, 230, 0.3)"
           : "0 4px 12px rgba(0, 0, 0, 0.15)",
         transition: "transform 0.2s ease, box-shadow 0.2s ease",
-        border: hasUnviewed ? "2px solid #228be6" : "2px solid transparent",
+        border: hasUnviewed ? "2px solid var(--mantine-color-blue-6)" : "2px solid transparent",
       }}
       onClick={onClick}
       onMouseEnter={(e) => {
@@ -222,7 +222,7 @@ export function VerticalStatusCard({
             width: "12px",
             height: "12px",
             borderRadius: "50%",
-            backgroundColor: "#228be6",
+            backgroundColor: "var(--mantine-color-blue-6)",
             border: "2px solid white",
             zIndex: 3,
           }}

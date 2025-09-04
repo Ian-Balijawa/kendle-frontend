@@ -219,11 +219,12 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
     return (
       <>
         <Card
-          withBorder
           style={{
             transition: "all 0.2s ease",
             marginBottom: isFirst ? "0.5rem" : "0",
             cursor: "pointer",
+            borderRadius: "var(--mantine-radius-lg)",
+            boxShadow: "var(--mantine-shadow-xl)",
           }}
           onClick={handlePostClick}
           onMouseEnter={(e) => {
@@ -263,7 +264,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
 
                 <Box>
                   <Group gap={6} align="center">
-                    <Text fw={600} size="sm" c="dark.8">
+                    <Text fw={600} size="sm" >
                       {post.author?.firstName && post.author?.lastName
                         ? `${post.author.firstName} ${post.author.lastName}`
                         : post.author?.username
@@ -971,11 +972,11 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
   } catch (error) {
     console.error("PostCard: Error rendering post", error, post);
     return (
-      <Card withBorder p="md" radius="md" mb="md">
-        <Text c="red" size="sm">
+      <Box p="md" mb="md">
+        <Text c="red" size="sm" w="100%">
           Error loading post. Please try refreshing the page.
         </Text>
-      </Card>
+      </Box>
     );
   }
 }

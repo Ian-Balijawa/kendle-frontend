@@ -20,10 +20,12 @@ import {
   IconHome,
   IconLogout,
   IconMenu2,
+  IconMoon,
   IconPhoto,
   IconPlus,
   IconSearch,
   IconSettings,
+  IconSun,
   IconUser,
 } from "@tabler/icons-react";
 import { useState } from "react";
@@ -41,7 +43,7 @@ export function HeaderContent() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout, isAuthenticated } = useAuthStore();
-  const { unreadCount } = useUIStore();
+  const { unreadCount, theme, setTheme } = useUIStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
 
@@ -56,6 +58,10 @@ export function HeaderContent() {
   const handleLogout = () => {
     logout();
     navigate("/", { replace: true });
+  };
+
+  const toggleTheme = () => {
+    setTheme(theme === "light" ? "dark" : "light");
   };
 
   const isActive = (path: string) => {
@@ -180,6 +186,19 @@ export function HeaderContent() {
         </Box>
 
         <Group gap="sm">
+          {/* Theme Toggle Button */}
+          <Tooltip label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"} position="bottom">
+            <ActionIcon
+              variant="subtle"
+              size="lg"
+              radius="xl"
+              onClick={toggleTheme}
+              style={{ transition: "all 0.2s ease" }}
+            >
+              {theme === "dark" ? <IconSun size={20} /> : <IconMoon size={20} />}
+            </ActionIcon>
+          </Tooltip>
+
           {!isAuthenticated ? (
             <Group gap="sm">
               <Button

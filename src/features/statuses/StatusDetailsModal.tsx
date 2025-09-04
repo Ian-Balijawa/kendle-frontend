@@ -142,7 +142,7 @@ export function StatusDetailsModal({
       centered
       styles={{
         content: {
-          backgroundColor: "#000",
+          backgroundColor: "var(--mantine-color-dark-9)",
           border: "none",
           borderRadius: 0,
         },
@@ -156,7 +156,7 @@ export function StatusDetailsModal({
           position: "relative",
           width: "100vw",
           height: "100vh",
-          backgroundColor: "#000",
+          backgroundColor: "var(--mantine-color-dark-9)",
         }}
       >
         {/* Progress indicators */}
@@ -215,7 +215,7 @@ export function StatusDetailsModal({
                     </Badge>
                   )}
                 </Group>
-                <Text size="xs" c="rgba(255, 255, 255, 0.7)">
+                <Text size="xs" c="white" opacity={0.7}>
                   {formatTimeAgo(currentStatus.createdAt)} •{" "}
                   {getTimeRemaining()}
                 </Text>
@@ -400,7 +400,7 @@ export function StatusDetailsModal({
 
             {/* View count */}
             <Group gap="xs" align="center">
-              <Text size="sm" c="rgba(255, 255, 255, 0.7)" fw={500}>
+              <Text size="sm" c="white" opacity={0.7} fw={500}>
                 {currentStatus.viewsCount}{" "}
                 {currentStatus.viewsCount === 1 ? "view" : "views"}
               </Text>

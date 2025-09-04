@@ -92,7 +92,7 @@ export function ChatHeads() {
                           width: 12,
                           height: 12,
                           borderRadius: "50%",
-                          backgroundColor: "#44ff44",
+                          backgroundColor: "var(--mantine-color-green-5)",
                           border: "2px solid white",
                         }}
                       />
@@ -135,7 +135,7 @@ export function ChatHeads() {
                             width: 20,
                             height: 20,
                             borderRadius: "50%",
-                            backgroundColor: "#ff4444",
+                            backgroundColor: "var(--mantine-color-red-5)",
                             color: "white",
                             display: "flex",
                             alignItems: "center",

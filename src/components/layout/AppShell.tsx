@@ -59,7 +59,6 @@ export function AppShell() {
               </Box>
             </Container>
 
-            {/* Floating Chat Widget */}
             <FloatingChatWidget />
 
             <Box

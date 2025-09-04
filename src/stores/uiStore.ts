@@ -10,6 +10,7 @@ interface UIStore {
 
   // Actions
   setTheme: (theme: "light" | "dark") => void;
+  initializeTheme: () => void;
   addNotification: (notification: Notification) => void;
   markNotificationAsRead: (id: string) => void;
   markAllNotificationsAsRead: () => void;
@@ -27,8 +28,14 @@ export const useUIStore = create<UIStore>()(
 
         setTheme: (theme: "light" | "dark") => {
           set({ theme }, false, "ui/setTheme");
-          // Update document class for theme
-          document.documentElement.classList.toggle("dark", theme === "dark");
+          // Update Mantine's color scheme
+          document.documentElement.setAttribute("data-mantine-color-scheme", theme);
+        },
+
+        initializeTheme: () => {
+          const { theme } = useUIStore.getState();
+          // Update Mantine's color scheme
+          document.documentElement.setAttribute("data-mantine-color-scheme", theme);
         },
 
         addNotification: (notification: Notification) => {

@@ -256,7 +256,7 @@ export function CommentCard({ comment }: CommentCardProps) {
                 mb="xs"
                 style={{ flex: 1, minWidth: 0 }}
               >
-                <Text fw={600} size="sm" c="dark.8" truncate>
+                <Text fw={600} size="sm" truncate>
                   {comment.author?.firstName && comment.author?.lastName
                     ? `${comment.author.firstName} ${comment.author.lastName}`
                     : comment.author?.username

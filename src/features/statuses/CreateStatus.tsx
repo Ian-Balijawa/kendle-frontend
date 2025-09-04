@@ -217,7 +217,10 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
         },
         header: {
           paddingBottom: 12,
-          borderBottom: "1px solid #e9ecef",
+          borderBottom: "1px solid var(--mantine-color-gray-3)",
+        },
+        content: {
+          backgroundColor: "var(--mantine-color-body)",
         },
       }}
     >
@@ -232,7 +235,7 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
             size={48}
             radius="xl"
             style={{
-              border: "2px solid #e9ecef",
+              border: "2px solid var(--mantine-color-gray-3)",
             }}
           >
             {user?.firstName?.charAt(0) || "U"}
@@ -327,7 +330,7 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
             p="xl"
             withBorder
             radius="md"
-            style={{ border: "2px dashed #e9ecef" }}
+            style={{ border: "2px dashed var(--mantine-color-gray-3)" }}
           >
             <Stack gap="lg" align="center">
               <Box
@@ -335,13 +338,13 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
                   width: 80,
                   height: 80,
                   borderRadius: "50%",
-                  backgroundColor: "#f8f9fa",
+                  backgroundColor: "var(--mantine-color-gray-1)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                 }}
               >
-                <IconUpload size={32} color="#868e96" />
+                <IconUpload size={32} color="var(--mantine-color-gray-6)" />
               </Box>
 
               <Box ta="center">
@@ -415,11 +418,11 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
             autosize
             styles={{
               input: {
-                border: "2px solid #e9ecef",
+                border: "2px solid var(--mantine-color-gray-3)",
                 borderRadius: 12,
                 fontSize: 14,
                 "&:focus": {
-                  borderColor: "#228be6",
+                  borderColor: "var(--mantine-color-blue-6)",
                 },
               },
             }}
@@ -438,7 +441,7 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
         <Group
           justify="space-between"
           pt="md"
-          style={{ borderTop: "1px solid #e9ecef" }}
+          style={{ borderTop: "1px solid var(--mantine-color-gray-3)" }}
         >
           <Button variant="light" onClick={handleClose} radius="xl" size="md">
             Cancel
@@ -458,7 +461,7 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
         </Group>
 
         {/* Footer info */}
-        <Box ta="center" pt="sm" style={{ borderTop: "1px solid #f1f3f4" }}>
+        <Box ta="center" pt="sm" style={{ borderTop: "1px solid var(--mantine-color-gray-2)" }}>
           <Text size="xs" c="dimmed">
             🔒 Your status will automatically disappear after 24 hours
           </Text>

@@ -358,6 +358,14 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
       size="lg"
       closeOnClickOutside={false}
       closeOnEscape={false}
+      styles={{
+        content: {
+          backgroundColor: "var(--mantine-color-body)",
+        },
+        header: {
+          backgroundColor: "var(--mantine-color-body)",
+        },
+      }}
     >
       <Stack gap="md">
         {/* Author Header */}
@@ -384,6 +392,7 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
         <Select
           label="Post Type"
           placeholder="Select post type"
+          size="sm"
           value={postType}
           onChange={(value) => setPostType(value as PostType)}
           data={[
@@ -402,6 +411,7 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
         {/* Main Content */}
         <Textarea
           placeholder="What's on your mind? Use Enter for new lines..."
+          size="sm"
           value={content}
           onChange={(e) => setContent(e.currentTarget.value)}
           minRows={3}
@@ -424,6 +434,7 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
               <Title order={5}>Create Poll</Title>
               <TextInput
                 placeholder="What's your poll question?"
+                size="sm"
                 value={pollQuestion}
                 onChange={(e) => setPollQuestion(e.currentTarget.value)}
                 leftSection={<IconHash size={16} />}
@@ -437,6 +448,7 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
                   <Group key={index} gap="sm">
                     <TextInput
                       placeholder={`Option ${index + 1}`}
+                      size="sm"
                       value={option}
                       onChange={(e) =>
                         updatePollOption(index, e.currentTarget.value)
@@ -485,6 +497,7 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
               <Title order={5}>Create Event</Title>
               <TextInput
                 placeholder="Event title"
+                size="sm"
                 value={eventTitle}
                 onChange={(e) => setEventTitle(e.currentTarget.value)}
                 leftSection={<IconCalendarEvent size={16} />}
@@ -492,6 +505,7 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
 
               <Textarea
                 placeholder="Event description"
+                size="sm"
                 value={eventDescription}
                 onChange={(e) => setEventDescription(e.currentTarget.value)}
                 minRows={3}
@@ -524,6 +538,7 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
                 />
                 <NumberInput
                   placeholder="Capacity"
+                  size="sm"
                   value={eventCapacity}
                   onChange={(value) =>
                     setEventCapacity(
@@ -683,6 +698,7 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
                 <TextInput
                   placeholder="Description (optional)"
                   value={tagDescription}
+                  size="sm"
                   onChange={(e) => setTagDescription(e.currentTarget.value)}
                   style={{ flex: 1 }}
                 />
@@ -705,6 +721,7 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
                 <TextInput
                   placeholder="Search users to mention..."
                   value={mentionInput}
+                  size="sm"
                   onChange={(e) => {
                     setMentionInput(e.currentTarget.value);
                     setShowMentionPicker(e.currentTarget.value.length > 0);
@@ -764,6 +781,7 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
                 <TextInput
                   placeholder="Add location manually"
                   value={locationCoords ? "Current location" : location}
+                  size="sm"
                   onChange={(e) => setLocation(e.currentTarget.value)}
                   leftSection={<IconLocation size={16} />}
                   style={{ flex: 1 }}
@@ -773,6 +791,7 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
                   onClick={getCurrentLocation}
                   loading={isGettingLocation}
                   leftSection={<IconMapPin size={16} />}
+                  size="sm"
                 >
                   Use Current Location
                 </Button>
@@ -788,16 +807,19 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
                 <Switch
                   label="Public"
                   checked={isPublic}
+                  size="sm"
                   onChange={(e) => setIsPublic(e.currentTarget.checked)}
                 />
                 <Switch
                   label="Allow Comments"
                   checked={allowComments}
+                  size="sm"
                   onChange={(e) => setAllowComments(e.currentTarget.checked)}
                 />
                 <Switch
                   label="Allow Likes"
                   checked={allowLikes}
+                  size="sm"
                   onChange={(e) => setAllowLikes(e.currentTarget.checked)}
                 />
               </Group>
@@ -805,16 +827,19 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
                 <Switch
                   label="Allow Shares"
                   checked={allowShares}
+                  size="sm"
                   onChange={(e) => setAllowShares(e.currentTarget.checked)}
                 />
                 <Switch
                   label="Allow Bookmarks"
                   checked={allowBookmarks}
+                  size="sm"
                   onChange={(e) => setAllowBookmarks(e.currentTarget.checked)}
                 />
                 <Switch
                   label="Allow Reactions"
                   checked={allowReactions}
+                  size="sm"
                   onChange={(e) => setAllowReactions(e.currentTarget.checked)}
                 />
               </Group>
@@ -849,10 +874,11 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
           </Group>
 
           <Group gap="sm">
-            <Button variant="light" onClick={handleClose}>
+            <Button variant="light" onClick={handleClose} size="sm">
               Cancel
             </Button>
             <Button
+              size="sm"
               onClick={handleSubmit}
               disabled={!canSubmit}
               loading={isSubmitting}

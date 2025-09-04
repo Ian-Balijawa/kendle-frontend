@@ -65,11 +65,11 @@ export function StatusStories({
             transform: "translateY(-50%)",
             zIndex: 10,
             boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-            border: "1px solid #e9ecef",
+            border: "1px solid var(--mantine-color-gray-3)",
           }}
           onClick={() => scroll("left")}
         >
-          <IconChevronLeft size={16} color="#495057" />
+          <IconChevronLeft size={16} color="var(--mantine-color-gray-7)" />
         </ActionIcon>
       )}
 
@@ -86,11 +86,11 @@ export function StatusStories({
             transform: "translateY(-50%)",
             zIndex: 10,
             boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-            border: "1px solid #e9ecef",
+            border: "1px solid var(--mantine-color-gray-3)",
           }}
           onClick={() => scroll("right")}
         >
-          <IconChevronRight size={16} color="#495057" />
+          <IconChevronRight size={16} color="var(--mantine-color-gray-7)" />
         </ActionIcon>
       )}
 

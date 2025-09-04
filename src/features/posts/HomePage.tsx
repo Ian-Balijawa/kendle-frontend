@@ -1,6 +1,7 @@
 import {
   ActionIcon,
   Badge,
+  Box,
   Button,
   Card,
   Container,
@@ -100,22 +101,25 @@ export function HomePage() {
       </Group>
 
       {/* Status Stories Section */}
+      <Box my="md">
+
       {isAuthenticated && statusCollections.length > 0 && (
         <StatusStories
-          collections={statusCollections.filter(
-            (collection) => collection.author.id !== user?.id,
-          )}
-          currentUserAvatar={user?.avatar}
-          onCreateStatus={() => {
-            // Navigate to status page or open create status modal
-            window.location.href = "/statuses";
-          }}
-          onStatusClick={() => {
-            // Navigate to status page with specific collection
-            window.location.href = "/statuses";
-          }}
+            collections={statusCollections.filter(
+              (collection) => collection.author.id !== user?.id,
+            )}
+            currentUserAvatar={user?.avatar}
+            onCreateStatus={() => {
+              // Navigate to status page or open create status modal
+              window.location.href = "/statuses";
+            }}
+            onStatusClick={() => {
+              // Navigate to status page with specific collection
+              window.location.href = "/statuses";
+            }}
         />
       )}
+      </Box>
 
       {/* Profile Discovery Section */}
       {isAuthenticated &&
@@ -134,10 +138,10 @@ export function HomePage() {
         {/* Error State */}
         {isError && (
           <Card
-            radius="xl"
+            radius="lg"
             p="xl"
             style={{
-              background: "linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)",
+              background: "linear-gradient(135deg, var(--mantine-color-red-0) 0%, var(--mantine-color-red-1) 100%)",
               border: "1px solid var(--mantine-color-red-2)",
             }}
           >
@@ -166,10 +170,10 @@ export function HomePage() {
         {/* Empty State */}
         {!isLoading && posts.length === 0 && !isError && (
           <Card
-            radius="xl"
+            radius="lg"
             p="xl"
             style={{
-              background: "linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)",
+              background: "linear-gradient(135deg, var(--mantine-color-blue-0) 0%, var(--mantine-color-cyan-1) 100%)",
               border: "1px solid var(--mantine-color-blue-2)",
               textAlign: "center",
             }}

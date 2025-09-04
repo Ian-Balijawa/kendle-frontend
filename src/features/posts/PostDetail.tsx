@@ -4,14 +4,12 @@ import {
   Badge,
   Box,
   Button,
-  Card,
   Center,
   Group,
   Image,
   Loader,
   Menu,
   Modal,
-  Paper,
   rem,
   ScrollArea,
   Stack,
@@ -102,7 +100,7 @@ export function PostDetail() {
     if (postError || !post) {
       return (
         <Center py={60}>
-          <Paper p="xl" radius="lg" withBorder w="100%" maw={400}>
+          <Box p="xl" w="100%" maw={400}>
             <Stack align="center" gap="lg">
               <Box
                 w={60}
@@ -136,7 +134,7 @@ export function PostDetail() {
                 Back to Home
               </Button>
             </Stack>
-          </Paper>
+          </Box>
         </Center>
       );
     }
@@ -266,7 +264,6 @@ export function PostDetail() {
                 marginBottom:
                   index < lines.length - 1 ? spacingMap[spacing] : 0,
               }}
-              c="dark.7"
             >
               {line || "\u00A0"}
             </Text>
@@ -295,12 +292,10 @@ export function PostDetail() {
         </Group>
 
         {/* Main Post Card */}
-        <Paper
-          withBorder
-          radius="xl"
+        <Box
           p={0}
           mb="xl"
-          style={{ overflow: "hidden" }}
+          style={{ overflow: "hidden", borderRadius: "var(--mantine-radius-lg)", boxShadow: "var(--mantine-shadow-xl)" }}
         >
           <Box p="xl">
             {/* Author Header */}
@@ -317,6 +312,7 @@ export function PostDetail() {
                   }
                   size={48}
                   radius="xl"
+                  color="white"
                   style={{
                     border: post?.author?.isVerified
                       ? "2px solid var(--mantine-color-blue-6)"
@@ -334,7 +330,7 @@ export function PostDetail() {
                 </Avatar>
                 <Box>
                   <Group gap="xs" align="center">
-                    <Text fw={600} size="md" c="dark.8">
+                    <Text fw={600} size="md" >
                       {post?.author?.firstName && post?.author?.lastName
                         ? `${post.author.firstName} ${post.author.lastName}`
                         : post?.author?.username
@@ -626,7 +622,7 @@ export function PostDetail() {
 
             {/* Poll Display */}
             {post?.type === "poll" && post?.pollQuestion && (
-              <Card withBorder p="md" radius="md" bg="gray.0" mb="lg">
+              <Box p="md" bg="gray.0" mb="lg">
                 <Stack gap="md">
                   <Text size="md" fw={600}>
                     {post.pollQuestion}
@@ -647,12 +643,12 @@ export function PostDetail() {
                     </Text>
                   )}
                 </Stack>
-              </Card>
+              </Box>
             )}
 
             {/* Event Display */}
             {post?.type === "event" && post?.eventTitle && (
-              <Card withBorder p="md" radius="md" bg="blue.0" mb="lg">
+              <Box p="md" bg="blue.0" mb="lg">
                 <Stack gap="md">
                   <Text size="md" fw={600} c="blue.7">
                     {post.eventTitle}
@@ -680,7 +676,7 @@ export function PostDetail() {
                     )}
                   </Group>
                 </Stack>
-              </Card>
+              </Box>
             )}
           </Box>
 
@@ -1075,7 +1071,7 @@ export function PostDetail() {
               <CommentSkeletonList count={3} />
             )}
           </Box>
-        </Paper>
+        </Box>
 
         {/* Delete Confirmation Modal */}
         <Modal
@@ -1116,8 +1112,8 @@ export function PostDetail() {
     console.error("PostDetail: Error rendering component", error);
     return (
       <Center py={60}>
-        <Paper p="xl" radius="lg" withBorder w="100%" maw={400}>
-          <Stack align="center" gap="lg">
+        <Box p="xl" w="100%" maw={400}>
+          <Stack align="center" gap="lg" w="100%">
             <Box
               w={60}
               h={60}
@@ -1151,7 +1147,7 @@ export function PostDetail() {
               Back to Home
             </Button>
           </Stack>
-        </Paper>
+        </Box>
       </Center>
     );
   }

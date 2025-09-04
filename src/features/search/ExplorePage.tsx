@@ -3,7 +3,6 @@ import {
   Badge,
   Box,
   Button,
-  Card,
   Group,
   Loader,
   Stack,
@@ -62,7 +61,7 @@ function UserCard({
 
   if (isLoading) {
     return (
-      <Card withBorder p="md" radius="lg">
+      <Box p="md">
         <Group>
           <Avatar size="md" radius="xl" />
           <Box style={{ flex: 1 }}>
@@ -71,7 +70,7 @@ function UserCard({
             </Text>
           </Box>
         </Group>
-      </Card>
+      </Box>
     );
   }
 
@@ -80,7 +79,7 @@ function UserCard({
   }
 
   return (
-    <Card withBorder p="md" radius="lg" style={{ cursor: "pointer" }}>
+    <Box p="md" style={{ cursor: "pointer" }}>
       <Group justify="space-between" align="center">
         <Group
           gap="md"
@@ -178,7 +177,7 @@ function UserCard({
           {isFollowing ? "Following" : "Follow"}
         </Button>
       </Group>
-    </Card>
+    </Box>
   );
 }
 
@@ -280,12 +279,9 @@ export function ExplorePage() {
                   <PostCard key={post.id} post={post} isFirst={index === 0} />
                 ))
               ) : (
-                <Card
-                  p="xl"
-                  radius="xl"
-                  style={{
-                    background:
-                      "linear-gradient(135deg, var(--mantine-color-blue-0), var(--mantine-color-blue-1))",
+                    <Box
+                      p="xl"
+                      style={{
                     border: "none",
                   }}
                 >
@@ -303,7 +299,7 @@ export function ExplorePage() {
                       </Text>
                     </Stack>
                   </Stack>
-                </Card>
+                    </Box>
               )}
             </Stack>
           </Tabs.Panel>
@@ -314,12 +310,10 @@ export function ExplorePage() {
               <Tabs
                 value={peopleTab}
                 onChange={(value) => setPeopleTab(value || "suggestions")}
-                variant="pills"
-                radius="xl"
+                variant="pills" 
               >
                 <Tabs.List
                   style={{
-                    background: "var(--mantine-color-gray-1)",
                     padding: "4px",
                     borderRadius: "16px",
                   }}
@@ -371,12 +365,9 @@ export function ExplorePage() {
                       showStats={true}
                     />
                   ) : (
-                    <Card
-                      p="xl"
-                      radius="xl"
-                      style={{
-                        background:
-                          "linear-gradient(135deg, var(--mantine-color-cyan-0), var(--mantine-color-cyan-1))",
+                        <Box
+                          p="xl"
+                          style={{
                         border: "none",
                       }}
                     >
@@ -395,7 +386,7 @@ export function ExplorePage() {
                           </Text>
                         </Stack>
                       </Stack>
-                    </Card>
+                        </Box>
                   )}
                 </Tabs.Panel>
 
@@ -406,12 +397,7 @@ export function ExplorePage() {
                       <Loader size="lg" />
                     </Group>
                   ) : followingData && followingData.following.length > 0 ? (
-                    <Stack gap="md">
-                      <Group justify="space-between" align="center">
-                        <Text fw={600} size="lg">
-                          People You Follow ({followingData.totalCount})
-                        </Text>
-                      </Group>
+                      <Stack gap="md">
                       {followingData.following.map((user: User) => (
                         <UserCard
                           key={user.id}
@@ -424,12 +410,9 @@ export function ExplorePage() {
                       ))}
                     </Stack>
                   ) : (
-                    <Card
-                      p="xl"
-                      radius="xl"
-                      style={{
-                        background:
-                          "linear-gradient(135deg, var(--mantine-color-green-0), var(--mantine-color-green-1))",
+                        <Box
+                          p="xl"
+                          style={{
                         border: "none",
                       }}
                     >
@@ -448,7 +431,7 @@ export function ExplorePage() {
                           </Text>
                         </Stack>
                       </Stack>
-                    </Card>
+                        </Box>
                   )}
                 </Tabs.Panel>
 
@@ -459,12 +442,7 @@ export function ExplorePage() {
                       <Loader size="lg" />
                     </Group>
                   ) : followersData && followersData.followers.length > 0 ? (
-                    <Stack gap="md">
-                      <Group justify="space-between" align="center">
-                        <Text fw={600} size="lg">
-                          Your Followers ({followersData.totalCount})
-                        </Text>
-                      </Group>
+                      <Stack gap="md">
                       {followersData.followers.map((user: User) => (
                         <UserCard
                           key={user.id}
@@ -477,12 +455,9 @@ export function ExplorePage() {
                       ))}
                     </Stack>
                   ) : (
-                    <Card
-                      p="xl"
-                      radius="xl"
-                      style={{
-                        background:
-                          "linear-gradient(135deg, var(--mantine-color-yellow-0), var(--mantine-color-yellow-1))",
+                        <Box
+                          p="xl"
+                          style={{
                         border: "none",
                       }}
                     >
@@ -500,18 +475,19 @@ export function ExplorePage() {
                           </Text>
                         </Stack>
                       </Stack>
-                    </Card>
+                        </Box>
                   )}
                 </Tabs.Panel>
               </Tabs>
             </Stack>
           </Tabs.Panel>
 
+
           <Tabs.Panel value="hashtags" pt="md">
             <Stack gap="md">
               {mockTrendingHashtags.map((hashtag, index) => (
-                <Card key={hashtag.name} withBorder p="md">
-                  <Group justify="space-between">
+                <Box key={hashtag.name} p="md">
+                  <Group justify="space-between" align="center">
                     <Group>
                       <Badge size="lg" variant="light" color="blue">
                         #{hashtag.name}
@@ -529,7 +505,7 @@ export function ExplorePage() {
                       #{index + 1}
                     </Text>
                   </Group>
-                </Card>
+                </Box>
               ))}
             </Stack>
           </Tabs.Panel>

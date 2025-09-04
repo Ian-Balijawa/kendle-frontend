@@ -121,7 +121,7 @@ export function ProfileSwipe({
     <Stack gap="lg">
       {/* Header */}
       <Box>
-        <Text size="xl" fw={700} c="dark.8">
+        <Text size="xl" fw={700} >
           {title}
         </Text>
         <Text c="dimmed" size="sm">

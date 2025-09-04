@@ -1,6 +1,7 @@
 import { MantineProvider } from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
 import { QueryClientProvider } from "@tanstack/react-query";
+import { useEffect } from "react";
 import {
   Navigate,
   Route,
@@ -9,6 +10,7 @@ import {
 } from "react-router-dom";
 import { queryClient } from "./lib/queryClient";
 import { useAuthStore } from "./stores/authStore";
+import { useUIStore } from "./stores/uiStore";
 import { theme } from "./theme";
 
 import { AppShell } from "./components/layout/AppShell";
@@ -27,14 +29,11 @@ import { StatusesPage } from "./features/statuses/StatusesPage";
 
 import "./styles/globals.css";
 
-function App() {
+function AppContent() {
   const { isAuthenticated, user } = useAuthStore();
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <MantineProvider theme={theme} defaultColorScheme="auto">
-        <Notifications position="top-right" />
-        <Router>
+    <Router>
           <Routes>
             {/* Public routes */}
             <Route
@@ -111,7 +110,26 @@ function App() {
             {/* Catch all */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
-        </Router>
+    </Router>
+  );
+}
+
+function App() {
+  const { theme: currentTheme, initializeTheme } = useUIStore();
+
+  useEffect(() => {
+    initializeTheme();
+  }, [initializeTheme]);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <MantineProvider
+        key={currentTheme}
+        theme={theme}
+        defaultColorScheme={currentTheme}
+      >
+        <Notifications position="top-right" />
+        <AppContent />
       </MantineProvider>
     </QueryClientProvider>
   );
