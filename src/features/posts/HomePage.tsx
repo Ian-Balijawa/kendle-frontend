@@ -1,15 +1,12 @@
 import {
   ActionIcon,
   Badge,
-  Box,
   Button,
   Card,
   Container,
-  Divider,
   Group,
   Stack,
   Text,
-  Title,
 } from "@mantine/core";
 import { useIntersection } from "@mantine/hooks";
 import {
@@ -24,11 +21,14 @@ import { ProfileSwipe } from "../../components/ui/ProfileSwipe";
 import { useInfinitePosts } from "../../hooks/usePosts";
 import { useSuggestedUsers } from "../../hooks/useFollow";
 import { useAuthStore } from "../../stores/authStore";
+import { useStatusStore } from "../../stores/statusStore";
 import { CreatePost } from "./CreatePost";
 import { PostCard } from "./PostCard";
+import { StatusStories } from "../statuses/StatusStories";
 
 export function HomePage() {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
+  const { statusCollections } = useStatusStore();
   const [createPostOpened, setCreatePostOpened] = useState(false);
 
   // Use infinite posts query
@@ -62,12 +62,7 @@ export function HomePage() {
   return (
     <Container size="xl" px="md">
       {/* Header Section */}
-      <Box mb="xl">
-        <Group justify="space-between" align="center" mb="md">
-          <Group>
-            <Title order={1} size="h2" fw={600} c="dark.8">
-              Home
-            </Title>
+      <Group justify="space-between" align="center" mb="md">
             <Badge
               leftSection={<IconTrendingUp size={12} />}
               variant="gradient"
@@ -76,8 +71,7 @@ export function HomePage() {
               radius="xl"
             >
               Trending
-            </Badge>
-          </Group>
+        </Badge>
 
           <Group gap="xs">
             <ActionIcon
@@ -105,20 +99,32 @@ export function HomePage() {
           </Group>
         </Group>
 
-        <Divider />
-      </Box>
+      {/* Status Stories Section */}
+      {isAuthenticated && statusCollections.length > 0 && (
+        <StatusStories
+          collections={statusCollections.filter(
+            (collection) => collection.author.id !== user?.id
+          )}
+          currentUserAvatar={user?.avatar}
+          onCreateStatus={() => {
+            // Navigate to status page or open create status modal
+            window.location.href = "/statuses";
+          }}
+          onStatusClick={() => {
+            // Navigate to status page with specific collection
+            window.location.href = "/statuses";
+          }}
+        />
+      )}
 
       {/* Profile Discovery Section */}
       {isAuthenticated && suggestedUsers && suggestedUsers.suggestions.length > 0 && (
-        <Box mb="lg">
           <ProfileSwipe
             users={suggestedUsers.suggestions}
             title="Discover People"
             subtitle="Find interesting people to follow"
             showStats={true}
-          />
-          <Divider mt="xl" />
-        </Box>
+        />
       )}
 
       {/* Content Section */}

@@ -139,6 +139,7 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
 
       addStatus(newStatus);
 
+      // Reset form
       setContent("");
       removeMedia();
       onClose();
