@@ -1,18 +1,18 @@
 import {
-    ActionIcon,
-    Box,
-    Group,
-    Indicator,
-    Paper,
-    Text,
-    Transition,
+  ActionIcon,
+  Box,
+  Group,
+  Indicator,
+  Paper,
+  Text,
+  Transition,
 } from "@mantine/core";
 import {
-    IconCompass,
-    IconHome,
-    IconMessageCircle,
-    IconPlus,
-    IconUser,
+  IconCompass,
+  IconHome,
+  IconMessageCircle,
+  IconPlus,
+  IconUser,
 } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";

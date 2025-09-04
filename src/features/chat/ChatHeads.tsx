@@ -1,9 +1,9 @@
-import { useState } from 'react';
-import { Box, Avatar, Badge, Tooltip, Transition, Stack } from '@mantine/core';
-import { useFloatingChatStore } from '../../stores/chatStore';
-import { useConversations } from '../../hooks/useChat';
-import { useAuthStore } from '../../stores/authStore';
-import { Conversation } from '../../types';
+import { useState } from "react";
+import { Box, Avatar, Badge, Tooltip, Transition, Stack } from "@mantine/core";
+import { useFloatingChatStore } from "../../stores/chatStore";
+import { useConversations } from "../../hooks/useChat";
+import { useAuthStore } from "../../stores/authStore";
+import { Conversation } from "../../types";
 
 export function ChatHeads() {
   const { chatHeads, openChatWindow, removeChatHead } = useFloatingChatStore();
@@ -12,8 +12,10 @@ export function ChatHeads() {
   const [hoveredHead, setHoveredHead] = useState<string | null>(null);
 
   // Get conversation data for chat heads
-  const getConversationData = (conversationId: string): Conversation | undefined => {
-    return conversations?.find(conv => conv.id === conversationId);
+  const getConversationData = (
+    conversationId: string,
+  ): Conversation | undefined => {
+    return conversations?.find((conv) => conv.id === conversationId);
   };
 
   if (chatHeads.length === 0) {
@@ -24,7 +26,7 @@ export function ChatHeads() {
     <Stack
       gap="xs"
       style={{
-        pointerEvents: 'auto',
+        pointerEvents: "auto",
         marginBottom: 10,
       }}
     >
@@ -32,7 +34,9 @@ export function ChatHeads() {
         const conversation = getConversationData(conversationId);
         if (!conversation) return null;
 
-        const participant = conversation.participants.find(p => p.id !== user?.id);
+        const participant = conversation.participants.find(
+          (p) => p.id !== user?.id,
+        );
         const isOnline = participant?.isOnline || false;
         const unreadCount = conversation.unreadCount || 0;
 
@@ -47,14 +51,14 @@ export function ChatHeads() {
             {(styles) => (
               <Box style={styles}>
                 <Tooltip
-                  label={conversation.name || participant?.firstName || 'Chat'}
+                  label={conversation.name || participant?.firstName || "Chat"}
                   position="left"
                   withArrow
                 >
                   <Box
                     style={{
-                      position: 'relative',
-                      cursor: 'pointer',
+                      position: "relative",
+                      cursor: "pointer",
                       transform: `translateX(${index * 10}px)`,
                     }}
                     onMouseEnter={() => setHoveredHead(conversationId)}
@@ -66,27 +70,30 @@ export function ChatHeads() {
                       src={conversation.avatar || participant?.avatar}
                       alt={conversation.name || participant?.firstName}
                       style={{
-                        border: '3px solid white',
-                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
-                        transition: 'all 0.2s ease',
-                        transform: hoveredHead === conversationId ? 'scale(1.1)' : 'scale(1)',
+                        border: "3px solid white",
+                        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
+                        transition: "all 0.2s ease",
+                        transform:
+                          hoveredHead === conversationId
+                            ? "scale(1.1)"
+                            : "scale(1)",
                       }}
                     >
-                      {participant?.firstName?.charAt(0) || 'U'}
+                      {participant?.firstName?.charAt(0) || "U"}
                     </Avatar>
 
                     {/* Online indicator */}
                     {isOnline && (
                       <Box
                         style={{
-                          position: 'absolute',
+                          position: "absolute",
                           bottom: 2,
                           right: 2,
                           width: 12,
                           height: 12,
-                          borderRadius: '50%',
-                          backgroundColor: '#44ff44',
-                          border: '2px solid white',
+                          borderRadius: "50%",
+                          backgroundColor: "#44ff44",
+                          border: "2px solid white",
                         }}
                       />
                     )}
@@ -98,17 +105,17 @@ export function ChatHeads() {
                         variant="filled"
                         color="red"
                         style={{
-                          position: 'absolute',
+                          position: "absolute",
                           top: -5,
                           right: -5,
                           minWidth: 20,
                           height: 20,
                           borderRadius: 10,
                           fontSize: 10,
-                          fontWeight: 'bold',
+                          fontWeight: "bold",
                         }}
                       >
-                        {unreadCount > 99 ? '99+' : unreadCount}
+                        {unreadCount > 99 ? "99+" : unreadCount}
                       </Badge>
                     )}
 
@@ -122,20 +129,20 @@ export function ChatHeads() {
                         <Box
                           style={{
                             ...tooltipStyles,
-                            position: 'absolute',
+                            position: "absolute",
                             top: -8,
                             right: -8,
                             width: 20,
                             height: 20,
-                            borderRadius: '50%',
-                            backgroundColor: '#ff4444',
-                            color: 'white',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
+                            borderRadius: "50%",
+                            backgroundColor: "#ff4444",
+                            color: "white",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
                             fontSize: 12,
-                            cursor: 'pointer',
-                            border: '2px solid white',
+                            cursor: "pointer",
+                            border: "2px solid white",
                             zIndex: 10,
                           }}
                           onClick={(e) => {

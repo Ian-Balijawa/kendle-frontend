@@ -1,16 +1,16 @@
 import {
-    Alert,
-    Anchor,
-    Box,
-    Button,
-    Center,
-    Container,
-    Image,
-    LoadingOverlay,
-    Paper,
-    PinInput,
-    Stack,
-    Text,
+  Alert,
+  Anchor,
+  Box,
+  Button,
+  Center,
+  Container,
+  Image,
+  LoadingOverlay,
+  Paper,
+  PinInput,
+  Stack,
+  Text,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { IconAlertCircle, IconArrowLeft } from "@tabler/icons-react";
@@ -103,7 +103,7 @@ export function OTPVerification() {
         },
       });
     },
-    [phoneNumber, clearError, verifyOTPMutation, navigate, isSubmitting]
+    [phoneNumber, clearError, verifyOTPMutation, navigate, isSubmitting],
   );
 
   const handleResendOTP = async () => {
@@ -118,7 +118,7 @@ export function OTPVerification() {
         onError: (err) => {
           console.error("Failed to resend OTP:", err);
         },
-      }
+      },
     );
   };
 

@@ -28,83 +28,81 @@ interface AuthStore {
 export const useAuthStore = create<AuthStore>()(
   devtools(
     persist(
-      subscribeWithSelector(
-        (set, _get) => ({
-          user: null,
-          token: null,
-          refreshToken: null,
-          isAuthenticated: false,
-          isLoading: false,
-          error: null,
-          otpSent: false,
-          phoneNumber: null,
+      subscribeWithSelector((set, _get) => ({
+        user: null,
+        token: null,
+        refreshToken: null,
+        isAuthenticated: false,
+        isLoading: false,
+        error: null,
+        otpSent: false,
+        phoneNumber: null,
 
-          logout: () => {
-            set(
-              {
-                user: null,
-                token: null,
-                refreshToken: null,
-                isAuthenticated: false,
-                error: null,
-                otpSent: false,
-                phoneNumber: null,
-              },
-              false,
-              "auth/logout"
-            );
-          },
+        logout: () => {
+          set(
+            {
+              user: null,
+              token: null,
+              refreshToken: null,
+              isAuthenticated: false,
+              error: null,
+              otpSent: false,
+              phoneNumber: null,
+            },
+            false,
+            "auth/logout",
+          );
+        },
 
-          updateProfile: (data: Partial<AuthStore>) => {
-            set(
-              (state) => ({
-                ...state,
-                ...data,
-              }),
-              false,
-              "auth/updateProfile"
-            );
-          },
+        updateProfile: (data: Partial<AuthStore>) => {
+          set(
+            (state) => ({
+              ...state,
+              ...data,
+            }),
+            false,
+            "auth/updateProfile",
+          );
+        },
 
-          updateUser: (user: User) => {
-            set({ user }, false, "auth/updateUser");
-          },
+        updateUser: (user: User) => {
+          set({ user }, false, "auth/updateUser");
+        },
 
-          setLoading: (loading: boolean) => {
-            set({ isLoading: loading }, false, "auth/setLoading");
-          },
+        setLoading: (loading: boolean) => {
+          set({ isLoading: loading }, false, "auth/setLoading");
+        },
 
-          setError: (error: string | null) => {
-            set({ error }, false, "auth/setError");
-          },
+        setError: (error: string | null) => {
+          set({ error }, false, "auth/setError");
+        },
 
-          clearError: () => {
-            set({ error: null }, false, "auth/clearError");
-          },
+        clearError: () => {
+          set({ error: null }, false, "auth/clearError");
+        },
 
-          setOTPSent: (sent: boolean) => {
-            set({ otpSent: sent }, false, "auth/setOTPSent");
-          },
+        setOTPSent: (sent: boolean) => {
+          set({ otpSent: sent }, false, "auth/setOTPSent");
+        },
 
-          setPhoneNumber: (phone: string) => {
-            set({ phoneNumber: phone }, false, "auth/setPhoneNumber");
-          },
+        setPhoneNumber: (phone: string) => {
+          set({ phoneNumber: phone }, false, "auth/setPhoneNumber");
+        },
 
-          setAuthData: (user: User, accessToken: string) => {
-            set(
-              {
-                user,
-                token: accessToken,
-                isAuthenticated: true,
-                otpSent: false,
-                error: null,
-              },
-              false,
-              "auth/setAuthData"
-            );
-          },
-        })
-      ),
+        setAuthData: (user: User, accessToken: string) => {
+          set(
+            {
+              user,
+              token: accessToken,
+              isAuthenticated: true,
+              otpSent: false,
+              error: null,
+            },
+            false,
+            "auth/setAuthData",
+          );
+        },
+      })),
       {
         name: "auth-storage",
         partialize: (state) => ({
@@ -113,11 +111,11 @@ export const useAuthStore = create<AuthStore>()(
           refreshToken: state.refreshToken,
           isAuthenticated: state.isAuthenticated,
         }),
-      }
+      },
     ),
     {
       name: "Auth Store",
       enabled: true,
-    }
-  )
+    },
+  ),
 );

@@ -23,7 +23,12 @@ import {
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ProfileSwipe } from "../../components/ui";
-import { useFollowers, useFollowing, useSuggestedUsers, useToggleFollow } from "../../hooks/useFollow";
+import {
+  useFollowers,
+  useFollowing,
+  useSuggestedUsers,
+  useToggleFollow,
+} from "../../hooks/useFollow";
 import { useInfinitePosts } from "../../hooks/usePosts";
 import { useUser, useUserProfile } from "../../hooks/useUser";
 import { User } from "../../types/auth";
@@ -46,7 +51,13 @@ interface UserCardProps {
   followLoading: boolean;
 }
 
-function UserCard({ userId, onFollow, onViewProfile, isFollowing, followLoading }: UserCardProps) {
+function UserCard({
+  userId,
+  onFollow,
+  onViewProfile,
+  isFollowing,
+  followLoading,
+}: UserCardProps) {
   const { data: user, isLoading } = useUser(userId);
 
   if (isLoading) {
@@ -55,7 +66,9 @@ function UserCard({ userId, onFollow, onViewProfile, isFollowing, followLoading 
         <Group>
           <Avatar size="md" radius="xl" />
           <Box style={{ flex: 1 }}>
-            <Text size="sm" c="dimmed">Loading...</Text>
+            <Text size="sm" c="dimmed">
+              Loading...
+            </Text>
           </Box>
         </Group>
       </Card>
@@ -80,12 +93,16 @@ function UserCard({ userId, onFollow, onViewProfile, isFollowing, followLoading 
             size="md"
             radius="xl"
             style={{
-              border: user.isVerified ? "2px solid var(--mantine-color-blue-5)" : "none",
+              border: user.isVerified
+                ? "2px solid var(--mantine-color-blue-5)"
+                : "none",
             }}
           >
-            {(user.firstName || user.username || user.phoneNumber || "U").charAt(0).toUpperCase()}
+            {(user.firstName || user.username || user.phoneNumber || "U")
+              .charAt(0)
+              .toUpperCase()}
           </Avatar>
-          
+
           <Box style={{ flex: 1, minWidth: 0 }}>
             <Group gap="xs" align="center" mb="xs">
               <Text fw={600} size="sm" truncate>
@@ -93,8 +110,7 @@ function UserCard({ userId, onFollow, onViewProfile, isFollowing, followLoading 
                   ? `${user.firstName} ${user.lastName}`
                   : user.username
                     ? user.username
-                    : user.phoneNumber || "Unknown User"
-                }
+                    : user.phoneNumber || "Unknown User"}
               </Text>
               {user.isVerified && (
                 <Badge size="xs" color="blue" radius="sm" variant="filled">
@@ -102,21 +118,23 @@ function UserCard({ userId, onFollow, onViewProfile, isFollowing, followLoading 
                 </Badge>
               )}
             </Group>
-            
+
             <Group gap="xs" mb="xs">
               <Text size="xs" c="dimmed">
                 @{user.username || user.phoneNumber || "unknown"}
               </Text>
               {user.bio && (
                 <>
-                  <Text size="xs" c="dimmed">•</Text>
+                  <Text size="xs" c="dimmed">
+                    •
+                  </Text>
                   <Text size="xs" c="dimmed" truncate style={{ maxWidth: 200 }}>
                     {user.bio}
                   </Text>
                 </>
               )}
             </Group>
-            
+
             <Group gap="md">
               <Text size="xs" c="dimmed">
                 {user.followersCount || 0} followers
@@ -127,7 +145,7 @@ function UserCard({ userId, onFollow, onViewProfile, isFollowing, followLoading 
             </Group>
           </Box>
         </Group>
-        
+
         <Button
           variant={isFollowing ? "light" : "filled"}
           size="sm"
@@ -138,13 +156,21 @@ function UserCard({ userId, onFollow, onViewProfile, isFollowing, followLoading 
             onFollow(user.id, isFollowing);
           }}
           leftSection={
-            isFollowing ? <IconUserCheck size={14} /> : <IconUserPlus size={14} />
+            isFollowing ? (
+              <IconUserCheck size={14} />
+            ) : (
+              <IconUserPlus size={14} />
+            )
           }
           style={
             isFollowing
-              ? { color: "#667eea", borderColor: "#667eea" }
+              ? {
+                  color: "var(--mantine-color-blue-6)",
+                  borderColor: "var(--mantine-color-blue-6)",
+                }
               : {
-                  background: "linear-gradient(135deg, #667eea, #764ba2)",
+                  background:
+                    "linear-gradient(135deg, var(--mantine-color-blue-6), var(--mantine-color-violet-6))",
                   border: "none",
                 }
           }
@@ -173,12 +199,12 @@ export function ExplorePage() {
   const { data: followersData, isLoading: followersLoading } = useFollowers(
     currentUser?.id || "",
     1,
-    20
+    20,
   );
   const { data: followingData, isLoading: followingLoading } = useFollowing(
     currentUser?.id || "",
     1,
-    20
+    20,
   );
 
   console.log(followingData);
@@ -251,23 +277,23 @@ export function ExplorePage() {
               ) : trendingPosts?.pages[0]?.posts?.length &&
                 trendingPosts.pages[0].posts.length > 0 ? (
                 trendingPosts.pages[0].posts.map((post, index) => (
-                  <PostCard
-                    key={post.id}
-                    post={post}
-                    isFirst={index === 0}
-                  />
+                  <PostCard key={post.id} post={post} isFirst={index === 0} />
                 ))
               ) : (
                 <Card
                   p="xl"
                   radius="xl"
                   style={{
-                    background: "linear-gradient(135deg, #f8f9ff, #f1f3ff)",
+                    background:
+                      "linear-gradient(135deg, var(--mantine-color-blue-0), var(--mantine-color-blue-1))",
                     border: "none",
                   }}
                 >
                   <Stack align="center" gap="md">
-                    <IconTrendingUp size={48} color="#667eea" />
+                    <IconTrendingUp
+                      size={48}
+                      color="var(--mantine-color-blue-6)"
+                    />
                     <Stack align="center" gap="xs">
                       <Text fw={600} size="lg">
                         No trending posts yet
@@ -293,7 +319,7 @@ export function ExplorePage() {
               >
                 <Tabs.List
                   style={{
-                    background: "#f8f9fa",
+                    background: "var(--mantine-color-gray-1)",
                     padding: "4px",
                     borderRadius: "16px",
                   }}
@@ -336,7 +362,8 @@ export function ExplorePage() {
                     <Group justify="center" py="xl">
                       <Loader size="lg" />
                     </Group>
-                  ) : suggestedUsers && suggestedUsers.suggestions.length > 0 ? (
+                  ) : suggestedUsers &&
+                    suggestedUsers.suggestions.length > 0 ? (
                     <ProfileSwipe
                       users={suggestedUsers.suggestions}
                       title="Discover Amazing People"
@@ -348,19 +375,23 @@ export function ExplorePage() {
                       p="xl"
                       radius="xl"
                       style={{
-                        background: "linear-gradient(135deg, #f0f9ff, #e0f2fe)",
+                        background:
+                          "linear-gradient(135deg, var(--mantine-color-cyan-0), var(--mantine-color-cyan-1))",
                         border: "none",
                       }}
                     >
                       <Stack align="center" gap="md">
-                        <IconUsers size={48} color="#0ea5e9" />
+                        <IconUsers
+                          size={48}
+                          color="var(--mantine-color-cyan-6)"
+                        />
                         <Stack align="center" gap="xs">
                           <Text fw={600} size="lg">
                             No users to discover
                           </Text>
                           <Text c="dimmed" ta="center" size="sm">
-                            More amazing people will appear here as they join the
-                            community!
+                            More amazing people will appear here as they join
+                            the community!
                           </Text>
                         </Stack>
                       </Stack>
@@ -397,18 +428,23 @@ export function ExplorePage() {
                       p="xl"
                       radius="xl"
                       style={{
-                        background: "linear-gradient(135deg, #f0fdf4, #dcfce7)",
+                        background:
+                          "linear-gradient(135deg, var(--mantine-color-green-0), var(--mantine-color-green-1))",
                         border: "none",
                       }}
                     >
                       <Stack align="center" gap="md">
-                        <IconUserCheck size={48} color="#16a34a" />
+                        <IconUserCheck
+                          size={48}
+                          color="var(--mantine-color-green-6)"
+                        />
                         <Stack align="center" gap="xs">
                           <Text fw={600} size="lg">
                             Not following anyone yet
                           </Text>
                           <Text c="dimmed" ta="center" size="sm">
-                            Start following people to see their posts in your feed!
+                            Start following people to see their posts in your
+                            feed!
                           </Text>
                         </Stack>
                       </Stack>
@@ -445,12 +481,16 @@ export function ExplorePage() {
                       p="xl"
                       radius="xl"
                       style={{
-                        background: "linear-gradient(135deg, #fef3c7, #fde68a)",
+                        background:
+                          "linear-gradient(135deg, var(--mantine-color-yellow-0), var(--mantine-color-yellow-1))",
                         border: "none",
                       }}
                     >
                       <Stack align="center" gap="md">
-                        <IconUserPlus size={48} color="#d97706" />
+                        <IconUserPlus
+                          size={48}
+                          color="var(--mantine-color-yellow-6)"
+                        />
                         <Stack align="center" gap="xs">
                           <Text fw={600} size="lg">
                             No followers yet
@@ -480,8 +520,9 @@ export function ExplorePage() {
                         {hashtag.postsCount >= 1000000
                           ? `${(hashtag.postsCount / 1000000).toFixed(1)}M`
                           : hashtag.postsCount >= 1000
-                          ? `${(hashtag.postsCount / 1000).toFixed(1)}K`
-                          : hashtag.postsCount} posts
+                            ? `${(hashtag.postsCount / 1000).toFixed(1)}K`
+                            : hashtag.postsCount}{" "}
+                        posts
                       </Text>
                     </Group>
                     <Text size="xs" c="dimmed" fw={500}>

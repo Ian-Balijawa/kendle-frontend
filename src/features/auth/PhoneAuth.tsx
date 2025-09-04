@@ -4,9 +4,10 @@ import {
   Button,
   Center,
   Container,
-  Image, Stack,
+  Image,
+  Stack,
   Text,
-  TextInput
+  TextInput,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { IconAlertCircle, IconPhone } from "@tabler/icons-react";

@@ -30,28 +30,32 @@ interface InboxStore {
 export const useInboxStore = create<InboxStore>()(
   devtools(
     persist(
-      subscribeWithSelector(
-        (set, get) => ({
-          // Initial state
-          selectedConversationId: null,
-          typingIndicators: [],
-          onlineStatuses: {},
-          isConnected: false,
-          chatSettings: {
-            soundEnabled: true,
-            notificationsEnabled: true,
-            showOnlineStatus: true,
-            showReadReceipts: true,
-            showTypingIndicator: true,
-          },
+      subscribeWithSelector((set, get) => ({
+        // Initial state
+        selectedConversationId: null,
+        typingIndicators: [],
+        onlineStatuses: {},
+        isConnected: false,
+        chatSettings: {
+          soundEnabled: true,
+          notificationsEnabled: true,
+          showOnlineStatus: true,
+          showReadReceipts: true,
+          showTypingIndicator: true,
+        },
 
-          // Actions
-          setSelectedConversationId: (id) => {
-            set({ selectedConversationId: id }, false, "inbox/setSelectedConversationId");
-          },
+        // Actions
+        setSelectedConversationId: (id) => {
+          set(
+            { selectedConversationId: id },
+            false,
+            "inbox/setSelectedConversationId",
+          );
+        },
 
-          setTypingIndicator: (indicator) => {
-            set((state) => {
+        setTypingIndicator: (indicator) => {
+          set(
+            (state) => {
               const filteredIndicators = state.typingIndicators.filter(
                 (ti) =>
                   !(
@@ -65,72 +69,89 @@ export const useInboxStore = create<InboxStore>()(
                   ? [...filteredIndicators, indicator]
                   : filteredIndicators,
               };
-            }, false, "inbox/setTypingIndicator");
-          },
+            },
+            false,
+            "inbox/setTypingIndicator",
+          );
+        },
 
-          removeTypingIndicator: (userId, conversationId) => {
-            set((state) => ({
+        removeTypingIndicator: (userId, conversationId) => {
+          set(
+            (state) => ({
               typingIndicators: state.typingIndicators.filter(
-                (ti) => !(ti.userId === userId && ti.conversationId === conversationId),
+                (ti) =>
+                  !(
+                    ti.userId === userId && ti.conversationId === conversationId
+                  ),
               ),
-            }), false, "inbox/removeTypingIndicator");
-          },
+            }),
+            false,
+            "inbox/removeTypingIndicator",
+          );
+        },
 
-          setOnlineStatus: (status) => {
-            set((state) => ({
+        setOnlineStatus: (status) => {
+          set(
+            (state) => ({
               onlineStatuses: {
                 ...state.onlineStatuses,
                 [status.userId]: status,
               },
-            }), false, "inbox/setOnlineStatus");
-          },
+            }),
+            false,
+            "inbox/setOnlineStatus",
+          );
+        },
 
-          setConnected: (connected) => {
-            set({ isConnected: connected }, false, "inbox/setConnected");
-          },
+        setConnected: (connected) => {
+          set({ isConnected: connected }, false, "inbox/setConnected");
+        },
 
-          setChatSettings: (settings) => {
-            set((state) => ({
+        setChatSettings: (settings) => {
+          set(
+            (state) => ({
               chatSettings: { ...state.chatSettings, ...settings },
-            }), false, "inbox/setChatSettings");
-          },
+            }),
+            false,
+            "inbox/setChatSettings",
+          );
+        },
 
-          sendTypingIndicator: (conversationId, isTyping) => {
-            if (get().chatSettings.showTypingIndicator) {
-              chatService.sendTypingIndicator(conversationId, isTyping);
-            }
-          },
+        sendTypingIndicator: (conversationId, isTyping) => {
+          if (get().chatSettings.showTypingIndicator) {
+            chatService.sendTypingIndicator(conversationId, isTyping);
+          }
+        },
 
-          // Utility methods
-          getTypingUsers: (conversationId) => {
-            const { typingIndicators } = get();
-            return typingIndicators.filter(
-              (ti) => ti.conversationId === conversationId && ti.isTyping,
-            );
-          },
+        // Utility methods
+        getTypingUsers: (conversationId) => {
+          const { typingIndicators } = get();
+          return typingIndicators.filter(
+            (ti) => ti.conversationId === conversationId && ti.isTyping,
+          );
+        },
 
-          isUserOnline: (userId) => {
-            const { onlineStatuses } = get();
-            return onlineStatuses[userId]?.isOnline || false;
-          },
+        isUserOnline: (userId) => {
+          const { onlineStatuses } = get();
+          return onlineStatuses[userId]?.isOnline || false;
+        },
 
-          getUserLastSeen: (userId) => {
-            const { onlineStatuses } = get();
-            return onlineStatuses[userId]?.lastSeen || null;
-          },
-        })
-      ),
+        getUserLastSeen: (userId) => {
+          const { onlineStatuses } = get();
+          return onlineStatuses[userId]?.lastSeen || null;
+        },
+      })),
       {
         name: "inbox-store",
         partialize: (state) => ({
           chatSettings: state.chatSettings,
           // Don't persist real-time data like typing indicators and online statuses
         }),
-      }
+      },
     ),
     {
       name: "Inbox Store",
       enabled: true,
-    }
-  )
+    },
+  ),
 );

@@ -1,17 +1,26 @@
-import { useState, useRef, useEffect } from 'react';
-import { Group, ActionIcon, Box, Textarea, Popover, Stack, Button, Text } from '@mantine/core';
-import { IconSend, IconPaperclip, IconMoodSmile } from '@tabler/icons-react';
-import { useSendMessage } from '../../hooks/useChat';
-import { useConversation } from '../../hooks/useChat';
-import { useAuthStore } from '../../stores/authStore';
-import { useWebSocketIntegration } from '../../hooks/useWebSocket';
+import { useState, useRef, useEffect } from "react";
+import {
+  Group,
+  ActionIcon,
+  Box,
+  Textarea,
+  Popover,
+  Stack,
+  Button,
+  Text,
+} from "@mantine/core";
+import { IconSend, IconPaperclip, IconMoodSmile } from "@tabler/icons-react";
+import { useSendMessage } from "../../hooks/useChat";
+import { useConversation } from "../../hooks/useChat";
+import { useAuthStore } from "../../stores/authStore";
+import { useWebSocketIntegration } from "../../hooks/useWebSocket";
 
 interface ChatInputProps {
   conversationId: string;
 }
 
 export function ChatInput({ conversationId }: ChatInputProps) {
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [emojiPickerOpened, setEmojiPickerOpened] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -20,7 +29,7 @@ export function ChatInput({ conversationId }: ChatInputProps) {
   const sendMessage = useSendMessage();
   const { sendTypingIndicator } = useWebSocketIntegration();
 
-  const participant = conversation?.participants.find(p => p.id !== user?.id);
+  const participant = conversation?.participants.find((p) => p.id !== user?.id);
 
   // Handle sending message
   const handleSend = () => {
@@ -32,15 +41,13 @@ export function ChatInput({ conversationId }: ChatInputProps) {
         content: message.trim(),
         receiverId: participant.id,
         conversationId,
-        messageType: 'text',
+        messageType: "text",
       },
     });
 
-    setMessage('');
+    setMessage("");
     setIsTyping(false);
   };
-
-
 
   // Handle typing indicator
   useEffect(() => {
@@ -61,19 +68,32 @@ export function ChatInput({ conversationId }: ChatInputProps) {
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
   };
 
   const addEmoji = (emoji: string) => {
-    setMessage(prev => prev + emoji);
+    setMessage((prev) => prev + emoji);
     setEmojiPickerOpened(false);
     inputRef.current?.focus();
   };
 
-  const commonEmojis = ['😀', '😂', '😍', '😢', '😮', '😡', '👍', '👎', '❤️', '🔥', '🎉', '👏'];
+  const commonEmojis = [
+    "😀",
+    "😂",
+    "😍",
+    "😢",
+    "😮",
+    "😡",
+    "👍",
+    "👎",
+    "❤️",
+    "🔥",
+    "🎉",
+    "👏",
+  ];
 
   return (
     <Box>
@@ -109,7 +129,9 @@ export function ChatInput({ conversationId }: ChatInputProps) {
           </Popover.Target>
           <Popover.Dropdown>
             <Stack gap="xs">
-              <Text size="xs" fw={500}>Quick emojis</Text>
+              <Text size="xs" fw={500}>
+                Quick emojis
+              </Text>
               <Group gap="xs">
                 {commonEmojis.map((emoji) => (
                   <Button
@@ -117,7 +139,7 @@ export function ChatInput({ conversationId }: ChatInputProps) {
                     variant="subtle"
                     size="xs"
                     onClick={() => addEmoji(emoji)}
-                    style={{ minWidth: 'auto', padding: '4px 8px' }}
+                    style={{ minWidth: "auto", padding: "4px 8px" }}
                   >
                     {emoji}
                   </Button>

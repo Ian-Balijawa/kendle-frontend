@@ -26,7 +26,7 @@ import {
   IconSettings,
   IconUser,
 } from "@tabler/icons-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../stores/authStore";
 import { useUIStore } from "../../stores/uiStore";
@@ -44,22 +44,11 @@ export function HeaderContent() {
   const { unreadCount } = useUIStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   const handleSearch = (event: React.FormEvent) => {
     event.preventDefault();
     if (searchQuery.trim()) {
-      navigate(
-        `/explore?q=${encodeURIComponent(searchQuery.trim())}`
-      );
+      navigate(`/explore?q=${encodeURIComponent(searchQuery.trim())}`);
       setSearchFocused(false);
     }
   };
@@ -78,22 +67,12 @@ export function HeaderContent() {
 
   return (
     <Paper
-      shadow={isScrolled ? "sm" : "none"}
       style={{
         borderRadius: 0,
         transition: "box-shadow 0.2s ease",
-        borderBottom: isScrolled
-          ? "none"
-          : "1px solid var(--mantine-color-gray-2)",
-        background: `
-          radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
-          radial-gradient(circle at 80% 70%, rgba(16, 185, 129, 0.08) 0%, transparent 50%),
-          radial-gradient(circle at 40% 90%, rgba(139, 92, 246, 0.05) 0%, transparent 50%)
-          `,
-        backdropFilter: "blur(10px)",
       }}
     >
-      <Group  justify="space-between" h={60} gap="md">
+      <Group justify="space-between" h={60} gap="md">
         <Group gap="xl">
           <UnstyledButton
             onClick={() => navigate("/")}
@@ -102,7 +81,6 @@ export function HeaderContent() {
               borderRadius: "12px",
               transition: "all 0.2s ease",
             }}
-            className="logo-hover"
           >
             <Image src="/logo.png" alt="Kendle" width={50} height={50} />
           </UnstyledButton>

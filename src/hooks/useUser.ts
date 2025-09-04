@@ -84,7 +84,7 @@ export function useUpdateProfile() {
         if (updateData.username) {
           queryClient.setQueryData(
             userKeys.username(updateData.username),
-            updatedUser
+            updatedUser,
           );
         }
       }
@@ -108,7 +108,7 @@ export function useUpdateProfile() {
       if (updatedUser.username) {
         queryClient.setQueryData(
           userKeys.username(updatedUser.username),
-          updatedUser
+          updatedUser,
         );
       }
 
@@ -173,7 +173,7 @@ export function useCompleteUserProfile() {
       if (updatedUser.username) {
         queryClient.setQueryData(
           userKeys.username(updatedUser.username),
-          updatedUser
+          updatedUser,
         );
       }
 

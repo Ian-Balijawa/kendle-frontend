@@ -32,7 +32,7 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <MantineProvider theme={theme} defaultColorScheme="light">
+      <MantineProvider theme={theme} defaultColorScheme="auto">
         <Notifications position="top-right" />
         <Router>
           <Routes>
@@ -51,7 +51,7 @@ function App() {
                 )
               }
             />
-            
+
             <Route
               path="/verify-otp"
               element={
@@ -66,7 +66,7 @@ function App() {
                 )
               }
             />
-            
+
             <Route
               path="/complete-profile"
               element={

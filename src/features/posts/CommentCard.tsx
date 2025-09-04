@@ -11,6 +11,7 @@ import {
   Stack,
   Text,
   Textarea,
+  UnstyledButton,
   rem,
 } from "@mantine/core";
 import {
@@ -55,186 +56,212 @@ export function CommentCard({ comment }: CommentCardProps) {
 
     const { user, isAuthenticated } = useAuthStore();
 
-  const updateCommentMutation = useUpdateComment();
-  const deleteCommentMutation = useDeleteComment();
-  const reactToCommentMutation = useReactToComment();
-  const removeReactionMutation = useRemoveReaction();
+    const updateCommentMutation = useUpdateComment();
+    const deleteCommentMutation = useDeleteComment();
+    const reactToCommentMutation = useReactToComment();
+    const removeReactionMutation = useRemoveReaction();
 
-  const [isEditing, setIsEditing] = useState(false);
-  const [editContent, setEditContent] = useState(comment.content || "");
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [editContent, setEditContent] = useState(comment.content || "");
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  const isSubmitting =
-    updateCommentMutation.isPending || deleteCommentMutation.isPending;
+    const isSubmitting =
+      updateCommentMutation.isPending || deleteCommentMutation.isPending;
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInHours = Math.floor(
-      (now.getTime() - date.getTime()) / (1000 * 60 * 60)
-    );
+    const formatDate = (dateString: string) => {
+      const date = new Date(dateString);
+      const now = new Date();
+      const diffInHours = Math.floor(
+        (now.getTime() - date.getTime()) / (1000 * 60 * 60),
+      );
 
-    if (diffInHours < 1) return "now";
-    if (diffInHours < 24) return `${diffInHours}h`;
-    if (diffInHours < 168) return `${Math.floor(diffInHours / 24)}d`;
-    return date.toLocaleDateString();
-  };
-
-  const handleEdit = () => {
-    setEditContent(comment.content || "");
-    setIsEditing(true);
-  };
-
-  const handleSaveEdit = async () => {
-    if (!editContent.trim()) return;
-
-    const updateData: UpdateCommentRequest = {
-      content: editContent.trim(),
+      if (diffInHours < 1) return "now";
+      if (diffInHours < 24) return `${diffInHours}h`;
+      if (diffInHours < 168) return `${Math.floor(diffInHours / 24)}d`;
+      return date.toLocaleDateString();
     };
 
-    updateCommentMutation.mutate(
-      { id: comment.id, data: updateData },
-      {
+    const handleEdit = () => {
+      setEditContent(comment.content || "");
+      setIsEditing(true);
+    };
+
+    const handleSaveEdit = async () => {
+      if (!editContent.trim()) return;
+
+      const updateData: UpdateCommentRequest = {
+        content: editContent.trim(),
+      };
+
+      updateCommentMutation.mutate(
+        { id: comment.id, data: updateData },
+        {
+          onSuccess: () => {
+            setIsEditing(false);
+          },
+          onError: (error) => {
+            console.error("Failed to update comment:", error);
+          },
+        },
+      );
+    };
+
+    const handleCancelEdit = () => {
+      setIsEditing(false);
+      setEditContent(comment.content || "");
+    };
+
+    const handleDelete = async () => {
+      deleteCommentMutation.mutate(comment.id, {
         onSuccess: () => {
-          setIsEditing(false);
+          setShowDeleteConfirm(false);
         },
         onError: (error) => {
-          console.error("Failed to update comment:", error);
+          console.error("Failed to delete comment:", error);
         },
+      });
+    };
+
+    const handleLike = () => {
+      if (!isAuthenticated) return;
+
+      if (comment.isLiked) {
+        removeReactionMutation.mutate(comment.id);
+      } else {
+        reactToCommentMutation.mutate({
+          id: comment.id,
+          data: { reactionType: "like" },
+        });
       }
-    );
-  };
+    };
 
-  const handleCancelEdit = () => {
-    setIsEditing(false);
-    setEditContent(comment.content || "");
-  };
+    const handleDislike = () => {
+      if (!isAuthenticated) return;
 
-  const handleDelete = async () => {
-    deleteCommentMutation.mutate(comment.id, {
-      onSuccess: () => {
-        setShowDeleteConfirm(false);
-      },
-      onError: (error) => {
-        console.error("Failed to delete comment:", error);
-      },
-    });
-  };
+      if (comment.isDisliked) {
+        removeReactionMutation.mutate(comment.id);
+      } else {
+        reactToCommentMutation.mutate({
+          id: comment.id,
+          data: { reactionType: "dislike" },
+        });
+      }
+    };
 
-  const handleLike = () => {
-    if (!isAuthenticated) return;
+    const isAuthor = user?.id === comment.author?.id;
 
-    if (comment.isLiked) {
-      removeReactionMutation.mutate(comment.id);
-    } else {
-      reactToCommentMutation.mutate({ id: comment.id, data: { reactionType: "like" } });
+    if (isEditing) {
+      return (
+        <Paper
+          withBorder
+          radius="lg"
+          p="md"
+          style={{
+            borderColor: "var(--mantine-color-blue-4)",
+            backgroundColor: "var(--mantine-color-blue-1)",
+          }}
+        >
+          <Stack gap="md">
+            <Group gap="sm">
+              <Avatar
+                src={comment.author?.avatar}
+                alt={
+                  comment.author?.firstName ||
+                  comment.author?.username ||
+                  "User"
+                }
+                size={36}
+                radius="xl"
+              >
+                <Text size="xs" fw={600}>
+                  {comment.author?.firstName?.charAt(0) ||
+                    comment.author?.username?.charAt(0) ||
+                    comment.author?.phoneNumber?.charAt(0) ||
+                    "U"}
+                </Text>
+              </Avatar>
+              <Text size="sm" fw={500} c="blue.7">
+                Editing comment...
+              </Text>
+            </Group>
+
+            <Textarea
+              placeholder="Edit your comment..."
+              value={editContent}
+              onChange={(e) => setEditContent(e.currentTarget.value)}
+              minRows={2}
+              maxRows={6}
+              autosize
+              radius="md"
+              style={{ fontSize: rem(14) }}
+            />
+
+            <Group justify="flex-end" gap="sm">
+              <ActionIcon
+                variant="subtle"
+                color="gray"
+                onClick={handleCancelEdit}
+                size="lg"
+                radius="xl"
+              >
+                <IconX size={16} />
+              </ActionIcon>
+              <ActionIcon
+                variant="filled"
+                color="blue"
+                onClick={handleSaveEdit}
+                loading={isSubmitting}
+                size="lg"
+                radius="xl"
+              >
+                <IconCheck size={16} />
+              </ActionIcon>
+            </Group>
+          </Stack>
+        </Paper>
+      );
     }
-  };
 
-  const handleDislike = () => {
-    if (!isAuthenticated) return;
-
-    if (comment.isDisliked) {
-      removeReactionMutation.mutate(comment.id);
-    } else {
-      reactToCommentMutation.mutate({ id: comment.id, data: { reactionType: "dislike" } });
-    }
-  };
-
-  const isAuthor = user?.id === comment.author?.id;
-
-  if (isEditing) {
     return (
-      <Paper
-        withBorder
-        radius="lg"
-        p="md"
-        style={{
-          borderColor: "var(--mantine-color-blue-3)",
-          backgroundColor: "var(--mantine-color-blue-0)",
-        }}
-      >
-        <Stack gap="md">
-          <Group gap="sm">
+      <>
+        <Box>
+          <Group align="flex-start" gap="sm">
             <Avatar
               src={comment.author?.avatar}
-              alt={comment.author?.firstName || comment.author?.username || "User"}
-              size={36}
+              alt={
+                comment.author?.firstName || comment.author?.username || "User"
+              }
+              size={32}
               radius="xl"
+              style={{
+                border: comment.author?.isVerified
+                  ? "2px solid var(--mantine-color-blue-5)"
+                  : "none",
+                flexShrink: 0,
+              }}
             >
-              {(comment.author?.firstName || comment.author?.username || comment.author?.phoneNumber || "U").charAt(0).toUpperCase()}
+              <Text size="xs" color="dimmed" fw={600}>
+                {comment.author?.firstName?.charAt(0) ||
+                  comment.author?.username?.charAt(0) ||
+                  comment.author?.phoneNumber?.charAt(0) ||
+                  "U"}
+              </Text>
             </Avatar>
-            <Text size="sm" fw={500} c="blue.7">
-              Editing comment...
-            </Text>
-          </Group>
 
-          <Textarea
-            placeholder="Edit your comment..."
-            value={editContent}
-            onChange={(e) => setEditContent(e.currentTarget.value)}
-            minRows={2}
-            maxRows={6}
-            autosize
-            radius="md"
-            style={{ fontSize: rem(14) }}
-          />
-
-          <Group justify="flex-end" gap="sm">
-            <ActionIcon
-              variant="subtle"
-              color="gray"
-              onClick={handleCancelEdit}
-              size="lg"
-              radius="xl"
-            >
-              <IconX size={16} />
-            </ActionIcon>
-            <ActionIcon
-              variant="filled"
-              color="blue"
-              onClick={handleSaveEdit}
-              loading={isSubmitting}
-              size="lg"
-              radius="xl"
-            >
-              <IconCheck size={16} />
-            </ActionIcon>
-          </Group>
-        </Stack>
-      </Paper>
-    );
-  }
-
-  return (
-    <>
-      <Paper withBorder={false} radius="lg" p="md">
-        <Group align="flex-start" gap="md">
-          <Avatar
-            src={comment.author?.avatar}
-            alt={comment.author?.firstName || comment.author?.username || "User"}
-            size={36}
-            radius="xl"
-            style={{
-              border: comment.author?.isVerified
-                ? "2px solid var(--mantine-color-blue-4)"
-                : "none",
-              flexShrink: 0,
-            }}
-          >
-            {(comment.author?.firstName || comment.author?.username || comment.author?.phoneNumber || "U").charAt(0).toUpperCase()}
-          </Avatar>
-
-          <Box style={{ flex: 1, minWidth: 0 }}>
-            <Group justify="space-between" align="flex-start" mb="xs">
-              <Group gap="xs" align="center" style={{ flex: 1, minWidth: 0 }}>
+            <Box style={{ flex: 1, minWidth: 0 }}>
+              {/* Facebook-style Comment Header */}
+              <Group
+                gap="xs"
+                align="center"
+                mb="xs"
+                style={{ flex: 1, minWidth: 0 }}
+              >
                 <Text fw={600} size="sm" c="dark.8" truncate>
                   {comment.author?.firstName && comment.author?.lastName
                     ? `${comment.author.firstName} ${comment.author.lastName}`
                     : comment.author?.username
                       ? comment.author.username
-                      : comment.author?.phoneNumber || "Unknown User"
-                  }
+                      : comment.author?.phoneNumber || "Unknown User"}
                 </Text>
 
                 {comment.author?.isVerified && (
@@ -251,9 +278,8 @@ export function CommentCard({ comment }: CommentCardProps) {
                   {formatDate(comment.createdAt)}
                   {comment.updatedAt !== comment.createdAt && " (edited)"}
                 </Text>
-              </Group>
 
-              <Stack>
+                {/* Menu Button */}
                 {isAuthenticated && (
                   <Menu
                     shadow="lg"
@@ -262,13 +288,21 @@ export function CommentCard({ comment }: CommentCardProps) {
                     radius="md"
                     styles={{
                       dropdown: {
-                        backgroundColor: "var(--mantine-color-gray-0)",
+                        backgroundColor: "var(--mantine-color-gray-1)",
                       },
                     }}
                   >
                     <Menu.Target>
-                      <ActionIcon variant="subtle" size="sm" radius="xl">
-                        <IconDotsVertical size={14} />
+                      <ActionIcon
+                        variant="subtle"
+                        size="xs"
+                        radius="xl"
+                        style={{
+                          opacity: 0.6,
+                          marginLeft: "auto",
+                        }}
+                      >
+                        <IconDotsVertical size={12} />
                       </ActionIcon>
                     </Menu.Target>
                     <Menu.Dropdown>
@@ -299,146 +333,184 @@ export function CommentCard({ comment }: CommentCardProps) {
                     </Menu.Dropdown>
                   </Menu>
                 )}
-              </Stack>
-            </Group>
+              </Group>
 
-            <Box mb="sm">
-              {(comment.content || "").split("\n").map((line, index) => (
-                <Text
-                  key={index}
-                  size="sm"
-                  style={{
-                    lineHeight: 1.5,
-                    wordBreak: "break-word",
-                    marginBottom:
-                      index < (comment.content || "").split("\n").length - 1
-                        ? "0.25rem"
-                        : 0,
-                  }}
-                  c="dark.7"
-                >
-                  {line || "\u00A0"}
-                </Text>
-              ))}
-            </Box>
+              {/* Comment Content */}
+              <Box mb="xs">
+                {(comment.content || "").split("\n").map((line, index) => (
+                  <Text
+                    key={index}
+                    size="sm"
+                    style={{
+                      lineHeight: 1.4,
+                      wordBreak: "break-word",
+                      marginBottom:
+                        index < (comment.content || "").split("\n").length - 1
+                          ? "0.25rem"
+                          : 0,
+                    }}
+                    c="dark.7"
+                  >
+                    {line || "\u00A0"}
+                  </Text>
+                ))}
+              </Box>
 
-            <Group gap="md">
-              <Group
-                gap="xs"
-                style={{ cursor: isAuthenticated ? "pointer" : "default" }}
-                onClick={handleLike}
-              >
-                <ActionIcon
-                  variant={comment.isLiked ? "filled" : "subtle"}
-                  color={comment.isLiked ? "red" : "gray"}
-                  size="sm"
-                  radius="xl"
+              {/* Facebook-style Comment Reactions */}
+              <Group gap="md" mt="xs">
+                <UnstyledButton
+                  onClick={handleLike}
                   disabled={!isAuthenticated}
                   style={{
-                    transition: "all 150ms ease",
-                    transform: comment.isLiked ? "scale(1.1)" : "scale(1)",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.25rem",
+                    padding: "0.25rem 0.5rem",
+                    borderRadius: "var(--mantine-radius-sm)",
+                    transition: "background-color 0.2s ease",
+                    color: comment.isLiked
+                      ? "var(--mantine-color-blue-6)"
+                      : "var(--mantine-color-gray-6)",
+                    fontSize: "0.75rem",
+                    fontWeight: comment.isLiked ? 600 : 400,
+                  }}
+                  onMouseEnter={(e) => {
+                    if (isAuthenticated) {
+                      e.currentTarget.style.backgroundColor =
+                        "var(--mantine-color-gray-2)";
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "transparent";
                   }}
                 >
                   <IconHeart
-                    size={14}
+                    size={12}
                     style={{
                       fill: comment.isLiked ? "currentColor" : "none",
+                      stroke: "currentColor",
                     }}
                   />
-                </ActionIcon>
+                  {comment.likesCount > 0 && (
+                    <Text size="xs" c="currentColor">
+                      {comment.likesCount}
+                    </Text>
+                  )}
+                </UnstyledButton>
 
-                {comment.likesCount > 0 && (
-                  <Text
-                    size="xs"
-                    c={comment.isLiked ? "red.6" : "dimmed"}
-                    fw={comment.isLiked ? 500 : 400}
-                  >
-                    {comment.likesCount}
-                  </Text>
-                )}
-              </Group>
-
-              <Group
-                gap="xs"
-                style={{ cursor: isAuthenticated ? "pointer" : "default" }}
-                onClick={handleDislike}
-              >
-                <ActionIcon
-                  variant={comment.isDisliked ? "filled" : "subtle"}
-                  color="gray"
-                  size="sm"
-                  radius="xl"
+                <UnstyledButton
+                  onClick={handleDislike}
                   disabled={!isAuthenticated}
                   style={{
-                    transition: "all 150ms ease",
-                    transform: comment.isDisliked ? "scale(1.1)" : "scale(1)",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.25rem",
+                    padding: "0.25rem 0.5rem",
+                    borderRadius: "var(--mantine-radius-sm)",
+                    transition: "background-color 0.2s ease",
+                    color: comment.isDisliked
+                      ? "var(--mantine-color-gray-7)"
+                      : "var(--mantine-color-gray-6)",
+                    fontSize: "0.75rem",
+                    fontWeight: comment.isDisliked ? 600 : 400,
+                  }}
+                  onMouseEnter={(e) => {
+                    if (isAuthenticated) {
+                      e.currentTarget.style.backgroundColor =
+                        "var(--mantine-color-gray-2)";
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "transparent";
                   }}
                 >
                   <IconChevronDown
-                    size={14}
+                    size={12}
                     style={{
                       fill: comment.isDisliked ? "currentColor" : "none",
+                      stroke: "currentColor",
                     }}
                   />
-                </ActionIcon>
+                  {comment.dislikesCount > 0 && (
+                    <Text size="xs" c="currentColor">
+                      {comment.dislikesCount}
+                    </Text>
+                  )}
+                </UnstyledButton>
 
-                {comment.dislikesCount > 0 && (
-                  <Text
-                    size="xs"
-                    c={comment.isDisliked ? "gray.6" : "dimmed"}
-                    fw={comment.isDisliked ? 500 : 400}
-                  >
-                    {comment.dislikesCount}
-                  </Text>
-                )}
+                <UnstyledButton
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.25rem",
+                    padding: "0.25rem 0.5rem",
+                    borderRadius: "var(--mantine-radius-sm)",
+                    transition: "background-color 0.2s ease",
+                    color: "var(--mantine-color-gray-6)",
+                    fontSize: "0.75rem",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor =
+                      "var(--mantine-color-gray-2)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "transparent";
+                  }}
+                >
+                  <Text size="xs">Reply</Text>
+                </UnstyledButton>
               </Group>
-            </Group>
-          </Box>
-        </Group>
-      </Paper>
-
-      <Modal
-        opened={showDeleteConfirm}
-        onClose={() => setShowDeleteConfirm(false)}
-        title="Delete Comment"
-        radius="lg"
-        centered
-        size="sm"
-      >
-        <Stack gap="lg">
-          <Text size="sm" c="dimmed">
-            This action cannot be undone. Your comment will be permanently
-            deleted.
-          </Text>
-
-          <Group justify="flex-end" gap="sm">
-            <Button
-              variant="subtle"
-              color="gray"
-              onClick={() => setShowDeleteConfirm(false)}
-              radius="xl"
-              size="sm"
-            >
-              Cancel
-            </Button>
-            <Button
-              color="red"
-              onClick={handleDelete}
-              loading={isSubmitting}
-              radius="xl"
-              size="sm"
-            >
-              Delete
-            </Button>
+            </Box>
           </Group>
-        </Stack>
-      </Modal>
-    </>
-  );
+        </Box>
+
+        <Modal
+          opened={showDeleteConfirm}
+          onClose={() => setShowDeleteConfirm(false)}
+          title="Delete Comment"
+          radius="lg"
+          centered
+          size="sm"
+        >
+          <Stack gap="lg">
+            <Text size="sm" c="dimmed">
+              This action cannot be undone. Your comment will be permanently
+              deleted.
+            </Text>
+
+            <Group justify="flex-end" gap="sm">
+              <Button
+                variant="subtle"
+                color="gray"
+                onClick={() => setShowDeleteConfirm(false)}
+                radius="xl"
+                size="sm"
+              >
+                Cancel
+              </Button>
+              <Button
+                color="red"
+                onClick={handleDelete}
+                loading={isSubmitting}
+                radius="xl"
+                size="sm"
+              >
+                Delete
+              </Button>
+            </Group>
+          </Stack>
+        </Modal>
+      </>
+    );
   } catch (error) {
     console.error("CommentCard: Error rendering comment", error, comment);
     return (
-      <Paper withBorder radius="lg" p="md" style={{ borderColor: "var(--mantine-color-red-3)" }}>
+      <Paper
+        withBorder
+        radius="lg"
+        p="md"
+        style={{ borderColor: "var(--mantine-color-red-3)" }}
+      >
         <Text c="red" size="sm">
           Error loading comment. Please try refreshing the page.
         </Text>

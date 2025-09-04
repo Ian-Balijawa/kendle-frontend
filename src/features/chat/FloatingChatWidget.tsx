@@ -1,26 +1,40 @@
-import { Box, Portal, Transition, ActionIcon, Badge, Popover, Stack, Group, Avatar, Text } from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
-import { IconMessage, IconX, IconUserPlus } from '@tabler/icons-react';
-import { useAuthStore } from '../../stores/authStore';
-import { useWebSocketIntegration } from '../../hooks/useWebSocket';
-import { useUnreadCount } from '../../hooks/useChat';
-import { useFollowing } from '../../hooks/useFollow';
-import { useFindOrCreateDirectConversation } from '../../hooks/useChat';
-import { useFloatingChatStore } from '../../stores/chatStore';
-import { ChatHeads } from './ChatHeads';
-import { ChatWidget } from './ChatWidget';
-import { ChatWindows } from './ChatWindows';
+import {
+  Box,
+  Portal,
+  Transition,
+  ActionIcon,
+  Badge,
+  Popover,
+  Stack,
+  Group,
+  Avatar,
+  Text,
+} from "@mantine/core";
+import { useDisclosure } from "@mantine/hooks";
+import { IconMessage, IconX, IconUserPlus } from "@tabler/icons-react";
+import { useAuthStore } from "../../stores/authStore";
+import { useWebSocketIntegration } from "../../hooks/useWebSocket";
+import { useUnreadCount } from "../../hooks/useChat";
+import { useFollowing } from "../../hooks/useFollow";
+import { useFindOrCreateDirectConversation } from "../../hooks/useChat";
+import { useFloatingChatStore } from "../../stores/chatStore";
+import { ChatHeads } from "./ChatHeads";
+import { ChatWidget } from "./ChatWidget";
+import { ChatWindows } from "./ChatWindows";
 
 export function FloatingChatWidget() {
   const { isAuthenticated, user } = useAuthStore();
   const [opened, { open, close }] = useDisclosure(false);
-  const [followedUsersOpened, { open: openFollowedUsers, close: closeFollowedUsers }] = useDisclosure(false);
+  const [
+    followedUsersOpened,
+    { open: openFollowedUsers, close: closeFollowedUsers },
+  ] = useDisclosure(false);
   const { isConnected } = useWebSocketIntegration();
   const { data: unreadCount } = useUnreadCount();
   const { openChatWindow } = useFloatingChatStore();
-  const { data: followingData } = useFollowing(user?.id || '', 1, 5);
+  const { data: followingData } = useFollowing(user?.id || "", 1, 5);
   const createConversation = useFindOrCreateDirectConversation();
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
 
   const handleStartConversation = async (targetUserId: string) => {
     try {
@@ -28,7 +42,7 @@ export function FloatingChatWidget() {
       openChatWindow(conversation.id);
       closeFollowedUsers();
     } catch (error) {
-      console.error('Failed to start conversation:', error);
+      console.error("Failed to start conversation:", error);
     }
   };
 
@@ -42,11 +56,11 @@ export function FloatingChatWidget() {
       <Portal>
         <Box
           style={{
-            position: 'fixed',
+            position: "fixed",
             bottom: 20,
             right: 20,
             zIndex: 1000,
-            pointerEvents: 'none',
+            pointerEvents: "none",
           }}
         >
           {/* Chat Heads - Always visible */}
@@ -64,7 +78,7 @@ export function FloatingChatWidget() {
               <Popover.Target>
                 <Box
                   style={{
-                    pointerEvents: 'auto',
+                    pointerEvents: "auto",
                     marginTop: 10,
                   }}
                 >
@@ -74,8 +88,8 @@ export function FloatingChatWidget() {
                     color="blue"
                     onClick={openFollowedUsers}
                     style={{
-                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-                      transition: 'all 0.2s ease',
+                      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+                      transition: "all 0.2s ease",
                     }}
                   >
                     <IconUserPlus size={16} />
@@ -84,34 +98,37 @@ export function FloatingChatWidget() {
               </Popover.Target>
               <Popover.Dropdown>
                 <Stack gap="xs" style={{ minWidth: 200 }}>
-                  <Text size="sm" fw={500}>Start Chat</Text>
+                  <Text size="sm" fw={500}>
+                    Start Chat
+                  </Text>
                   {followingData.following.slice(0, 5).map((followedUser) => (
                     <Group
                       key={followedUser.id}
                       gap="sm"
                       style={{
-                        cursor: 'pointer',
-                        padding: '4px 8px',
+                        cursor: "pointer",
+                        padding: "4px 8px",
                         borderRadius: 4,
-                        transition: 'background-color 0.2s ease',
+                        transition: "background-color 0.2s ease",
                       }}
                       onClick={() => handleStartConversation(followedUser.id)}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = 'var(--mantine-color-gray-1)';
+                        e.currentTarget.style.backgroundColor =
+                          "var(--mantine-color-gray-1)";
                       }}
                       onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = 'transparent';
+                        e.currentTarget.style.backgroundColor = "transparent";
                       }}
                     >
                       <Avatar size="sm" src={followedUser.avatar}>
-                        {followedUser.firstName?.charAt(0) || 'U'}
+                        {followedUser.firstName?.charAt(0) || "U"}
                       </Avatar>
                       <Box style={{ flex: 1, minWidth: 0 }}>
                         <Text size="sm" truncate>
                           {followedUser.firstName} {followedUser.lastName}
                         </Text>
                         <Text size="xs" c="dimmed" truncate>
-                          @{followedUser.username || 'no-username'}
+                          @{followedUser.username || "no-username"}
                         </Text>
                       </Box>
                     </Group>
@@ -124,7 +141,7 @@ export function FloatingChatWidget() {
           {/* Main Chat Button */}
           <Box
             style={{
-              pointerEvents: 'auto',
+              pointerEvents: "auto",
               marginTop: 10,
             }}
           >
@@ -134,8 +151,8 @@ export function FloatingChatWidget() {
               color="primary"
               onClick={open}
               style={{
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-                transition: 'all 0.2s ease',
+                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+                transition: "all 0.2s ease",
               }}
             >
               <IconMessage size={20} />
@@ -148,17 +165,17 @@ export function FloatingChatWidget() {
                 variant="filled"
                 color="red"
                 style={{
-                  position: 'absolute',
+                  position: "absolute",
                   top: -8,
                   right: -8,
                   minWidth: 20,
                   height: 20,
                   borderRadius: 10,
                   fontSize: 10,
-                  fontWeight: 'bold',
+                  fontWeight: "bold",
                 }}
               >
-                {unreadCount.count > 99 ? '99+' : unreadCount.count}
+                {unreadCount.count > 99 ? "99+" : unreadCount.count}
               </Badge>
             )}
           </Box>
@@ -174,42 +191,42 @@ export function FloatingChatWidget() {
               <Box
                 style={{
                   ...styles,
-                  position: 'fixed',
+                  position: "fixed",
                   top: 0,
                   left: 0,
                   right: 0,
                   bottom: 0,
-                  backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                  backgroundColor: "rgba(0, 0, 0, 0.5)",
                   zIndex: 2000,
-                  pointerEvents: 'auto',
+                  pointerEvents: "auto",
                 }}
                 onClick={close}
               >
                 <Box
                   style={{
-                    position: 'absolute',
+                    position: "absolute",
                     top: 0,
                     left: 0,
                     right: 0,
                     bottom: 0,
-                    backgroundColor: 'white',
-                    borderRadius: '20px 20px 0 0',
-                    marginTop: '10%',
+                    backgroundColor: "white",
+                    borderRadius: "20px 20px 0 0",
+                    marginTop: "10%",
                   }}
                   onClick={(e) => e.stopPropagation()}
                 >
                   {/* Mobile Header */}
                   <Box
                     style={{
-                      padding: '16px',
-                      borderBottom: '1px solid var(--mantine-color-gray-3)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
+                      padding: "16px",
+                      borderBottom: "1px solid var(--mantine-color-gray-3)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
                     }}
                   >
                     <Box style={{ width: 40 }} />
-                    <Box style={{ textAlign: 'center' }}>
+                    <Box style={{ textAlign: "center" }}>
                       <strong>Messages</strong>
                     </Box>
                     <ActionIcon variant="subtle" onClick={close}>
@@ -218,7 +235,7 @@ export function FloatingChatWidget() {
                   </Box>
 
                   {/* Mobile Chat Content */}
-                  <Box style={{ height: 'calc(100% - 60px)' }}>
+                  <Box style={{ height: "calc(100% - 60px)" }}>
                     <ChatWidget onClose={close} />
                   </Box>
                 </Box>
@@ -235,11 +252,11 @@ export function FloatingChatWidget() {
     <Portal>
       <Box
         style={{
-          position: 'fixed',
+          position: "fixed",
           bottom: 20,
           right: 20,
           zIndex: 1000,
-          pointerEvents: 'none',
+          pointerEvents: "none",
         }}
       >
         {/* Chat Heads - Always visible */}
@@ -260,7 +277,7 @@ export function FloatingChatWidget() {
             <Popover.Target>
               <Box
                 style={{
-                  pointerEvents: 'auto',
+                  pointerEvents: "auto",
                   marginTop: 10,
                 }}
               >
@@ -270,8 +287,8 @@ export function FloatingChatWidget() {
                   color="blue"
                   onClick={openFollowedUsers}
                   style={{
-                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-                    transition: 'all 0.2s ease',
+                    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+                    transition: "all 0.2s ease",
                   }}
                 >
                   <IconUserPlus size={16} />
@@ -280,34 +297,37 @@ export function FloatingChatWidget() {
             </Popover.Target>
             <Popover.Dropdown>
               <Stack gap="xs" style={{ minWidth: 200 }}>
-                <Text size="sm" fw={500}>Start Chat</Text>
+                <Text size="sm" fw={500}>
+                  Start Chat
+                </Text>
                 {followingData.following.slice(0, 5).map((followedUser) => (
                   <Group
                     key={followedUser.id}
                     gap="sm"
                     style={{
-                      cursor: 'pointer',
-                      padding: '4px 8px',
+                      cursor: "pointer",
+                      padding: "4px 8px",
                       borderRadius: 4,
-                      transition: 'background-color 0.2s ease',
+                      transition: "background-color 0.2s ease",
                     }}
                     onClick={() => handleStartConversation(followedUser.id)}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = 'var(--mantine-color-gray-1)';
+                      e.currentTarget.style.backgroundColor =
+                        "var(--mantine-color-gray-1)";
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = 'transparent';
+                      e.currentTarget.style.backgroundColor = "transparent";
                     }}
                   >
                     <Avatar size="sm" src={followedUser.avatar}>
-                      {followedUser.firstName?.charAt(0) || 'U'}
+                      {followedUser.firstName?.charAt(0) || "U"}
                     </Avatar>
                     <Box style={{ flex: 1, minWidth: 0 }}>
                       <Text size="sm" truncate>
                         {followedUser.firstName} {followedUser.lastName}
                       </Text>
                       <Text size="xs" c="dimmed" truncate>
-                        @{followedUser.username || 'no-username'}
+                        @{followedUser.username || "no-username"}
                       </Text>
                     </Box>
                   </Group>
@@ -320,7 +340,7 @@ export function FloatingChatWidget() {
         {/* Main Chat Button */}
         <Box
           style={{
-            pointerEvents: 'auto',
+            pointerEvents: "auto",
             marginTop: 10,
           }}
         >
@@ -330,8 +350,8 @@ export function FloatingChatWidget() {
             color="primary"
             onClick={open}
             style={{
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-              transition: 'all 0.2s ease',
+              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+              transition: "all 0.2s ease",
             }}
           >
             <IconMessage size={20} />
@@ -344,17 +364,17 @@ export function FloatingChatWidget() {
               variant="filled"
               color="red"
               style={{
-                position: 'absolute',
+                position: "absolute",
                 top: -8,
                 right: -8,
                 minWidth: 20,
                 height: 20,
                 borderRadius: 10,
                 fontSize: 10,
-                fontWeight: 'bold',
+                fontWeight: "bold",
               }}
             >
-              {unreadCount.count > 99 ? '99+' : unreadCount.count}
+              {unreadCount.count > 99 ? "99+" : unreadCount.count}
             </Badge>
           )}
         </Box>
@@ -377,15 +397,15 @@ export function FloatingChatWidget() {
         {!isConnected && (
           <Box
             style={{
-              position: 'absolute',
+              position: "absolute",
               top: -8,
               right: -8,
               width: 12,
               height: 12,
-              borderRadius: '50%',
-              backgroundColor: '#ff4444',
-              border: '2px solid white',
-              pointerEvents: 'none',
+              borderRadius: "50%",
+              backgroundColor: "#ff4444",
+              border: "2px solid white",
+              pointerEvents: "none",
             }}
           />
         )}

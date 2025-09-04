@@ -20,7 +20,7 @@ import {
   IconSend,
   IconX,
   IconVideo,
-  IconUpload
+  IconUpload,
 } from "@tabler/icons-react";
 import { useRef, useState } from "react";
 import { useAuthStore } from "../../stores/authStore";
@@ -323,7 +323,12 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
 
         {/* Media upload section */}
         {!media && (
-          <Card p="xl" withBorder radius="md" style={{ border: "2px dashed #e9ecef" }}>
+          <Card
+            p="xl"
+            withBorder
+            radius="md"
+            style={{ border: "2px dashed #e9ecef" }}
+          >
             <Stack gap="lg" align="center">
               <Box
                 style={{
@@ -344,7 +349,8 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
                   Add Photo or Video
                 </Text>
                 <Text size="sm" c="dimmed" maw={300}>
-                  Share a moment with your friends. Choose an image or video to get started.
+                  Share a moment with your friends. Choose an image or video to
+                  get started.
                 </Text>
               </Box>
 
@@ -429,13 +435,12 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
         </Box>
 
         {/* Action buttons */}
-        <Group justify="space-between" pt="md" style={{ borderTop: "1px solid #e9ecef" }}>
-          <Button
-            variant="light"
-            onClick={handleClose}
-            radius="xl"
-            size="md"
-          >
+        <Group
+          justify="space-between"
+          pt="md"
+          style={{ borderTop: "1px solid #e9ecef" }}
+        >
+          <Button variant="light" onClick={handleClose} radius="xl" size="md">
             Cancel
           </Button>
           <Button

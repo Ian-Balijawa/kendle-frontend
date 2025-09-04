@@ -1,18 +1,18 @@
-import { Menu, ActionIcon, Group } from '@mantine/core';
-import { 
-  IconHeart, 
-  IconThumbUp, 
-  IconMoodHappy, 
-  IconMoodSad, 
-  IconMoodAngry, 
-  IconArrowBackUp, 
-  IconEdit, 
+import { Menu, ActionIcon, Group } from "@mantine/core";
+import {
+  IconHeart,
+  IconThumbUp,
+  IconMoodHappy,
+  IconMoodSad,
+  IconMoodAngry,
+  IconArrowBackUp,
+  IconEdit,
   IconTrash,
   IconCopy,
-  IconDots
-} from '@tabler/icons-react';
-import { Message } from '../../types';
-import { useAuthStore } from '../../stores/authStore';
+  IconDots,
+} from "@tabler/icons-react";
+import { Message } from "../../types";
+import { useAuthStore } from "../../stores/authStore";
 
 interface MessageContextMenuProps {
   message: Message;
@@ -23,19 +23,19 @@ interface MessageContextMenuProps {
 }
 
 const quickReactions = [
-  { emoji: '❤️', icon: IconHeart, label: 'Love' },
-  { emoji: '👍', icon: IconThumbUp, label: 'Like' },
-  { emoji: '😂', icon: IconMoodHappy, label: 'Laugh' },
-  { emoji: '😢', icon: IconMoodSad, label: 'Sad' },
-  { emoji: '😡', icon: IconMoodAngry, label: 'Angry' },
+  { emoji: "❤️", icon: IconHeart, label: "Love" },
+  { emoji: "👍", icon: IconThumbUp, label: "Like" },
+  { emoji: "😂", icon: IconMoodHappy, label: "Laugh" },
+  { emoji: "😢", icon: IconMoodSad, label: "Sad" },
+  { emoji: "😡", icon: IconMoodAngry, label: "Angry" },
 ];
 
-export function MessageContextMenu({ 
-  message, 
-  onReply, 
-  onEdit, 
-  onDelete, 
-  onReact 
+export function MessageContextMenu({
+  message,
+  onReply,
+  onEdit,
+  onDelete,
+  onReact,
 }: MessageContextMenuProps) {
   const { user } = useAuthStore();
   const isOwnMessage = message.senderId === user?.id;
@@ -88,10 +88,7 @@ export function MessageContextMenu({
           Reply
         </Menu.Item>
 
-        <Menu.Item
-          leftSection={<IconCopy size={14} />}
-          onClick={handleCopy}
-        >
+        <Menu.Item leftSection={<IconCopy size={14} />} onClick={handleCopy}>
           Copy text
         </Menu.Item>
 

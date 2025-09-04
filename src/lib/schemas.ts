@@ -33,7 +33,19 @@ export const postSchema = z.object({
   location: z.string().optional(),
   tags: z.array(tagInputSchema).optional(),
   mentions: z.array(mentionInputSchema).optional(),
-  type: z.enum(["text", "image", "video", "poll", "event", "repost", "quote", "article", "story"]).default("text"),
+  type: z
+    .enum([
+      "text",
+      "image",
+      "video",
+      "poll",
+      "event",
+      "repost",
+      "quote",
+      "article",
+      "story",
+    ])
+    .default("text"),
   isPublic: z.boolean().default(true),
   allowComments: z.boolean().default(true),
   allowLikes: z.boolean().default(true),

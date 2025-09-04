@@ -18,8 +18,12 @@ import { StatusStories } from "./StatusStories";
 
 export function StatusesPage() {
   const { isAuthenticated, user } = useAuthStore();
-  const { statusCollections, setStatusCollections, cleanupExpiredStatuses, viewStatus } =
-    useStatusStore();
+  const {
+    statusCollections,
+    setStatusCollections,
+    cleanupExpiredStatuses,
+    viewStatus,
+  } = useStatusStore();
 
   const [createStatusOpened, setCreateStatusOpened] = useState(false);
   const [selectedCollection, setSelectedCollection] =
@@ -79,8 +83,12 @@ export function StatusesPage() {
               viewsCount: 15,
               views: [],
               isViewed: false,
-              createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-              expiresAt: new Date(Date.now() + 22 * 60 * 60 * 1000).toISOString(),
+              createdAt: new Date(
+                Date.now() - 2 * 60 * 60 * 1000,
+              ).toISOString(),
+              expiresAt: new Date(
+                Date.now() + 22 * 60 * 60 * 1000,
+              ).toISOString(),
               isExpired: false,
             },
           ],
@@ -133,8 +141,12 @@ export function StatusesPage() {
               viewsCount: 23,
               views: [],
               isViewed: false,
-              createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
-              expiresAt: new Date(Date.now() + 20 * 60 * 60 * 1000).toISOString(),
+              createdAt: new Date(
+                Date.now() - 4 * 60 * 60 * 1000,
+              ).toISOString(),
+              expiresAt: new Date(
+                Date.now() + 20 * 60 * 60 * 1000,
+              ).toISOString(),
               isExpired: false,
             },
           ],
@@ -208,14 +220,15 @@ export function StatusesPage() {
 
   // Filter collections to exclude user's own collection for the stories display
   const otherCollections = statusCollections.filter(
-    (collection) => collection.author.id !== user?.id
+    (collection) => collection.author.id !== user?.id,
   );
 
   const canGoNext = selectedCollection
     ? currentStatusIndex < selectedCollection.statuses.length - 1
     : false;
   const canGoPrevious = currentStatusIndex > 0;
-  const canGoNextCollection = currentCollectionIndex < statusCollections.length - 1;
+  const canGoNextCollection =
+    currentCollectionIndex < statusCollections.length - 1;
   const canGoPreviousCollection = currentCollectionIndex > 0;
 
   return (
@@ -270,8 +283,7 @@ export function StatusesPage() {
               <Text size="sm" c="dimmed" maw={400} mx="auto" mb="lg">
                 {isAuthenticated
                   ? "Be the first to share a moment! Your status will disappear after 24 hours."
-                  : "Sign in to view and share status updates with your friends."
-                }
+                  : "Sign in to view and share status updates with your friends."}
               </Text>
               {isAuthenticated && (
                 <Button

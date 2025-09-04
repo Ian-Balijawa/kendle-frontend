@@ -4,7 +4,6 @@ import {
   Badge,
   Box,
   Button,
-
   Collapse,
   Group,
   Image,
@@ -36,7 +35,12 @@ import {
 import { useRef, useState } from "react";
 import { useCreatePost } from "../../hooks/usePosts";
 import { useFollowing } from "../../hooks/useFollow";
-import { CreatePostData, MediaInput, TagInput, MentionInput } from "../../types/post";
+import {
+  CreatePostData,
+  MediaInput,
+  TagInput,
+  MentionInput,
+} from "../../types/post";
 import { useAuthStore } from "../../stores/authStore";
 
 interface CreatePostProps {
@@ -44,7 +48,16 @@ interface CreatePostProps {
   onClose: () => void;
 }
 
-type PostType = "text" | "image" | "video" | "poll" | "event" | "repost" | "quote" | "article" | "story";
+type PostType =
+  | "text"
+  | "image"
+  | "video"
+  | "poll"
+  | "event"
+  | "repost"
+  | "quote"
+  | "article"
+  | "story";
 
 export function CreatePost({ opened, onClose }: CreatePostProps) {
   const { user } = useAuthStore();
@@ -61,7 +74,10 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
   const [postType, setPostType] = useState<PostType>("text");
   const [media, setMedia] = useState<File[]>([]);
   const [location, setLocation] = useState<string>("");
-  const [locationCoords, setLocationCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [locationCoords, setLocationCoords] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
   const [tags, setTags] = useState<TagInput[]>([]);
   const [mentions, setMentions] = useState<MentionInput[]>([]);
   const [scheduledAt, setScheduledAt] = useState<Date | null>(null);
@@ -120,7 +136,7 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
         console.error("Error getting location:", error);
         alert("Unable to get your location. Please try again.");
         setIsGettingLocation(false);
-      }
+      },
     );
   };
 
@@ -129,7 +145,8 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
     if (!files) return;
 
     const validFiles = files.filter((file) => {
-      const isValidType = file.type.startsWith("image/") || file.type.startsWith("video/");
+      const isValidType =
+        file.type.startsWith("image/") || file.type.startsWith("video/");
       const isValidSize = file.size <= 10 * 1024 * 1024; // 10MB limit (reduced from 50MB)
 
       if (!isValidType) {
@@ -138,7 +155,11 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
       }
 
       if (!isValidSize) {
-        console.error("File too large:", file.size, "bytes. Maximum allowed: 10MB");
+        console.error(
+          "File too large:",
+          file.size,
+          "bytes. Maximum allowed: 10MB",
+        );
         alert(`File "${file.name}" is too large. Maximum file size is 10MB.`);
         return false;
       }
@@ -155,8 +176,14 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
 
   // Tag handling
   const handleTagAdd = () => {
-    if (tagInput.trim() && !tags.some(tag => tag.name === tagInput.trim())) {
-      setTags((prev) => [...prev, { name: tagInput.trim(), description: tagDescription.trim() || undefined }]);
+    if (tagInput.trim() && !tags.some((tag) => tag.name === tagInput.trim())) {
+      setTags((prev) => [
+        ...prev,
+        {
+          name: tagInput.trim(),
+          description: tagDescription.trim() || undefined,
+        },
+      ]);
       setTagInput("");
       setTagDescription("");
     }
@@ -168,7 +195,7 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
 
   // Mention handling
   const handleMentionAdd = (userId: string) => {
-    if (!mentions.some(mention => mention.mentionedUserId === userId)) {
+    if (!mentions.some((mention) => mention.mentionedUserId === userId)) {
       setMentions((prev) => [...prev, { mentionedUserId: userId }]);
     }
     setMentionInput("");
@@ -176,7 +203,9 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
   };
 
   const removeMention = (userIdToRemove: string) => {
-    setMentions((prev) => prev.filter((mention) => mention.mentionedUserId !== userIdToRemove));
+    setMentions((prev) =>
+      prev.filter((mention) => mention.mentionedUserId !== userIdToRemove),
+    );
   };
 
   // Poll handling
@@ -187,7 +216,9 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
   };
 
   const updatePollOption = (index: number, value: string) => {
-    setPollOptions((prev) => prev.map((option, i) => i === index ? value : option));
+    setPollOptions((prev) =>
+      prev.map((option, i) => (i === index ? value : option)),
+    );
   };
 
   const removePollOption = (index: number) => {
@@ -230,7 +261,7 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
     // Add poll data if post type is poll
     if (postType === "poll" && pollQuestion.trim()) {
       postData.pollQuestion = pollQuestion.trim();
-      postData.pollOptions = pollOptions.filter(option => option.trim());
+      postData.pollOptions = pollOptions.filter((option) => option.trim());
       postData.pollEndDate = pollEndDate?.toISOString();
     }
 
@@ -312,8 +343,11 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
     }
   };
 
-  const canSubmit = content.trim() &&
-    (postType !== "poll" || (pollQuestion.trim() && pollOptions.filter(opt => opt.trim()).length >= 2)) &&
+  const canSubmit =
+    content.trim() &&
+    (postType !== "poll" ||
+      (pollQuestion.trim() &&
+        pollOptions.filter((opt) => opt.trim()).length >= 2)) &&
     (postType !== "event" || eventTitle.trim());
 
   return (
@@ -396,13 +430,17 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
               />
 
               <Stack gap="sm">
-                <Text size="sm" fw={500}>Poll Options</Text>
+                <Text size="sm" fw={500}>
+                  Poll Options
+                </Text>
                 {pollOptions.map((option, index) => (
                   <Group key={index} gap="sm">
                     <TextInput
                       placeholder={`Option ${index + 1}`}
                       value={option}
-                      onChange={(e) => updatePollOption(index, e.currentTarget.value)}
+                      onChange={(e) =>
+                        updatePollOption(index, e.currentTarget.value)
+                      }
                       style={{ flex: 1 }}
                     />
                     {pollOptions.length > 2 && (
@@ -487,7 +525,11 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
                 <NumberInput
                   placeholder="Capacity"
                   value={eventCapacity}
-                  onChange={(value) => setEventCapacity(typeof value === 'number' ? value : undefined)}
+                  onChange={(value) =>
+                    setEventCapacity(
+                      typeof value === "number" ? value : undefined,
+                    )
+                  }
                   min={1}
                   max={10000}
                 />
@@ -562,7 +604,9 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
         {mentions.length > 0 && (
           <Group gap="xs">
             {mentions.map((mention) => {
-              const user = followingUsers.find((u: any) => u.id === mention.mentionedUserId);
+              const user = followingUsers.find(
+                (u: any) => u.id === mention.mentionedUserId,
+              );
               return (
                 <Badge
                   key={mention.mentionedUserId}
@@ -613,7 +657,9 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
           variant="subtle"
           size="sm"
           onClick={() => setShowAdvanced(!showAdvanced)}
-          rightSection={showAdvanced ? <IconX size={14} /> : <IconHash size={14} />}
+          rightSection={
+            showAdvanced ? <IconX size={14} /> : <IconHash size={14} />
+          }
         >
           {showAdvanced ? "Hide" : "Show"} Advanced Options
         </Button>
@@ -623,7 +669,9 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
           <Stack gap="md">
             {/* Tag Input */}
             <Stack gap="sm">
-              <Text size="sm" fw={500}>Add Tags</Text>
+              <Text size="sm" fw={500}>
+                Add Tags
+              </Text>
               <Group gap="sm">
                 <TextInput
                   placeholder="Tag name"
@@ -650,7 +698,9 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
 
             {/* Mention Input */}
             <Stack gap="sm">
-              <Text size="sm" fw={500}>Mention Users</Text>
+              <Text size="sm" fw={500}>
+                Mention Users
+              </Text>
               <Group gap="sm">
                 <TextInput
                   placeholder="Search users to mention..."
@@ -669,9 +719,14 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
                   <Paper withBorder p="sm" style={styles}>
                     <Stack gap="xs">
                       {followingUsers
-                        .filter((user: any) =>
-                          user.firstName.toLowerCase().includes(mentionInput.toLowerCase()) ||
-                          user.username?.toLowerCase().includes(mentionInput.toLowerCase())
+                        .filter(
+                          (user: any) =>
+                            user.firstName
+                              .toLowerCase()
+                              .includes(mentionInput.toLowerCase()) ||
+                            user.username
+                              ?.toLowerCase()
+                              .includes(mentionInput.toLowerCase()),
                         )
                         .slice(0, 5)
                         .map((user: any) => (
@@ -702,7 +757,9 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
 
             {/* Location */}
             <Stack gap="sm">
-              <Text size="sm" fw={500}>Location</Text>
+              <Text size="sm" fw={500}>
+                Location
+              </Text>
               <Group gap="sm">
                 <TextInput
                   placeholder="Add location manually"
@@ -724,7 +781,9 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
 
             {/* Post Settings */}
             <Stack gap="sm">
-              <Text size="sm" fw={500}>Post Settings</Text>
+              <Text size="sm" fw={500}>
+                Post Settings
+              </Text>
               <Group grow>
                 <Switch
                   label="Public"

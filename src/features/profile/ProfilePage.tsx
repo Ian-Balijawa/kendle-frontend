@@ -39,7 +39,11 @@ import {
 } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { useUserPosts, useUserLikedPosts, useUserBookmarkedPosts } from "../../hooks/usePosts";
+import {
+  useUserPosts,
+  useUserLikedPosts,
+  useUserBookmarkedPosts,
+} from "../../hooks/usePosts";
 import { useUpdateProfile, useUser, useUserProfile } from "../../hooks/useUser";
 import { useFollowStatus, useToggleFollow } from "../../hooks/useFollow";
 import { UpdateProfileRequest } from "../../services/api";
@@ -69,22 +73,18 @@ export function ProfilePage() {
     profileUserId!,
     {
       limit: 10,
-    }
+    },
   );
 
-  const { data: likedPostsData, isLoading: likedPostsLoading } = useUserLikedPosts(
-    profileUserId!,
-    {
+  const { data: likedPostsData, isLoading: likedPostsLoading } =
+    useUserLikedPosts(profileUserId!, {
       limit: 10,
-    }
-  );
+    });
 
-  const { data: bookmarkedPostsData, isLoading: bookmarkedPostsLoading } = useUserBookmarkedPosts(
-    profileUserId!,
-    {
+  const { data: bookmarkedPostsData, isLoading: bookmarkedPostsLoading } =
+    useUserBookmarkedPosts(profileUserId!, {
       limit: 10,
-    }
-  );
+    });
 
   // Follow functionality - only for other users' profiles
   const { data: followStatus } = useFollowStatus(profileUserId!);
@@ -124,7 +124,8 @@ export function ProfilePage() {
 
   const posts = postsData?.pages.flatMap((page) => page.posts) || [];
   const likedPosts = likedPostsData?.pages.flatMap((page) => page.posts) || [];
-  const bookmarkedPosts = bookmarkedPostsData?.pages.flatMap((page) => page.posts) || [];
+  const bookmarkedPosts =
+    bookmarkedPostsData?.pages.flatMap((page) => page.posts) || [];
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -155,7 +156,9 @@ export function ProfilePage() {
     isAuthenticated,
     userLoading,
     userError,
-    user: user ? { id: user.id, username: user.username, firstName: user.firstName } : null,
+    user: user
+      ? { id: user.id, username: user.username, firstName: user.firstName }
+      : null,
   });
 
   const handleEditProfile = () => {
@@ -352,7 +355,8 @@ export function ProfilePage() {
       <Box
         style={{
           height: 200,
-          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          background:
+            "linear-gradient(135deg, var(--mantine-color-blue-6) 0%, var(--mantine-color-violet-6) 100%)",
           position: "relative",
         }}
       >
@@ -370,7 +374,9 @@ export function ProfilePage() {
           }}
         >
           <Text size="2rem" fw={600} c="white">
-            {(user.firstName || user.username || user.phoneNumber || "U").charAt(0).toUpperCase()}
+            {(user.firstName || user.username || user.phoneNumber || "U")
+              .charAt(0)
+              .toUpperCase()}
           </Text>
         </Avatar>
       </Box>
@@ -384,8 +390,7 @@ export function ProfilePage() {
                   ? `${user.firstName} ${user.lastName}`
                   : user.username
                     ? user.username
-                    : user.phoneNumber || "Unknown User"
-                }
+                    : user.phoneNumber || "Unknown User"}
               </Title>
               {user.isVerified && (
                 <Badge
@@ -393,7 +398,8 @@ export function ProfilePage() {
                   variant="light"
                   size="lg"
                   style={{
-                    background: "linear-gradient(135deg, #4dabf7, #339af0)",
+                    background:
+                      "linear-gradient(135deg, var(--mantine-color-blue-5), var(--mantine-color-blue-6))",
                     color: "white",
                     border: "none",
                   }}
@@ -424,7 +430,7 @@ export function ProfilePage() {
             )}
 
             <Group gap="xs" mb="lg">
-              <IconCalendar size={18} color="#868e96" />
+              <IconCalendar size={18} color="var(--mantine-color-gray-6)" />
               <Text size="sm" c="dimmed">
                 Joined {formatDate(user.createdAt)}
               </Text>
@@ -439,7 +445,8 @@ export function ProfilePage() {
                 onClick={handleEditProfile}
                 radius="xl"
                 style={{
-                  background: "linear-gradient(135deg, #667eea, #764ba2)",
+                  background:
+                    "linear-gradient(135deg, var(--mantine-color-blue-6), var(--mantine-color-violet-6))",
                   color: "white",
                   border: "none",
                 }}
@@ -461,9 +468,13 @@ export function ProfilePage() {
                 radius="xl"
                 style={
                   followStatus?.isFollowing
-                    ? { color: "#667eea", borderColor: "#667eea" }
+                    ? {
+                        color: "var(--mantine-color-blue-6)",
+                        borderColor: "var(--mantine-color-blue-6)",
+                      }
                     : {
-                        background: "linear-gradient(135deg, #667eea, #764ba2)",
+                        background:
+                          "linear-gradient(135deg, var(--mantine-color-blue-6), var(--mantine-color-violet-6))",
                         border: "none",
                       }
                 }
@@ -481,7 +492,8 @@ export function ProfilePage() {
                 width: "100%",
                 padding: "1rem",
                 borderRadius: "12px",
-                background: "linear-gradient(135deg, #f8f9ff, #f1f3ff)",
+                background:
+                  "linear-gradient(135deg, var(--mantine-color-blue-0), var(--mantine-color-blue-1))",
                 transition: "transform 0.2s ease",
               }}
               onMouseEnter={(e) => {
@@ -492,7 +504,7 @@ export function ProfilePage() {
               }}
             >
               <Stack align="center" gap="xs">
-                <Text fw={700} size="xl" c="#667eea">
+                <Text fw={700} size="xl" c="blue.6">
                   {formatNumber(user.postsCount)}
                 </Text>
                 <Text size="sm" c="dimmed" fw={500}>
@@ -508,7 +520,8 @@ export function ProfilePage() {
                 width: "100%",
                 padding: "1rem",
                 borderRadius: "12px",
-                background: "linear-gradient(135deg, #fff8f0, #fff0e6)",
+                background:
+                  "linear-gradient(135deg, var(--mantine-color-orange-0), var(--mantine-color-orange-1))",
                 transition: "transform 0.2s ease",
               }}
               onMouseEnter={(e) => {
@@ -519,7 +532,7 @@ export function ProfilePage() {
               }}
             >
               <Stack align="center" gap="xs">
-                <Text fw={700} size="xl" c="#fd7e14">
+                <Text fw={700} size="xl" c="orange.6">
                   {formatNumber(user.followersCount)}
                 </Text>
                 <Text size="sm" c="dimmed" fw={500}>
@@ -535,7 +548,8 @@ export function ProfilePage() {
                 width: "100%",
                 padding: "1rem",
                 borderRadius: "12px",
-                background: "linear-gradient(135deg, #f0fff4, #e6fffa)",
+                background:
+                  "linear-gradient(135deg, var(--mantine-color-teal-0), var(--mantine-color-teal-1))",
                 transition: "transform 0.2s ease",
               }}
               onMouseEnter={(e) => {
@@ -546,7 +560,7 @@ export function ProfilePage() {
               }}
             >
               <Stack align="center" gap="xs">
-                <Text fw={700} size="xl" c="#20c997">
+                <Text fw={700} size="xl" c="teal.6">
                   {formatNumber(user.followingCount)}
                 </Text>
                 <Text size="sm" c="dimmed" fw={500}>
@@ -559,7 +573,6 @@ export function ProfilePage() {
 
         {socialLinks.length > 0 && (
           <>
-            <Divider mb="lg" />
             <Group gap="md">
               {socialLinks.map(({ key, url, icon: Icon, label, color }) => (
                 <Button
@@ -595,7 +608,7 @@ export function ProfilePage() {
       >
         <Tabs.List
           style={{
-            background: "#f8f9fa",
+            background: "var(--mantine-color-gray-1)",
             padding: "4px",
             borderRadius: "16px",
           }}
@@ -658,7 +671,8 @@ export function ProfilePage() {
                 p="xl"
                 radius="xl"
                 style={{
-                  background: "linear-gradient(135deg, #f8f9ff, #f1f3ff)",
+                  background:
+                    "linear-gradient(135deg, var(--mantine-color-blue-0), var(--mantine-color-blue-1))",
                   border: "none",
                 }}
               >
@@ -668,13 +682,16 @@ export function ProfilePage() {
                       width: 80,
                       height: 80,
                       borderRadius: "50%",
-                      background: "rgba(102, 126, 234, 0.1)",
+                      background: "var(--mantine-color-blue-1)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                     }}
                   >
-                    <IconMessage size={32} color="#667eea" />
+                    <IconMessage
+                      size={32}
+                      color="var(--mantine-color-blue-6)"
+                    />
                   </Box>
                   <Stack align="center" gap="xs">
                     <Text fw={600} size="lg">
@@ -705,12 +722,14 @@ export function ProfilePage() {
                   </Text>
                 </Stack>
               </Center>
-            ) : posts.filter(post => post.media && post.media.length > 0).length === 0 ? (
+            ) : posts.filter((post) => post.media && post.media.length > 0)
+                .length === 0 ? (
               <Card
                 p="xl"
                 radius="xl"
                 style={{
-                  background: "linear-gradient(135deg, #fff8f0, #fff0e6)",
+                  background:
+                    "linear-gradient(135deg, var(--mantine-color-orange-0), var(--mantine-color-orange-1))",
                   border: "none",
                 }}
               >
@@ -720,13 +739,16 @@ export function ProfilePage() {
                       width: 80,
                       height: 80,
                       borderRadius: "50%",
-                      background: "rgba(253, 126, 20, 0.1)",
+                      background: "var(--mantine-color-orange-1)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                     }}
                   >
-                    <IconPhoto size={32} color="#fd7e14" />
+                    <IconPhoto
+                      size={32}
+                      color="var(--mantine-color-orange-6)"
+                    />
                   </Box>
                   <Stack align="center" gap="xs">
                     <Text fw={600} size="lg">
@@ -742,7 +764,7 @@ export function ProfilePage() {
               </Card>
             ) : (
               posts
-                .filter(post => post.media && post.media.length > 0)
+                .filter((post) => post.media && post.media.length > 0)
                 .map((post) => <PostCard key={post.id} post={post} />)
             )}
           </Stack>
@@ -764,7 +786,8 @@ export function ProfilePage() {
                 p="xl"
                 radius="xl"
                 style={{
-                  background: "linear-gradient(135deg, #fff5f5, #ffe0e6)",
+                  background:
+                    "linear-gradient(135deg, var(--mantine-color-red-0), var(--mantine-color-red-1))",
                   border: "none",
                 }}
               >
@@ -774,13 +797,13 @@ export function ProfilePage() {
                       width: 80,
                       height: 80,
                       borderRadius: "50%",
-                      background: "rgba(224, 49, 49, 0.1)",
+                      background: "var(--mantine-color-red-1)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                     }}
                   >
-                    <IconHeart size={32} color="#e03131" />
+                    <IconHeart size={32} color="var(--mantine-color-red-6)" />
                   </Box>
                   <Stack align="center" gap="xs">
                     <Text fw={600} size="lg">
@@ -816,7 +839,8 @@ export function ProfilePage() {
                 p="xl"
                 radius="xl"
                 style={{
-                  background: "linear-gradient(135deg, #fff8f0, #fff0e6)",
+                  background:
+                    "linear-gradient(135deg, var(--mantine-color-yellow-0), var(--mantine-color-yellow-1))",
                   border: "none",
                 }}
               >
@@ -826,13 +850,16 @@ export function ProfilePage() {
                       width: 80,
                       height: 80,
                       borderRadius: "50%",
-                      background: "rgba(253, 126, 20, 0.1)",
+                      background: "var(--mantine-color-yellow-1)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                     }}
                   >
-                    <IconBookmark size={32} color="#fd7e14" />
+                    <IconBookmark
+                      size={32}
+                      color="var(--mantine-color-yellow-6)"
+                    />
                   </Box>
                   <Stack align="center" gap="xs">
                     <Text fw={600} size="lg">
@@ -847,7 +874,9 @@ export function ProfilePage() {
                 </Stack>
               </Card>
             ) : (
-              bookmarkedPosts.map((post) => <PostCard key={post.id} post={post} />)
+              bookmarkedPosts.map((post) => (
+                <PostCard key={post.id} post={post} />
+              ))
             )}
           </Stack>
         </Tabs.Panel>
@@ -881,8 +910,8 @@ export function ProfilePage() {
                     label: { fontWeight: 600, marginBottom: "0.5rem" },
                     input: {
                       "&:focus": {
-                        borderColor: "#667eea",
-                        boxShadow: "0 0 0 2px rgba(102, 126, 234, 0.1)",
+                        borderColor: "var(--mantine-color-blue-6)",
+                        boxShadow: "0 0 0 2px var(--mantine-color-blue-1)",
                       },
                     },
                   }}
@@ -899,8 +928,8 @@ export function ProfilePage() {
                     label: { fontWeight: 600, marginBottom: "0.5rem" },
                     input: {
                       "&:focus": {
-                        borderColor: "#667eea",
-                        boxShadow: "0 0 0 2px rgba(102, 126, 234, 0.1)",
+                        borderColor: "var(--mantine-color-blue-6)",
+                        boxShadow: "0 0 0 2px var(--mantine-color-blue-1)",
                       },
                     },
                   }}
@@ -966,7 +995,9 @@ export function ProfilePage() {
               }}
               {...editForm.getInputProps("bio")}
               value={editForm.getValues().bio || ""}
-              onChange={(e) => editForm.setFieldValue("bio", e.target.value || null)}
+              onChange={(e) =>
+                editForm.setFieldValue("bio", e.target.value || null)
+              }
             />
 
             <Divider label="Social Media Links" labelPosition="center" />
@@ -983,8 +1014,8 @@ export function ProfilePage() {
                     label: { fontWeight: 600, marginBottom: "0.5rem" },
                     input: {
                       "&:focus": {
-                        borderColor: "#667eea",
-                        boxShadow: "0 0 0 2px rgba(102, 126, 234, 0.1)",
+                        borderColor: "var(--mantine-color-blue-6)",
+                        boxShadow: "0 0 0 2px var(--mantine-color-blue-1)",
                       },
                     },
                   }}
@@ -1002,8 +1033,8 @@ export function ProfilePage() {
                     label: { fontWeight: 600, marginBottom: "0.5rem" },
                     input: {
                       "&:focus": {
-                        borderColor: "#667eea",
-                        boxShadow: "0 0 0 2px rgba(102, 126, 234, 0.1)",
+                        borderColor: "var(--mantine-color-blue-6)",
+                        boxShadow: "0 0 0 2px var(--mantine-color-blue-1)",
                       },
                     },
                   }}
@@ -1024,8 +1055,8 @@ export function ProfilePage() {
                     label: { fontWeight: 600, marginBottom: "0.5rem" },
                     input: {
                       "&:focus": {
-                        borderColor: "#667eea",
-                        boxShadow: "0 0 0 2px rgba(102, 126, 234, 0.1)",
+                        borderColor: "var(--mantine-color-blue-6)",
+                        boxShadow: "0 0 0 2px var(--mantine-color-blue-1)",
                       },
                     },
                   }}
@@ -1043,8 +1074,8 @@ export function ProfilePage() {
                     label: { fontWeight: 600, marginBottom: "0.5rem" },
                     input: {
                       "&:focus": {
-                        borderColor: "#667eea",
-                        boxShadow: "0 0 0 2px rgba(102, 126, 234, 0.1)",
+                        borderColor: "var(--mantine-color-blue-6)",
+                        boxShadow: "0 0 0 2px var(--mantine-color-blue-1)",
                       },
                     },
                   }}
@@ -1068,7 +1099,8 @@ export function ProfilePage() {
                 size="md"
                 radius="md"
                 style={{
-                  background: "linear-gradient(135deg, #667eea, #764ba2)",
+                  background:
+                    "linear-gradient(135deg, var(--mantine-color-blue-6), var(--mantine-color-violet-6))",
                   border: "none",
                 }}
               >

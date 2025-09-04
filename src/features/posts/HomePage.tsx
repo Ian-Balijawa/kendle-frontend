@@ -63,47 +63,47 @@ export function HomePage() {
     <Container size="xl" px="md">
       {/* Header Section */}
       <Group justify="space-between" align="center" mb="md">
-            <Badge
-              leftSection={<IconTrendingUp size={12} />}
+        <Badge
+          leftSection={<IconTrendingUp size={12} />}
+          variant="gradient"
+          gradient={{ from: "blue", to: "cyan" }}
+          size="sm"
+          radius="xl"
+        >
+          Trending
+        </Badge>
+
+        <Group gap="xs">
+          <ActionIcon
+            variant="subtle"
+            color="gray"
+            size="lg"
+            radius="xl"
+            onClick={() => refetch()}
+          >
+            <IconRefresh size={18} />
+          </ActionIcon>
+
+          {isAuthenticated && (
+            <Button
+              leftSection={<IconPlus size={16} />}
+              onClick={() => setCreatePostOpened(true)}
+              radius="xl"
               variant="gradient"
               gradient={{ from: "blue", to: "cyan" }}
               size="sm"
-              radius="xl"
             >
-              Trending
-        </Badge>
-
-          <Group gap="xs">
-            <ActionIcon
-              variant="subtle"
-              color="gray"
-              size="lg"
-              radius="xl"
-              onClick={() => refetch()}
-            >
-              <IconRefresh size={18} />
-            </ActionIcon>
-
-            {isAuthenticated && (
-              <Button
-                leftSection={<IconPlus size={16} />}
-                onClick={() => setCreatePostOpened(true)}
-                radius="xl"
-                variant="gradient"
-                gradient={{ from: "blue", to: "cyan" }}
-                size="sm"
-              >
-                Create Post
-              </Button>
-            )}
-          </Group>
+              Create Post
+            </Button>
+          )}
         </Group>
+      </Group>
 
       {/* Status Stories Section */}
       {isAuthenticated && statusCollections.length > 0 && (
         <StatusStories
           collections={statusCollections.filter(
-            (collection) => collection.author.id !== user?.id
+            (collection) => collection.author.id !== user?.id,
           )}
           currentUserAvatar={user?.avatar}
           onCreateStatus={() => {
@@ -118,14 +118,16 @@ export function HomePage() {
       )}
 
       {/* Profile Discovery Section */}
-      {isAuthenticated && suggestedUsers && suggestedUsers.suggestions.length > 0 && (
+      {isAuthenticated &&
+        suggestedUsers &&
+        suggestedUsers.suggestions.length > 0 && (
           <ProfileSwipe
             users={suggestedUsers.suggestions}
             title="Discover People"
             subtitle="Find interesting people to follow"
             showStats={true}
-        />
-      )}
+          />
+        )}
 
       {/* Content Section */}
       <Stack gap="lg">
@@ -203,7 +205,11 @@ export function HomePage() {
         {!isLoading && posts.length > 0 && (
           <>
             {posts.map((post, index) => (
-              <PostCard key={`post-${post.id}-${index}`} post={post} isFirst={index === 0} />
+              <PostCard
+                key={`post-${post.id}-${index}`}
+                post={post}
+                isFirst={index === 0}
+              />
             ))}
 
             {/* Infinite scroll trigger */}
@@ -216,20 +222,7 @@ export function HomePage() {
             )}
 
             {/* End of feed */}
-            {!hasNextPage && posts.length > 0 && (
-              <Card
-                radius="xl"
-                p="md"
-                style={{
-                  background: "var(--mantine-color-gray-0)",
-                  border: "1px solid var(--mantine-color-gray-2)",
-                }}
-              >
-                <Text size="sm" c="dimmed" ta="center">
-                  🎉 You're all caught up!
-                </Text>
-              </Card>
-            )}
+            {!hasNextPage && posts.length > 0 && null}
           </>
         )}
       </Stack>

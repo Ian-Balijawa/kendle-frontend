@@ -26,24 +26,28 @@ interface StatusStore {
 export const useStatusStore = create<StatusStore>()(
   devtools(
     persist(
-      subscribeWithSelector(
-        (set) => ({
-          statuses: [],
-          statusCollections: [],
-          selectedStatus: null,
-          isLoading: false,
-          error: null,
+      subscribeWithSelector((set) => ({
+        statuses: [],
+        statusCollections: [],
+        selectedStatus: null,
+        isLoading: false,
+        error: null,
 
-          setStatuses: (statuses: Status[]) => {
-            set({ statuses }, false, "status/setStatuses");
-          },
+        setStatuses: (statuses: Status[]) => {
+          set({ statuses }, false, "status/setStatuses");
+        },
 
-          setStatusCollections: (collections: StatusCollection[]) => {
-            set({ statusCollections: collections }, false, "status/setStatusCollections");
-          },
+        setStatusCollections: (collections: StatusCollection[]) => {
+          set(
+            { statusCollections: collections },
+            false,
+            "status/setStatusCollections",
+          );
+        },
 
-          addStatus: (status: Status) => {
-            set((state) => {
+        addStatus: (status: Status) => {
+          set(
+            (state) => {
               // Add to statuses list
               const newStatuses = [status, ...state.statuses];
 
@@ -80,19 +84,29 @@ export const useStatusStore = create<StatusStore>()(
                 statuses: newStatuses,
                 statusCollections: newStatusCollections,
               };
-            }, false, "status/addStatus");
-          },
+            },
+            false,
+            "status/addStatus",
+          );
+        },
 
-          deleteStatus: (id: string) => {
-            set((state) => {
+        deleteStatus: (id: string) => {
+          set(
+            (state) => {
               const deletedStatus = state.statuses.find((s) => s.id === id);
-              const newStatuses = state.statuses.filter((status) => status.id !== id);
+              const newStatuses = state.statuses.filter(
+                (status) => status.id !== id,
+              );
 
               // Update status collections
-              let newStatusCollections = state.statusCollections.map((collection) => ({
-                ...collection,
-                statuses: collection.statuses.filter((status) => status.id !== id),
-              }));
+              let newStatusCollections = state.statusCollections.map(
+                (collection) => ({
+                  ...collection,
+                  statuses: collection.statuses.filter(
+                    (status) => status.id !== id,
+                  ),
+                }),
+              );
 
               // Remove empty collections
               newStatusCollections = newStatusCollections.filter(
@@ -101,18 +115,20 @@ export const useStatusStore = create<StatusStore>()(
 
               // Update last updated time for affected collections
               if (deletedStatus) {
-                newStatusCollections = newStatusCollections.map((collection) => {
-                  if (
-                    collection.author.id === deletedStatus.author.id &&
-                    collection.statuses.length > 0
-                  ) {
-                    return {
-                      ...collection,
-                      lastUpdated: collection.statuses[0].createdAt,
-                    };
-                  }
-                  return collection;
-                });
+                newStatusCollections = newStatusCollections.map(
+                  (collection) => {
+                    if (
+                      collection.author.id === deletedStatus.author.id &&
+                      collection.statuses.length > 0
+                    ) {
+                      return {
+                        ...collection,
+                        lastUpdated: collection.statuses[0].createdAt,
+                      };
+                    }
+                    return collection;
+                  },
+                );
               }
 
               return {
@@ -121,11 +137,15 @@ export const useStatusStore = create<StatusStore>()(
                 selectedStatus:
                   state.selectedStatus?.id === id ? null : state.selectedStatus,
               };
-            }, false, "status/deleteStatus");
-          },
+            },
+            false,
+            "status/deleteStatus",
+          );
+        },
 
-          viewStatus: (id: string, userId: string) => {
-            set((state) => {
+        viewStatus: (id: string, userId: string) => {
+          set(
+            (state) => {
               const now = new Date().toISOString();
 
               const newStatuses = state.statuses.map((status) =>
@@ -148,35 +168,39 @@ export const useStatusStore = create<StatusStore>()(
               );
 
               // Update status collections
-              const newStatusCollections = state.statusCollections.map((collection) => {
-                const updatedStatuses = collection.statuses.map((status) =>
-                  status.id === id
-                    ? {
-                        ...status,
-                        isViewed: true,
-                        viewsCount: status.viewsCount + 1,
-                        views: [
-                          ...status.views,
-                          {
-                            id: Date.now().toString(),
-                            userId,
-                            statusId: id,
-                            viewedAt: now,
-                          },
-                        ],
-                      }
-                    : status,
-                );
+              const newStatusCollections = state.statusCollections.map(
+                (collection) => {
+                  const updatedStatuses = collection.statuses.map((status) =>
+                    status.id === id
+                      ? {
+                          ...status,
+                          isViewed: true,
+                          viewsCount: status.viewsCount + 1,
+                          views: [
+                            ...status.views,
+                            {
+                              id: Date.now().toString(),
+                              userId,
+                              statusId: id,
+                              viewedAt: now,
+                            },
+                          ],
+                        }
+                      : status,
+                  );
 
-                // Check if all statuses in this collection are viewed
-                const hasUnviewed = updatedStatuses.some((status) => !status.isViewed);
+                  // Check if all statuses in this collection are viewed
+                  const hasUnviewed = updatedStatuses.some(
+                    (status) => !status.isViewed,
+                  );
 
-                return {
-                  ...collection,
-                  statuses: updatedStatuses,
-                  hasUnviewed,
-                };
-              });
+                  return {
+                    ...collection,
+                    statuses: updatedStatuses,
+                    hasUnviewed,
+                  };
+                },
+              );
 
               return {
                 statuses: newStatuses,
@@ -199,11 +223,15 @@ export const useStatusStore = create<StatusStore>()(
                       }
                     : state.selectedStatus,
               };
-            }, false, "status/viewStatus");
-          },
+            },
+            false,
+            "status/viewStatus",
+          );
+        },
 
-          cleanupExpiredStatuses: () => {
-            set((state) => {
+        cleanupExpiredStatuses: () => {
+          set(
+            (state) => {
               const now = new Date();
 
               const activeStatuses = state.statuses.filter((status) => {
@@ -231,30 +259,33 @@ export const useStatusStore = create<StatusStore>()(
                 statuses: activeStatuses,
                 statusCollections: activeStatusCollections,
                 selectedStatus:
-                  state.selectedStatus && new Date(state.selectedStatus.expiresAt) > now
+                  state.selectedStatus &&
+                  new Date(state.selectedStatus.expiresAt) > now
                     ? state.selectedStatus
                     : null,
               };
-            }, false, "status/cleanupExpiredStatuses");
-          },
+            },
+            false,
+            "status/cleanupExpiredStatuses",
+          );
+        },
 
-          setSelectedStatus: (status: Status | null) => {
-            set({ selectedStatus: status }, false, "status/setSelectedStatus");
-          },
+        setSelectedStatus: (status: Status | null) => {
+          set({ selectedStatus: status }, false, "status/setSelectedStatus");
+        },
 
-          setLoading: (loading: boolean) => {
-            set({ isLoading: loading }, false, "status/setLoading");
-          },
+        setLoading: (loading: boolean) => {
+          set({ isLoading: loading }, false, "status/setLoading");
+        },
 
-          setError: (error: string | null) => {
-            set({ error }, false, "status/setError");
-          },
+        setError: (error: string | null) => {
+          set({ error }, false, "status/setError");
+        },
 
-          clearError: () => {
-            set({ error: null }, false, "status/clearError");
-          },
-        })
-      ),
+        clearError: () => {
+          set({ error: null }, false, "status/clearError");
+        },
+      })),
       {
         name: "status-store",
         partialize: (state) => ({
@@ -262,11 +293,11 @@ export const useStatusStore = create<StatusStore>()(
           // Only persist collections for better UX
           statusCollections: state.statusCollections,
         }),
-      }
+      },
     ),
     {
       name: "Status Store",
       enabled: true,
-    }
-  )
+    },
+  ),
 );

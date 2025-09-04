@@ -126,7 +126,7 @@ export interface OnlineStatus {
   lastSeen: string;
 }
 
-// WebSocket Event Types 
+// WebSocket Event Types
 export type WebSocketEventType =
   | "message_sent"
   | "message_received"

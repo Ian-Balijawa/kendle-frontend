@@ -1,8 +1,8 @@
 import {
-    Box,
-    Container,
-    AppShell as MantineAppShell,
-    ScrollArea,
+  Box,
+  Container,
+  AppShell as MantineAppShell,
+  ScrollArea,
 } from "@mantine/core";
 import { Outlet } from "react-router-dom";
 import { FooterContent } from "./Footer";
@@ -30,7 +30,7 @@ export function AppShell() {
           top: 0,
         }}
       >
-        <Container size="lg">
+        <Container size="md">
           <HeaderContent />
         </Container>
       </MantineAppShell.Header>
@@ -48,7 +48,7 @@ export function AppShell() {
           }}
         >
           <Box>
-            <Container size="lg">
+            <Container size="md">
               <Box
                 style={{
                   position: "relative",

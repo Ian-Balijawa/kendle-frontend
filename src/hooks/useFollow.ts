@@ -89,7 +89,7 @@ export function useFollowUser() {
 
       // Snapshot the previous value
       const previousStatus = queryClient.getQueryData(
-        followKeys.statusForUser(targetUserId)
+        followKeys.statusForUser(targetUserId),
       );
 
       // Optimistically update the follow status
@@ -122,7 +122,7 @@ export function useFollowUser() {
       if (context?.previousStatus) {
         queryClient.setQueryData(
           followKeys.statusForUser(targetUserId),
-          context.previousStatus
+          context.previousStatus,
         );
       }
 
@@ -170,7 +170,7 @@ export function useUnfollowUser() {
 
       // Snapshot the previous value
       const previousStatus = queryClient.getQueryData(
-        followKeys.statusForUser(targetUserId)
+        followKeys.statusForUser(targetUserId),
       );
 
       // Optimistically update the follow status
@@ -198,7 +198,7 @@ export function useUnfollowUser() {
       if (context?.previousStatus) {
         queryClient.setQueryData(
           followKeys.statusForUser(targetUserId),
-          context.previousStatus
+          context.previousStatus,
         );
       }
 
@@ -238,7 +238,7 @@ export function useToggleFollow() {
 
   const toggleFollow = async (
     targetUserId: string,
-    currentFollowStatus?: boolean
+    currentFollowStatus?: boolean,
   ) => {
     if (currentFollowStatus) {
       await unfollowMutation.mutateAsync(targetUserId);

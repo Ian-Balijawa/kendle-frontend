@@ -1,6 +1,6 @@
-import { Box, Text, Group, Avatar } from '@mantine/core';
-import { useConversation } from '../../hooks/useChat';
-import { useAuthStore } from '../../stores/authStore';
+import { Box, Text, Group, Avatar } from "@mantine/core";
+import { useConversation } from "../../hooks/useChat";
+import { useAuthStore } from "../../stores/authStore";
 
 interface TypingIndicatorProps {
   conversationId: string;
@@ -14,21 +14,27 @@ export function TypingIndicator({ conversationId }: TypingIndicatorProps) {
     return null;
   }
 
-  const typingUsers = conversation.typingUsers.filter(userId => userId !== user?.id);
-  
+  const typingUsers = conversation.typingUsers.filter(
+    (userId) => userId !== user?.id,
+  );
+
   if (typingUsers.length === 0) {
     return null;
   }
 
   const getTypingText = () => {
     if (typingUsers.length === 1) {
-      const user = conversation.participants.find(p => p.id === typingUsers[0]);
-      return `${user?.firstName || 'Someone'} is typing...`;
-    } else if (typingUsers.length === 2) {
-      const users = typingUsers.map(userId => 
-        conversation.participants.find(p => p.id === userId)?.firstName || 'Someone'
+      const user = conversation.participants.find(
+        (p) => p.id === typingUsers[0],
       );
-      return `${users.join(' and ')} are typing...`;
+      return `${user?.firstName || "Someone"} is typing...`;
+    } else if (typingUsers.length === 2) {
+      const users = typingUsers.map(
+        (userId) =>
+          conversation.participants.find((p) => p.id === userId)?.firstName ||
+          "Someone",
+      );
+      return `${users.join(" and ")} are typing...`;
     } else {
       return `${typingUsers.length} people are typing...`;
     }
@@ -37,10 +43,10 @@ export function TypingIndicator({ conversationId }: TypingIndicatorProps) {
   return (
     <Box
       style={{
-        display: 'flex',
-        justifyContent: 'flex-start',
+        display: "flex",
+        justifyContent: "flex-start",
         marginBottom: 8,
-        padding: '8px 12px',
+        padding: "8px 12px",
       }}
     >
       <Group gap="xs" align="flex-end">
@@ -48,31 +54,39 @@ export function TypingIndicator({ conversationId }: TypingIndicatorProps) {
         {typingUsers.length === 1 && (
           <Avatar
             size="sm"
-            src={conversation.participants.find(p => p.id === typingUsers[0])?.avatar}
-            alt={conversation.participants.find(p => p.id === typingUsers[0])?.firstName}
+            src={
+              conversation.participants.find((p) => p.id === typingUsers[0])
+                ?.avatar
+            }
+            alt={
+              conversation.participants.find((p) => p.id === typingUsers[0])
+                ?.firstName
+            }
           >
-            {conversation.participants.find(p => p.id === typingUsers[0])?.firstName?.charAt(0) || 'U'}
+            {conversation.participants
+              .find((p) => p.id === typingUsers[0])
+              ?.firstName?.charAt(0) || "U"}
           </Avatar>
         )}
 
         {/* Typing indicator bubble */}
         <Box
           style={{
-            backgroundColor: 'var(--mantine-color-gray-2)',
-            padding: '8px 12px',
+            backgroundColor: "var(--mantine-color-gray-2)",
+            padding: "8px 12px",
             borderRadius: 16,
-            maxWidth: '100%',
-            position: 'relative',
+            maxWidth: "100%",
+            position: "relative",
           }}
         >
-          <Text size="sm" c="dimmed" style={{ fontStyle: 'italic' }}>
+          <Text size="sm" c="dimmed" style={{ fontStyle: "italic" }}>
             {getTypingText()}
           </Text>
-          
+
           {/* Animated typing dots */}
           <Box
             style={{
-              display: 'inline-flex',
+              display: "inline-flex",
               gap: 2,
               marginLeft: 4,
             }}
@@ -83,8 +97,8 @@ export function TypingIndicator({ conversationId }: TypingIndicatorProps) {
                 style={{
                   width: 4,
                   height: 4,
-                  borderRadius: '50%',
-                  backgroundColor: 'var(--mantine-color-gray-6)',
+                  borderRadius: "50%",
+                  backgroundColor: "var(--mantine-color-gray-6)",
                   animation: `typing 1.4s infinite ease-in-out ${i * 0.16}s`,
                 }}
               />

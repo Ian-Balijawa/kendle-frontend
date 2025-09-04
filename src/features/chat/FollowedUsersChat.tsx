@@ -1,22 +1,34 @@
-import { useState } from 'react';
-import { Box, Group, Avatar, Text, ActionIcon, Stack, ScrollArea, Badge, Tooltip } from '@mantine/core';
-import { IconMessage, IconUserPlus } from '@tabler/icons-react';
-import { useFollowing } from '../../hooks/useFollow';
-import { useFindOrCreateDirectConversation } from '../../hooks/useChat';
-import { useAuthStore } from '../../stores/authStore';
-import { useFloatingChatStore } from '../../stores/chatStore';
+import { useState } from "react";
+import {
+  Box,
+  Group,
+  Avatar,
+  Text,
+  ActionIcon,
+  Stack,
+  ScrollArea,
+  Badge,
+  Tooltip,
+} from "@mantine/core";
+import { IconMessage, IconUserPlus } from "@tabler/icons-react";
+import { useFollowing } from "../../hooks/useFollow";
+import { useFindOrCreateDirectConversation } from "../../hooks/useChat";
+import { useAuthStore } from "../../stores/authStore";
+import { useFloatingChatStore } from "../../stores/chatStore";
 
 interface FollowedUsersChatProps {
   onStartConversation?: (userId: string) => void;
 }
 
-export function FollowedUsersChat({ onStartConversation }: FollowedUsersChatProps) {
+export function FollowedUsersChat({
+  onStartConversation,
+}: FollowedUsersChatProps) {
   const { user } = useAuthStore();
   const { openChatWindow } = useFloatingChatStore();
   const [expanded, setExpanded] = useState(false);
-  
+
   // Get the first page of following users
-  const { data: followingData } = useFollowing(user?.id || '', 1, 10);
+  const { data: followingData } = useFollowing(user?.id || "", 1, 10);
   const createConversation = useFindOrCreateDirectConversation();
 
   const handleStartConversation = async (targetUserId: string) => {
@@ -25,11 +37,15 @@ export function FollowedUsersChat({ onStartConversation }: FollowedUsersChatProp
       openChatWindow(conversation.id);
       onStartConversation?.(targetUserId);
     } catch (error) {
-      console.error('Failed to start conversation:', error);
+      console.error("Failed to start conversation:", error);
     }
   };
 
-  if (!user || !followingData?.following || followingData.following.length === 0) {
+  if (
+    !user ||
+    !followingData?.following ||
+    followingData.following.length === 0
+  ) {
     return null;
   }
 
@@ -38,25 +54,27 @@ export function FollowedUsersChat({ onStartConversation }: FollowedUsersChatProp
   return (
     <Box>
       {/* Header */}
-      <Group 
-        justify="space-between" 
-        p="xs" 
-        style={{ 
-          cursor: 'pointer',
-          borderBottom: '1px solid var(--mantine-color-gray-2)',
-          backgroundColor: 'var(--mantine-color-gray-0)',
+      <Group
+        justify="space-between"
+        p="xs"
+        style={{
+          cursor: "pointer",
+          borderBottom: "1px solid var(--mantine-color-gray-2)",
+          backgroundColor: "var(--mantine-color-gray-0)",
         }}
         onClick={() => setExpanded(!expanded)}
       >
         <Group gap="xs">
           <IconUserPlus size={16} />
-          <Text size="sm" fw={500}>Start Chat</Text>
+          <Text size="sm" fw={500}>
+            Start Chat
+          </Text>
           <Badge size="xs" variant="light" color="blue">
             {following.length}
           </Badge>
         </Group>
         <Text size="xs" c="dimmed">
-          {expanded ? 'Hide' : 'Show'} followed users
+          {expanded ? "Hide" : "Show"} followed users
         </Text>
       </Group>
 
@@ -69,51 +87,52 @@ export function FollowedUsersChat({ onStartConversation }: FollowedUsersChatProp
                 key={followedUser.id}
                 p="xs"
                 style={{
-                  cursor: 'pointer',
-                  borderBottom: '1px solid var(--mantine-color-gray-1)',
-                  transition: 'background-color 0.2s ease',
+                  cursor: "pointer",
+                  borderBottom: "1px solid var(--mantine-color-gray-1)",
+                  transition: "background-color 0.2s ease",
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--mantine-color-gray-1)';
+                  e.currentTarget.style.backgroundColor =
+                    "var(--mantine-color-gray-1)";
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.backgroundColor = "transparent";
                 }}
                 onClick={() => handleStartConversation(followedUser.id)}
               >
                 <Group gap="sm" align="center">
-                  <Box style={{ position: 'relative' }}>
+                  <Box style={{ position: "relative" }}>
                     <Avatar
                       size="sm"
                       src={followedUser.avatar}
                       alt={followedUser.firstName}
                     >
-                      {followedUser.firstName?.charAt(0) || 'U'}
+                      {followedUser.firstName?.charAt(0) || "U"}
                     </Avatar>
-                    
+
                     {/* Online status indicator */}
                     {followedUser.isOnline && (
                       <Box
                         style={{
-                          position: 'absolute',
+                          position: "absolute",
                           bottom: 0,
                           right: 0,
                           width: 10,
                           height: 10,
-                          borderRadius: '50%',
-                          backgroundColor: '#44ff44',
-                          border: '2px solid white',
+                          borderRadius: "50%",
+                          backgroundColor: "#44ff44",
+                          border: "2px solid white",
                         }}
                       />
                     )}
                   </Box>
-                  
+
                   <Box style={{ flex: 1, minWidth: 0 }}>
                     <Text size="sm" fw={500} truncate>
                       {followedUser.firstName} {followedUser.lastName}
                     </Text>
                     <Text size="xs" c="dimmed" truncate>
-                      @{followedUser.username || 'no-username'}
+                      @{followedUser.username || "no-username"}
                     </Text>
                   </Box>
 
@@ -130,13 +149,13 @@ export function FollowedUsersChat({ onStartConversation }: FollowedUsersChatProp
                 </Group>
               </Box>
             ))}
-            
+
             {following.length === 0 && (
               <Box
                 p="md"
                 style={{
-                  textAlign: 'center',
-                  color: 'var(--mantine-color-gray-6)',
+                  textAlign: "center",
+                  color: "var(--mantine-color-gray-6)",
                 }}
               >
                 <Text size="sm">No users to chat with yet</Text>

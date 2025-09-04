@@ -1,4 +1,3 @@
-
 import { WebSocketEvent, WebSocketEventType } from "../types/chat";
 
 export type WebSocketEventHandler = (event: WebSocketEvent) => void;
@@ -137,7 +136,7 @@ class WebSocketService {
     conversationId: string,
     receiverId: string,
     content: string,
-    replyToId?: string
+    replyToId?: string,
   ): void {
     this.sendMessage("message_sent", {
       conversationId,
@@ -209,7 +208,9 @@ class WebSocketService {
   private startHeartbeat(): void {
     this.heartbeatInterval = window.setInterval(() => {
       if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-        this.ws.send(JSON.stringify({ type: "ping", timestamp: new Date().toISOString() }));
+        this.ws.send(
+          JSON.stringify({ type: "ping", timestamp: new Date().toISOString() }),
+        );
       }
     }, 30000); // Send ping every 30 seconds
   }

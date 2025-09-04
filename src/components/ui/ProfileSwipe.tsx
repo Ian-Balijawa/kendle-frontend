@@ -1,19 +1,20 @@
 import {
-    ActionIcon,
-    Avatar,
-    Badge,
-    Box,
-    Button,
-    Card,
-    Group,
-    Stack,
-    Text,
-    UnstyledButton
+  ActionIcon,
+  Avatar,
+  Badge,
+  Box,
+  Button,
+  Card,
+  Group,
+  Stack,
+  Text,
+  UnstyledButton,
 } from "@mantine/core";
 import {
-    IconHeart, IconUserPlus,
-    IconX,
-    IconZoomIn
+  IconHeart,
+  IconUserPlus,
+  IconX,
+  IconZoomIn,
 } from "@tabler/icons-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -147,7 +148,8 @@ export function ProfileSwipe({
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundImage: "radial-gradient(circle at 25% 25%, rgba(255,255,255,0.1) 0%, transparent 50%), radial-gradient(circle at 75% 75%, rgba(255,255,255,0.1) 0%, transparent 50%)",
+            backgroundImage:
+              "radial-gradient(circle at 25% 25%, rgba(255,255,255,0.1) 0%, transparent 50%), radial-gradient(circle at 75% 75%, rgba(255,255,255,0.1) 0%, transparent 50%)",
             opacity: 0.3,
           }}
         />
@@ -287,7 +289,11 @@ export function ProfileSwipe({
         </Stack>
 
         {/* Navigation Dots */}
-        <Group justify="center" gap="xs" style={{ position: "absolute", bottom: 20, left: 0, right: 0 }}>
+        <Group
+          justify="center"
+          gap="xs"
+          style={{ position: "absolute", bottom: 20, left: 0, right: 0 }}
+        >
           {users.slice(0, 5).map((_, index) => (
             <Box
               key={index}
@@ -295,7 +301,10 @@ export function ProfileSwipe({
                 width: index === currentIndex % 5 ? 12 : 6,
                 height: 6,
                 borderRadius: 3,
-                background: index === currentIndex % 5 ? "white" : "rgba(255,255,255,0.5)",
+                background:
+                  index === currentIndex % 5
+                    ? "white"
+                    : "rgba(255,255,255,0.5)",
                 transition: "all 0.3s ease",
               }}
             />

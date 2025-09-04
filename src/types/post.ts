@@ -4,7 +4,16 @@ export interface Post {
   id: string;
   content: string;
   location?: string;
-  type: "text" | "image" | "video" | "poll" | "event" | "repost" | "quote" | "article" | "story";
+  type:
+    | "text"
+    | "image"
+    | "video"
+    | "poll"
+    | "event"
+    | "repost"
+    | "quote"
+    | "article"
+    | "story";
   status: "draft" | "published";
   isPublic: boolean;
   allowComments: boolean;
@@ -69,7 +78,16 @@ export interface CreatePostData {
   location?: string;
   tags?: TagInput[];
   mentions?: MentionInput[];
-  type?: "text" | "image" | "video" | "poll" | "event" | "repost" | "quote" | "article" | "story";
+  type?:
+    | "text"
+    | "image"
+    | "video"
+    | "poll"
+    | "event"
+    | "repost"
+    | "quote"
+    | "article"
+    | "story";
   isPublic?: boolean;
   allowComments?: boolean;
   allowLikes?: boolean;
