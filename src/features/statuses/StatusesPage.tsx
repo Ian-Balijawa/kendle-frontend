@@ -4,17 +4,19 @@ import {
   Box,
   Button,
   Card,
+  Container,
   Group,
   Modal,
-  ScrollArea,
   Stack,
   Text,
   Title,
+  SimpleGrid,
 } from "@mantine/core";
 import {
   IconChevronLeft,
   IconChevronRight,
   IconPlus,
+  IconCamera,
 } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { useAuthStore } from "../../stores/authStore";
@@ -24,7 +26,7 @@ import { CreateStatus } from "./CreateStatus";
 import { StatusCard } from "./StatusCard";
 
 export function StatusesPage() {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
   const { statusCollections, setStatusCollections, cleanupExpiredStatuses } =
     useStatusStore();
 
@@ -85,12 +87,8 @@ export function StatusesPage() {
               viewsCount: 15,
               views: [],
               isViewed: false,
-              createdAt: new Date(
-                Date.now() - 2 * 60 * 60 * 1000,
-              ).toISOString(), // 2 hours ago
-              expiresAt: new Date(
-                Date.now() + 22 * 60 * 60 * 1000,
-              ).toISOString(), // 22 hours from now
+              createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+              expiresAt: new Date(Date.now() + 22 * 60 * 60 * 1000).toISOString(),
               isExpired: false,
             },
           ],
@@ -143,12 +141,8 @@ export function StatusesPage() {
               viewsCount: 23,
               views: [],
               isViewed: false,
-              createdAt: new Date(
-                Date.now() - 4 * 60 * 60 * 1000,
-              ).toISOString(), // 4 hours ago
-              expiresAt: new Date(
-                Date.now() + 20 * 60 * 60 * 1000,
-              ).toISOString(), // 20 hours from now
+              createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
+              expiresAt: new Date(Date.now() + 20 * 60 * 60 * 1000).toISOString(),
               isExpired: false,
             },
           ],
@@ -218,153 +212,286 @@ export function StatusesPage() {
   const formatTimeAgo = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
-    const diffInHours = Math.floor(
-      (now.getTime() - date.getTime()) / (1000 * 60 * 60),
-    );
+    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
 
-    if (diffInHours < 1) return "now";
+    if (diffInMinutes < 1) return "Just now";
+    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+
+    const diffInHours = Math.floor(diffInMinutes / 60);
     if (diffInHours < 24) return `${diffInHours}h ago`;
+
     return `${Math.floor(diffInHours / 24)}d ago`;
   };
 
   const currentStatus = selectedCollection?.statuses[currentStatusIndex];
 
+  // Get user's own status collection
+  const userStatusCollection = statusCollections.find(
+    (collection) => collection.author.id === user?.id
+  );
+
   return (
     <>
-      <Stack gap="lg">
-        <Group justify="space-between" align="center">
+      <Container size="lg" py="xl">
+        <Stack gap="xl">
+          {/* Header */}
           <Box>
-            <Title order={1} size="h2">
-              Statuses
-            </Title>
-            <Text c="dimmed" size="sm">
-              Share moments that disappear in 24 hours
-            </Text>
-          </Box>
-          {isAuthenticated && (
-            <Button
-              leftSection={<IconPlus size={16} />}
-              onClick={handleCreateStatus}
-              variant="gradient"
-              gradient={{ from: "blue", to: "purple" }}
-            >
-              Add Status
-            </Button>
-          )}
-        </Group>
-
-        <ScrollArea>
-          <Group gap="md" wrap="nowrap" style={{ paddingBottom: 16 }}>
-            {isAuthenticated && (
-              <Box style={{ minWidth: 80, textAlign: "center" }}>
-                <Box
-                  style={{
-                    position: "relative",
-                    cursor: "pointer",
-                  }}
-                  onClick={handleCreateStatus}
-                >
-                  <Avatar
-                    size={64}
-                    radius="xl"
-                    style={{
-                      border: "3px dashed var(--mantine-color-gray-4)",
-                    }}
-                  >
-                    <IconPlus size={24} color="var(--mantine-color-gray-6)" />
-                  </Avatar>
-                </Box>
-                <Text size="xs" mt={4} ta="center" c="dimmed">
-                  Your Status
+            <Group justify="space-between" align="center" mb="md">
+              <Box>
+                <Title order={1} size="h2" fw={700} c="dark">
+                  Status Updates
+                </Title>
+                <Text c="dimmed" size="sm" mt={4}>
+                  Share moments that disappear in 24 hours
                 </Text>
+              </Box>
+              {isAuthenticated && (
+                <Button
+                  leftSection={<IconPlus size={18} />}
+                  onClick={handleCreateStatus}
+                  size="md"
+                  radius="xl"
+                  variant="gradient"
+                  gradient={{ from: "blue", to: "cyan" }}
+                >
+                  Add Status
+                </Button>
+              )}
+            </Group>
+          </Box>
+
+          {/* Status grid */}
+          <Box>
+            {/* My Status section */}
+            {isAuthenticated && (
+              <Box mb="xl">
+                <Text fw={600} size="lg" mb="md" c="dark">
+                  My Status
+                </Text>
+                <Card
+                  p="md"
+                  radius="lg"
+                  withBorder
+                  style={{
+                    cursor: userStatusCollection ? "pointer" : "default",
+                    transition: "all 0.2s ease",
+                    "&:hover": {
+                      transform: userStatusCollection ? "translateY(-2px)" : "none",
+                      boxShadow: userStatusCollection
+                        ? "0 8px 25px rgba(0, 0, 0, 0.1)"
+                        : "none",
+                    },
+                  }}
+                  onClick={() => userStatusCollection && handleCollectionClick(userStatusCollection)}
+                >
+                  <Group>
+                    <Box style={{ position: "relative" }}>
+                      <Avatar
+                        src={user?.avatar}
+                        alt={user?.firstName || "You"}
+                        size={64}
+                        radius="lg"
+                        style={{
+                          border: userStatusCollection?.hasUnviewed
+                            ? "3px solid #228be6"
+                            : "3px solid #e9ecef",
+                        }}
+                      >
+                        {user?.firstName?.charAt(0) || "U"}
+                      </Avatar>
+                      {!userStatusCollection && (
+                        <ActionIcon
+                          size="sm"
+                          radius="xl"
+                          variant="filled"
+                          color="blue"
+                          style={{
+                            position: "absolute",
+                            bottom: -2,
+                            right: -2,
+                            border: "2px solid white",
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCreateStatus();
+                          }}
+                        >
+                          <IconCamera size={12} />
+                        </ActionIcon>
+                      )}
+                    </Box>
+                    <Box flex={1}>
+                      <Group justify="space-between" align="center">
+                        <Box>
+                          <Text fw={600} size="md">
+                            {userStatusCollection ? "My Status" : "Add Status"}
+                          </Text>
+                          <Text size="sm" c="dimmed">
+                            {userStatusCollection
+                              ? `${userStatusCollection.statuses.length} update${userStatusCollection.statuses.length !== 1 ? "s" : ""} • ${formatTimeAgo(userStatusCollection.lastUpdated)}`
+                              : "Tap to add status update"
+                            }
+                          </Text>
+                        </Box>
+                        {!userStatusCollection && (
+                          <Button
+                            size="sm"
+                            radius="xl"
+                            leftSection={<IconPlus size={14} />}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleCreateStatus();
+                            }}
+                          >
+                            Create
+                          </Button>
+                        )}
+                      </Group>
+                    </Box>
+                  </Group>
+                </Card>
               </Box>
             )}
 
-            {statusCollections.map((collection) => (
-              <Box
-                key={collection.author.id}
-                style={{ minWidth: 80, textAlign: "center", cursor: "pointer" }}
-                onClick={() => handleCollectionClick(collection)}
-              >
-                <Box style={{ position: "relative" }}>
-                  <Avatar
-                    src={collection.author.avatar}
-                    alt={collection.author.firstName || "User"}
-                    size={64}
-                    radius="xl"
+            {/* Recent updates section */}
+            {statusCollections.filter(c => c.author.id !== user?.id).length > 0 && (
+              <Box>
+                <Text fw={600} size="lg" mb="md" c="dark">
+                  Recent Updates
+                </Text>
+                <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="md">
+                  {statusCollections
+                    .filter(collection => collection.author.id !== user?.id)
+                    .map((collection) => (
+                      <Card
+                        key={collection.author.id}
+                        p="md"
+                        radius="lg"
+                        withBorder
+                        style={{
+                          cursor: "pointer",
+                          transition: "all 0.2s ease",
+                          "&:hover": {
+                            transform: "translateY(-2px)",
+                            boxShadow: "0 8px 25px rgba(0, 0, 0, 0.1)",
+                          },
+                        }}
+                        onClick={() => handleCollectionClick(collection)}
+                      >
+                        <Group>
+                          <Box style={{ position: "relative" }}>
+                            <Avatar
+                              src={collection.author.avatar}
+                              alt={collection.author.firstName || "User"}
+                              size={56}
+                              radius="lg"
+                              style={{
+                                border: collection.hasUnviewed
+                                  ? "3px solid #228be6"
+                                  : "3px solid #e9ecef",
+                              }}
+                            >
+                              {(collection.author.firstName || "U").charAt(0)}
+                            </Avatar>
+                            {collection.hasUnviewed && (
+                              <Box
+                                style={{
+                                  position: "absolute",
+                                  top: -2,
+                                  right: -2,
+                                  width: 16,
+                                  height: 16,
+                                  borderRadius: "50%",
+                                  backgroundColor: "#228be6",
+                                  border: "2px solid white",
+                                }}
+                              />
+                            )}
+                          </Box>
+                          <Box flex={1}>
+                            <Text fw={600} size="sm" lineClamp={1}>
+                              {collection.author.firstName} {collection.author.lastName}
+                            </Text>
+                            <Text size="xs" c="dimmed">
+                              {formatTimeAgo(collection.lastUpdated)}
+                            </Text>
+                            <Text size="xs" c="dimmed" mt={2}>
+                              {collection.statuses.length} update{collection.statuses.length !== 1 ? "s" : ""}
+                            </Text>
+                          </Box>
+                        </Group>
+                      </Card>
+                    ))}
+                </SimpleGrid>
+              </Box>
+            )}
+
+            {/* Empty state */}
+            {statusCollections.filter(c => c.author.id !== user?.id).length === 0 && !userStatusCollection && (
+              <Card withBorder p="xl" radius="lg" ta="center">
+                <Stack gap="lg" align="center">
+                  <Box
                     style={{
-                      border: collection.hasUnviewed
-                        ? "3px solid var(--mantine-color-blue-6)"
-                        : "3px solid var(--mantine-color-gray-3)",
+                      width: 80,
+                      height: 80,
+                      borderRadius: "50%",
+                      backgroundColor: "#f8f9fa",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
                     }}
                   >
-                    {(collection.author.firstName || "U").charAt(0)}
-                  </Avatar>
-                  {collection.hasUnviewed && (
-                    <Box
-                      style={{
-                        position: "absolute",
-                        top: -2,
-                        right: -2,
-                        width: 16,
-                        height: 16,
-                        borderRadius: "50%",
-                        backgroundColor: "var(--mantine-color-blue-6)",
-                        border: "2px solid white",
-                      }}
-                    />
+                    <IconCamera size={32} color="#868e96" />
+                  </Box>
+                  <Box>
+                    <Text size="lg" fw={600} c="dark" mb="xs">
+                      No status updates yet
+                    </Text>
+                    <Text size="sm" c="dimmed" maw={400} mx="auto">
+                      {isAuthenticated
+                        ? "Be the first to share a moment! Your status will disappear after 24 hours."
+                        : "Sign in to view and share status updates with your friends."
+                      }
+                    </Text>
+                  </Box>
+                  {isAuthenticated && (
+                    <Button
+                      leftSection={<IconPlus size={16} />}
+                      onClick={() => setCreateStatusOpened(true)}
+                      size="md"
+                      radius="xl"
+                    >
+                      Create Your First Status
+                    </Button>
                   )}
-                </Box>
-                <Text size="xs" mt={4} ta="center" c="dimmed" truncate>
-                  {collection.author.firstName}
-                </Text>
-                <Text size="xs" ta="center" c="dimmed">
-                  {formatTimeAgo(collection.lastUpdated)}
-                </Text>
-              </Box>
-            ))}
-          </Group>
-        </ScrollArea>
+                </Stack>
+              </Card>
+            )}
+          </Box>
+        </Stack>
+      </Container>
 
-        {statusCollections.length === 0 && (
-          <Card withBorder p="xl" ta="center">
-            <Stack gap="md">
-              <Text size="lg" fw={500} c="dimmed">
-                No statuses yet
-              </Text>
-              <Text size="sm" c="dimmed">
-                {isAuthenticated
-                  ? "Share your first moment that disappears in 24 hours!"
-                  : "Sign in to view and share statuses!"}
-              </Text>
-              {isAuthenticated && (
-                <Button
-                  leftSection={<IconPlus size={16} />}
-                  onClick={() => setCreateStatusOpened(true)}
-                  variant="light"
-                >
-                  Create First Status
-                </Button>
-              )}
-            </Stack>
-          </Card>
-        )}
-      </Stack>
-
+      {/* Create Status Modal */}
       <CreateStatus
         opened={createStatusOpened}
         onClose={() => setCreateStatusOpened(false)}
       />
 
+      {/* View Status Modal */}
       <Modal
         opened={viewModalOpened}
         onClose={() => setViewModalOpened(false)}
         size="lg"
-        padding={0}
+        padding="md"
         withCloseButton={false}
+        centered
         styles={{
           content: {
-            backgroundColor: "black",
+            backgroundColor: "#000",
+            border: "none",
+          },
+          body: {
+            padding: 0,
           },
         }}
       >
@@ -377,9 +504,9 @@ export function StatusesPage() {
               onNext={handleNextStatus}
               onPrevious={
                 currentStatusIndex > 0 ||
-                statusCollections.findIndex(
-                  (c) => c.author.id === selectedCollection?.author.id,
-                ) > 0
+                  statusCollections.findIndex(
+                    (c) => c.author.id === selectedCollection?.author.id,
+                  ) > 0
                   ? handlePreviousStatus
                   : undefined
               }
@@ -388,51 +515,54 @@ export function StatusesPage() {
               totalCount={selectedCollection?.statuses.length || 1}
             />
 
-            {currentStatusIndex > 0 ||
-              (statusCollections.findIndex(
+            {/* Navigation arrows */}
+            {(currentStatusIndex > 0 ||
+              statusCollections.findIndex(
                 (c) => c.author.id === selectedCollection?.author.id,
-              ) > 0 && (
+              ) > 0) && (
                 <ActionIcon
                   variant="filled"
-                  color="rgba(255, 255, 255, 0.3)"
-                  size="lg"
+                color="rgba(255, 255, 255, 0.2)"
+                size="xl"
                   radius="xl"
                   style={{
                     position: "absolute",
                     left: 16,
                     top: "50%",
                     transform: "translateY(-50%)",
-                    zIndex: 10,
+                    zIndex: 20,
+                    backdropFilter: "blur(10px)",
                   }}
                   onClick={handlePreviousStatus}
                 >
-                  <IconChevronLeft size={20} color="white" />
+                <IconChevronLeft size={24} color="white" />
                 </ActionIcon>
-              ))}
+              )}
 
             {(currentStatusIndex <
               (selectedCollection?.statuses.length || 1) - 1 ||
               statusCollections.findIndex(
                 (c) => c.author.id === selectedCollection?.author.id,
               ) <
-                statusCollections.length - 1) && (
-              <ActionIcon
-                variant="filled"
-                color="rgba(255, 255, 255, 0.3)"
-                size="lg"
+              statusCollections.length - 1) && (
+                <ActionIcon
+                  variant="filled"
+                color="rgba(255, 255, 255, 0.2)"
+                size="xl"
                 radius="xl"
                 style={{
                   position: "absolute",
                   right: 16,
                   top: "50%",
                   transform: "translateY(-50%)",
-                  zIndex: 10,
+                  zIndex: 20,
+                  backdropFilter: "blur(10px)",
                 }}
                 onClick={handleNextStatus}
               >
-                <IconChevronRight size={20} color="white" />
-              </ActionIcon>
-            )}
+                  <IconChevronRight size={24} color="white" />
+                </ActionIcon>
+              )}
           </Box>
         )}
       </Modal>
