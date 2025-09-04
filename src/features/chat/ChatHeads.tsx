@@ -70,8 +70,8 @@ export function ChatHeads() {
                       src={conversation.avatar || participant?.avatar}
                       alt={conversation.name || participant?.firstName}
                       style={{
-                        border: "3px solid white",
-                        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
+                        border: "3px solid var(--mantine-color-white)",
+                        boxShadow: "0 2px 8px var(--mantine-color-shadow)",
                         transition: "all 0.2s ease",
                         transform:
                           hoveredHead === conversationId
@@ -93,7 +93,7 @@ export function ChatHeads() {
                           height: 12,
                           borderRadius: "50%",
                           backgroundColor: "var(--mantine-color-green-5)",
-                          border: "2px solid white",
+                          border: "2px solid var(--mantine-color-white)",
                         }}
                       />
                     )}
@@ -136,13 +136,13 @@ export function ChatHeads() {
                             height: 20,
                             borderRadius: "50%",
                             backgroundColor: "var(--mantine-color-red-5)",
-                            color: "white",
+                            color: "var(--mantine-color-white)",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
                             fontSize: 12,
                             cursor: "pointer",
-                            border: "2px solid white",
+                            border: "2px solid var(--mantine-color-white)",
                             zIndex: 10,
                           }}
                           onClick={(e) => {

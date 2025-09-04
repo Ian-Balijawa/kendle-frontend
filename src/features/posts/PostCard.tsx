@@ -13,7 +13,6 @@ import {
   Stack,
   Text,
   Textarea,
-  TextInput,
   UnstyledButton,
 } from "@mantine/core";
 import {
@@ -123,7 +122,9 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
     const handlePostClick = (e: React.MouseEvent) => {
       // Prevent navigation if clicking on interactive elements
       const target = e.target as HTMLElement;
-      const isInteractiveElement = target.closest('button, a, input, textarea, [role="button"], [data-interactive]');
+      const isInteractiveElement = target.closest(
+        'button, a, input, textarea, [role="button"], [data-interactive]',
+      );
 
       if (!isInteractiveElement) {
         navigate(`/post/${post.id}`);
@@ -264,7 +265,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
 
                 <Box>
                   <Group gap={6} align="center">
-                    <Text fw={600} size="sm" >
+                    <Text fw={600} size="sm">
                       {post.author?.firstName && post.author?.lastName
                         ? `${post.author.firstName} ${post.author.lastName}`
                         : post.author?.username
@@ -328,44 +329,85 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
               </Group>
 
               {isAuthenticated && (
-                <Menu shadow="lg" width={180} position="bottom-end" radius="lg">
-                  <Menu.Target>
-                    <ActionIcon
-                      variant="subtle"
-                      size="sm"
-                      radius="xl"
-                      data-interactive="true"
-                    >
-                      <IconDotsVertical size={16} />
-                    </ActionIcon>
-                  </Menu.Target>
-                  <Menu.Dropdown>
-                    {isAuthor && (
-                      <>
-                        <Menu.Item
-                          leftSection={<IconEdit size={14} />}
-                          onClick={handleEdit}
-                        >
-                          Edit Post
-                        </Menu.Item>
-                        <Menu.Item
-                          leftSection={<IconTrash size={14} />}
-                          color="red"
-                          onClick={() => setShowDeleteConfirm(true)}
-                        >
-                          Delete Post
-                        </Menu.Item>
-                        <Menu.Divider />
-                      </>
-                    )}
-                    <Menu.Item
-                      leftSection={<IconFlag size={14} />}
-                      color="orange"
-                    >
-                      Report Post
-                    </Menu.Item>
-                  </Menu.Dropdown>
-                </Menu>
+                <Group>
+                  <UnstyledButton
+                    onClick={handleBookmark}
+                    disabled={!isAuthenticated || !post.allowBookmarks}
+                    data-interactive="true"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.5rem",
+                      padding: "0.5rem 0.5rem",
+                      borderRadius: "var(--mantine-radius-md)",
+                      transition: "background-color 0.2s ease",
+                      color: post?.isBookmarked
+                        ? "var(--mantine-color-yellow-6)"
+                        : "var(--mantine-color-gray-6)",
+                      fontWeight: post?.isBookmarked ? 600 : 400,
+                    }}
+                    onMouseEnter={(e) => {
+                      if (isAuthenticated && post.allowBookmarks) {
+                        e.currentTarget.style.backgroundColor =
+                          "var(--mantine-color-gray-2)";
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = "transparent";
+                    }}
+                  >
+                    <IconBookmark
+                      size={18}
+                      style={{
+                        fill: post?.isBookmarked ? "currentColor" : "none",
+                        stroke: "currentColor",
+                      }}
+                    />
+                  </UnstyledButton>
+                  <Menu
+                    shadow="lg"
+                    width={180}
+                    position="bottom-end"
+                    radius="lg"
+                  >
+                    <Menu.Target>
+                      <ActionIcon
+                        variant="subtle"
+                        size="sm"
+                        radius="xl"
+                        data-interactive="true"
+                      >
+                        <IconDotsVertical size={16} />
+                      </ActionIcon>
+                    </Menu.Target>
+                    <Menu.Dropdown>
+                      {isAuthor && (
+                        <>
+                          <Menu.Item
+                            leftSection={<IconEdit size={14} />}
+                            onClick={handleEdit}
+                          >
+                            Edit Post
+                          </Menu.Item>
+                          <Menu.Item
+                            leftSection={<IconTrash size={14} />}
+                            color="red"
+                            onClick={() => setShowDeleteConfirm(true)}
+                          >
+                            Delete Post
+                          </Menu.Item>
+                          <Menu.Divider />
+                        </>
+                      )}
+                      <Menu.Item
+                        leftSection={<IconFlag size={14} />}
+                        color="orange"
+                      >
+                        Report Post
+                      </Menu.Item>
+                    </Menu.Dropdown>
+                  </Menu>
+                </Group>
               )}
             </Group>
 
@@ -616,20 +658,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
               </Card>
             )}
 
-            {/* Post Statistics */}
-            <Group gap="md" mb="sm">
-              <Text size="xs" c="dimmed">
-                👀 {post.viewsCount || 0} views
-              </Text>
-              <Text size="xs" c="dimmed">
-                📊 {post.sharesCount || 0} shares
-              </Text>
-              <Text size="xs" c="dimmed">
-                🔖 {post.bookmarksCount || 0} bookmarks
-              </Text>
-            </Group>
-
-            <Group justify="space-between" mb="sm">
+            <Group justify="start">
               <Group gap="xs">
                 {post?.likesCount > 0 && (
                   <Group gap={4}>
@@ -638,16 +667,6 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                     </Text>
                     <Text size="sm" c="dimmed" fw={500}>
                       {post?.likesCount}
-                    </Text>
-                  </Group>
-                )}
-                {post?.commentsCount > 0 && (
-                  <Group gap={4}>
-                    <Text size="sm" c="dimmed">
-                      💬
-                    </Text>
-                    <Text size="sm" c="dimmed" fw={500}>
-                      {post?.commentsCount} comments
                     </Text>
                   </Group>
                 )}
@@ -663,105 +682,81 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                 )}
               </Group>
             </Group>
-            <Group justify="space-around">
-              <UnstyledButton
-                onClick={handleLike}
-                disabled={!isAuthenticated || !post.allowLikes}
-                data-interactive="true"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.5rem",
-                  padding: "0.5rem 1rem",
-                  borderRadius: "var(--mantine-radius-md)",
-                  transition: "background-color 0.2s ease",
-                  color: post?.isLiked
-                    ? "var(--mantine-color-blue-6)"
-                    : "var(--mantine-color-gray-6)",
-                  fontWeight: post?.isLiked ? 600 : 400,
-                }}
-                onMouseEnter={(e) => {
-                  if (isAuthenticated && post.allowLikes) {
-                    e.currentTarget.style.backgroundColor =
-                      "var(--mantine-color-gray-2)";
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = "transparent";
-                }}
-              >
-                <IconHeart
-                  size={18}
+            <Group justify="start" align="center">
+              <Group justify="start">
+                <UnstyledButton
+                  onClick={handleLike}
+                  disabled={!isAuthenticated || !post.allowLikes}
+                  data-interactive="true"
                   style={{
-                    fill: post?.isLiked ? "currentColor" : "none",
-                    stroke: "currentColor",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                    padding: "0.5rem 0.5rem",
+                    borderRadius: "var(--mantine-radius-md)",
+                    transition: "background-color 0.2s ease",
+                    color: post?.isLiked
+                      ? "var(--mantine-color-blue-6)"
+                      : "var(--mantine-color-gray-6)",
+                    fontWeight: post?.isLiked ? 600 : 400,
                   }}
-                />
-                <Text size="sm">Like</Text>
-              </UnstyledButton>
+                  onMouseEnter={(e) => {
+                    if (isAuthenticated && post.allowLikes) {
+                      e.currentTarget.style.backgroundColor =
+                        "var(--mantine-color-gray-2)";
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "transparent";
+                  }}
+                >
+                  <IconHeart
+                    size={18}
+                    style={{
+                      fill: post?.isLiked ? "currentColor" : "none",
+                      stroke: "currentColor",
+                    }}
+                  />
+                </UnstyledButton>
 
-              <UnstyledButton
-                onClick={() => setShowComments(!showComments)}
-                disabled={!post.allowComments}
-                data-interactive="true"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.5rem",
-                  padding: "0.5rem 1rem",
-                  borderRadius: "var(--mantine-radius-md)",
-                  transition: "background-color 0.2s ease",
-                  color: "var(--mantine-color-gray-6)",
-                }}
-                onMouseEnter={(e) => {
-                  if (post.allowComments) {
-                    e.currentTarget.style.backgroundColor =
-                      "var(--mantine-color-gray-2)";
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = "transparent";
-                }}
-              >
-                <IconMessageCircle size={18} />
-                <Text size="sm">Comment</Text>
-              </UnstyledButton>
-
-              <UnstyledButton
-                onClick={handleBookmark}
-                disabled={!isAuthenticated || !post.allowBookmarks}
-                data-interactive="true"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.5rem",
-                  padding: "0.5rem 1rem",
-                  borderRadius: "var(--mantine-radius-md)",
-                  transition: "background-color 0.2s ease",
-                  color: post?.isBookmarked
-                    ? "var(--mantine-color-yellow-6)"
-                    : "var(--mantine-color-gray-6)",
-                  fontWeight: post?.isBookmarked ? 600 : 400,
-                }}
-                onMouseEnter={(e) => {
-                  if (isAuthenticated && post.allowBookmarks) {
-                    e.currentTarget.style.backgroundColor =
-                      "var(--mantine-color-gray-2)";
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = "transparent";
-                }}
-              >
-                <IconBookmark
-                  size={18}
+                <UnstyledButton
+                  onClick={() => setShowComments(!showComments)}
+                  disabled={!post.allowComments}
+                  data-interactive="true"
                   style={{
-                    fill: post?.isBookmarked ? "currentColor" : "none",
-                    stroke: "currentColor",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                    padding: "0.5rem 0.5rem",
+                    borderRadius: "var(--mantine-radius-md)",
+                    transition: "background-color 0.2s ease",
+                    color: "var(--mantine-color-gray-6)",
                   }}
-                />
-                <Text size="sm">Save</Text>
-              </UnstyledButton>
+                  onMouseEnter={(e) => {
+                    if (post.allowComments) {
+                      e.currentTarget.style.backgroundColor =
+                        "var(--mantine-color-gray-2)";
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "transparent";
+                  }}
+                >
+                  <IconMessageCircle size={18} />
+                </UnstyledButton>
+              </Group>
+              {/* Post Statistics */}
+              <Group gap="md" mb="xs" justify="start" align="center">
+                <Text size="xs" c="dimmed">
+                  👀 {post.viewsCount || 0} views
+                </Text>
+                <Text size="xs" c="dimmed">
+                  📊 {post.sharesCount || 0} shares
+                </Text>
+                <Text size="xs" c="dimmed">
+                  🔖 {post.bookmarksCount || 0} bookmarks
+                </Text>
+              </Group>
             </Group>
 
             {!isAuthenticated && (
@@ -796,10 +791,15 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                     {user?.firstName?.charAt(0) || "U"}
                   </Avatar>
                   <Box style={{ flex: 1 }}>
-                    <TextInput
+                    <Textarea
                       placeholder="Write a comment..."
                       value={commentContent}
                       onChange={(e) => setCommentContent(e.currentTarget.value)}
+                      minRows={1}
+                      maxRows={3}
+                      autosize
+                      radius="xl"
+                      size="sm"
                       rightSection={
                         commentContent.trim() ? (
                           <ActionIcon
@@ -815,7 +815,6 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                         ) : null
                       }
                       onKeyPress={(e) => e.key === "Enter" && handleComment()}
-                      radius="xl"
                       style={{
                         flex: 1,
                       }}

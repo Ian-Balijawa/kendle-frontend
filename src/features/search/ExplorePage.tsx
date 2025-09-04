@@ -279,9 +279,9 @@ export function ExplorePage() {
                   <PostCard key={post.id} post={post} isFirst={index === 0} />
                 ))
               ) : (
-                    <Box
-                      p="xl"
-                      style={{
+                <Box
+                  p="xl"
+                  style={{
                     border: "none",
                   }}
                 >
@@ -299,7 +299,7 @@ export function ExplorePage() {
                       </Text>
                     </Stack>
                   </Stack>
-                    </Box>
+                </Box>
               )}
             </Stack>
           </Tabs.Panel>
@@ -310,7 +310,7 @@ export function ExplorePage() {
               <Tabs
                 value={peopleTab}
                 onChange={(value) => setPeopleTab(value || "suggestions")}
-                variant="pills" 
+                variant="pills"
               >
                 <Tabs.List
                   style={{
@@ -365,9 +365,9 @@ export function ExplorePage() {
                       showStats={true}
                     />
                   ) : (
-                        <Box
-                          p="xl"
-                          style={{
+                    <Box
+                      p="xl"
+                      style={{
                         border: "none",
                       }}
                     >
@@ -386,7 +386,7 @@ export function ExplorePage() {
                           </Text>
                         </Stack>
                       </Stack>
-                        </Box>
+                    </Box>
                   )}
                 </Tabs.Panel>
 
@@ -397,7 +397,7 @@ export function ExplorePage() {
                       <Loader size="lg" />
                     </Group>
                   ) : followingData && followingData.following.length > 0 ? (
-                      <Stack gap="md">
+                    <Stack gap="md">
                       {followingData.following.map((user: User) => (
                         <UserCard
                           key={user.id}
@@ -410,9 +410,9 @@ export function ExplorePage() {
                       ))}
                     </Stack>
                   ) : (
-                        <Box
-                          p="xl"
-                          style={{
+                    <Box
+                      p="xl"
+                      style={{
                         border: "none",
                       }}
                     >
@@ -431,7 +431,7 @@ export function ExplorePage() {
                           </Text>
                         </Stack>
                       </Stack>
-                        </Box>
+                    </Box>
                   )}
                 </Tabs.Panel>
 
@@ -442,7 +442,7 @@ export function ExplorePage() {
                       <Loader size="lg" />
                     </Group>
                   ) : followersData && followersData.followers.length > 0 ? (
-                      <Stack gap="md">
+                    <Stack gap="md">
                       {followersData.followers.map((user: User) => (
                         <UserCard
                           key={user.id}
@@ -455,9 +455,9 @@ export function ExplorePage() {
                       ))}
                     </Stack>
                   ) : (
-                        <Box
-                          p="xl"
-                          style={{
+                    <Box
+                      p="xl"
+                      style={{
                         border: "none",
                       }}
                     >
@@ -475,13 +475,12 @@ export function ExplorePage() {
                           </Text>
                         </Stack>
                       </Stack>
-                        </Box>
+                    </Box>
                   )}
                 </Tabs.Panel>
               </Tabs>
             </Stack>
           </Tabs.Panel>
-
 
           <Tabs.Panel value="hashtags" pt="md">
             <Stack gap="md">

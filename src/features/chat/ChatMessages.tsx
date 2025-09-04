@@ -176,9 +176,9 @@ export function ChatMessages({ conversationId }: ChatMessagesProps) {
                     position: "absolute",
                     top: -8,
                     right: -8,
-                    backgroundColor: "white",
+                    backgroundColor: "var(--mantine-color-white)",
                     borderRadius: 4,
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                    boxShadow: "0 2px 8px var(--mantine-color-shadow)",
                   }}
                 >
                   <MessageContextMenu message={message} onReact={handleReact} />

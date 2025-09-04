@@ -88,7 +88,7 @@ export function FloatingChatWidget() {
                     color="blue"
                     onClick={openFollowedUsers}
                     style={{
-                      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+                      boxShadow: "0 2px 8px var(--mantine-color-shadow)",
                       transition: "all 0.2s ease",
                     }}
                   >
@@ -151,7 +151,7 @@ export function FloatingChatWidget() {
               color="primary"
               onClick={open}
               style={{
-                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+                boxShadow: "0 4px 12px var(--mantine-color-shadow)",
                 transition: "all 0.2s ease",
               }}
             >
@@ -196,7 +196,7 @@ export function FloatingChatWidget() {
                   left: 0,
                   right: 0,
                   bottom: 0,
-                  backgroundColor: "rgba(0, 0, 0, 0.5)",
+                  backgroundColor: "var(--mantine-color-dark-9)",
                   zIndex: 2000,
                   pointerEvents: "auto",
                 }}
@@ -287,7 +287,7 @@ export function FloatingChatWidget() {
                   color="blue"
                   onClick={openFollowedUsers}
                   style={{
-                    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+                    boxShadow: "0 2px 8px var(--mantine-color-shadow)",
                     transition: "all 0.2s ease",
                   }}
                 >
@@ -350,7 +350,7 @@ export function FloatingChatWidget() {
             color="primary"
             onClick={open}
             style={{
-              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+              boxShadow: "0 4px 12px var(--mantine-color-shadow)",
               transition: "all 0.2s ease",
             }}
           >

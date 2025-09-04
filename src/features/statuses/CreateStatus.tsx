@@ -461,7 +461,11 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
         </Group>
 
         {/* Footer info */}
-        <Box ta="center" pt="sm" style={{ borderTop: "1px solid var(--mantine-color-gray-2)" }}>
+        <Box
+          ta="center"
+          pt="sm"
+          style={{ borderTop: "1px solid var(--mantine-color-gray-2)" }}
+        >
           <Text size="xs" c="dimmed">
             🔒 Your status will automatically disappear after 24 hours
           </Text>

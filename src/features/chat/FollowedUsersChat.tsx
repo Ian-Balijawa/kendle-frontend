@@ -121,7 +121,7 @@ export function FollowedUsersChat({
                           height: 10,
                           borderRadius: "50%",
                           backgroundColor: "var(--mantine-color-green-5)",
-                          border: "2px solid white",
+                          border: "2px solid var(--mantine-color-white)",
                         }}
                       />
                     )}

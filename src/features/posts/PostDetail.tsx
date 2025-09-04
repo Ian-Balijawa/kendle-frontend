@@ -295,7 +295,11 @@ export function PostDetail() {
         <Box
           p={0}
           mb="xl"
-          style={{ overflow: "hidden", borderRadius: "var(--mantine-radius-lg)", boxShadow: "var(--mantine-shadow-xl)" }}
+          style={{
+            overflow: "hidden",
+            borderRadius: "var(--mantine-radius-lg)",
+            boxShadow: "var(--mantine-shadow-xl)",
+          }}
         >
           <Box p="xl">
             {/* Author Header */}
@@ -330,7 +334,7 @@ export function PostDetail() {
                 </Avatar>
                 <Box>
                   <Group gap="xs" align="center">
-                    <Text fw={600} size="md" >
+                    <Text fw={600} size="md">
                       {post?.author?.firstName && post?.author?.lastName
                         ? `${post.author.firstName} ${post.author.lastName}`
                         : post?.author?.username
@@ -708,37 +712,37 @@ export function PostDetail() {
               !post.allowShares ||
               !post.allowBookmarks ||
               !post.allowReactions) && (
-                <Group gap="xs" mb="md">
-                  <Text size="sm" c="dimmed">
-                    Restrictions:
-                  </Text>
-                  {!post.allowComments && (
-                    <Badge size="sm" variant="light" color="red">
-                      No Comments
-                    </Badge>
-                  )}
-                  {!post.allowLikes && (
-                    <Badge size="sm" variant="light" color="red">
-                      No Likes
-                    </Badge>
-                  )}
-                  {!post.allowShares && (
-                    <Badge size="sm" variant="light" color="red">
-                      No Shares
-                    </Badge>
-                  )}
-                  {!post.allowBookmarks && (
-                    <Badge size="sm" variant="light" color="red">
-                      No Bookmarks
-                    </Badge>
-                  )}
-                  {!post.allowReactions && (
-                    <Badge size="sm" variant="light" color="red">
-                      No Reactions
-                    </Badge>
-                  )}
-                </Group>
-              )}
+              <Group gap="xs" mb="md">
+                <Text size="sm" c="dimmed">
+                  Restrictions:
+                </Text>
+                {!post.allowComments && (
+                  <Badge size="sm" variant="light" color="red">
+                    No Comments
+                  </Badge>
+                )}
+                {!post.allowLikes && (
+                  <Badge size="sm" variant="light" color="red">
+                    No Likes
+                  </Badge>
+                )}
+                {!post.allowShares && (
+                  <Badge size="sm" variant="light" color="red">
+                    No Shares
+                  </Badge>
+                )}
+                {!post.allowBookmarks && (
+                  <Badge size="sm" variant="light" color="red">
+                    No Bookmarks
+                  </Badge>
+                )}
+                {!post.allowReactions && (
+                  <Badge size="sm" variant="light" color="red">
+                    No Reactions
+                  </Badge>
+                )}
+              </Group>
+            )}
           </Box>
 
           <Box px="xl" pb="lg">
@@ -929,7 +933,12 @@ export function PostDetail() {
             }}
           >
             {isAuthenticated ? (
-              <Group align="flex-start" gap="sm" mb="md" data-interactive="true">
+              <Group
+                align="flex-start"
+                gap="sm"
+                mb="md"
+                data-interactive="true"
+              >
                 <Avatar
                   src={user?.avatar}
                   size="md"
@@ -978,9 +987,9 @@ export function PostDetail() {
                   borderRadius: "var(--mantine-radius-lg)",
                 }}
               >
-                  <Text size="sm" c="blue.7" ta="center" fw={500}>
-                    Sign in to comment on this post
-                  </Text>
+                <Text size="sm" c="blue.7" ta="center" fw={500}>
+                  Sign in to comment on this post
+                </Text>
               </Box>
             )}
 
@@ -998,9 +1007,9 @@ export function PostDetail() {
                   styles={{
                     scrollbar: {
                       '&[data-orientation="vertical"] .mantine-ScrollArea-thumb':
-                      {
-                        backgroundColor: "var(--mantine-color-gray-5)",
-                      },
+                        {
+                          backgroundColor: "var(--mantine-color-gray-5)",
+                        },
                     },
                   }}
                 >
@@ -1027,7 +1036,7 @@ export function PostDetail() {
                             onClick={() => fetchNextPage()}
                             radius="xl"
                             size="sm"
-                              data-interactive="true"
+                            data-interactive="true"
                           >
                             Load more comments
                           </Button>

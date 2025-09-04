@@ -29,13 +29,19 @@ export const useUIStore = create<UIStore>()(
         setTheme: (theme: "light" | "dark") => {
           set({ theme }, false, "ui/setTheme");
           // Update Mantine's color scheme
-          document.documentElement.setAttribute("data-mantine-color-scheme", theme);
+          document.documentElement.setAttribute(
+            "data-mantine-color-scheme",
+            theme,
+          );
         },
 
         initializeTheme: () => {
           const { theme } = useUIStore.getState();
           // Update Mantine's color scheme
-          document.documentElement.setAttribute("data-mantine-color-scheme", theme);
+          document.documentElement.setAttribute(
+            "data-mantine-color-scheme",
+            theme,
+          );
         },
 
         addNotification: (notification: Notification) => {

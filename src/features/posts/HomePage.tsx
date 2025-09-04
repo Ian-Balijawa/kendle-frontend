@@ -102,9 +102,8 @@ export function HomePage() {
 
       {/* Status Stories Section */}
       <Box my="md">
-
-      {isAuthenticated && statusCollections.length > 0 && (
-        <StatusStories
+        {isAuthenticated && statusCollections.length > 0 && (
+          <StatusStories
             collections={statusCollections.filter(
               (collection) => collection.author.id !== user?.id,
             )}
@@ -117,8 +116,8 @@ export function HomePage() {
               // Navigate to status page with specific collection
               window.location.href = "/statuses";
             }}
-        />
-      )}
+          />
+        )}
       </Box>
 
       {/* Profile Discovery Section */}
@@ -141,7 +140,8 @@ export function HomePage() {
             radius="lg"
             p="xl"
             style={{
-              background: "linear-gradient(135deg, var(--mantine-color-red-0) 0%, var(--mantine-color-red-1) 100%)",
+              background:
+                "linear-gradient(135deg, var(--mantine-color-red-0) 0%, var(--mantine-color-red-1) 100%)",
               border: "1px solid var(--mantine-color-red-2)",
             }}
           >
@@ -173,7 +173,8 @@ export function HomePage() {
             radius="lg"
             p="xl"
             style={{
-              background: "linear-gradient(135deg, var(--mantine-color-blue-0) 0%, var(--mantine-color-cyan-1) 100%)",
+              background:
+                "linear-gradient(135deg, var(--mantine-color-blue-0) 0%, var(--mantine-color-cyan-1) 100%)",
               border: "1px solid var(--mantine-color-blue-2)",
               textAlign: "center",
             }}

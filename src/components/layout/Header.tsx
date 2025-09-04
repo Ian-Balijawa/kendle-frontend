@@ -15,13 +15,11 @@ import {
   UnstyledButton,
 } from "@mantine/core";
 import {
-  IconBell,
   IconCompass,
   IconHome,
   IconLogout,
   IconMenu2,
   IconMoon,
-  IconPhoto,
   IconPlus,
   IconSearch,
   IconSettings,
@@ -36,7 +34,6 @@ import { useUIStore } from "../../stores/uiStore";
 const navigationItems = [
   { label: "Home", icon: IconHome, path: "/" },
   { label: "Explore", icon: IconCompass, path: "/explore" },
-  { label: "Create", icon: IconPhoto, path: "/statuses" },
 ];
 
 export function HeaderContent() {
@@ -187,7 +184,12 @@ export function HeaderContent() {
 
         <Group gap="sm">
           {/* Theme Toggle Button */}
-          <Tooltip label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"} position="bottom">
+          <Tooltip
+            label={
+              theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
+            }
+            position="bottom"
+          >
             <ActionIcon
               variant="subtle"
               size="lg"
@@ -195,7 +197,11 @@ export function HeaderContent() {
               onClick={toggleTheme}
               style={{ transition: "all 0.2s ease" }}
             >
-              {theme === "dark" ? <IconSun size={20} /> : <IconMoon size={20} />}
+              {theme === "dark" ? (
+                <IconSun size={20} />
+              ) : (
+                <IconMoon size={20} />
+              )}
             </ActionIcon>
           </Tooltip>
 
@@ -231,24 +237,6 @@ export function HeaderContent() {
               >
                 <IconPlus size={20} />
               </ActionIcon>
-
-              <Indicator
-                disabled={unreadCount === 0}
-                size={16}
-                color="red"
-                offset={6}
-                label={unreadCount > 99 ? "99+" : unreadCount || undefined}
-              >
-                <ActionIcon
-                  variant="subtle"
-                  size="lg"
-                  radius="xl"
-                  onClick={() => navigate("/notifications")}
-                  style={{ transition: "all 0.2s ease" }}
-                >
-                  <IconBell size={20} />
-                </ActionIcon>
-              </Indicator>
 
               <Menu shadow="lg" width={220} position="bottom-end" radius="md">
                 <Menu.Target>

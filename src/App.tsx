@@ -34,82 +34,82 @@ function AppContent() {
 
   return (
     <Router>
-          <Routes>
-            {/* Public routes */}
-            <Route
-              path="/auth"
-              element={
-                isAuthenticated ? (
-                  user?.isProfileComplete ? (
-                    <Navigate to="/" replace />
-                  ) : (
-                    <Navigate to="/complete-profile" replace />
-                  )
-                ) : (
-                  <PhoneAuth />
-                )
-              }
-            />
+      <Routes>
+        {/* Public routes */}
+        <Route
+          path="/auth"
+          element={
+            isAuthenticated ? (
+              user?.isProfileComplete ? (
+                <Navigate to="/" replace />
+              ) : (
+                <Navigate to="/complete-profile" replace />
+              )
+            ) : (
+              <PhoneAuth />
+            )
+          }
+        />
 
-            <Route
-              path="/verify-otp"
-              element={
-                isAuthenticated ? (
-                  user?.isProfileComplete ? (
-                    <Navigate to="/" replace />
-                  ) : (
-                    <Navigate to="/complete-profile" replace />
-                  )
-                ) : (
-                  <OTPVerification />
-                )
-              }
-            />
+        <Route
+          path="/verify-otp"
+          element={
+            isAuthenticated ? (
+              user?.isProfileComplete ? (
+                <Navigate to="/" replace />
+              ) : (
+                <Navigate to="/complete-profile" replace />
+              )
+            ) : (
+              <OTPVerification />
+            )
+          }
+        />
 
-            <Route
-              path="/complete-profile"
-              element={
-                isAuthenticated ? (
-                  user?.isProfileComplete ? (
-                    <Navigate to="/" replace />
-                  ) : (
-                    <ProfileCompletion />
-                  )
-                ) : (
-                  <Navigate to="/auth" replace />
-                )
-              }
-            />
+        <Route
+          path="/complete-profile"
+          element={
+            isAuthenticated ? (
+              user?.isProfileComplete ? (
+                <Navigate to="/" replace />
+              ) : (
+                <ProfileCompletion />
+              )
+            ) : (
+              <Navigate to="/auth" replace />
+            )
+          }
+        />
 
-            {/* Protected routes */}
-            <Route
-              path="/"
-              element={
-                isAuthenticated ? (
-                  user?.isProfileComplete ? (
-                    <AuthGuard>
-                      <AppShell />
-                    </AuthGuard>
-                  ) : (
-                    <Navigate to="/complete-profile" replace />
-                  )
-                ) : (
-                  <Navigate to="/auth" replace />
-                )
-              }
-            >
-              <Route index element={<HomePage />} />
-              <Route path="explore" element={<ExplorePage />} />
-              <Route path="statuses" element={<StatusesPage />} />
-              <Route path="notifications" element={<NotificationsPage />} />
-              <Route path="profile" element={<ProfilePage />} />
-              <Route path="profile/:userId" element={<ProfilePage />} />
-              <Route path="post/:postId" element={<PostDetail />} />
-            </Route>
+        {/* Protected routes */}
+        <Route
+          path="/"
+          element={
+            isAuthenticated ? (
+              user?.isProfileComplete ? (
+                <AuthGuard>
+                  <AppShell />
+                </AuthGuard>
+              ) : (
+                <Navigate to="/complete-profile" replace />
+              )
+            ) : (
+              <Navigate to="/auth" replace />
+            )
+          }
+        >
+          <Route index element={<HomePage />} />
+          <Route path="explore" element={<ExplorePage />} />
+          <Route path="statuses" element={<StatusesPage />} />
+          <Route path="notifications" element={<NotificationsPage />} />
+          <Route path="profile" element={<ProfilePage />} />
+          <Route path="profile/:userId" element={<ProfilePage />} />
+          <Route path="post/:postId" element={<PostDetail />} />
+        </Route>
 
-            {/* Catch all */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+        {/* Catch all */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </Router>
   );
 }

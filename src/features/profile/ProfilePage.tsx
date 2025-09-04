@@ -223,7 +223,8 @@ export function ProfilePage() {
                   width: 80,
                   height: 80,
                   borderRadius: "50%",
-                  background: "linear-gradient(135deg, var(--mantine-color-red-5), var(--mantine-color-orange-6))",
+                  background:
+                    "linear-gradient(135deg, var(--mantine-color-red-5), var(--mantine-color-orange-6))",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -264,7 +265,8 @@ export function ProfilePage() {
                   width: 80,
                   height: 80,
                   borderRadius: "50%",
-                  background: "linear-gradient(135deg, var(--mantine-color-red-5), var(--mantine-color-orange-6))",
+                  background:
+                    "linear-gradient(135deg, var(--mantine-color-red-5), var(--mantine-color-orange-6))",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -324,7 +326,8 @@ export function ProfilePage() {
                   width: 80,
                   height: 80,
                   borderRadius: "50%",
-                  background: "linear-gradient(135deg, var(--mantine-color-red-5), var(--mantine-color-orange-6))",
+                  background:
+                    "linear-gradient(135deg, var(--mantine-color-red-5), var(--mantine-color-orange-6))",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -418,13 +421,13 @@ export function ProfilePage() {
                 @{user.username || user.phoneNumber || "unknown"}
               </Text>
               <Text size="sm" c="dimmed">
-                <Text component="span" fw={600} >
+                <Text component="span" fw={600}>
                   {formatNumber(user.postsCount)}
                 </Text>{" "}
                 posts
               </Text>
               <Text size="sm" c="dimmed">
-                <Text component="span" fw={600} >
+                <Text component="span" fw={600}>
                   {formatNumber(user.followersCount)}
                 </Text>{" "}
                 followers
@@ -597,8 +600,8 @@ export function ProfilePage() {
               </Center>
             ) : posts.length === 0 ? (
               <Card
-                  p="xl"
-                  style={{
+                p="xl"
+                style={{
                   border: "none",
                 }}
               >
@@ -651,8 +654,8 @@ export function ProfilePage() {
             ) : posts.filter((post) => post.media && post.media.length > 0)
                 .length === 0 ? (
               <Card
-                    p="xl"
-                    style={{
+                p="xl"
+                style={{
                   border: "none",
                 }}
               >
@@ -706,8 +709,8 @@ export function ProfilePage() {
               </Center>
             ) : likedPosts.length === 0 ? (
               <Card
-                  p="xl"
-                  style={{
+                p="xl"
+                style={{
                   border: "none",
                 }}
               >
@@ -756,7 +759,7 @@ export function ProfilePage() {
               </Center>
             ) : bookmarkedPosts.length === 0 ? (
               <Card
-                  p="xl"
+                p="xl"
                 style={{
                   background:
                     "linear-gradient(135deg, var(--mantine-color-yellow-0), var(--mantine-color-yellow-1))",
