@@ -852,23 +852,23 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                       ))}
                       {post?.commentsCount > 3 && (
                         <Button
-                            variant="subtle"
-                            size="sm"
-                            onClick={handlePostClick}
-                            data-interactive="true"
-                            style={{
-                              alignSelf: "flex-start",
-                              color: "var(--mantine-color-gray-6)",
-                              fontWeight: 500,
-                            }}
-                            radius="md"
-                            leftSection={<IconMessageCircle size={14} />}
-                          >
-                            View all {post?.commentsCount} comments
-                          </Button>
-                        )}
-                      </>
-                    ) : (
+                          variant="subtle"
+                          size="sm"
+                          onClick={handlePostClick}
+                          data-interactive="true"
+                          style={{
+                            alignSelf: "flex-start",
+                            color: "var(--mantine-color-gray-6)",
+                            fontWeight: 500,
+                          }}
+                          radius="md"
+                          leftSection={<IconMessageCircle size={14} />}
+                        >
+                          View all {post?.commentsCount} comments
+                        </Button>
+                      )}
+                    </>
+                  ) : (
                     <Text size="sm" c="dimmed" ta="center" py="md">
                       No comments yet
                     </Text>
