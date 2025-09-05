@@ -206,7 +206,7 @@ export function StatusDetailsModal({
               </Avatar>
               <Box>
                 <Group gap="xs" align="center">
-                  <Text fw={600} size="sm" c="white">
+                  <Text fw={600} size="sm" >
                     {collection.author.firstName} {collection.author.lastName}
                   </Text>
                   {collection.author.isVerified && (
@@ -215,7 +215,7 @@ export function StatusDetailsModal({
                     </Badge>
                   )}
                 </Group>
-                <Text size="xs" c="white" opacity={0.7}>
+                <Text size="xs" opacity={0.7}>
                   {formatTimeAgo(currentStatus.createdAt)} •{" "}
                   {getTimeRemaining()}
                 </Text>
@@ -357,7 +357,7 @@ export function StatusDetailsModal({
           {/* Content text */}
           {currentStatus.content && (
             <Text
-              c="white"
+
               size="md"
               mb="md"
               style={{
@@ -400,7 +400,7 @@ export function StatusDetailsModal({
 
             {/* View count */}
             <Group gap="xs" align="center">
-              <Text size="sm" c="white" opacity={0.7} fw={500}>
+              <Text size="sm" opacity={0.7} fw={500}>
                 {currentStatus.viewsCount}{" "}
                 {currentStatus.viewsCount === 1 ? "view" : "views"}
               </Text>

@@ -64,11 +64,6 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
   const createPostMutation = useCreatePost();
   const { data: followingData } = useFollowing(user?.id || "", 1, 100);
 
-  // Debug log for following data
-  if (followingData) {
-    console.log("Following data:", followingData);
-  }
-
   // Main form state
   const [content, setContent] = useState("");
   const [postType, setPostType] = useState<PostType>("text");

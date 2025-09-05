@@ -239,7 +239,7 @@ export function StatusesPage() {
           <Box>
             <Group justify="space-between" align="center" mb="md">
               <Box>
-                <Title order={1} size="h2" fw={700} c="dark">
+                <Title order={1} size="h2" fw={700} >
                   Status Updates
                 </Title>
                 <Text c="dimmed" size="sm" mt={4}>
@@ -263,7 +263,7 @@ export function StatusesPage() {
 
           {/* Status Stories */}
           <Box>
-            <Text fw={600} size="lg" mb="md" c="dark">
+            <Text fw={600} size="lg" mb="md" >
               Stories
             </Text>
             <StatusStories
@@ -277,7 +277,7 @@ export function StatusesPage() {
           {/* Empty state */}
           {statusCollections.length === 0 && (
             <Box ta="center" py="xl">
-              <Text size="lg" fw={600} c="dark" mb="xs">
+              <Text size="lg" fw={600} mb="xs">
                 No status updates yet
               </Text>
               <Text size="sm" c="dimmed" maw={400} mx="auto" mb="lg">

@@ -28,6 +28,7 @@ import {
 } from "@tabler/icons-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { format } from "timeago.js";
 import { CommentSkeletonList } from "../../components/ui";
 import { useInfiniteComments, useCreateComment } from "../../hooks/useComments";
 import {
@@ -83,17 +84,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
     const isCommenting = createCommentMutation.isPending;
 
     const formatDate = (dateString: string) => {
-      const date = new Date(dateString);
-      const now = new Date();
-      const diffInMinutes = Math.floor(
-        (now.getTime() - date.getTime()) / (1000 * 60),
-      );
-
-      if (diffInMinutes < 1) return "now";
-      if (diffInMinutes < 60) return `${diffInMinutes}m`;
-      if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h`;
-      if (diffInMinutes < 10080) return `${Math.floor(diffInMinutes / 1440)}d`;
-      return date.toLocaleDateString();
+      return format(new Date(dateString));
     };
 
     const handleLike = () => {
@@ -237,7 +228,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
             e.currentTarget.style.transform = "translateY(0)";
           }}
         >
-          <Stack gap="lg">
+          <Stack gap="md">
             <Group justify="space-between" align="flex-start">
               <Group
                 gap="sm"
@@ -266,7 +257,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                 <Box>
                   <Group gap={6} align="center">
                     <Text fw={600} size="sm">
-                      {post.author?.firstName && post.author?.lastName
+                      {post.author?.username && post.author?.lastName
                         ? `${post.author.firstName} ${post.author.lastName}`
                         : post.author?.username
                           ? post.author.username
@@ -305,7 +296,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                     </Text>
                     <Text c="dimmed" size="xs">
                       {formatDate(post?.createdAt)}
-                      {post?.updatedAt !== post?.createdAt && " (edited)"}
+                      {post?.updatedAt !== post?.createdAt && " Edited"}
                     </Text>
                     {post.author?.status && (
                       <>
@@ -412,7 +403,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
             </Group>
 
             {/* Post Type and Status Indicators */}
-            <Group gap="xs" mb="xs">
+            <Group gap="xs" mb="sm">
               <Badge
                 size="xs"
                 variant="light"
@@ -448,7 +439,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
               )}
             </Group>
 
-            <Box style={{ textAlign: "left" }}>
+            <Box style={{ textAlign: "left" }} mb="sm">
               {renderFormattedText(post.content, "sm", "xs")}
             </Box>
 
@@ -526,7 +517,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                                 borderRadius: "var(--mantine-radius-md)",
                               }}
                             >
-                              <Text size="lg" fw={600} c="white">
+                            <Text size="lg" fw={600} >
                                 +{post?.media?.length - 4}
                               </Text>
                             </Box>
@@ -540,7 +531,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
 
             {/* Tags */}
             {post?.tags && post?.tags?.length > 0 && (
-              <Group gap="xs">
+              <Group gap="xs" mb="sm">
                 {post?.tags?.map((tag: any) => (
                   <Badge
                     key={tag.id || tag.name}
@@ -558,7 +549,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
 
             {/* Legacy hashtags for backward compatibility */}
             {post?.hashtags && post?.hashtags?.length > 0 && (
-              <Group gap="xs">
+              <Group gap="xs" mb="sm">
                 {post?.hashtags?.map((hashtag: string) => (
                   <Badge
                     key={hashtag}
@@ -576,7 +567,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
 
             {/* Mentions */}
             {post?.mentions && post?.mentions?.length > 0 && (
-              <Group gap="xs">
+              <Group gap="xs" mb="sm">
                 {post?.mentions?.map((mention: any) => (
                   <Badge
                     key={mention.id || mention.mentionedUserId}
@@ -594,7 +585,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
 
             {/* Location */}
             {post?.location && (
-              <Group gap="xs">
+              <Group gap="xs" mb="sm">
                 <IconMapPin size={14} color="var(--mantine-color-blue-6)" />
                 <Text size="xs" c="blue.6">
                   {post.location}
@@ -604,7 +595,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
 
             {/* Poll Display */}
             {post?.type === "poll" && post?.pollQuestion && (
-              <Card withBorder p="sm" radius="md" bg="gray.0">
+              <Card withBorder p="sm" radius="md" bg="gray.0" mb="sm">
                 <Stack gap="xs">
                   <Text size="sm" fw={600}>
                     {post.pollQuestion}
@@ -620,7 +611,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                   )}
                   {post.pollEndDate && (
                     <Text size="xs" c="dimmed">
-                      Ends: {new Date(post.pollEndDate).toLocaleDateString()}
+                      Ends: {format(new Date(post.pollEndDate))}
                     </Text>
                   )}
                 </Stack>
@@ -629,7 +620,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
 
             {/* Event Display */}
             {post?.type === "event" && post?.eventTitle && (
-              <Card withBorder p="sm" radius="md" bg="blue.0">
+              <Card withBorder p="sm" radius="md" bg="blue.0" mb="sm">
                 <Stack gap="xs">
                   <Text size="sm" fw={600} c="blue.7">
                     {post.eventTitle}
@@ -641,7 +632,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                   )}
                   {post.eventStartDate && (
                     <Text size="xs" c="blue.6">
-                      📅 {new Date(post.eventStartDate).toLocaleDateString()}
+                      📅 {format(new Date(post.eventStartDate))}
                     </Text>
                   )}
                   {post.eventLocation && (
@@ -658,7 +649,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
               </Card>
             )}
 
-            <Group justify="start">
+            <Group justify="start" mb="sm">
               <Group gap="xs">
                 {post?.likesCount > 0 && (
                   <Group gap={4}>
@@ -682,8 +673,9 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                 )}
               </Group>
             </Group>
-            <Group justify="start" align="center">
-              <Group justify="start">
+            <Group justify="space-between" align="center" mb="sm">
+              {/* Action Buttons */}
+              <Group gap="xs" align="center">
                 <UnstyledButton
                   onClick={handleLike}
                   disabled={!isAuthenticated || !post.allowLikes}
@@ -691,32 +683,47 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    gap: "0.5rem",
-                    padding: "0.5rem 0.5rem",
+                    gap: "0.25rem",
+                    padding: "0.5rem 0.75rem",
                     borderRadius: "var(--mantine-radius-md)",
-                    transition: "background-color 0.2s ease",
+                    transition: "all 0.2s ease",
                     color: post?.isLiked
                       ? "var(--mantine-color-blue-6)"
                       : "var(--mantine-color-gray-6)",
-                    fontWeight: post?.isLiked ? 600 : 400,
+                    fontWeight: post?.isLiked ? 600 : 500,
+                    backgroundColor: post?.isLiked
+                      ? "var(--mantine-color-blue-1)"
+                      : "transparent",
+                    border: post?.isLiked
+                      ? "1px solid var(--mantine-color-blue-3)"
+                      : "1px solid transparent",
                   }}
                   onMouseEnter={(e) => {
                     if (isAuthenticated && post.allowLikes) {
-                      e.currentTarget.style.backgroundColor =
-                        "var(--mantine-color-gray-2)";
+                      e.currentTarget.style.backgroundColor = post?.isLiked
+                        ? "var(--mantine-color-blue-2)"
+                        : "var(--mantine-color-gray-1)";
+                      e.currentTarget.style.transform = "translateY(-1px)";
                     }
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = "transparent";
+                    e.currentTarget.style.backgroundColor = post?.isLiked
+                      ? "var(--mantine-color-blue-1)"
+                      : "transparent";
+                    e.currentTarget.style.transform = "translateY(0)";
                   }}
                 >
                   <IconHeart
-                    size={18}
+                    size={16}
                     style={{
                       fill: post?.isLiked ? "currentColor" : "none",
                       stroke: "currentColor",
+                      strokeWidth: 2,
                     }}
                   />
+                  <Text size="sm" fw={post?.isLiked ? 600 : 500}>
+                    Like
+                  </Text>
                 </UnstyledButton>
 
                 <UnstyledButton
@@ -726,42 +733,68 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    gap: "0.5rem",
-                    padding: "0.5rem 0.5rem",
+                    gap: "0.25rem",
+                    padding: "0.5rem 0.75rem",
                     borderRadius: "var(--mantine-radius-md)",
-                    transition: "background-color 0.2s ease",
-                    color: "var(--mantine-color-gray-6)",
+                    transition: "all 0.2s ease",
+                    color: showComments
+                      ? "var(--mantine-color-blue-6)"
+                      : "var(--mantine-color-gray-6)",
+                    fontWeight: showComments ? 600 : 500,
+                    backgroundColor: showComments
+                      ? "var(--mantine-color-blue-1)"
+                      : "transparent",
+                    border: showComments
+                      ? "1px solid var(--mantine-color-blue-3)"
+                      : "1px solid transparent",
                   }}
                   onMouseEnter={(e) => {
                     if (post.allowComments) {
-                      e.currentTarget.style.backgroundColor =
-                        "var(--mantine-color-gray-2)";
+                      e.currentTarget.style.backgroundColor = showComments
+                        ? "var(--mantine-color-blue-2)"
+                        : "var(--mantine-color-gray-1)";
+                      e.currentTarget.style.transform = "translateY(-1px)";
                     }
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = "transparent";
+                    e.currentTarget.style.backgroundColor = showComments
+                      ? "var(--mantine-color-blue-1)"
+                      : "transparent";
+                    e.currentTarget.style.transform = "translateY(0)";
                   }}
                 >
-                  <IconMessageCircle size={18} />
+                  <IconMessageCircle
+                    size={16}
+                    style={{
+                      fill: showComments ? "currentColor" : "none",
+                      stroke: "currentColor",
+                      strokeWidth: 2,
+                    }}
+                  />
+                  <Text size="sm" fw={showComments ? 600 : 500}>
+                    Comment
+                  </Text>
                 </UnstyledButton>
               </Group>
+
               {/* Post Statistics */}
-              <Group gap="md" mb="xs" justify="start" align="center">
+              <Group gap="md" align="center">
                 <Text size="xs" c="dimmed">
-                  👀 {post.viewsCount || 0} views
+                  👀 {post.viewsCount || 0}
                 </Text>
                 <Text size="xs" c="dimmed">
-                  📊 {post.sharesCount || 0} shares
+                  📊 {post.sharesCount || 0}
                 </Text>
                 <Text size="xs" c="dimmed">
-                  🔖 {post.bookmarksCount || 0} bookmarks
+                  🔖 {post.bookmarksCount || 0}
                 </Text>
               </Group>
             </Group>
 
             {!isAuthenticated && (
               <Box
-                p="md"
+                p="sm"
+                mb="sm"
                 style={{
                   background: "var(--mantine-color-blue-0)",
                   borderRadius: "var(--mantine-radius-lg)",
@@ -776,8 +809,8 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
             {isAuthenticated && (
               <Box
                 style={{
-                  paddingTop: "0.75rem",
-                  marginTop: "0.5rem",
+                  paddingTop: "0.5rem",
+                  marginTop: "0.25rem",
                 }}
                 data-interactive="true"
               >
@@ -833,8 +866,8 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
             <Collapse in={showComments}>
               <Box
                 style={{
-                  paddingTop: "0.75rem",
-                  marginTop: "0.5rem",
+                  paddingTop: "0.5rem",
+                  marginTop: "0.25rem",
                 }}
                 data-interactive="true"
               >

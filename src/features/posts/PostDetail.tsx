@@ -33,6 +33,7 @@ import {
 } from "@tabler/icons-react";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { format } from "timeago.js";
 import { CommentSkeletonList, PostDetailSkeleton } from "../../components/ui";
 import { useCreateComment, useInfiniteComments } from "../../hooks/useComments";
 import {
@@ -140,16 +141,7 @@ export function PostDetail() {
     }
 
     const formatDate = (dateString: string) => {
-      const date = new Date(dateString);
-      const now = new Date();
-      const diffInHours = Math.floor(
-        (now.getTime() - date.getTime()) / (1000 * 60 * 60),
-      );
-
-      if (diffInHours < 1) return "now";
-      if (diffInHours < 24) return `${diffInHours}h`;
-      if (diffInHours < 168) return `${Math.floor(diffInHours / 24)}d`;
-      return date.toLocaleDateString();
+      return format(new Date(dateString));
     };
 
     const handleLike = () => {
@@ -275,7 +267,7 @@ export function PostDetail() {
     return (
       <Box mx="auto" p="md">
         {/* Header */}
-        <Group justify="space-between" mb="xl">
+        <Group justify="space-between" mb="lg">
           <ActionIcon
             variant="light"
             size="lg"
@@ -284,7 +276,7 @@ export function PostDetail() {
           >
             <IconArrowLeft size={18} />
           </ActionIcon>
-          <Text fw={600} size="lg" c="dark.7" style={{ maxWidth: "60%" }}>
+          <Text fw={600} size="lg" style={{ maxWidth: "60%" }}>
             {post.content.split("\n")[0].slice(0, 50)}
             {post.content.split("\n")[0].length > 50 ? "..." : ""}
           </Text>
@@ -294,16 +286,16 @@ export function PostDetail() {
         {/* Main Post Card */}
         <Box
           p={0}
-          mb="xl"
+          mb="lg"
           style={{
             overflow: "hidden",
             borderRadius: "var(--mantine-radius-lg)",
             boxShadow: "var(--mantine-shadow-xl)",
           }}
         >
-          <Box p="xl">
+          <Box p="lg">
             {/* Author Header */}
-            <Group justify="space-between" mb="lg">
+            <Group justify="space-between" mb="md">
               <Group
                 gap="md"
                 style={{ cursor: "pointer" }}
@@ -374,7 +366,7 @@ export function PostDetail() {
                     </Text>
                     <Text c="dimmed" size="sm">
                       {formatDate(post?.createdAt)}
-                      {post?.updatedAt !== post?.createdAt && " (edited)"}
+                      {post?.updatedAt !== post?.createdAt && " Edited"}
                     </Text>
                     {post?.author?.status && (
                       <>
@@ -440,7 +432,7 @@ export function PostDetail() {
             </Group>
 
             {/* Post Type and Status Indicators */}
-            <Group gap="xs" mb="md">
+            <Group gap="xs" mb="sm">
               <Badge
                 size="sm"
                 variant="light"
@@ -483,7 +475,7 @@ export function PostDetail() {
 
             {/* Post Content */}
             {isEditing ? (
-              <Stack gap="md">
+              <Stack gap="sm">
                 <Textarea
                   placeholder="What's on your mind? "
                   value={editContent}
@@ -498,7 +490,7 @@ export function PostDetail() {
                 {/* Preview of edited content */}
                 {editContent.trim() && (
                   <Box
-                    p="md"
+                    p="sm"
                     style={{
                       backgroundColor: "var(--mantine-color-gray-1)",
                       borderRadius: "var(--mantine-radius-md)",
@@ -531,12 +523,12 @@ export function PostDetail() {
                 </Group>
               </Stack>
             ) : (
-              <Box mb="lg">{renderFormattedText(post.content, "md", "sm")}</Box>
+                <Box mb="md">{renderFormattedText(post.content, "md", "sm")}</Box>
             )}
 
             {/* Media */}
             {post?.media && post?.media?.length > 0 && (
-              <Box mb="lg">
+              <Box mb="md">
                 {post?.media?.length === 1 ? (
                   <Image
                     src={post.media[0].url}
@@ -562,7 +554,7 @@ export function PostDetail() {
 
             {/* Tags */}
             {post?.tags && post?.tags?.length > 0 && (
-              <Group gap="xs" mb="lg">
+              <Group gap="xs" mb="sm">
                 {post?.tags?.map((tag: any) => (
                   <Badge
                     key={tag.id || tag.name}
@@ -580,7 +572,7 @@ export function PostDetail() {
 
             {/* Legacy hashtags for backward compatibility */}
             {post?.hashtags && post?.hashtags?.length > 0 && (
-              <Group gap="xs" mb="lg">
+              <Group gap="xs" mb="sm">
                 {post?.hashtags?.map((hashtag: string) => (
                   <Badge
                     key={hashtag}
@@ -598,7 +590,7 @@ export function PostDetail() {
 
             {/* Mentions */}
             {post?.mentions && post?.mentions?.length > 0 && (
-              <Group gap="xs" mb="lg">
+              <Group gap="xs" mb="sm">
                 {post?.mentions?.map((mention: any) => (
                   <Badge
                     key={mention.id || mention.mentionedUserId}
@@ -616,7 +608,7 @@ export function PostDetail() {
 
             {/* Location */}
             {post?.location && (
-              <Group gap="xs" mb="lg">
+              <Group gap="xs" mb="sm">
                 <IconMapPin size={16} color="var(--mantine-color-blue-6)" />
                 <Text size="sm" c="blue.6">
                   {post.location}
@@ -626,13 +618,13 @@ export function PostDetail() {
 
             {/* Poll Display */}
             {post?.type === "poll" && post?.pollQuestion && (
-              <Box p="md" bg="gray.0" mb="lg">
-                <Stack gap="md">
+              <Box p="sm" bg="gray.0" mb="sm">
+                <Stack gap="sm">
                   <Text size="md" fw={600}>
                     {post.pollQuestion}
                   </Text>
                   {post.pollOptions && post.pollOptions.length > 0 && (
-                    <Stack gap="sm">
+                    <Stack gap="xs">
                       {post.pollOptions.map((option: string, index: number) => (
                         <Text key={index} size="sm" c="dimmed">
                           • {option}
@@ -642,8 +634,7 @@ export function PostDetail() {
                   )}
                   {post.pollEndDate && (
                     <Text size="sm" c="dimmed">
-                      Poll ends:{" "}
-                      {new Date(post.pollEndDate).toLocaleDateString()}
+                      Poll ends: {format(new Date(post.pollEndDate))}
                     </Text>
                   )}
                 </Stack>
@@ -652,8 +643,8 @@ export function PostDetail() {
 
             {/* Event Display */}
             {post?.type === "event" && post?.eventTitle && (
-              <Box p="md" bg="blue.0" mb="lg">
-                <Stack gap="md">
+              <Box p="sm" bg="blue.0" mb="sm">
+                <Stack gap="sm">
                   <Text size="md" fw={600} c="blue.7">
                     {post.eventTitle}
                   </Text>
@@ -665,7 +656,7 @@ export function PostDetail() {
                   <Group gap="md">
                     {post.eventStartDate && (
                       <Text size="sm" c="blue.6">
-                        📅 {new Date(post.eventStartDate).toLocaleDateString()}
+                        📅 {format(new Date(post.eventStartDate))}
                       </Text>
                     )}
                     {post.eventLocation && (
@@ -684,35 +675,13 @@ export function PostDetail() {
             )}
           </Box>
 
-          {/* Post Statistics */}
-          <Box px="xl" pb="md">
-            <Group gap="lg" mb="md">
-              <Text size="sm" c="dimmed">
-                👀 {post.viewsCount || 0} views
-              </Text>
-              <Text size="sm" c="dimmed">
-                📊 {post.sharesCount || 0} shares
-              </Text>
-              <Text size="sm" c="dimmed">
-                🔖 {post.bookmarksCount || 0} bookmarks
-              </Text>
-              <Text size="sm" c="dimmed">
-                📅 Created: {new Date(post.createdAt).toLocaleString()}
-              </Text>
-              {post.updatedAt !== post.createdAt && (
-                <Text size="sm" c="dimmed">
-                  ✏️ Updated: {new Date(post.updatedAt).toLocaleString()}
-                </Text>
-              )}
-            </Group>
-
-            {/* Interaction Settings */}
+          <Box px="lg" pb="sm">
             {(!post.allowComments ||
               !post.allowLikes ||
               !post.allowShares ||
               !post.allowBookmarks ||
               !post.allowReactions) && (
-              <Group gap="xs" mb="md">
+              <Group gap="xs" mb="sm">
                 <Text size="sm" c="dimmed">
                   Restrictions:
                 </Text>
@@ -745,8 +714,8 @@ export function PostDetail() {
             )}
           </Box>
 
-          <Box px="xl" pb="lg">
-            <Group justify="space-between" mb="md">
+          <Box px="lg" pb="md">
+            <Group justify="space-between" mb="sm">
               <Group gap="md">
                 {post?.likesCount > 0 && (
                   <Group gap="xs">
@@ -782,161 +751,241 @@ export function PostDetail() {
             </Group>
 
             {/* Action Buttons */}
-            <Group justify="space-around">
-              <UnstyledButton
-                onClick={handleLike}
-                disabled={!isAuthenticated || !post.allowLikes}
-                data-interactive="true"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.5rem",
-                  padding: "0.75rem 1.5rem",
-                  borderRadius: "var(--mantine-radius-md)",
-                  transition: "background-color 0.2s ease",
-                  color: post?.isLiked
-                    ? "var(--mantine-color-blue-6)"
-                    : "var(--mantine-color-gray-6)",
-                  fontWeight: post?.isLiked ? 600 : 400,
-                }}
-                onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
-                  if (isAuthenticated && post.allowLikes) {
-                    e.currentTarget.style.backgroundColor =
-                      "var(--mantine-color-gray-2)";
-                  }
-                }}
-                onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
-                  e.currentTarget.style.backgroundColor = "transparent";
-                }}
-              >
-                <IconHeart
-                  size={20}
+            <Group justify="space-between" align="center">
+              {/* Action Buttons */}
+              <Group gap="xs" align="center">
+                <UnstyledButton
+                  onClick={handleLike}
+                  disabled={!isAuthenticated || !post.allowLikes}
+                  data-interactive="true"
                   style={{
-                    fill: post?.isLiked ? "currentColor" : "none",
-                    stroke: "currentColor",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.25rem",
+                    padding: "0.5rem 0.75rem",
+                    borderRadius: "var(--mantine-radius-md)",
+                    transition: "all 0.2s ease",
+                    color: post?.isLiked
+                      ? "var(--mantine-color-blue-6)"
+                      : "var(--mantine-color-gray-6)",
+                    fontWeight: post?.isLiked ? 600 : 500,
+                    backgroundColor: post?.isLiked
+                      ? "var(--mantine-color-blue-1)"
+                      : "transparent",
+                    border: post?.isLiked
+                      ? "1px solid var(--mantine-color-blue-3)"
+                      : "1px solid transparent",
                   }}
-                />
-                <Text size="md">Like</Text>
-              </UnstyledButton>
+                  onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+                    if (isAuthenticated && post.allowLikes) {
+                      e.currentTarget.style.backgroundColor = post?.isLiked
+                        ? "var(--mantine-color-blue-2)"
+                        : "var(--mantine-color-gray-1)";
+                      e.currentTarget.style.transform = "translateY(-1px)";
+                    }
+                  }}
+                  onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+                    e.currentTarget.style.backgroundColor = post?.isLiked
+                      ? "var(--mantine-color-blue-1)"
+                      : "transparent";
+                    e.currentTarget.style.transform = "translateY(0)";
+                  }}
+                >
+                  <IconHeart
+                    size={16}
+                    style={{
+                      fill: post?.isLiked ? "currentColor" : "none",
+                      stroke: "currentColor",
+                      strokeWidth: 2,
+                    }}
+                  />
+                  <Text size="sm" fw={post?.isLiked ? 600 : 500}>
+                    Like
+                  </Text>
+                </UnstyledButton>
 
-              <UnstyledButton
-                onClick={() => {
-                  // Scroll to comment input
-                  const commentInput = document.querySelector(
-                    'input[placeholder="Write a comment..."]',
-                  );
-                  if (commentInput) {
-                    commentInput.scrollIntoView({
-                      behavior: "smooth",
-                      block: "center",
-                    });
-                    (commentInput as HTMLInputElement).focus();
-                  }
-                }}
-                disabled={!post.allowComments}
-                data-interactive="true"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.5rem",
-                  padding: "0.75rem 1.5rem",
-                  borderRadius: "var(--mantine-radius-md)",
-                  transition: "background-color 0.2s ease",
-                  color: "var(--mantine-color-gray-6)",
-                }}
-                onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
-                  if (post.allowComments) {
-                    e.currentTarget.style.backgroundColor =
-                      "var(--mantine-color-gray-2)";
-                  }
-                }}
-                onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
-                  e.currentTarget.style.backgroundColor = "transparent";
-                }}
-              >
-                <IconMessageCircle size={20} />
-                <Text size="md">Comment</Text>
-              </UnstyledButton>
-
-              <UnstyledButton
-                onClick={handleShare}
-                disabled={!isAuthenticated || !post.allowShares}
-                data-interactive="true"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.5rem",
-                  padding: "0.75rem 1.5rem",
-                  borderRadius: "var(--mantine-radius-md)",
-                  transition: "background-color 0.2s ease",
-                  color: "var(--mantine-color-gray-6)",
-                }}
-                onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
-                  if (isAuthenticated && post.allowShares) {
-                    e.currentTarget.style.backgroundColor =
-                      "var(--mantine-color-gray-2)";
-                  }
-                }}
-                onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
-                  e.currentTarget.style.backgroundColor = "transparent";
-                }}
-              >
-                <IconShare size={20} />
-                <Text size="md">Share</Text>
-              </UnstyledButton>
-
-              <UnstyledButton
-                onClick={handleBookmark}
-                disabled={!isAuthenticated || !post.allowBookmarks}
-                data-interactive="true"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.5rem",
-                  padding: "0.75rem 1.5rem",
-                  borderRadius: "var(--mantine-radius-md)",
-                  transition: "background-color 0.2s ease",
-                  color: post?.isBookmarked
-                    ? "var(--mantine-color-yellow-6)"
-                    : "var(--mantine-color-gray-6)",
-                  fontWeight: post?.isBookmarked ? 600 : 400,
-                }}
-                onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
-                  if (isAuthenticated && post.allowBookmarks) {
-                    e.currentTarget.style.backgroundColor =
-                      "var(--mantine-color-gray-2)";
-                  }
-                }}
-                onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
-                  e.currentTarget.style.backgroundColor = "transparent";
-                }}
-              >
-                <IconBookmark
-                  size={20}
+                <UnstyledButton
+                  onClick={() => {
+                    // Scroll to comment input
+                    const commentInput = document.querySelector(
+                      'input[placeholder="Write a comment..."]',
+                    );
+                    if (commentInput) {
+                      commentInput.scrollIntoView({
+                        behavior: "smooth",
+                        block: "center",
+                      });
+                      (commentInput as HTMLInputElement).focus();
+                    }
+                  }}
+                  disabled={!post.allowComments}
+                  data-interactive="true"
                   style={{
-                    fill: post?.isBookmarked ? "currentColor" : "none",
-                    stroke: "currentColor",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.25rem",
+                    padding: "0.5rem 0.75rem",
+                    borderRadius: "var(--mantine-radius-md)",
+                    transition: "all 0.2s ease",
+                    color: commentContent.trim()
+                      ? "var(--mantine-color-blue-6)"
+                      : "var(--mantine-color-gray-6)",
+                    fontWeight: commentContent.trim() ? 600 : 500,
+                    backgroundColor: commentContent.trim()
+                      ? "var(--mantine-color-blue-1)"
+                      : "transparent",
+                    border: commentContent.trim()
+                      ? "1px solid var(--mantine-color-blue-3)"
+                      : "1px solid transparent",
                   }}
-                />
-                <Text size="md">Save</Text>
-              </UnstyledButton>
+                  onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+                    if (post.allowComments) {
+                      e.currentTarget.style.backgroundColor = commentContent.trim()
+                        ? "var(--mantine-color-blue-2)"
+                        : "var(--mantine-color-gray-1)";
+                      e.currentTarget.style.transform = "translateY(-1px)";
+                    }
+                  }}
+                  onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+                    e.currentTarget.style.backgroundColor = commentContent.trim()
+                      ? "var(--mantine-color-blue-1)"
+                      : "transparent";
+                    e.currentTarget.style.transform = "translateY(0)";
+                  }}
+                >
+                  <IconMessageCircle
+                    size={16}
+                    style={{
+                      fill: commentContent.trim() ? "currentColor" : "none",
+                      stroke: "currentColor",
+                      strokeWidth: 2,
+                    }}
+                  />
+                  <Text size="sm" fw={commentContent.trim() ? 600 : 500}>
+                    Comment
+                  </Text>
+                </UnstyledButton>
+
+                <UnstyledButton
+                  onClick={handleShare}
+                  disabled={!isAuthenticated || !post.allowShares}
+                  data-interactive="true"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.25rem",
+                    padding: "0.5rem 0.75rem",
+                    borderRadius: "var(--mantine-radius-md)",
+                    transition: "all 0.2s ease",
+                    color: "var(--mantine-color-gray-6)",
+                    fontWeight: 500,
+                    backgroundColor: "transparent",
+                    border: "1px solid transparent",
+                  }}
+                  onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+                    if (isAuthenticated && post.allowShares) {
+                      e.currentTarget.style.backgroundColor = "var(--mantine-color-gray-1)";
+                      e.currentTarget.style.transform = "translateY(-1px)";
+                    }
+                  }}
+                  onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+                    e.currentTarget.style.backgroundColor = "transparent";
+                    e.currentTarget.style.transform = "translateY(0)";
+                  }}
+                >
+                  <IconShare
+                    size={16}
+                    style={{
+                      fill: "none",
+                      stroke: "currentColor",
+                      strokeWidth: 2,
+                    }}
+                  />
+                  <Text size="sm" fw={500}>
+                    Share
+                  </Text>
+                </UnstyledButton>
+
+                <UnstyledButton
+                  onClick={handleBookmark}
+                  disabled={!isAuthenticated || !post.allowBookmarks}
+                  data-interactive="true"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.25rem",
+                    padding: "0.5rem 0.75rem",
+                    borderRadius: "var(--mantine-radius-md)",
+                    transition: "all 0.2s ease",
+                    color: post?.isBookmarked
+                      ? "var(--mantine-color-yellow-6)"
+                      : "var(--mantine-color-gray-6)",
+                    fontWeight: post?.isBookmarked ? 600 : 500,
+                    backgroundColor: post?.isBookmarked
+                      ? "var(--mantine-color-yellow-1)"
+                      : "transparent",
+                    border: post?.isBookmarked
+                      ? "1px solid var(--mantine-color-yellow-3)"
+                      : "1px solid transparent",
+                  }}
+                  onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+                    if (isAuthenticated && post.allowBookmarks) {
+                      e.currentTarget.style.backgroundColor = post?.isBookmarked
+                        ? "var(--mantine-color-yellow-2)"
+                        : "var(--mantine-color-gray-1)";
+                      e.currentTarget.style.transform = "translateY(-1px)";
+                    }
+                  }}
+                  onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+                    e.currentTarget.style.backgroundColor = post?.isBookmarked
+                      ? "var(--mantine-color-yellow-1)"
+                      : "transparent";
+                    e.currentTarget.style.transform = "translateY(0)";
+                  }}
+                >
+                  <IconBookmark
+                    size={16}
+                    style={{
+                      fill: post?.isBookmarked ? "currentColor" : "none",
+                      stroke: "currentColor",
+                      strokeWidth: 2,
+                    }}
+                  />
+                  <Text size="sm" fw={post?.isBookmarked ? 600 : 500}>
+                    Save
+                  </Text>
+                </UnstyledButton>
+              </Group>
+
+              {/* Post Statistics */}
+              <Group gap="md" align="center">
+                <Text size="xs" c="dimmed">
+                  👀 {post.viewsCount || 0}
+                </Text>
+                <Text size="xs" c="dimmed">
+                  📊 {post.sharesCount || 0}
+                </Text>
+                <Text size="xs" c="dimmed">
+                  🔖 {post.bookmarksCount || 0}
+                </Text>
+              </Group>
             </Group>
           </Box>
 
           {/* Facebook-style Comment Input - Embedded in Post */}
           <Box
-            px="xl"
-            pb="lg"
+            px="lg"
+            pb="md"
             style={{
-              paddingTop: "1rem",
-              marginTop: "1rem",
+              paddingTop: "0.75rem",
+              marginTop: "0.75rem",
             }}
           >
             {isAuthenticated ? (
               <Group
                 align="flex-start"
                 gap="sm"
-                mb="md"
+                mb="sm"
                 data-interactive="true"
               >
                 <Avatar
@@ -980,8 +1029,8 @@ export function PostDetail() {
               </Group>
             ) : (
               <Box
-                p="md"
-                mb="md"
+                  p="sm"
+                  mb="sm"
                 style={{
                   background: "var(--mantine-color-blue-0)",
                   borderRadius: "var(--mantine-radius-lg)",
@@ -996,7 +1045,7 @@ export function PostDetail() {
             {/* Embedded Comments Section with Scroll */}
             {comments.length > 0 && (
               <Box data-interactive="true">
-                <Text fw={600} size="md" mb="md" c="dark.7">
+                <Text fw={600} size="md" mb="sm" >
                   Comments ({post?.commentsCount})
                 </Text>
 

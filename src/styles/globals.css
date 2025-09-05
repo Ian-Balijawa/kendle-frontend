@@ -95,11 +95,6 @@ body {
 
 .auth-container {
   min-height: 100vh;
-  background: linear-gradient(
-    135deg,
-    var(--mantine-color-primary-0) 0%,
-    var(--mantine-color-secondary-0) 100%
-  );
   display: flex;
   align-items: center;
   justify-content: center;
@@ -107,7 +102,6 @@ body {
 }
 
 .auth-paper {
-  background: var(--mantine-color-white);
   box-shadow:
     0 20px 25px -5px rgba(0, 0, 0, 0.1),
     0 10px 10px -5px rgba(0, 0, 0, 0.04);
@@ -138,12 +132,10 @@ body {
 }
 
 .auth-input {
-  border-color: var(--mantine-color-gray-3);
   transition: all 0.2s ease;
 }
 
 .auth-input:focus {
-  border-color: var(--mantine-color-primary-6);
   box-shadow: 0 0 0 1px var(--mantine-color-primary-6);
 }
 

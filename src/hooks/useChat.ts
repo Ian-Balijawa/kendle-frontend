@@ -522,9 +522,8 @@ export function useMarkMessageAsRead() {
       queryClient.invalidateQueries({ queryKey: chatKeys.all });
     },
     onSuccess: () => {
-      // Update unread count
+      // Update unread count only - don't invalidate conversations to prevent loops
       queryClient.invalidateQueries({ queryKey: chatKeys.unreadCount() });
-      queryClient.invalidateQueries({ queryKey: chatKeys.conversations() });
     },
   });
 }
@@ -576,7 +575,7 @@ export function useMarkConversationAsRead() {
       queryClient.invalidateQueries({ queryKey: chatKeys.messages(id) });
     },
     onSuccess: () => {
-      // Update unread count
+      // Update unread count - but don't invalidate conversations to prevent loops
       queryClient.invalidateQueries({ queryKey: chatKeys.unreadCount() });
     },
   });

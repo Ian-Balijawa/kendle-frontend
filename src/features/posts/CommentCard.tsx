@@ -166,15 +166,16 @@ export function CommentCard({ comment }: CommentCardProps) {
               <Avatar
                 src={comment.author?.avatar}
                 alt={
-                  comment.author?.firstName ||
                   comment.author?.username ||
+                  comment.author?.firstName ||
                   "User"
                 }
                 size={36}
                 radius="xl"
               >
                 <Text size="xs" fw={600}>
-                  {comment.author?.firstName?.charAt(0) ||
+                  {comment.author?.username?.charAt(0) ||
+                    comment.author?.firstName?.charAt(0) ||
                     comment.author?.username?.charAt(0) ||
                     comment.author?.phoneNumber?.charAt(0) ||
                     "U"}
@@ -229,7 +230,7 @@ export function CommentCard({ comment }: CommentCardProps) {
             <Avatar
               src={comment.author?.avatar}
               alt={
-                comment.author?.firstName || comment.author?.username || "User"
+                comment.author?.username || comment.author?.firstName || "User"
               }
               size={32}
               radius="xl"
@@ -241,7 +242,8 @@ export function CommentCard({ comment }: CommentCardProps) {
               }}
             >
               <Text size="xs" color="dimmed" fw={600}>
-                {comment.author?.firstName?.charAt(0) ||
+                {comment.author?.username?.charAt(0) ||
+                  comment.author?.firstName?.charAt(0) ||
                   comment.author?.username?.charAt(0) ||
                   comment.author?.phoneNumber?.charAt(0) ||
                   "U"}
@@ -257,10 +259,10 @@ export function CommentCard({ comment }: CommentCardProps) {
                 style={{ flex: 1, minWidth: 0 }}
               >
                 <Text fw={600} size="sm" truncate>
-                  {comment.author?.firstName && comment.author?.lastName
-                    ? `${comment.author.firstName} ${comment.author.lastName}`
-                    : comment.author?.username
-                      ? comment.author.username
+                  {comment.author?.username
+                    ? `${comment.author.username}`
+                    : comment.author?.phoneNumber
+                      ? comment.author.phoneNumber
                       : comment.author?.phoneNumber || "Unknown User"}
                 </Text>
 
@@ -276,7 +278,7 @@ export function CommentCard({ comment }: CommentCardProps) {
 
                 <Text c="dimmed" size="xs">
                   {formatDate(comment.createdAt)}
-                  {comment.updatedAt !== comment.createdAt && " (edited)"}
+                  {comment.updatedAt !== comment.createdAt && " Edited"}
                 </Text>
 
                 {/* Menu Button */}
@@ -349,7 +351,7 @@ export function CommentCard({ comment }: CommentCardProps) {
                           ? "0.25rem"
                           : 0,
                     }}
-                    c="dark.7"
+
                   >
                     {line || "\u00A0"}
                   </Text>
@@ -457,7 +459,6 @@ export function CommentCard({ comment }: CommentCardProps) {
                     e.currentTarget.style.backgroundColor = "transparent";
                   }}
                 >
-                  <Text size="xs">Reply</Text>
                 </UnstyledButton>
               </Group>
             </Box>

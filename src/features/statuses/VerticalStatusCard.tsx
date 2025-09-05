@@ -98,12 +98,8 @@ export function VerticalStatusCard({
           <Text
             size="xs"
             fw={600}
-            c="white"
+            c={"white"}
             ta="center"
-            style={{
-              textShadow: "0 1px 3px rgba(0, 0, 0, 0.5)",
-              lineHeight: 1.2,
-            }}
           >
             Create Story
           </Text>
@@ -245,7 +241,7 @@ export function VerticalStatusCard({
         <Text
           size="xs"
           fw={600}
-          c="white"
+
           ta="center"
           style={{
             textShadow: "0 1px 3px rgba(0, 0, 0, 0.8)",

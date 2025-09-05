@@ -169,7 +169,7 @@ export function ProfileSwipe({
                   boxShadow: "0 8px 32px rgba(0,0,0,0.2)",
                 }}
               >
-                <Text size="2rem" fw={600} c="white">
+                <Text size="2rem" fw={600} >
                   {currentUser?.firstName?.charAt(0)}
                   {currentUser?.lastName?.charAt(0)}
                 </Text>
@@ -197,14 +197,14 @@ export function ProfileSwipe({
 
           {/* User Info */}
           <Stack align="center" gap="xs">
-            <Text size="xl" fw={700} c="white" ta="center">
+            <Text size="xl" fw={700} ta="center">
               {currentUser?.firstName} {currentUser?.lastName}
             </Text>
-            <Text c="white" opacity={0.9} size="lg" fw={500}>
+            <Text opacity={0.9} size="lg" fw={500}>
               @{currentUser?.username}
             </Text>
             {currentUser?.bio && (
-              <Text c="white" opacity={0.8} size="sm" ta="center" lineClamp={2}>
+              <Text opacity={0.8} size="sm" ta="center" lineClamp={2}>
                 {currentUser.bio}
               </Text>
             )}
@@ -214,26 +214,26 @@ export function ProfileSwipe({
           {showStats && (
             <Group justify="center" gap="xl">
               <Box ta="center">
-                <Text size="lg" fw={700} c="white">
+                <Text size="lg" fw={700} >
                   {formatNumber(currentUser?.postsCount || 0)}
                 </Text>
-                <Text size="xs" c="white" opacity={0.8}>
+                <Text size="xs" opacity={0.8}>
                   Posts
                 </Text>
               </Box>
               <Box ta="center">
-                <Text size="lg" fw={700} c="white">
+                <Text size="lg" fw={700} >
                   {formatNumber(currentUser?.followersCount || 0)}
                 </Text>
-                <Text size="xs" c="white" opacity={0.8}>
+                <Text size="xs" opacity={0.8}>
                   Followers
                 </Text>
               </Box>
               <Box ta="center">
-                <Text size="lg" fw={700} c="white">
+                <Text size="lg" fw={700} >
                   {formatNumber(currentUser?.followingCount || 0)}
                 </Text>
-                <Text size="xs" c="white" opacity={0.8}>
+                <Text size="xs" opacity={0.8}>
                   Following
                 </Text>
               </Box>

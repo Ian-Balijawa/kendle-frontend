@@ -41,12 +41,12 @@ export function ChatMessages({ conversationId }: ChatMessagesProps) {
     }
   }, [data]);
 
-  // Mark conversation as read when messages are viewed
+  // Mark conversation as read when component mounts and user is viewing
   useEffect(() => {
-    if (data && data.pages.length > 0) {
+    if (data && data.pages.length > 0 && !markAsRead.isPending && !markAsRead.isSuccess) {
       markAsRead.mutate(conversationId);
     }
-  }, [conversationId, data]);
+  }, [conversationId]); // Only run when conversationId changes, not on every data change
 
   // Join conversation for real-time updates
   useEffect(() => {
