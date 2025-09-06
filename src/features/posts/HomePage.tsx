@@ -21,16 +21,24 @@ import { InfiniteScrollLoader, PostSkeletonList } from "../../components/ui";
 import { ProfileSwipe } from "../../components/ui/ProfileSwipe";
 import { useInfinitePosts } from "../../hooks/usePosts";
 import { useSuggestedUsers } from "../../hooks/useFollow";
+import { useInfiniteStatuses, useViewStatus } from "../../hooks/useStatuses";
 import { useAuthStore } from "../../stores/authStore";
 import { useStatusStore } from "../../stores/statusStore";
 import { CreatePost } from "./CreatePost";
 import { PostCard } from "./PostCard";
 import { StatusStories } from "../statuses/StatusStories";
+import { CreateStatus } from "../statuses/CreateStatus";
+import { StatusDetailsModal } from "../statuses/StatusDetailsModal";
 
 export function HomePage() {
   const { isAuthenticated, user } = useAuthStore();
-  const { statusCollections } = useStatusStore();
+  const { statusCollections: storeStatusCollections } = useStatusStore();
   const [createPostOpened, setCreatePostOpened] = useState(false);
+  const [createStatusOpened, setCreateStatusOpened] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState<any>(null);
+  const [currentStatusIndex, setCurrentStatusIndex] = useState(0);
+  const [viewModalOpened, setViewModalOpened] = useState(false);
+  const [currentCollectionIndex, setCurrentCollectionIndex] = useState(0);
 
   // Use infinite posts query
   const {
@@ -47,6 +55,14 @@ export function HomePage() {
   // Get suggested users for discovery
   const { data: suggestedUsers } = useSuggestedUsers(10);
 
+  // Get statuses
+  const {
+    data: statusData,
+  } = useInfiniteStatuses({ limit: 20, sortBy: "createdAt", sortOrder: "desc" });
+
+  // Status view mutation
+  const viewStatusMutation = useViewStatus();
+
   // Intersection observer for infinite scroll
   const { ref, entry } = useIntersection({
     threshold: 1,
@@ -59,6 +75,111 @@ export function HomePage() {
 
   // Flatten all posts from all pages
   const posts = data?.pages.flatMap((page) => page.posts) || [];
+
+  // Flatten all statuses from all pages
+  const statuses = statusData?.pages.flatMap((page) => page.statuses) || [];
+
+  // Group statuses by author for stories display
+  const apiStatusCollections = statuses.reduce((collections: any[], status) => {
+    const existingCollection = collections.find(
+      (collection) => collection.author.id === status.author.id,
+    );
+
+    if (existingCollection) {
+      existingCollection.statuses.push(status);
+      existingCollection.hasUnviewed = existingCollection.hasUnviewed || !status.isViewed;
+    } else {
+      collections.push({
+        author: status.author,
+        statuses: [status],
+        hasUnviewed: !status.isViewed,
+        lastUpdated: status.createdAt,
+      });
+    }
+
+    return collections;
+  }, []);
+
+  // Sort collections by last updated
+  apiStatusCollections.sort((a, b) =>
+    new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime()
+  );
+
+  // Use API status collections if available, otherwise fall back to store
+  const statusCollections = apiStatusCollections.length > 0 ? apiStatusCollections : storeStatusCollections;
+
+  // Status handlers
+  const handleCreateStatus = () => {
+    if (!isAuthenticated) {
+      return;
+    }
+    setCreateStatusOpened(true);
+  };
+
+  const handleStatusClick = (collection: any) => {
+    const collectionIndex = statusCollections.findIndex(
+      (c) => c.author.id === collection.author.id,
+    );
+    setCurrentCollectionIndex(collectionIndex);
+    setSelectedStatus(collection);
+    setCurrentStatusIndex(0);
+    setViewModalOpened(true);
+  };
+
+  const handleNextStatus = () => {
+    if (
+      selectedStatus &&
+      currentStatusIndex < selectedStatus.statuses.length - 1
+    ) {
+      setCurrentStatusIndex(currentStatusIndex + 1);
+    }
+  };
+
+  const handlePreviousStatus = () => {
+    if (currentStatusIndex > 0) {
+      setCurrentStatusIndex(currentStatusIndex - 1);
+    }
+  };
+
+  const handleNextCollection = () => {
+    if (currentCollectionIndex < statusCollections.length - 1) {
+      const nextCollection = statusCollections[currentCollectionIndex + 1];
+      setCurrentCollectionIndex(currentCollectionIndex + 1);
+      setSelectedStatus(nextCollection);
+      setCurrentStatusIndex(0);
+    } else {
+      setViewModalOpened(false);
+    }
+  };
+
+  const handlePreviousCollection = () => {
+    if (currentCollectionIndex > 0) {
+      const prevCollection = statusCollections[currentCollectionIndex - 1];
+      setCurrentCollectionIndex(currentCollectionIndex - 1);
+      setSelectedStatus(prevCollection);
+      setCurrentStatusIndex(prevCollection.statuses.length - 1);
+    }
+  };
+
+  const handleViewStatus = (statusId: string) => {
+    if (user?.id) {
+      viewStatusMutation.mutate({
+        id: statusId,
+        data: {
+          viewDuration: 5000, // 5 seconds default
+          deviceType: "web",
+        },
+      });
+    }
+  };
+
+  const canGoNext = selectedStatus
+    ? currentStatusIndex < selectedStatus.statuses.length - 1
+    : false;
+  const canGoPrevious = currentStatusIndex > 0;
+  const canGoNextCollection =
+    currentCollectionIndex < statusCollections.length - 1;
+  const canGoPreviousCollection = currentCollectionIndex > 0;
 
   return (
     <Container size="xl" px="md">
@@ -108,14 +229,8 @@ export function HomePage() {
               (collection) => collection.author.id !== user?.id,
             )}
             currentUserAvatar={user?.avatar}
-            onCreateStatus={() => {
-              // Navigate to status page or open create status modal
-              window.location.href = "/statuses";
-            }}
-            onStatusClick={() => {
-              // Navigate to status page with specific collection
-              window.location.href = "/statuses";
-            }}
+            onCreateStatus={handleCreateStatus}
+            onStatusClick={handleStatusClick}
           />
         )}
       </Box>
@@ -127,8 +242,7 @@ export function HomePage() {
           <ProfileSwipe
             users={suggestedUsers.suggestions}
             title="Discover People"
-            subtitle="Find interesting people to follow"
-            showStats={true}
+          subtitle="Find interesting people to follow"
           />
         )}
 
@@ -236,6 +350,29 @@ export function HomePage() {
       <CreatePost
         opened={createPostOpened}
         onClose={() => setCreatePostOpened(false)}
+      />
+
+      {/* Create Status Modal */}
+      <CreateStatus
+        opened={createStatusOpened}
+        onClose={() => setCreateStatusOpened(false)}
+      />
+
+      {/* Status Details Modal */}
+      <StatusDetailsModal
+        opened={viewModalOpened}
+        onClose={() => setViewModalOpened(false)}
+        collection={selectedStatus}
+        currentStatusIndex={currentStatusIndex}
+        onNext={handleNextStatus}
+        onPrevious={handlePreviousStatus}
+        onNextCollection={handleNextCollection}
+        onPreviousCollection={handlePreviousCollection}
+        canGoNext={canGoNext}
+        canGoPrevious={canGoPrevious}
+        canGoNextCollection={canGoNextCollection}
+        canGoPreviousCollection={canGoPreviousCollection}
+        onViewStatus={handleViewStatus}
       />
     </Container>
   );

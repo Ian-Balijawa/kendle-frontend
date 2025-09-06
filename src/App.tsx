@@ -25,7 +25,7 @@ import { HomePage } from "./features/posts/HomePage";
 import { PostDetail } from "./features/posts/PostDetail";
 import { ProfilePage } from "./features/profile/ProfilePage";
 import { ExplorePage } from "./features/search/ExplorePage";
-import { StatusesPage } from "./features/statuses/StatusesPage";
+import { SettingsPage } from "./features/settings";
 
 import "./styles/globals.css";
 
@@ -100,8 +100,8 @@ function AppContent() {
         >
           <Route index element={<HomePage />} />
           <Route path="explore" element={<ExplorePage />} />
-          <Route path="statuses" element={<StatusesPage />} />
           <Route path="notifications" element={<NotificationsPage />} />
+          <Route path="settings" element={<SettingsPage />} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="profile/:userId" element={<ProfilePage />} />
           <Route path="post/:postId" element={<PostDetail />} />

@@ -1,10 +1,10 @@
 import {
-  Avatar,
+  ActionIcon,
   Badge,
   Box,
-  Button,
   Group,
   Loader,
+  ScrollArea,
   Stack,
   Tabs,
   Text,
@@ -12,6 +12,8 @@ import {
   Title,
 } from "@mantine/core";
 import {
+  IconChevronLeft,
+  IconChevronRight,
   IconHash,
   IconSearch,
   IconTrendingUp,
@@ -19,9 +21,10 @@ import {
   IconUserCheck,
   IconUserPlus,
 } from "@tabler/icons-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ProfileSwipe } from "../../components/ui";
+import { VerticalUserCard } from "../../components/ui/VerticalUserCard";
 import {
   useFollowers,
   useFollowing,
@@ -29,7 +32,7 @@ import {
   useToggleFollow,
 } from "../../hooks/useFollow";
 import { useInfinitePosts } from "../../hooks/usePosts";
-import { useUser, useUserProfile } from "../../hooks/useUser";
+import { useUserProfile } from "../../hooks/useUser";
 import { User } from "../../types/auth";
 import { PostCard } from "../posts/PostCard";
 
@@ -41,142 +44,147 @@ const mockTrendingHashtags = [
   { name: "Design", postsCount: 4320 },
 ];
 
-// UserCard component for displaying individual users
-interface UserCardProps {
-  userId: string;
+// Compact User List component for displaying users in a horizontal scrollable format
+interface CompactUserListProps {
+  users: User[];
   onFollow: (userId: string, isFollowing: boolean) => void;
   onViewProfile: (userId: string) => void;
-  isFollowing: boolean;
   followLoading: boolean;
+  title?: string;
+  emptyMessage?: string;
+  emptyIcon?: React.ReactNode;
 }
 
-function UserCard({
-  userId,
+function CompactUserList({
+  users,
   onFollow,
   onViewProfile,
-  isFollowing,
   followLoading,
-}: UserCardProps) {
-  const { data: user, isLoading } = useUser(userId);
+  title,
+  emptyMessage,
+  emptyIcon,
+}: CompactUserListProps) {
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
 
-  if (isLoading) {
+  const scroll = (direction: "left" | "right") => {
+    if (!scrollAreaRef.current) return;
+
+    const scrollAmount = 160; // Width of one card + gap
+    const currentScroll = scrollAreaRef.current.scrollLeft;
+    const maxScroll =
+      scrollAreaRef.current.scrollWidth - scrollAreaRef.current.clientWidth;
+
+    if (direction === "left") {
+      scrollAreaRef.current.scrollTo({
+        left: Math.max(0, currentScroll - scrollAmount),
+        behavior: "smooth",
+      });
+    } else {
+      scrollAreaRef.current.scrollTo({
+        left: Math.min(maxScroll, currentScroll + scrollAmount),
+        behavior: "smooth",
+      });
+    }
+  };
+
+  const handleScroll = () => {
+    if (!scrollAreaRef.current) return;
+
+    const { scrollLeft, scrollWidth, clientWidth } = scrollAreaRef.current;
+    setCanScrollLeft(scrollLeft > 0);
+    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10); // 10px buffer
+  };
+
+  if (!users.length) {
     return (
-      <Box p="md">
-        <Group>
-          <Avatar size="md" radius="xl" />
-          <Box style={{ flex: 1 }}>
-            <Text size="sm" c="dimmed">
-              Loading...
+      <Box
+        p="xl"
+        style={{
+          border: "none",
+        }}
+      >
+        <Stack align="center" gap="md">
+          {emptyIcon}
+          <Stack align="center" gap="xs">
+            <Text fw={600} size="lg">
+              {emptyMessage || "No users found"}
             </Text>
-          </Box>
-        </Group>
+            <Text c="dimmed" ta="center" size="sm">
+              {title ? `No ${title.toLowerCase()} to display` : "Check back later for updates!"}
+            </Text>
+          </Stack>
+        </Stack>
       </Box>
     );
   }
 
-  if (!user) {
-    return null;
-  }
-
   return (
-    <Box p="md" style={{ cursor: "pointer" }}>
-      <Group justify="space-between" align="center">
-        <Group
-          gap="md"
-          style={{ flex: 1, cursor: "pointer" }}
-          onClick={() => onViewProfile(user.id)}
-        >
-          <Avatar
-            src={user.avatar}
-            alt={user.firstName || user.username || "User"}
-            size="md"
-            radius="xl"
-            style={{
-              border: user.isVerified
-                ? "2px solid var(--mantine-color-blue-5)"
-                : "none",
-            }}
-          >
-            {(user.firstName || user.username || user.phoneNumber || "U")
-              .charAt(0)
-              .toUpperCase()}
-          </Avatar>
-
-          <Box style={{ flex: 1, minWidth: 0 }}>
-            <Group gap="xs" align="center" mb="xs">
-              <Text fw={600} size="sm" truncate>
-                {user.firstName && user.lastName
-                  ? `${user.firstName} ${user.lastName}`
-                  : user.username
-                    ? user.username
-                    : user.phoneNumber || "Unknown User"}
-              </Text>
-              {user.isVerified && (
-                <Badge size="xs" color="blue" radius="sm" variant="filled">
-                  ✓
-                </Badge>
-              )}
-            </Group>
-
-            <Group gap="xs" mb="xs">
-              <Text size="xs" c="dimmed">
-                @{user.username || user.phoneNumber || "unknown"}
-              </Text>
-              {user.bio && (
-                <>
-                  <Text size="xs" c="dimmed">
-                    •
-                  </Text>
-                  <Text size="xs" c="dimmed" truncate style={{ maxWidth: 200 }}>
-                    {user.bio}
-                  </Text>
-                </>
-              )}
-            </Group>
-
-            <Group gap="md">
-              <Text size="xs" c="dimmed">
-                {user.followersCount || 0} followers
-              </Text>
-              <Text size="xs" c="dimmed">
-                {user.postsCount || 0} posts
-              </Text>
-            </Group>
-          </Box>
-        </Group>
-
-        <Button
-          variant={isFollowing ? "light" : "filled"}
-          size="sm"
+    <Box style={{ position: "relative" }}>
+      {canScrollLeft && (
+        <ActionIcon
+          variant="filled"
+          color="white"
+          size="lg"
           radius="xl"
-          loading={followLoading}
-          onClick={(e) => {
-            e.stopPropagation();
-            onFollow(user.id, isFollowing);
+          style={{
+            position: "absolute",
+            left: -20,
+            top: "50%",
+            transform: "translateY(-50%)",
+            zIndex: 10,
+            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+            border: "1px solid var(--mantine-color-gray-3)",
           }}
-          leftSection={
-            isFollowing ? (
-              <IconUserCheck size={14} />
-            ) : (
-              <IconUserPlus size={14} />
-            )
-          }
-          style={
-            isFollowing
-              ? {
-                  color: "var(--mantine-color-blue-6)",
-                  borderColor: "var(--mantine-color-blue-6)",
-                }
-              : {
-                  background:
-                    "linear-gradient(135deg, var(--mantine-color-blue-6), var(--mantine-color-violet-6))",
-                  border: "none",
-                }
-          }
+          onClick={() => scroll("left")}
         >
-          {isFollowing ? "Following" : "Follow"}
-        </Button>
-      </Group>
+          <IconChevronLeft size={16} color="var(--mantine-color-gray-7)" />
+        </ActionIcon>
+      )}
+
+      {canScrollRight && (
+        <ActionIcon
+          variant="filled"
+          color="white"
+          size="lg"
+          radius="xl"
+          style={{
+            position: "absolute",
+            right: -20,
+            top: "50%",
+            transform: "translateY(-50%)",
+            zIndex: 10,
+            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+            border: "1px solid var(--mantine-color-gray-3)",
+          }}
+          onClick={() => scroll("right")}
+        >
+          <IconChevronRight size={16} color="var(--mantine-color-gray-7)" />
+        </ActionIcon>
+      )}
+
+      <ScrollArea
+        ref={scrollAreaRef}
+        onScrollPositionChange={handleScroll}
+        scrollbarSize={0}
+        style={{
+          paddingRight: "16px",
+        }}
+      >
+        <Group gap="md" style={{ paddingBottom: "8px" }}>
+          {users.map((user) => (
+            <VerticalUserCard
+              key={user.id}
+              user={user}
+              onFollow={onFollow}
+              onViewProfile={onViewProfile}
+              followLoading={followLoading}
+              showActions={true}
+            />
+          ))}
+        </Group>
+      </ScrollArea>
     </Box>
   );
 }
@@ -361,8 +369,7 @@ export function ExplorePage() {
                     <ProfileSwipe
                       users={suggestedUsers.suggestions}
                       title="Discover Amazing People"
-                      subtitle="Connect with creators and influencers in your community"
-                      showStats={true}
+                          subtitle="Connect with creators and influencers in your community"
                     />
                   ) : (
                     <Box
@@ -397,18 +404,13 @@ export function ExplorePage() {
                       <Loader size="lg" />
                     </Group>
                   ) : followingData && followingData.following.length > 0 ? (
-                    <Stack gap="md">
-                      {followingData.following.map((user: User) => (
-                        <UserCard
-                          key={user.id}
-                          userId={user.id}
-                          onFollow={handleFollowUser}
-                          onViewProfile={handleViewProfile}
-                          isFollowing={true}
-                          followLoading={followLoading}
-                        />
-                      ))}
-                    </Stack>
+                      <CompactUserList
+                        users={followingData.following}
+                        onFollow={handleFollowUser}
+                        onViewProfile={handleViewProfile}
+                        followLoading={followLoading}
+                        title="Following"
+                      />
                   ) : (
                     <Box
                       p="xl"
@@ -442,18 +444,13 @@ export function ExplorePage() {
                       <Loader size="lg" />
                     </Group>
                   ) : followersData && followersData.followers.length > 0 ? (
-                    <Stack gap="md">
-                      {followersData.followers.map((user: User) => (
-                        <UserCard
-                          key={user.id}
-                          userId={user.id}
-                          onFollow={handleFollowUser}
-                          onViewProfile={handleViewProfile}
-                          isFollowing={false}
-                          followLoading={followLoading}
-                        />
-                      ))}
-                    </Stack>
+                      <CompactUserList
+                        users={followersData.followers}
+                        onFollow={handleFollowUser}
+                        onViewProfile={handleViewProfile}
+                        followLoading={followLoading}
+                        title="Followers"
+                      />
                   ) : (
                     <Box
                       p="xl"

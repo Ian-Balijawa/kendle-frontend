@@ -148,6 +148,12 @@ export const useStatusStore = create<StatusStore>()(
             (state) => {
               const now = new Date().toISOString();
 
+              // Check if user has already viewed this status
+              const status = state.statuses.find((s) => s.id === id);
+              if (!status || status.isViewed) {
+                return state; // No changes needed
+              }
+
               const newStatuses = state.statuses.map((status) =>
                 status.id === id
                   ? {

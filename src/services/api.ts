@@ -14,6 +14,11 @@ import {
   UpdateUserData,
   User,
   UsersResponse,
+  Status,
+  StatusesResponse,
+  StatusReply,
+  StatusRepliesResponse,
+  StatusAnalytics,
 } from "../types";
 
 // API request/response types based on the provided endpoints
@@ -198,6 +203,89 @@ export interface BookmarkRequest {
 export interface ShareRequest {
   shareContent?: string;
   platform?: string;
+}
+
+// Status request/response types
+export interface CreateStatusRequest {
+  content: string;
+  type: "image" | "video" | "text";
+  privacy: "public" | "followers" | "close_friends" | "private";
+  media?: {
+    url: string;
+    thumbnailUrl?: string;
+    mediaType: "image" | "video";
+    fileName: string;
+    fileSize: number;
+    mimeType: string;
+    duration?: number;
+    width?: number;
+    height?: number;
+    order: number;
+  }[];
+  location?: string;
+  musicTrack?: string;
+  musicArtist?: string;
+  stickers?: string[];
+  pollQuestion?: string;
+  pollOptions?: string[];
+  highlightTitle?: string;
+  allowReplies?: boolean;
+  allowReactions?: boolean;
+  allowShares?: boolean;
+  allowScreenshots?: boolean;
+  closeFriends?: string[];
+  expirationHours?: number;
+}
+
+export interface UpdateStatusRequest {
+  content?: string;
+  privacy?: "public" | "followers" | "close_friends" | "private";
+  location?: string;
+  allowReplies?: boolean;
+  allowReactions?: boolean;
+  allowShares?: boolean;
+  allowScreenshots?: boolean;
+  highlightTitle?: string;
+  closeFriends?: string[];
+}
+
+export interface GetStatusesParams {
+  page?: number;
+  limit?: number;
+  authorId?: string;
+  type?: "image" | "video" | "text";
+  privacy?: "public" | "followers" | "close_friends" | "private";
+  search?: string;
+  location?: string;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+}
+
+export interface StatusReactionRequest {
+  reactionType: "like" | "love" | "laugh" | "wow" | "sad" | "angry";
+}
+
+export interface StatusReplyRequest {
+  content: string;
+  media?: {
+    url: string;
+    thumbnailUrl?: string;
+    mediaType: "image" | "video";
+    fileName: string;
+    fileSize: number;
+    mimeType: string;
+    duration?: number;
+    width?: number;
+    height?: number;
+    order: number;
+  }[];
+  location?: string;
+}
+
+export interface StatusViewRequest {
+  viewDuration?: number;
+  deviceType?: string;
+  location?: string;
 }
 
 // Authentication request/response types
@@ -993,6 +1081,120 @@ class ApiService {
     const response: AxiosResponse<
       ApiResponse<{ suggestions: User[]; count: number }>
     > = await this.api.get(`/user/suggestions?limit=${limit}`);
+    return response.data.data;
+  }
+
+  // Status API methods
+  async createStatus(data: CreateStatusRequest): Promise<Status> {
+    const response: AxiosResponse<ApiResponse<Status>> = await this.api.post(
+      "/statuses",
+      data,
+    );
+    return response.data.data;
+  }
+
+  async getStatuses(params: GetStatusesParams = {}): Promise<StatusesResponse> {
+    const searchParams = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        searchParams.append(key, String(value));
+      }
+    });
+
+    const response: AxiosResponse<ApiResponse<StatusesResponse>> =
+      await this.api.get(`/statuses?${searchParams.toString()}`);
+    return response.data.data;
+  }
+
+  async getStatus(id: string): Promise<Status> {
+    const response: AxiosResponse<ApiResponse<Status>> = await this.api.get(
+      `/statuses/${id}`,
+    );
+    return response.data.data;
+  }
+
+  async updateStatus(id: string, data: UpdateStatusRequest): Promise<Status> {
+    const response: AxiosResponse<ApiResponse<Status>> = await this.api.put(
+      `/statuses/${id}`,
+      data,
+    );
+    return response.data.data;
+  }
+
+  async deleteStatus(id: string): Promise<void> {
+    await this.api.delete(`/statuses/${id}`);
+  }
+
+  async reactToStatus(id: string, data: StatusReactionRequest): Promise<void> {
+    await this.api.post(`/statuses/${id}/react`, data);
+  }
+
+  async removeStatusReaction(id: string): Promise<void> {
+    await this.api.delete(`/statuses/${id}/react`);
+  }
+
+  async replyToStatus(id: string, data: StatusReplyRequest): Promise<StatusReply> {
+    const response: AxiosResponse<ApiResponse<StatusReply>> = await this.api.post(
+      `/statuses/${id}/reply`,
+      data,
+    );
+    return response.data.data;
+  }
+
+  async viewStatus(id: string, data: StatusViewRequest): Promise<void> {
+    await this.api.post(`/statuses/${id}/view`, data);
+  }
+
+  async getStatusAnalytics(id: string): Promise<StatusAnalytics> {
+    const response: AxiosResponse<ApiResponse<StatusAnalytics>> =
+      await this.api.get(`/statuses/${id}/analytics`);
+    return response.data.data;
+  }
+
+  async getUserStatuses(
+    userId: string,
+    params: { page?: number; limit?: number } = {},
+  ): Promise<StatusesResponse> {
+    const searchParams = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        searchParams.append(key, String(value));
+      }
+    });
+
+    const response: AxiosResponse<ApiResponse<StatusesResponse>> =
+      await this.api.get(`/statuses/user/${userId}?${searchParams.toString()}`);
+    return response.data.data;
+  }
+
+  async getMyStatuses(
+    params: { page?: number; limit?: number } = {},
+  ): Promise<StatusesResponse> {
+    const searchParams = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        searchParams.append(key, String(value));
+      }
+    });
+
+    const response: AxiosResponse<ApiResponse<StatusesResponse>> =
+      await this.api.get(`/statuses/user/me?${searchParams.toString()}`);
+    return response.data.data;
+  }
+
+  async getStatusReplies(
+    id: string,
+    params: { page?: number; limit?: number } = {},
+  ): Promise<StatusRepliesResponse> {
+    const searchParams = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        searchParams.append(key, String(value));
+      }
+    });
+
+    const response: AxiosResponse<ApiResponse<StatusRepliesResponse>> =
+      await this.api.get(`/statuses/${id}/replies?${searchParams.toString()}`);
     return response.data.data;
   }
 }

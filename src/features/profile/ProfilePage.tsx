@@ -5,20 +5,14 @@ import {
   Button,
   Card,
   Center,
-  Divider,
-  Grid,
   Group,
   Loader,
-  Modal,
   Stack,
   Tabs,
   Text,
-  TextInput,
-  Textarea,
   Title,
   rem,
 } from "@mantine/core";
-import { useForm } from "@mantine/form";
 import {
   IconBookmark,
   IconBrandInstagram,
@@ -35,16 +29,15 @@ import {
   IconUserCheck,
   IconUserPlus,
 } from "@tabler/icons-react";
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   useUserPosts,
   useUserLikedPosts,
   useUserBookmarkedPosts,
 } from "../../hooks/usePosts";
-import { useUpdateProfile, useUser, useUserProfile } from "../../hooks/useUser";
+import { useUser, useUserProfile } from "../../hooks/useUser";
 import { useFollowStatus, useToggleFollow } from "../../hooks/useFollow";
-import { UpdateProfileRequest } from "../../services/api";
 import { useAuthStore } from "../../stores/authStore";
 import { User } from "../../types/auth";
 import { PostCard } from "../posts/PostCard";
@@ -52,8 +45,8 @@ import { PostCard } from "../posts/PostCard";
 export function ProfilePage() {
   const { userId } = useParams<{ userId?: string }>();
   const { user: currentUser, isAuthenticated } = useAuthStore();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("posts");
-  const [editModalOpen, setEditModalOpen] = useState(false);
 
   // Determine if this is the current user's own profile
   const isOwnProfile = !userId || userId === currentUser?.id;
@@ -87,38 +80,6 @@ export function ProfilePage() {
   // Follow functionality - only for other users' profiles
   const { data: followStatus } = useFollowStatus(profileUserId!);
   const { toggleFollow, isLoading: followLoading } = useToggleFollow();
-
-  const updateProfileMutation = useUpdateProfile();
-
-  const editForm = useForm<UpdateProfileRequest>({
-    initialValues: {
-      firstName: user?.firstName || "",
-      lastName: user?.lastName || "",
-      bio: user?.bio || null,
-      username: user?.username || "",
-      email: user?.email || "",
-      whatsapp: user?.whatsapp || "",
-      twitterLink: user?.twitterLink || "",
-      tiktokLink: user?.tiktokLink || "",
-      instagramLink: user?.instagramLink || "",
-    },
-  });
-
-  useEffect(() => {
-    if (user) {
-      editForm.setValues({
-        firstName: user.firstName || "",
-        lastName: user.lastName || "",
-        bio: user.bio || null,
-        username: user.username || "",
-        email: user.email || "",
-        whatsapp: user.whatsapp || "",
-        twitterLink: user.twitterLink || "",
-        tiktokLink: user.tiktokLink || "",
-        instagramLink: user.instagramLink || "",
-      });
-    }
-  }, [user]);
 
   const posts = postsData?.pages.flatMap((page) => page.posts) || [];
   const likedPosts = likedPostsData?.pages.flatMap((page) => page.posts) || [];
@@ -160,18 +121,7 @@ export function ProfilePage() {
   });
 
   const handleEditProfile = () => {
-    setEditModalOpen(true);
-  };
-
-  const handleSaveProfile = (values: UpdateProfileRequest) => {
-    updateProfileMutation.mutate(values, {
-      onSuccess: () => {
-        setEditModalOpen(false);
-      },
-      onError: (error) => {
-        console.error("Failed to update profile:", error);
-      },
-    });
+    navigate("/settings");
   };
 
   const socialLinks = [
@@ -804,234 +754,6 @@ export function ProfilePage() {
         </Tabs.Panel>
       </Tabs>
 
-      <Modal
-        opened={editModalOpen}
-        onClose={() => setEditModalOpen(false)}
-        title={
-          <Group gap="sm">
-            <IconEdit size={20} />
-            <Text fw={600} size="lg">
-              Edit Profile
-            </Text>
-          </Group>
-        }
-        size="lg"
-        radius="xl"
-        padding="xl"
-      >
-        <form onSubmit={editForm.onSubmit(handleSaveProfile)}>
-          <Stack gap="lg">
-            <Grid>
-              <Grid.Col span={6}>
-                <TextInput
-                  label="First Name"
-                  placeholder="Enter first name"
-                  size="md"
-                  radius="md"
-                  styles={{
-                    label: { fontWeight: 600, marginBottom: "0.5rem" },
-                    input: {
-                      "&:focus": {
-                        borderColor: "var(--mantine-color-blue-6)",
-                        boxShadow: "0 0 0 2px var(--mantine-color-blue-1)",
-                      },
-                    },
-                  }}
-                  {...editForm.getInputProps("firstName")}
-                />
-              </Grid.Col>
-              <Grid.Col span={6}>
-                <TextInput
-                  label="Last Name"
-                  placeholder="Enter last name"
-                  size="md"
-                  radius="md"
-                  styles={{
-                    label: { fontWeight: 600, marginBottom: "0.5rem" },
-                    input: {
-                      "&:focus": {
-                        borderColor: "var(--mantine-color-blue-6)",
-                        boxShadow: "0 0 0 2px var(--mantine-color-blue-1)",
-                      },
-                    },
-                  }}
-                  {...editForm.getInputProps("lastName")}
-                />
-              </Grid.Col>
-            </Grid>
-
-            <TextInput
-              label="Username"
-              placeholder="Enter username"
-              size="md"
-              radius="md"
-              leftSection={
-                <Text size="sm" c="dimmed">
-                  @
-                </Text>
-              }
-              styles={{
-                label: { fontWeight: 600, marginBottom: "0.5rem" },
-                input: {
-                  "&:focus": {
-                    borderColor: "var(--mantine-color-blue-6)",
-                    boxShadow: "0 0 0 2px rgba(102, 126, 234, 0.1)",
-                  },
-                },
-              }}
-              {...editForm.getInputProps("username")}
-            />
-
-            <TextInput
-              label="Email"
-              placeholder="Enter email"
-              type="email"
-              size="md"
-              radius="md"
-              styles={{
-                label: { fontWeight: 600, marginBottom: "0.5rem" },
-                input: {
-                  "&:focus": {
-                    borderColor: "var(--mantine-color-blue-6)",
-                    boxShadow: "0 0 0 2px rgba(102, 126, 234, 0.1)",
-                  },
-                },
-              }}
-              {...editForm.getInputProps("email")}
-            />
-
-            <Textarea
-              label="Bio"
-              placeholder="Tell us about yourself"
-              minRows={3}
-              size="md"
-              radius="md"
-              styles={{
-                label: { fontWeight: 600, marginBottom: "0.5rem" },
-                input: {
-                  "&:focus": {
-                    borderColor: "var(--mantine-color-blue-6)",
-                    boxShadow: "0 0 0 2px rgba(102, 126, 234, 0.1)",
-                  },
-                },
-              }}
-              {...editForm.getInputProps("bio")}
-              value={editForm.getValues().bio || ""}
-              onChange={(e) =>
-                editForm.setFieldValue("bio", e.target.value || null)
-              }
-            />
-
-            <Divider label="Social Media Links" labelPosition="center" />
-
-            <Grid>
-              <Grid.Col span={6}>
-                <TextInput
-                  label="WhatsApp"
-                  placeholder="Enter WhatsApp number"
-                  leftSection={<IconBrandWhatsapp size={16} />}
-                  size="md"
-                  radius="md"
-                  styles={{
-                    label: { fontWeight: 600, marginBottom: "0.5rem" },
-                    input: {
-                      "&:focus": {
-                        borderColor: "var(--mantine-color-blue-6)",
-                        boxShadow: "0 0 0 2px var(--mantine-color-blue-1)",
-                      },
-                    },
-                  }}
-                  {...editForm.getInputProps("whatsapp")}
-                />
-              </Grid.Col>
-              <Grid.Col span={6}>
-                <TextInput
-                  label="Twitter Link"
-                  placeholder="Enter Twitter profile URL"
-                  leftSection={<IconBrandTwitter size={16} />}
-                  size="md"
-                  radius="md"
-                  styles={{
-                    label: { fontWeight: 600, marginBottom: "0.5rem" },
-                    input: {
-                      "&:focus": {
-                        borderColor: "var(--mantine-color-blue-6)",
-                        boxShadow: "0 0 0 2px var(--mantine-color-blue-1)",
-                      },
-                    },
-                  }}
-                  {...editForm.getInputProps("twitterLink")}
-                />
-              </Grid.Col>
-            </Grid>
-
-            <Grid>
-              <Grid.Col span={6}>
-                <TextInput
-                  label="Instagram Link"
-                  placeholder="Enter Instagram profile URL"
-                  leftSection={<IconBrandInstagram size={16} />}
-                  size="md"
-                  radius="md"
-                  styles={{
-                    label: { fontWeight: 600, marginBottom: "0.5rem" },
-                    input: {
-                      "&:focus": {
-                        borderColor: "var(--mantine-color-blue-6)",
-                        boxShadow: "0 0 0 2px var(--mantine-color-blue-1)",
-                      },
-                    },
-                  }}
-                  {...editForm.getInputProps("instagramLink")}
-                />
-              </Grid.Col>
-              <Grid.Col span={6}>
-                <TextInput
-                  label="TikTok Link"
-                  placeholder="Enter TikTok profile URL"
-                  leftSection={<IconBrandTiktok size={16} />}
-                  size="md"
-                  radius="md"
-                  styles={{
-                    label: { fontWeight: 600, marginBottom: "0.5rem" },
-                    input: {
-                      "&:focus": {
-                        borderColor: "var(--mantine-color-blue-6)",
-                        boxShadow: "0 0 0 2px var(--mantine-color-blue-1)",
-                      },
-                    },
-                  }}
-                  {...editForm.getInputProps("tiktokLink")}
-                />
-              </Grid.Col>
-            </Grid>
-
-            <Group justify="flex-end" mt="xl">
-              <Button
-                variant="light"
-                onClick={() => setEditModalOpen(false)}
-                size="md"
-                radius="md"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                loading={updateProfileMutation.isPending}
-                size="md"
-                radius="md"
-                style={{
-                  background:
-                    "linear-gradient(135deg, var(--mantine-color-blue-6), var(--mantine-color-violet-6))",
-                  border: "none",
-                }}
-              >
-                Save Changes
-              </Button>
-            </Group>
-          </Stack>
-        </form>
-      </Modal>
     </Box>
   );
 }

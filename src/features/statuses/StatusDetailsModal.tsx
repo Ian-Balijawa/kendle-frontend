@@ -58,16 +58,18 @@ export function StatusDetailsModal({
   useEffect(() => {
     if (!currentStatus) return;
 
-    // Mark as viewed
-    onViewStatus(currentStatus.id);
+    // Mark as viewed only if not already viewed
+    if (!currentStatus.isViewed) {
+      onViewStatus(currentStatus.id);
+    }
 
     // Reset progress and start playing
     setProgress(0);
     setIsPlaying(true);
 
     const duration =
-      currentStatus.media.type === "video"
-        ? currentStatus.media.duration || 5
+      currentStatus.media && currentStatus.media.length > 0 && currentStatus.media[0].mediaType === "video"
+        ? currentStatus.media[0].duration || 5
         : 5;
 
     const interval = setInterval(() => {
@@ -93,13 +95,12 @@ export function StatusDetailsModal({
 
     return () => clearInterval(interval);
   }, [
-    currentStatus,
+    currentStatus?.id,
     canGoNext,
     canGoNextCollection,
     onNext,
     onNextCollection,
     onClose,
-    onViewStatus,
   ]);
 
   const formatTimeAgo = (dateString: string) => {
@@ -243,30 +244,45 @@ export function StatusDetailsModal({
           }}
           onClick={() => setIsPlaying(!isPlaying)}
         >
-          {currentStatus.media.type === "image" ? (
-            <Image
-              src={currentStatus.media.url}
-              alt="Status"
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
-              }}
-            />
+          {currentStatus.media && currentStatus.media.length > 0 ? (
+            currentStatus.media[0].mediaType === "image" ? (
+              <Image
+                src={currentStatus.media[0].url}
+                alt="Status"
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                }}
+              />
+            ) : (
+              <video
+                  src={currentStatus.media[0].url}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                  }}
+                  muted
+                  loop
+                  autoPlay={isPlaying}
+                  playsInline
+                  onEnded={() => setIsPlaying(false)}
+                />
+            )
           ) : (
-            <video
-              src={currentStatus.media.url}
+            <Box
               style={{
                 width: "100%",
                 height: "100%",
-                objectFit: "cover",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                backgroundColor: "var(--mantine-color-gray-1)",
               }}
-              muted
-              loop
-              autoPlay={isPlaying}
-              playsInline
-              onEnded={() => setIsPlaying(false)}
-            />
+            >
+              <Text c="dimmed">No media available</Text>
+            </Box>
           )}
 
           {/* Navigation areas */}
@@ -309,7 +325,7 @@ export function StatusDetailsModal({
           />
 
           {/* Play/Pause indicator */}
-          {!isPlaying && currentStatus.media.type === "video" && (
+          {!isPlaying && currentStatus.media && currentStatus.media.length > 0 && currentStatus.media[0].mediaType === "video" && (
             <Box
               style={{
                 position: "absolute",

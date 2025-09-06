@@ -145,10 +145,23 @@ export function VerticalStatusCard({
       }}
     >
       {/* Background image from latest status */}
-      {latestStatus.media.type === "image" ? (
-        <Image
-          src={latestStatus.media.url}
-          alt="Status background"
+      {latestStatus.media && latestStatus.media.length > 0 ? (
+        latestStatus.media[0].mediaType === "image" ? (
+          <Image
+            src={latestStatus.media[0].url}
+            alt="Status background"
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+            }}
+          />
+        ) : (
+          <video
+              src={latestStatus.media[0].url}
           style={{
             position: "absolute",
             top: 0,
@@ -157,22 +170,27 @@ export function VerticalStatusCard({
             height: "100%",
             objectFit: "cover",
           }}
-        />
+              muted
+              loop
+              playsInline
+            />
+        )
       ) : (
-        <video
-          src={latestStatus.media.url}
+        <Box
           style={{
             position: "absolute",
             top: 0,
             left: 0,
             width: "100%",
             height: "100%",
-            objectFit: "cover",
+            backgroundColor: "var(--mantine-color-gray-1)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
           }}
-          muted
-          loop
-          playsInline
-        />
+        >
+          <Text c="dimmed" size="sm">No media</Text>
+        </Box>
       )}
 
       {/* Overlay gradient */}
@@ -244,7 +262,6 @@ export function VerticalStatusCard({
 
           ta="center"
           style={{
-            textShadow: "0 1px 3px rgba(0, 0, 0, 0.8)",
             lineHeight: 1.2,
             overflow: "hidden",
             textOverflow: "ellipsis",
@@ -256,7 +273,7 @@ export function VerticalStatusCard({
       </Box>
 
       {/* Video play indicator */}
-      {latestStatus.media.type === "video" && (
+      {latestStatus.media && latestStatus.media.length > 0 && latestStatus.media[0].mediaType === "video" && (
         <Box
           style={{
             position: "absolute",

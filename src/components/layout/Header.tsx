@@ -19,11 +19,9 @@ import {
   IconHome,
   IconLogout,
   IconMenu2,
-  IconMoon,
   IconPlus,
   IconSearch,
   IconSettings,
-  IconSun,
   IconUser,
 } from "@tabler/icons-react";
 import { useState } from "react";
@@ -40,7 +38,7 @@ export function HeaderContent() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout, isAuthenticated } = useAuthStore();
-  const { unreadCount, theme, setTheme } = useUIStore();
+  const { unreadCount } = useUIStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
 
@@ -57,9 +55,6 @@ export function HeaderContent() {
     navigate("/", { replace: true });
   };
 
-  const toggleTheme = () => {
-    setTheme(theme === "light" ? "dark" : "light");
-  };
 
   const isActive = (path: string) => {
     if (path === "/") {
@@ -183,28 +178,6 @@ export function HeaderContent() {
         </Box>
 
         <Group gap="sm">
-          {/* Theme Toggle Button */}
-          <Tooltip
-            label={
-              theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
-            }
-            position="bottom"
-          >
-            <ActionIcon
-              variant="subtle"
-              size="lg"
-              radius="xl"
-              onClick={toggleTheme}
-              style={{ transition: "all 0.2s ease" }}
-            >
-              {theme === "dark" ? (
-                <IconSun size={20} />
-              ) : (
-                <IconMoon size={20} />
-              )}
-            </ActionIcon>
-          </Tooltip>
-
           {!isAuthenticated ? (
             <Group gap="sm">
               <Button
@@ -290,7 +263,7 @@ export function HeaderContent() {
 
                   <Menu.Item
                     leftSection={<IconSettings size={16} />}
-                    onClick={() => navigate("/profile")}
+                      onClick={() => navigate("/settings")}
                   >
                     Settings
                   </Menu.Item>

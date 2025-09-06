@@ -19,13 +19,12 @@ import {
   IconPhoto,
   IconSend,
   IconX,
-  IconVideo,
   IconUpload,
 } from "@tabler/icons-react";
 import { useRef, useState } from "react";
 import { useAuthStore } from "../../stores/authStore";
-import { useStatusStore } from "../../stores/statusStore";
-import { Status } from "../../types";
+import { useCreateStatus } from "../../hooks/useStatuses";
+import { CreateStatusData } from "../../types";
 
 interface CreateStatusProps {
   opened: boolean;
@@ -34,30 +33,43 @@ interface CreateStatusProps {
 
 export function CreateStatus({ opened, onClose }: CreateStatusProps) {
   const { user } = useAuthStore();
-  const { addStatus } = useStatusStore();
+  const createStatusMutation = useCreateStatus();
   const [content, setContent] = useState("");
-  const [media, setMedia] = useState<File | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState<string>("");
+  const [media, setMedia] = useState<File[]>([]);
+  const [privacy, setPrivacy] = useState<"public" | "followers" | "close_friends" | "private">("public");
+  const [type, setType] = useState<"image" | "video" | "text">("text");
+  const [location, setLocation] = useState("");
+  const [expirationHours, setExpirationHours] = useState(24);
+  const [allowReplies, setAllowReplies] = useState(true);
+  const [allowReactions, setAllowReactions] = useState(true);
+  const [allowShares, setAllowShares] = useState(true);
+  const [allowScreenshots, setAllowScreenshots] = useState(true);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [uploadProgress, setUploadProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleMediaUpload = (file: File | null) => {
-    if (!file) return;
+  const handleMediaUpload = (files: File[] | null) => {
+    if (!files || files.length === 0) return;
 
-    const isValidType =
-      file.type.startsWith("image/") || file.type.startsWith("video/");
-    const isValidSize = file.size <= 100 * 1024 * 1024; // 100MB limit
+    const validFiles = files.filter((file) => {
+      const isValidType =
+        file.type.startsWith("image/") || file.type.startsWith("video/");
+      const isValidSize = file.size <= 100 * 1024 * 1024; // 100MB limit
 
-    if (!isValidType) {
-      alert("Please select a valid image or video file");
-      return;
-    }
+      if (!isValidType) {
+        alert(`File ${file.name} is not a valid image or video`);
+        return false;
+      }
 
-    if (!isValidSize) {
-      alert("File size must be less than 100MB");
-      return;
-    }
+      if (!isValidSize) {
+        alert(`File ${file.name} is too large (max 100MB)`);
+        return false;
+      }
+
+      return true;
+    });
+
+    if (validFiles.length === 0) return;
 
     setUploadProgress(0);
 
@@ -72,96 +84,54 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
       });
     }, 100);
 
-    setMedia(file);
-    setPreviewUrl(URL.createObjectURL(file));
+    setMedia(validFiles);
+    setPreviewUrls(validFiles.map(file => URL.createObjectURL(file)));
+    setType(validFiles[0].type.startsWith("image/") ? "image" : "video");
   };
 
   const removeMedia = () => {
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl);
-    }
-    setMedia(null);
-    setPreviewUrl("");
+    previewUrls.forEach(url => URL.revokeObjectURL(url));
+    setMedia([]);
+    setPreviewUrls([]);
     setUploadProgress(0);
   };
 
   const handleSubmit = async () => {
-    if (!media) {
-      alert("Please select an image or video to share");
+    if (!content.trim() && media.length === 0) {
+      alert("Please add some content or media to share");
       return;
     }
 
-    setIsSubmitting(true);
-
     try {
-      const now = new Date();
-      const expiresAt = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-
-      let duration: number | undefined;
-      if (media.type.startsWith("video/")) {
-        duration = await getVideoDuration(media);
-      }
-
-      const newStatus: Status = {
-        id: Date.now().toString(),
-        author: {
-          id: user?.id || "1",
-          phoneNumber: user?.phoneNumber || "",
-          username: user?.firstName?.toLowerCase() || "user",
-          firstName: user?.firstName || "User",
-          lastName: user?.lastName || "",
-          avatar: user?.avatar,
-          isVerified: user?.isVerified || false,
-          isProfileComplete: user?.isProfileComplete || false,
-          createdAt: user?.createdAt || new Date().toISOString(),
-          updatedAt: user?.updatedAt || new Date().toISOString(),
-          followersCount: user?.followersCount || 0,
-          followingCount: user?.followingCount || 0,
-          postsCount: user?.postsCount || 0,
-        },
-        media: {
-          id: `media-${Date.now()}`,
-          url: URL.createObjectURL(media),
-          type: media.type.startsWith("image/") ? "image" : "video",
-          filename: media.name,
-          size: media.size,
-          duration: duration,
-          createdAt: new Date().toISOString(),
-        },
-        content: content.trim() || undefined,
-        viewsCount: 0,
-        views: [],
-        isViewed: false,
-        createdAt: now.toISOString(),
-        expiresAt: expiresAt.toISOString(),
-        isExpired: false,
+      const statusData: CreateStatusData = {
+        content: content.trim(),
+        type: type,
+        privacy: privacy,
+        media: media.length > 0 ? media : undefined,
+        location: location.trim() || undefined,
+        allowReplies: allowReplies,
+        allowReactions: allowReactions,
+        allowShares: allowShares,
+        allowScreenshots: allowScreenshots,
+        expirationHours: expirationHours,
       };
 
-      addStatus(newStatus);
+      await createStatusMutation.mutateAsync(statusData);
 
       // Reset form
       setContent("");
-      removeMedia();
+      setMedia([]);
+      setPreviewUrls([]);
+      setLocation("");
+      setUploadProgress(0);
+
       onClose();
     } catch (error) {
       console.error("Error creating status:", error);
       alert("Failed to create status. Please try again.");
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
-  const getVideoDuration = (file: File): Promise<number> => {
-    return new Promise((resolve) => {
-      const video = document.createElement("video");
-      video.preload = "metadata";
-      video.onloadedmetadata = () => {
-        window.URL.revokeObjectURL(video.src);
-        resolve(video.duration);
-      };
-      video.src = URL.createObjectURL(file);
-    });
-  };
 
   const handleClose = () => {
     if (content.trim() || media) {
@@ -217,14 +187,13 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
         },
         header: {
           paddingBottom: 12,
-          borderBottom: "1px solid var(--mantine-color-gray-3)",
         },
         content: {
           backgroundColor: "var(--mantine-color-body)",
         },
       }}
     >
-      <LoadingOverlay visible={isSubmitting} />
+      <LoadingOverlay visible={createStatusMutation.isPending} />
 
       <Stack gap="lg" mt="md">
         {/* User info */}
@@ -258,12 +227,12 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
         </Group>
 
         {/* Media preview */}
-        {media && previewUrl && (
+        {media.length > 0 && previewUrls.length > 0 && (
           <Card p="md" withBorder radius="md">
             <Stack gap="sm">
               <Group justify="space-between" align="center">
                 <Text fw={500} size="sm">
-                  Media Preview
+                  Media Preview ({media.length} file{media.length > 1 ? 's' : ''})
                 </Text>
                 <ActionIcon
                   size="sm"
@@ -284,40 +253,45 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
                 </Box>
               )}
 
-              <Box
-                style={{
-                  borderRadius: 8,
-                  overflow: "hidden",
-                  maxHeight: 300,
-                  position: "relative",
-                }}
-              >
-                {media.type.startsWith("image/") ? (
-                  <Image
-                    src={previewUrl}
-                    alt="Status preview"
-                    fit="cover"
-                    style={{ maxHeight: 300 }}
-                  />
-                ) : (
-                  <video
-                    src={previewUrl}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '8px' }}>
+                {previewUrls.map((url, index) => (
+                  <Box
+                    key={index}
                     style={{
-                      width: "100%",
-                      maxHeight: 300,
-                      objectFit: "cover",
+                      borderRadius: 8,
+                      overflow: "hidden",
+                      maxHeight: 200,
+                      position: "relative",
                     }}
-                    controls
-                  />
-                )}
-              </Box>
+                  >
+                    {media[index].type.startsWith("image/") ? (
+                      <Image
+                        src={url}
+                        alt={`Status preview ${index + 1}`}
+                        fit="cover"
+                        style={{ maxHeight: 200 }}
+                      />
+                    ) : (
+                      <video
+                          src={url}
+                          style={{
+                            width: "100%",
+                          maxHeight: 200,
+                          objectFit: "cover",
+                        }}
+                        controls
+                      />
+                    )}
+                  </Box>
+                ))}
+              </div>
 
               <Group gap="xs" justify="space-between" align="center">
                 <Text size="xs" c="dimmed">
-                  {media.name}
+                  {media.length} file{media.length > 1 ? 's' : ''} selected
                 </Text>
                 <Text size="xs" c="dimmed">
-                  {formatFileSize(media.size)}
+                  {formatFileSize(media.reduce((total, file) => total + file.size, 0))}
                 </Text>
               </Group>
             </Stack>
@@ -325,12 +299,10 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
         )}
 
         {/* Media upload section */}
-        {!media && (
+        {media.length === 0 && (
           <Card
             p="xl"
-            withBorder
             radius="md"
-            style={{ border: "2px dashed var(--mantine-color-gray-3)" }}
           >
             <Stack gap="lg" align="center">
               <Box
@@ -360,8 +332,9 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
               <Group gap="sm">
                 <FileInput
                   ref={fileInputRef as any}
-                  accept="image/*"
-                  onChange={handleMediaUpload}
+                  accept="image/*,video/*"
+                  multiple
+                  onChange={(files) => handleMediaUpload(files)}
                   style={{ display: "none" }}
                 />
                 <Button
@@ -370,30 +343,7 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
                   onClick={() => fileInputRef.current?.click()}
                   radius="xl"
                 >
-                  Choose Photo
-                </Button>
-
-                <FileInput
-                  accept="video/*"
-                  onChange={handleMediaUpload}
-                  style={{ display: "none" }}
-                />
-                <Button
-                  variant="light"
-                  leftSection={<IconVideo size={16} />}
-                  onClick={() => {
-                    const input = document.createElement("input");
-                    input.type = "file";
-                    input.accept = "video/*";
-                    input.onchange = (e) => {
-                      const file = (e.target as HTMLInputElement)?.files?.[0];
-                      if (file) handleMediaUpload(file);
-                    };
-                    input.click();
-                  }}
-                  radius="xl"
-                >
-                  Choose Video
+                  Choose Media
                 </Button>
               </Group>
 
@@ -437,19 +387,100 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
           </Group>
         </Box>
 
+        {/* Additional settings */}
+        <Box>
+          <Text fw={500} size="sm" mb="xs">
+            Settings
+          </Text>
+          <Stack gap="sm">
+            <Group justify="space-between">
+              <Text size="sm">Privacy</Text>
+              <select
+                value={privacy}
+                onChange={(e) => setPrivacy(e.target.value as any)}
+                style={{
+                  padding: '8px 12px',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                }}
+              >
+                <option value="public">Public</option>
+                <option value="followers">Followers Only</option>
+                <option value="close_friends">Close Friends</option>
+                <option value="private">Private</option>
+              </select>
+            </Group>
+
+            <Group justify="space-between">
+              <Text size="sm">Expires in</Text>
+              <select
+                value={expirationHours}
+                onChange={(e) => setExpirationHours(Number(e.target.value))}
+                style={{
+                  padding: '8px 12px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--mantine-color-gray-3)',
+                  fontSize: '14px',
+                }}
+              >
+                <option value={1}>1 hour</option>
+                <option value={6}>6 hours</option>
+                <option value={12}>12 hours</option>
+                <option value={24}>24 hours</option>
+                <option value={48}>48 hours</option>
+              </select>
+            </Group>
+
+            <Group justify="space-between">
+              <Text size="sm">Allow replies</Text>
+              <input
+                type="checkbox"
+                checked={allowReplies}
+                onChange={(e) => setAllowReplies(e.target.checked)}
+              />
+            </Group>
+
+            <Group justify="space-between">
+              <Text size="sm">Allow reactions</Text>
+              <input
+                type="checkbox"
+                checked={allowReactions}
+                onChange={(e) => setAllowReactions(e.target.checked)}
+              />
+            </Group>
+
+            <Group justify="space-between">
+              <Text size="sm">Allow shares</Text>
+              <input
+                type="checkbox"
+                checked={allowShares}
+                onChange={(e) => setAllowShares(e.target.checked)}
+              />
+            </Group>
+
+            <Group justify="space-between">
+              <Text size="sm">Allow screenshots</Text>
+              <input
+                type="checkbox"
+                checked={allowScreenshots}
+                onChange={(e) => setAllowScreenshots(e.target.checked)}
+              />
+            </Group>
+          </Stack>
+        </Box>
+
         {/* Action buttons */}
         <Group
           justify="space-between"
           pt="md"
-          style={{ borderTop: "1px solid var(--mantine-color-gray-3)" }}
         >
           <Button variant="light" onClick={handleClose} radius="xl" size="md">
             Cancel
           </Button>
           <Button
             onClick={handleSubmit}
-            loading={isSubmitting}
-            disabled={!media || content.length > 500}
+            loading={createStatusMutation.isPending}
+            disabled={(!content.trim() && media.length === 0) || content.length > 500}
             leftSection={<IconSend size={16} />}
             radius="xl"
             size="md"
@@ -464,7 +495,6 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
         <Box
           ta="center"
           pt="sm"
-          style={{ borderTop: "1px solid var(--mantine-color-gray-2)" }}
         >
           <Text size="xs" c="dimmed">
             🔒 Your status will automatically disappear after 24 hours
