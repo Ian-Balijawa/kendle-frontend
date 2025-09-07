@@ -209,6 +209,12 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
       );
     };
 
+
+    console.log("post.media", post.media);
+
+    const videoStreamUrl = `http://localhost:8084/api/v1/stream/video/${post.media?.[0]?.url.split("/").pop()}`;
+    const imageStreamUrl = `http://localhost:8084/api/v1/stream/image/${post.media?.[0]?.url.split("/").pop()}`;
+
     return (
       <>
         <Card
@@ -460,7 +466,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                   >
                     {post.media[0].type === "video" ? (
                       <ReactPlayer
-                        src={post.media[0].url}
+                        src={videoStreamUrl}
                         width="100%"
                         height={
                           post.media[0].height
@@ -476,7 +482,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                       />
                     ) : (
                       <Image
-                        src={post.media[0].url}
+                          src={imageStreamUrl}
                         alt={post.media[0].filename || "Post media"}
                         radius="lg"
                         style={{
@@ -487,7 +493,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                         onError={(e) => {
                           console.error(
                             "Failed to load image:",
-                            post?.media?.[0].url,
+                            imageStreamUrl,
                           );
                           e.currentTarget.style.display = "none";
                         }}
@@ -519,11 +525,11 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                             }}
                           >
                             <ReactPlayer
-                              src={media.url}
+                              src={videoStreamUrl}
                               width="100%"
                               height="100%"
                               controls
-                              light={media.thumbnailUrl}
+                              light={imageStreamUrl}
                               playsInline
                               style={{
                                 borderRadius: "var(--mantine-radius-md)",
@@ -532,7 +538,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                           </Box>
                         ) : (
                           <Image
-                            src={media.url}
+                              src={imageStreamUrl}
                             alt={media.filename || "Post media"}
                             radius="md"
                             style={{
@@ -549,7 +555,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                               e.currentTarget.style.transform = "scale(1)";
                             }}
                             onError={(e) => {
-                              console.error("Failed to load image:", media.url);
+                              console.error("Failed to load image:", imageStreamUrl);
                               e.currentTarget.style.display = "none";
                             }}
                           />

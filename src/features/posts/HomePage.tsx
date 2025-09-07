@@ -245,7 +245,6 @@ export function HomePage() {
         )}
       </Box>
 
-      {/* Profile Discovery Section */}
       {isAuthenticated &&
         suggestedUsers &&
         suggestedUsers.suggestions.length > 0 && (

@@ -269,6 +269,9 @@ export function PostDetail() {
       );
     };
 
+    const videoStreamUrl = `http://localhost:8084/api/v1/stream/video/${post.media?.[0]?.url.split("/").pop()}`;
+    const imageStreamUrl = `http://localhost:8084/api/v1/stream/image/${post.media?.[0]?.url.split("/").pop()}`;
+
     return (
       <Box mx="auto" p="md">
         {/* Header */}
@@ -539,7 +542,7 @@ export function PostDetail() {
                   >
                     {post.media[0].type === "video" ? (
                       <ReactPlayer
-                        src={post.media[0].url}
+                        src={videoStreamUrl}
                         width="100%"
                         height={
                           post.media[0].height
@@ -555,7 +558,7 @@ export function PostDetail() {
                       />
                     ) : (
                       <Image
-                        src={post.media[0].url}
+                          src={imageStreamUrl}
                         alt={post.media[0].filename || "Post media"}
                         radius="lg"
                         style={{
@@ -566,7 +569,7 @@ export function PostDetail() {
                         onError={(e) => {
                           console.error(
                             "Failed to load image:",
-                            post.media?.[0]?.url,
+                            imageStreamUrl,
                           );
                           e.currentTarget.style.display = "none";
                         }}
@@ -586,11 +589,11 @@ export function PostDetail() {
                             }}
                           >
                             <ReactPlayer
-                              src={media.url}
+                              src={videoStreamUrl}
                               width="100%"
                               height="100%"
                               controls
-                              light={media.thumbnailUrl}
+                              light={imageStreamUrl}
                               playsInline
                               style={{
                                 borderRadius: "var(--mantine-radius-md)",
