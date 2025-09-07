@@ -144,7 +144,7 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
         isValidVideoType ||
         isValidImageExtension ||
         isValidVideoExtension;
-      const isValidSize = file.size <= 50 * 1024 * 1024; // 50MB limit
+      const isValidSize = file.size <= 500 * 1024 * 1024; // 50MB limit
 
       if (!isValidType) {
         console.error(
