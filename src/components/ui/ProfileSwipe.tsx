@@ -94,7 +94,8 @@ export function ProfileSwipe({
               width: 96,
               height: 96,
               borderRadius: "50%",
-              background: "linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.05))",
+              background:
+                "linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.05))",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -110,16 +111,17 @@ export function ProfileSwipe({
                 width: "20px",
                 height: "20px",
                 borderRadius: "50%",
-                background: "linear-gradient(135deg, rgba(240, 147, 251, 0.3), rgba(102, 126, 234, 0.2))",
+                background:
+                  "linear-gradient(135deg, rgba(240, 147, 251, 0.3), rgba(102, 126, 234, 0.2))",
                 filter: "blur(4px)",
               }}
             />
           </Box>
           <Stack align="center" gap="xs">
-            <Text fw={700} size="xl" c="gray.8">
+            <Text fw={700} size="xl">
               No users to discover
             </Text>
-            <Text c="gray.5" ta="center" size="sm" maw={300}>
+            <Text ta="center" size="sm" maw={300}>
               Check back later for new people to follow and expand your network!
             </Text>
           </Stack>
@@ -135,10 +137,10 @@ export function ProfileSwipe({
         <Group align="center" gap="xs">
           <IconSparkles size={24} color="#667eea" />
           <Box>
-            <Text size="xl" fw={700} c="gray.8" lh={1.2}>
+            <Text size="xl" fw={700} lh={1.2}>
               {title}
             </Text>
-            <Text c="gray.5" size="sm" fw={500} mt={2}>
+            <Text size="sm" fw={500} mt={2}>
               {subtitle}
             </Text>
           </Box>
@@ -242,36 +244,6 @@ export function ProfileSwipe({
             ))}
           </Group>
         </ScrollArea>
-
-        {/* Fade gradients for better visual flow */}
-        <Box
-          style={{
-            position: "absolute",
-            left: 0,
-            top: 0,
-            bottom: 0,
-            width: "40px",
-            background: "linear-gradient(90deg, rgba(255,255,255,0.8), transparent)",
-            pointerEvents: "none",
-            zIndex: 5,
-            opacity: canScrollLeft ? 1 : 0,
-            transition: "opacity 0.3s ease",
-          }}
-        />
-        <Box
-          style={{
-            position: "absolute",
-            right: 0,
-            top: 0,
-            bottom: 0,
-            width: "40px",
-            background: "linear-gradient(270deg, rgba(255,255,255,0.8), transparent)",
-            pointerEvents: "none",
-            zIndex: 5,
-            opacity: canScrollRight ? 1 : 0,
-            transition: "opacity 0.3s ease",
-          }}
-        />
       </Box>
     </Box>
   );

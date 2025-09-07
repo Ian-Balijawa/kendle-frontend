@@ -16,7 +16,7 @@ import {
   IconSparkles,
   IconTrendingUp,
 } from "@tabler/icons-react";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { InfiniteScrollLoader, PostSkeletonList } from "../../components/ui";
 import { ProfileSwipe } from "../../components/ui/ProfileSwipe";
 import { useInfinitePosts } from "../../hooks/usePosts";
@@ -56,9 +56,11 @@ export function HomePage() {
   const { data: suggestedUsers } = useSuggestedUsers(10);
 
   // Get statuses
-  const {
-    data: statusData,
-  } = useInfiniteStatuses({ limit: 20, sortBy: "createdAt", sortOrder: "desc" });
+  const { data: statusData } = useInfiniteStatuses({
+    limit: 20,
+    sortBy: "createdAt",
+    sortOrder: "desc",
+  });
 
   // Status view mutation
   const viewStatusMutation = useViewStatus();
@@ -87,12 +89,13 @@ export function HomePage() {
 
     if (existingCollection) {
       existingCollection.statuses.push(status);
-      existingCollection.hasUnviewed = existingCollection.hasUnviewed || !status.isViewed;
+      existingCollection.hasUnviewed =
+        existingCollection.hasUnviewed || !status.isViewed;
     } else {
       collections.push({
         author: status.author,
         statuses: [status],
-        hasUnviewed: !status.isViewed,
+        hasUnviewed: !status.isViewed || false, // Default to false if isViewed is undefined
         lastUpdated: status.createdAt,
       });
     }
@@ -101,12 +104,16 @@ export function HomePage() {
   }, []);
 
   // Sort collections by last updated
-  apiStatusCollections.sort((a, b) =>
-    new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime()
+  apiStatusCollections.sort(
+    (a, b) =>
+      new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime(),
   );
 
   // Use API status collections if available, otherwise fall back to store
-  const statusCollections = apiStatusCollections.length > 0 ? apiStatusCollections : storeStatusCollections;
+  const statusCollections =
+    apiStatusCollections.length > 0
+      ? apiStatusCollections
+      : storeStatusCollections;
 
   // Status handlers
   const handleCreateStatus = () => {
@@ -161,17 +168,20 @@ export function HomePage() {
     }
   };
 
-  const handleViewStatus = (statusId: string) => {
-    if (user?.id) {
-      viewStatusMutation.mutate({
-        id: statusId,
-        data: {
-          viewDuration: 5000, // 5 seconds default
-          deviceType: "web",
-        },
-      });
-    }
-  };
+  const handleViewStatus = useCallback(
+    (statusId: string) => {
+      if (user?.id) {
+        viewStatusMutation.mutate({
+          id: statusId,
+          data: {
+            viewDuration: 5000, // 5 seconds default
+            deviceType: "web",
+          },
+        });
+      }
+    },
+    [user?.id, viewStatusMutation],
+  );
 
   const canGoNext = selectedStatus
     ? currentStatusIndex < selectedStatus.statuses.length - 1
@@ -242,7 +252,7 @@ export function HomePage() {
           <ProfileSwipe
             users={suggestedUsers.suggestions}
             title="Discover People"
-          subtitle="Find interesting people to follow"
+            subtitle="Find interesting people to follow"
           />
         )}
 

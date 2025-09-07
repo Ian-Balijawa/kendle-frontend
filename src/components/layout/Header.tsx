@@ -55,7 +55,6 @@ export function HeaderContent() {
     navigate("/", { replace: true });
   };
 
-
   const isActive = (path: string) => {
     if (path === "/") {
       return location.pathname === "/";
@@ -263,7 +262,7 @@ export function HeaderContent() {
 
                   <Menu.Item
                     leftSection={<IconSettings size={16} />}
-                      onClick={() => navigate("/settings")}
+                    onClick={() => navigate("/settings")}
                   >
                     Settings
                   </Menu.Item>

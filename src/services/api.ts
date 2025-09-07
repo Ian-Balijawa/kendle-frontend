@@ -19,43 +19,16 @@ import {
   StatusReply,
   StatusRepliesResponse,
   StatusAnalytics,
+  PostEngagement,
 } from "../types";
 
 // API request/response types based on the provided endpoints
 export interface CreatePostRequest {
   content: string;
-  media?: {
-    type: "image" | "video";
-    url: string;
-    thumbnailUrl?: string;
-    altText?: string;
-    caption?: string;
-    fileSize?: number;
-    duration?: number;
-    width?: number;
-    height?: number;
-    format?: string;
-  }[];
+  media?: File[];
+  thumbnail?: File[];
   location?: string;
-  tags?: {
-    name: string;
-    description?: string;
-  }[];
-  mentions?: {
-    mentionedUserId: string;
-    postId?: string;
-    commentId?: string;
-  }[];
-  type?:
-    | "text"
-    | "image"
-    | "video"
-    | "poll"
-    | "event"
-    | "repost"
-    | "quote"
-    | "article"
-    | "story";
+  type?: "text" | "image" | "video";
   isPublic?: boolean;
   allowComments?: boolean;
   allowLikes?: boolean;
@@ -66,15 +39,6 @@ export interface CreatePostRequest {
   isQuote?: boolean;
   isArticle?: boolean;
   isStory?: boolean;
-  pollQuestion?: string;
-  pollOptions?: string[];
-  pollEndDate?: string;
-  eventTitle?: string;
-  eventDescription?: string;
-  eventStartDate?: string;
-  eventEndDate?: string;
-  eventLocation?: string;
-  eventCapacity?: number;
   originalPostId?: string;
   repostContent?: string;
   scheduledAt?: string;
@@ -210,18 +174,8 @@ export interface CreateStatusRequest {
   content: string;
   type: "image" | "video" | "text";
   privacy: "public" | "followers" | "close_friends" | "private";
-  media?: {
-    url: string;
-    thumbnailUrl?: string;
-    mediaType: "image" | "video";
-    fileName: string;
-    fileSize: number;
-    mimeType: string;
-    duration?: number;
-    width?: number;
-    height?: number;
-    order: number;
-  }[];
+  media?: File[];
+  thumbnail?: File[];
   location?: string;
   musicTrack?: string;
   musicArtist?: string;
@@ -229,10 +183,6 @@ export interface CreateStatusRequest {
   pollQuestion?: string;
   pollOptions?: string[];
   highlightTitle?: string;
-  allowReplies?: boolean;
-  allowReactions?: boolean;
-  allowShares?: boolean;
-  allowScreenshots?: boolean;
   closeFriends?: string[];
   expirationHours?: number;
 }
@@ -487,11 +437,78 @@ class ApiService {
   }
 
   async createPost(data: CreatePostRequest): Promise<Post> {
-    const response: AxiosResponse<ApiResponse<Post>> = await this.api.post(
-      "/posts",
-      data,
-    );
-    return response.data.data;
+    const formData = new FormData();
+
+    // Add basic fields
+    formData.append("content", data.content);
+
+    if (data.type) {
+      formData.append("type", data.type);
+    }
+    if (data.location) {
+      formData.append("location", data.location);
+    }
+    if (data.isPublic !== undefined) {
+      formData.append("isPublic", data.isPublic.toString());
+    }
+    if (data.allowComments !== undefined) {
+      formData.append("allowComments", data.allowComments.toString());
+    }
+    if (data.allowLikes !== undefined) {
+      formData.append("allowLikes", data.allowLikes.toString());
+    }
+    if (data.allowShares !== undefined) {
+      formData.append("allowShares", data.allowShares.toString());
+    }
+    if (data.allowBookmarks !== undefined) {
+      formData.append("allowBookmarks", data.allowBookmarks.toString());
+    }
+    if (data.allowReactions !== undefined) {
+      formData.append("allowReactions", data.allowReactions.toString());
+    }
+    if (data.isRepost !== undefined) {
+      formData.append("isRepost", data.isRepost.toString());
+    }
+    if (data.isQuote !== undefined) {
+      formData.append("isQuote", data.isQuote.toString());
+    }
+    if (data.isArticle !== undefined) {
+      formData.append("isArticle", data.isArticle.toString());
+    }
+    if (data.isStory !== undefined) {
+      formData.append("isStory", data.isStory.toString());
+    }
+    if (data.originalPostId) {
+      formData.append("originalPostId", data.originalPostId);
+    }
+    if (data.repostContent) {
+      formData.append("repostContent", data.repostContent);
+    }
+    if (data.scheduledAt) {
+      formData.append("scheduledAt", data.scheduledAt);
+    }
+
+    // Add media files
+    if (data.media && data.media.length > 0) {
+      data.media.forEach((file) => {
+        formData.append("media", file);
+      });
+    }
+
+    // Add thumbnail files
+    if (data.thumbnail && data.thumbnail.length > 0) {
+      data.thumbnail.forEach((file) => {
+        formData.append("thumbnail", file);
+      });
+    }
+
+    const response: AxiosResponse<ApiResponse<{ post: Post }>> =
+      await this.api.post("/posts", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+    return response.data.data.post;
   }
 
   async updatePost(id: string, data: UpdatePostRequest): Promise<Post> {
@@ -1075,6 +1092,81 @@ class ApiService {
     return response.data.data;
   }
 
+  // Post engagement API methods
+  async getPostLikers(
+    postId: string,
+    params: { page?: number; limit?: number } = {},
+  ): Promise<UsersResponse> {
+    const searchParams = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        searchParams.append(key, String(value));
+      }
+    });
+
+    const response: AxiosResponse<ApiResponse<UsersResponse>> =
+      await this.api.get(`/posts/${postId}/likers?${searchParams.toString()}`);
+    return response.data.data;
+  }
+
+  async getPostDislikers(
+    postId: string,
+    params: { page?: number; limit?: number } = {},
+  ): Promise<UsersResponse> {
+    const searchParams = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        searchParams.append(key, String(value));
+      }
+    });
+
+    const response: AxiosResponse<ApiResponse<UsersResponse>> =
+      await this.api.get(
+        `/posts/${postId}/dislikers?${searchParams.toString()}`,
+      );
+    return response.data.data;
+  }
+
+  async getPostBookmarkers(
+    postId: string,
+    params: { page?: number; limit?: number } = {},
+  ): Promise<UsersResponse> {
+    const searchParams = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        searchParams.append(key, String(value));
+      }
+    });
+
+    const response: AxiosResponse<ApiResponse<UsersResponse>> =
+      await this.api.get(
+        `/posts/${postId}/bookmarkers?${searchParams.toString()}`,
+      );
+    return response.data.data;
+  }
+
+  async getPostViewers(
+    postId: string,
+    params: { page?: number; limit?: number } = {},
+  ): Promise<UsersResponse> {
+    const searchParams = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        searchParams.append(key, String(value));
+      }
+    });
+
+    const response: AxiosResponse<ApiResponse<UsersResponse>> =
+      await this.api.get(`/posts/${postId}/viewers?${searchParams.toString()}`);
+    return response.data.data;
+  }
+
+  async getPostEngagement(postId: string): Promise<PostEngagement> {
+    const response: AxiosResponse<ApiResponse<{ engagement: PostEngagement }>> =
+      await this.api.get(`/posts/${postId}/engagement`);
+    return response.data.data.engagement;
+  }
+
   async getSuggestedUsers(
     limit = 10,
   ): Promise<{ suggestions: User[]; count: number }> {
@@ -1086,11 +1178,71 @@ class ApiService {
 
   // Status API methods
   async createStatus(data: CreateStatusRequest): Promise<Status> {
-    const response: AxiosResponse<ApiResponse<Status>> = await this.api.post(
-      "/statuses",
-      data,
-    );
-    return response.data.data;
+    const formData = new FormData();
+
+    // Add basic fields
+    formData.append("content", data.content);
+    formData.append("type", data.type);
+    formData.append("privacy", data.privacy);
+
+    // Add optional fields
+    if (data.location) {
+      formData.append("location", data.location);
+    }
+    if (data.musicTrack) {
+      formData.append("musicTrack", data.musicTrack);
+    }
+    if (data.musicArtist) {
+      formData.append("musicArtist", data.musicArtist);
+    }
+    if (data.highlightTitle) {
+      formData.append("highlightTitle", data.highlightTitle);
+    }
+    if (data.pollQuestion) {
+      formData.append("pollQuestion", data.pollQuestion);
+    }
+    if (data.expirationHours) {
+      formData.append("expirationHours", data.expirationHours.toString());
+    }
+
+    // Add array fields
+    if (data.stickers && data.stickers.length > 0) {
+      data.stickers.forEach((sticker) => {
+        formData.append("stickers", sticker);
+      });
+    }
+    if (data.pollOptions && data.pollOptions.length > 0) {
+      data.pollOptions.forEach((option) => {
+        formData.append("pollOptions", option);
+      });
+    }
+    if (data.closeFriends && data.closeFriends.length > 0) {
+      data.closeFriends.forEach((friendId) => {
+        formData.append("closeFriends", friendId);
+      });
+    }
+
+    // Add media files
+    if (data.media && data.media.length > 0) {
+      data.media.forEach((file) => {
+        formData.append("media", file);
+      });
+    }
+
+    // Add thumbnail files
+    if (data.thumbnail && data.thumbnail.length > 0) {
+      data.thumbnail.forEach((file) => {
+        formData.append("thumbnail", file);
+      });
+    }
+
+    const response: AxiosResponse<ApiResponse<{ status: Status }>> =
+      await this.api.post("/statuses", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+    return response.data.data.status;
   }
 
   async getStatuses(params: GetStatusesParams = {}): Promise<StatusesResponse> {
@@ -1133,11 +1285,12 @@ class ApiService {
     await this.api.delete(`/statuses/${id}/react`);
   }
 
-  async replyToStatus(id: string, data: StatusReplyRequest): Promise<StatusReply> {
-    const response: AxiosResponse<ApiResponse<StatusReply>> = await this.api.post(
-      `/statuses/${id}/reply`,
-      data,
-    );
+  async replyToStatus(
+    id: string,
+    data: StatusReplyRequest,
+  ): Promise<StatusReply> {
+    const response: AxiosResponse<ApiResponse<StatusReply>> =
+      await this.api.post(`/statuses/${id}/reply`, data);
     return response.data.data;
   }
 

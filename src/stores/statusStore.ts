@@ -161,7 +161,7 @@ export const useStatusStore = create<StatusStore>()(
                       isViewed: true,
                       viewsCount: status.viewsCount + 1,
                       views: [
-                        ...status.views,
+                        ...(status.views || []),
                         {
                           id: Date.now().toString(),
                           userId,
@@ -183,7 +183,7 @@ export const useStatusStore = create<StatusStore>()(
                           isViewed: true,
                           viewsCount: status.viewsCount + 1,
                           views: [
-                            ...status.views,
+                            ...(status.views || []),
                             {
                               id: Date.now().toString(),
                               userId,
@@ -218,7 +218,7 @@ export const useStatusStore = create<StatusStore>()(
                         isViewed: true,
                         viewsCount: state.selectedStatus.viewsCount + 1,
                         views: [
-                          ...state.selectedStatus.views,
+                          ...(state.selectedStatus.views || []),
                           {
                             id: Date.now().toString(),
                             userId,

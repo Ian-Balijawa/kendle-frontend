@@ -15,16 +15,12 @@ import {
   Progress,
   Badge,
 } from "@mantine/core";
-import {
-  IconPhoto,
-  IconSend,
-  IconX,
-  IconUpload,
-} from "@tabler/icons-react";
+import { IconPhoto, IconSend, IconX, IconUpload } from "@tabler/icons-react";
 import { useRef, useState } from "react";
 import { useAuthStore } from "../../stores/authStore";
 import { useCreateStatus } from "../../hooks/useStatuses";
 import { CreateStatusData } from "../../types";
+import { generateVideoThumbnails } from "@rajesh896/video-thumbnails-generator";
 
 interface CreateStatusProps {
   opened: boolean;
@@ -36,19 +32,34 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
   const createStatusMutation = useCreateStatus();
   const [content, setContent] = useState("");
   const [media, setMedia] = useState<File[]>([]);
-  const [privacy, setPrivacy] = useState<"public" | "followers" | "close_friends" | "private">("public");
+  const [thumbnail, setThumbnail] = useState<File[]>([]);
+  const [privacy, setPrivacy] = useState<
+    "public" | "followers" | "close_friends" | "private"
+  >("public");
   const [type, setType] = useState<"image" | "video" | "text">("text");
   const [location, setLocation] = useState("");
   const [expirationHours, setExpirationHours] = useState(24);
-  const [allowReplies, setAllowReplies] = useState(true);
-  const [allowReactions, setAllowReactions] = useState(true);
-  const [allowShares, setAllowShares] = useState(true);
-  const [allowScreenshots, setAllowScreenshots] = useState(true);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [isGeneratingThumbnails, setIsGeneratingThumbnails] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleMediaUpload = (files: File[] | null) => {
+  // Helper function to convert base64 to File
+  const base64ToFile = (
+    base64String: string,
+    filename: string,
+    mimeType: string,
+  ): File => {
+    const byteCharacters = atob(base64String.split(",")[1]);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    return new File([byteArray], filename, { type: mimeType });
+  };
+
+  const handleMediaUpload = async (files: File[] | null) => {
     if (!files || files.length === 0) return;
 
     const validFiles = files.filter((file) => {
@@ -85,13 +96,59 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
     }, 100);
 
     setMedia(validFiles);
-    setPreviewUrls(validFiles.map(file => URL.createObjectURL(file)));
+    setPreviewUrls(validFiles.map((file) => URL.createObjectURL(file)));
     setType(validFiles[0].type.startsWith("image/") ? "image" : "video");
+
+    // Generate thumbnails for video files
+    const videoFiles = validFiles.filter(
+      (file) =>
+        file.type.startsWith("video/") ||
+        ["mp4", "avi", "mov", "wmv", "webm"].includes(
+          file.name.toLowerCase().split(".").pop() || "",
+        ),
+    );
+
+    if (videoFiles.length > 0) {
+      setIsGeneratingThumbnails(true);
+      try {
+        for (const videoFile of videoFiles) {
+          console.log(
+            `Generating thumbnail for status video: ${videoFile.name}`,
+          );
+          const thumbnails = await generateVideoThumbnails(
+            videoFile,
+            1,
+            "base64",
+          );
+
+          if (thumbnails && thumbnails.length > 0) {
+            const thumbnailFile = base64ToFile(
+              thumbnails[0],
+              `${videoFile.name.split(".")[0]}_thumbnail.jpg`,
+              "image/jpeg",
+            );
+
+            setThumbnail((prev) => [...prev, thumbnailFile].slice(0, 10));
+            console.log(
+              `Generated thumbnail for status video: ${videoFile.name}`,
+            );
+          }
+        }
+      } catch (error) {
+        console.error("Error generating status video thumbnails:", error);
+        alert(
+          "Failed to generate video thumbnails. Videos will be uploaded without thumbnails.",
+        );
+      } finally {
+        setIsGeneratingThumbnails(false);
+      }
+    }
   };
 
   const removeMedia = () => {
-    previewUrls.forEach(url => URL.revokeObjectURL(url));
+    previewUrls.forEach((url) => URL.revokeObjectURL(url));
     setMedia([]);
+    setThumbnail([]);
     setPreviewUrls([]);
     setUploadProgress(0);
   };
@@ -108,11 +165,8 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
         type: type,
         privacy: privacy,
         media: media.length > 0 ? media : undefined,
+        thumbnail: thumbnail.length > 0 ? thumbnail : undefined,
         location: location.trim() || undefined,
-        allowReplies: allowReplies,
-        allowReactions: allowReactions,
-        allowShares: allowShares,
-        allowScreenshots: allowScreenshots,
         expirationHours: expirationHours,
       };
 
@@ -121,6 +175,7 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
       // Reset form
       setContent("");
       setMedia([]);
+      setThumbnail([]);
       setPreviewUrls([]);
       setLocation("");
       setUploadProgress(0);
@@ -131,7 +186,6 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
       alert("Failed to create status. Please try again.");
     }
   };
-
 
   const handleClose = () => {
     if (content.trim() || media) {
@@ -232,7 +286,8 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
             <Stack gap="sm">
               <Group justify="space-between" align="center">
                 <Text fw={500} size="sm">
-                  Media Preview ({media.length} file{media.length > 1 ? 's' : ''})
+                  Media Preview ({media.length} file
+                  {media.length > 1 ? "s" : ""})
                 </Text>
                 <ActionIcon
                   size="sm"
@@ -253,7 +308,21 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
                 </Box>
               )}
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '8px' }}>
+              {isGeneratingThumbnails && (
+                <Box>
+                  <Text size="sm" c="blue" ta="center" fw={500}>
+                    Generating video thumbnails...
+                  </Text>
+                </Box>
+              )}
+
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                  gap: "8px",
+                }}
+              >
                 {previewUrls.map((url, index) => (
                   <Box
                     key={index}
@@ -273,9 +342,9 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
                       />
                     ) : (
                       <video
-                          src={url}
-                          style={{
-                            width: "100%",
+                        src={url}
+                        style={{
+                          width: "100%",
                           maxHeight: 200,
                           objectFit: "cover",
                         }}
@@ -288,10 +357,12 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
 
               <Group gap="xs" justify="space-between" align="center">
                 <Text size="xs" c="dimmed">
-                  {media.length} file{media.length > 1 ? 's' : ''} selected
+                  {media.length} file{media.length > 1 ? "s" : ""} selected
                 </Text>
                 <Text size="xs" c="dimmed">
-                  {formatFileSize(media.reduce((total, file) => total + file.size, 0))}
+                  {formatFileSize(
+                    media.reduce((total, file) => total + file.size, 0),
+                  )}
                 </Text>
               </Group>
             </Stack>
@@ -300,10 +371,7 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
 
         {/* Media upload section */}
         {media.length === 0 && (
-          <Card
-            p="xl"
-            radius="md"
-          >
+          <Card p="xl" radius="md">
             <Stack gap="lg" align="center">
               <Box
                 style={{
@@ -399,9 +467,9 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
                 value={privacy}
                 onChange={(e) => setPrivacy(e.target.value as any)}
                 style={{
-                  padding: '8px 12px',
-                  borderRadius: '8px',
-                  fontSize: '14px',
+                  padding: "8px 12px",
+                  borderRadius: "8px",
+                  fontSize: "14px",
                 }}
               >
                 <option value="public">Public</option>
@@ -417,10 +485,10 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
                 value={expirationHours}
                 onChange={(e) => setExpirationHours(Number(e.target.value))}
                 style={{
-                  padding: '8px 12px',
-                  borderRadius: '8px',
-                  border: '1px solid var(--mantine-color-gray-3)',
-                  fontSize: '14px',
+                  padding: "8px 12px",
+                  borderRadius: "8px",
+                  border: "1px solid var(--mantine-color-gray-3)",
+                  fontSize: "14px",
                 }}
               >
                 <option value={1}>1 hour</option>
@@ -430,72 +498,36 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
                 <option value={48}>48 hours</option>
               </select>
             </Group>
-
-            <Group justify="space-between">
-              <Text size="sm">Allow replies</Text>
-              <input
-                type="checkbox"
-                checked={allowReplies}
-                onChange={(e) => setAllowReplies(e.target.checked)}
-              />
-            </Group>
-
-            <Group justify="space-between">
-              <Text size="sm">Allow reactions</Text>
-              <input
-                type="checkbox"
-                checked={allowReactions}
-                onChange={(e) => setAllowReactions(e.target.checked)}
-              />
-            </Group>
-
-            <Group justify="space-between">
-              <Text size="sm">Allow shares</Text>
-              <input
-                type="checkbox"
-                checked={allowShares}
-                onChange={(e) => setAllowShares(e.target.checked)}
-              />
-            </Group>
-
-            <Group justify="space-between">
-              <Text size="sm">Allow screenshots</Text>
-              <input
-                type="checkbox"
-                checked={allowScreenshots}
-                onChange={(e) => setAllowScreenshots(e.target.checked)}
-              />
-            </Group>
           </Stack>
         </Box>
 
         {/* Action buttons */}
-        <Group
-          justify="space-between"
-          pt="md"
-        >
+        <Group justify="space-between" pt="md">
           <Button variant="light" onClick={handleClose} radius="xl" size="md">
             Cancel
           </Button>
           <Button
             onClick={handleSubmit}
-            loading={createStatusMutation.isPending}
-            disabled={(!content.trim() && media.length === 0) || content.length > 500}
+            loading={createStatusMutation.isPending || isGeneratingThumbnails}
+            disabled={
+              (!content.trim() && media.length === 0) ||
+              content.length > 500 ||
+              isGeneratingThumbnails
+            }
             leftSection={<IconSend size={16} />}
             radius="xl"
             size="md"
             variant="gradient"
             gradient={{ from: "blue", to: "cyan" }}
           >
-            Share Status
+            {isGeneratingThumbnails
+              ? "Generating thumbnails..."
+              : "Share Status"}
           </Button>
         </Group>
 
         {/* Footer info */}
-        <Box
-          ta="center"
-          pt="sm"
-        >
+        <Box ta="center" pt="sm">
           <Text size="xs" c="dimmed">
             🔒 Your status will automatically disappear after 24 hours
           </Text>

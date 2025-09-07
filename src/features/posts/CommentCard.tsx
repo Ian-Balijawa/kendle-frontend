@@ -351,7 +351,6 @@ export function CommentCard({ comment }: CommentCardProps) {
                           ? "0.25rem"
                           : 0,
                     }}
-
                   >
                     {line || "\u00A0"}
                   </Text>
@@ -458,8 +457,7 @@ export function CommentCard({ comment }: CommentCardProps) {
                   onMouseLeave={(e) => {
                     e.currentTarget.style.backgroundColor = "transparent";
                   }}
-                >
-                </UnstyledButton>
+                ></UnstyledButton>
               </Group>
             </Box>
           </Group>

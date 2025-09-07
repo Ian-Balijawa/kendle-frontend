@@ -6,6 +6,7 @@ export interface Status {
   content: string;
   type: "image" | "video" | "text";
   privacy: "public" | "followers" | "close_friends" | "private";
+  status: "active" | "inactive" | "expired";
   media?: StatusMedia[];
   location?: string;
   musicTrack?: string;
@@ -14,42 +15,42 @@ export interface Status {
   pollQuestion?: string;
   pollOptions?: string[];
   highlightTitle?: string;
-  allowReplies: boolean;
-  allowReactions: boolean;
-  allowShares: boolean;
-  allowScreenshots: boolean;
   closeFriends?: string[];
   expirationHours?: number;
   viewsCount: number;
-  views: StatusView[];
   repliesCount: number;
   reactionsCount: number;
   sharesCount: number;
-  isViewed: boolean;
-  isReacted: boolean;
-  isReplied: boolean;
-  isShared: boolean;
-  reactions: StatusReaction[];
-  replies: StatusReply[];
   createdAt: string;
   updatedAt: string;
   expiresAt: string;
-  isExpired: boolean;
+  deletedAt?: string | null;
+  parentStatus?: string | null;
+  // Optional fields that might not be present in all API responses
+  views?: StatusView[];
+  isViewed?: boolean;
+  isReacted?: boolean;
+  isReplied?: boolean;
+  isShared?: boolean;
+  reactions?: StatusReaction[];
+  replies?: StatusReply[];
+  isExpired?: boolean;
 }
 
 export interface StatusMedia {
   id: string;
   url: string;
-  thumbnailUrl?: string;
+  thumbnailUrl?: string | null;
   mediaType: "image" | "video";
   fileName: string;
   fileSize: number;
   mimeType: string;
-  duration?: number;
-  width?: number;
-  height?: number;
+  duration?: number | null;
+  width?: number | null;
+  height?: number | null;
   order: number;
   createdAt: string;
+  status: string; // Status ID reference
 }
 
 export interface StatusView {
@@ -114,6 +115,7 @@ export interface CreateStatusData {
   type: "image" | "video" | "text";
   privacy: "public" | "followers" | "close_friends" | "private";
   media?: File[];
+  thumbnail?: File[];
   location?: string;
   musicTrack?: string;
   musicArtist?: string;
@@ -121,10 +123,6 @@ export interface CreateStatusData {
   pollQuestion?: string;
   pollOptions?: string[];
   highlightTitle?: string;
-  allowReplies?: boolean;
-  allowReactions?: boolean;
-  allowShares?: boolean;
-  allowScreenshots?: boolean;
   closeFriends?: string[];
   expirationHours?: number;
 }

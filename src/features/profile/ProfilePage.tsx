@@ -324,7 +324,7 @@ export function ProfilePage() {
             boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
           }}
         >
-          <Text size="2rem" fw={600} >
+          <Text size="2rem" fw={600}>
             {(user.firstName || user.username || user.phoneNumber || "U")
               .charAt(0)
               .toUpperCase()}
@@ -753,7 +753,6 @@ export function ProfilePage() {
           </Stack>
         </Tabs.Panel>
       </Tabs>
-
     </Box>
   );
 }

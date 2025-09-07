@@ -1,16 +1,5 @@
-import {
-  Avatar,
-  Box,
-  Button,
-  Group,
-  Stack,
-  Text,
-} from "@mantine/core";
-import {
-  IconUserPlus,
-  IconUserX,
-  IconSparkles,
-} from "@tabler/icons-react";
+import { Avatar, Box, Button, Group, Stack, Text } from "@mantine/core";
+import { IconUserCheck, IconUserPlus, IconSparkles } from "@tabler/icons-react";
 import { User } from "../../types";
 
 interface VerticalUserCardProps {
@@ -53,20 +42,28 @@ export function VerticalUserCard({
     <Box
       style={{
         position: "relative",
+        // width: "160px",
+        // height: "240px",
         borderRadius: "20px",
         overflow: "hidden",
         cursor: "pointer",
         background: "rgba(255, 255, 255, 0.95)",
         backdropFilter: "blur(20px)",
         border: "1px solid rgba(255, 255, 255, 0.2)",
+        boxShadow:
+          "0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04)",
         transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
       }}
       onClick={handleViewProfile}
       onMouseEnter={(e) => {
         e.currentTarget.style.transform = "translateY(-4px) scale(1.02)";
+        e.currentTarget.style.boxShadow =
+          "0 16px 48px rgba(0, 0, 0, 0.12), 0 4px 16px rgba(0, 0, 0, 0.08)";
       }}
       onMouseLeave={(e) => {
         e.currentTarget.style.transform = "translateY(0) scale(1)";
+        e.currentTarget.style.boxShadow =
+          "0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04)";
       }}
     >
       {/* Gradient Background */}
@@ -77,7 +74,8 @@ export function VerticalUserCard({
           left: 0,
           right: 0,
           height: "60%",
-          background: "linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)",
+          background:
+            "linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)",
           opacity: 0.1,
         }}
       />
@@ -91,7 +89,8 @@ export function VerticalUserCard({
           width: "40px",
           height: "40px",
           borderRadius: "50%",
-          background: "linear-gradient(135deg, rgba(102, 126, 234, 0.15), rgba(118, 75, 162, 0.1))",
+          background:
+            "linear-gradient(135deg, rgba(102, 126, 234, 0.15), rgba(118, 75, 162, 0.1))",
           filter: "blur(8px)",
         }}
       />
@@ -103,7 +102,8 @@ export function VerticalUserCard({
           width: "30px",
           height: "30px",
           borderRadius: "50%",
-          background: "linear-gradient(135deg, rgba(240, 147, 251, 0.15), rgba(102, 126, 234, 0.1))",
+          background:
+            "linear-gradient(135deg, rgba(240, 147, 251, 0.15), rgba(102, 126, 234, 0.1))",
           filter: "blur(6px)",
         }}
       />
@@ -124,7 +124,8 @@ export function VerticalUserCard({
             radius="xl"
             style={{
               border: "3px solid rgba(255, 255, 255, 0.8)",
-              boxShadow: "0 8px 24px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(255, 255, 255, 0.05)",
+              boxShadow:
+                "0 8px 24px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(255, 255, 255, 0.05)",
               background: "linear-gradient(135deg, #f8fafc, #e2e8f0)",
             }}
           >
@@ -149,6 +150,7 @@ export function VerticalUserCard({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
+                boxShadow: "0 4px 12px rgba(29, 155, 240, 0.3)",
                 zIndex: 1,
               }}
             >
@@ -158,7 +160,11 @@ export function VerticalUserCard({
         </Box>
 
         {/* User Info */}
-        <Stack gap="xs" align="center" style={{ flex: 1, justifyContent: "center" }}>
+        <Stack
+          gap="xs"
+          align="center"
+          style={{ flex: 1, justifyContent: "center" }}
+        >
           <Text
             size="md"
             fw={700}
@@ -205,7 +211,8 @@ export function VerticalUserCard({
               style={{
                 width: "1px",
                 height: "24px",
-                background: "linear-gradient(to bottom, transparent, rgba(0,0,0,0.1), transparent)",
+                background:
+                  "linear-gradient(to bottom, transparent, rgba(0,0,0,0.1), transparent)",
               }}
             />
             <Box ta="center">
@@ -220,7 +227,8 @@ export function VerticalUserCard({
               style={{
                 width: "1px",
                 height: "24px",
-                background: "linear-gradient(to bottom, transparent, rgba(0,0,0,0.1), transparent)",
+                background:
+                  "linear-gradient(to bottom, transparent, rgba(0,0,0,0.1), transparent)",
               }}
             />
             <Box ta="center">
@@ -234,7 +242,7 @@ export function VerticalUserCard({
           </Group>
         </Stack>
 
-        {/* Modern Follow/Unfollow Button */}
+        {/* Modern Follow Button */}
         {showActions && (
           <Button
             size="sm"
@@ -243,47 +251,43 @@ export function VerticalUserCard({
             onClick={handleFollow}
             leftSection={
               isFollowing ? (
-                <IconUserX size={14} />
+                <IconUserCheck size={14} />
               ) : (
                 <IconUserPlus size={14} />
               )
             }
             style={{
               background: isFollowing
-                ? "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)"
+                ? "rgba(15, 23, 42, 0.05)"
                 : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-              color: "white",
-              border: "none",
+              color: isFollowing ? "#475569" : "white",
+              border: isFollowing ? "1px solid rgba(15, 23, 42, 0.1)" : "none",
               fontWeight: 600,
               fontSize: "12px",
               padding: "8px 20px",
               height: "36px",
               width: "100%",
               boxShadow: isFollowing
-                ? "0 4px 16px rgba(239, 68, 68, 0.3), 0 2px 4px rgba(0, 0, 0, 0.1)"
+                ? "none"
                 : "0 4px 16px rgba(102, 126, 234, 0.3), 0 2px 4px rgba(0, 0, 0, 0.1)",
               transition: "all 0.2s ease",
             }}
             onMouseEnter={(e) => {
-              if (isFollowing) {
-                e.currentTarget.style.boxShadow = "0 6px 20px rgba(239, 68, 68, 0.4), 0 4px 8px rgba(0, 0, 0, 0.15)";
-                e.currentTarget.style.transform = "translateY(-1px)";
-              } else {
-                e.currentTarget.style.boxShadow = "0 6px 20px rgba(102, 126, 234, 0.4), 0 4px 8px rgba(0, 0, 0, 0.15)";
+              if (!isFollowing) {
+                e.currentTarget.style.boxShadow =
+                  "0 6px 20px rgba(102, 126, 234, 0.4), 0 4px 8px rgba(0, 0, 0, 0.15)";
                 e.currentTarget.style.transform = "translateY(-1px)";
               }
             }}
             onMouseLeave={(e) => {
-              if (isFollowing) {
-                e.currentTarget.style.boxShadow = "0 4px 16px rgba(239, 68, 68, 0.3), 0 2px 4px rgba(0, 0, 0, 0.1)";
-                e.currentTarget.style.transform = "translateY(0)";
-              } else {
-                e.currentTarget.style.boxShadow = "0 4px 16px rgba(102, 126, 234, 0.3), 0 2px 4px rgba(0, 0, 0, 0.1)";
+              if (!isFollowing) {
+                e.currentTarget.style.boxShadow =
+                  "0 4px 16px rgba(102, 126, 234, 0.3), 0 2px 4px rgba(0, 0, 0, 0.1)";
                 e.currentTarget.style.transform = "translateY(0)";
               }
             }}
           >
-            {isFollowing ? "Unfollow" : "Follow"}
+            {isFollowing ? "Following" : "Follow"}
           </Button>
         )}
       </Stack>

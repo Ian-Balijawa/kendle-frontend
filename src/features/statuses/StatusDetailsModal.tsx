@@ -15,7 +15,7 @@ import {
   IconHeart,
   IconShare,
 } from "@tabler/icons-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { StatusCollection } from "../../types";
 
 interface StatusDetailsModalProps {
@@ -52,14 +52,19 @@ export function StatusDetailsModal({
   const [progress, setProgress] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
   const [isLiked, setIsLiked] = useState(false);
+  const viewedStatusesRef = useRef<Set<string>>(new Set());
 
   const currentStatus = collection?.statuses[currentStatusIndex];
 
   useEffect(() => {
     if (!currentStatus) return;
 
-    // Mark as viewed only if not already viewed
-    if (!currentStatus.isViewed) {
+    // Mark as viewed only if not already viewed and not already tracked
+    if (
+      !currentStatus.isViewed &&
+      !viewedStatusesRef.current.has(currentStatus.id)
+    ) {
+      viewedStatusesRef.current.add(currentStatus.id);
       onViewStatus(currentStatus.id);
     }
 
@@ -68,7 +73,9 @@ export function StatusDetailsModal({
     setIsPlaying(true);
 
     const duration =
-      currentStatus.media && currentStatus.media.length > 0 && currentStatus.media[0].mediaType === "video"
+      currentStatus.media &&
+      currentStatus.media.length > 0 &&
+      currentStatus.media[0].mediaType === "video"
         ? currentStatus.media[0].duration || 5
         : 5;
 
@@ -102,6 +109,13 @@ export function StatusDetailsModal({
     onNextCollection,
     onClose,
   ]);
+
+  // Reset viewed statuses when modal closes
+  useEffect(() => {
+    if (!opened) {
+      viewedStatusesRef.current.clear();
+    }
+  }, [opened]);
 
   const formatTimeAgo = (dateString: string) => {
     const date = new Date(dateString);
@@ -207,7 +221,7 @@ export function StatusDetailsModal({
               </Avatar>
               <Box>
                 <Group gap="xs" align="center">
-                  <Text fw={600} size="sm" >
+                  <Text fw={600} size="sm">
                     {collection.author.firstName} {collection.author.lastName}
                   </Text>
                   {collection.author.isVerified && (
@@ -257,18 +271,18 @@ export function StatusDetailsModal({
               />
             ) : (
               <video
-                  src={currentStatus.media[0].url}
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                  }}
-                  muted
-                  loop
-                  autoPlay={isPlaying}
-                  playsInline
-                  onEnded={() => setIsPlaying(false)}
-                />
+                src={currentStatus.media[0].url}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                }}
+                muted
+                loop
+                autoPlay={isPlaying}
+                playsInline
+                onEnded={() => setIsPlaying(false)}
+              />
             )
           ) : (
             <Box
@@ -325,36 +339,39 @@ export function StatusDetailsModal({
           />
 
           {/* Play/Pause indicator */}
-          {!isPlaying && currentStatus.media && currentStatus.media.length > 0 && currentStatus.media[0].mediaType === "video" && (
-            <Box
-              style={{
-                position: "absolute",
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-                width: "80px",
-                height: "80px",
-                borderRadius: "50%",
-                backgroundColor: "rgba(255, 255, 255, 0.2)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                backdropFilter: "blur(10px)",
-                zIndex: 3,
-              }}
-            >
+          {!isPlaying &&
+            currentStatus.media &&
+            currentStatus.media.length > 0 &&
+            currentStatus.media[0].mediaType === "video" && (
               <Box
                 style={{
-                  width: "0",
-                  height: "0",
-                  borderLeft: "20px solid white",
-                  borderTop: "12px solid transparent",
-                  borderBottom: "12px solid transparent",
-                  marginLeft: "6px",
+                  position: "absolute",
+                  top: "50%",
+                  left: "50%",
+                  transform: "translate(-50%, -50%)",
+                  width: "80px",
+                  height: "80px",
+                  borderRadius: "50%",
+                  backgroundColor: "rgba(255, 255, 255, 0.2)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backdropFilter: "blur(10px)",
+                  zIndex: 3,
                 }}
-              />
-            </Box>
-          )}
+              >
+                <Box
+                  style={{
+                    width: "0",
+                    height: "0",
+                    borderLeft: "20px solid white",
+                    borderTop: "12px solid transparent",
+                    borderBottom: "12px solid transparent",
+                    marginLeft: "6px",
+                  }}
+                />
+              </Box>
+            )}
         </Box>
 
         {/* Bottom section with content and actions */}
@@ -373,7 +390,6 @@ export function StatusDetailsModal({
           {/* Content text */}
           {currentStatus.content && (
             <Text
-
               size="md"
               mb="md"
               style={{

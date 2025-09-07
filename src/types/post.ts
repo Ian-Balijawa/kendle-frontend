@@ -4,16 +4,7 @@ export interface Post {
   id: string;
   content: string;
   location?: string;
-  type:
-    | "text"
-    | "image"
-    | "video"
-    | "poll"
-    | "event"
-    | "repost"
-    | "quote"
-    | "article"
-    | "story";
+  type: "text" | "image" | "video";
   status: "draft" | "published";
   isPublic: boolean;
   allowComments: boolean;
@@ -38,17 +29,6 @@ export interface Post {
   author: User;
   originalPost?: Post | null;
   repostContent?: string | null;
-  pollQuestion?: string | null;
-  pollOptions?: string[] | null;
-  pollEndDate?: string | null;
-  pollResults?: string | null;
-  eventTitle?: string | null;
-  eventDescription?: string | null;
-  eventStartDate?: string | null;
-  eventEndDate?: string | null;
-  eventLocation?: string | null;
-  eventCapacity?: number | null;
-  eventAttendees?: any | null;
 
   // Media and content
   media?: Media[];
@@ -78,16 +58,7 @@ export interface CreatePostData {
   location?: string;
   tags?: TagInput[];
   mentions?: MentionInput[];
-  type?:
-    | "text"
-    | "image"
-    | "video"
-    | "poll"
-    | "event"
-    | "repost"
-    | "quote"
-    | "article"
-    | "story";
+  type?: "text" | "image" | "video";
   isPublic?: boolean;
   allowComments?: boolean;
   allowLikes?: boolean;
@@ -98,15 +69,6 @@ export interface CreatePostData {
   isQuote?: boolean;
   isArticle?: boolean;
   isStory?: boolean;
-  pollQuestion?: string;
-  pollOptions?: string[];
-  pollEndDate?: string;
-  eventTitle?: string;
-  eventDescription?: string;
-  eventStartDate?: string;
-  eventEndDate?: string;
-  eventLocation?: string;
-  eventCapacity?: number;
   originalPostId?: string;
   repostContent?: string;
   scheduledAt?: string;
@@ -247,4 +209,14 @@ export interface BookmarkRequest {
 export interface ShareRequest {
   shareContent?: string;
   platform?: string;
+}
+
+export interface PostEngagement {
+  hasLiked: boolean;
+  hasDisliked: boolean;
+  hasBookmarked: boolean;
+  hasViewed: boolean;
+  reactionType?: "like" | "dislike" | null;
+  bookmarkNote?: string | null;
+  lastViewedAt?: string | null;
 }

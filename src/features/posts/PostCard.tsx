@@ -29,7 +29,8 @@ import {
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "timeago.js";
-import { CommentSkeletonList } from "../../components/ui";
+import ReactPlayer from "react-player";
+import { CommentSkeletonList, PostEngagementButton } from "../../components/ui";
 import { useInfiniteComments, useCreateComment } from "../../hooks/useComments";
 import {
   useBookmarkPost,
@@ -414,11 +415,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                       ? "green"
                       : post.type === "video"
                         ? "purple"
-                        : post.type === "poll"
-                          ? "orange"
-                          : post.type === "event"
-                            ? "cyan"
-                            : "gray"
+                        : "gray"
                 }
                 radius="sm"
               >
@@ -446,15 +443,12 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
             {post?.media && post?.media?.length > 0 && (
               <Box>
                 {post?.media?.length === 1 ? (
-                  <Image
-                    src={post?.media[0]?.url}
-                    alt={post?.media[0]?.filename || "Post media"}
-                    radius="lg"
+                  <Box
                     style={{
-                      maxHeight: 400,
-                      objectFit: "cover",
                       cursor: "pointer",
                       transition: "transform 0.2s ease",
+                      borderRadius: "var(--mantine-radius-lg)",
+                      overflow: "hidden",
                     }}
                     onClick={handlePostClick}
                     onMouseEnter={(e) => {
@@ -463,65 +457,123 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                     onMouseLeave={(e) => {
                       e.currentTarget.style.transform = "scale(1)";
                     }}
-                    onError={(e) => {
-                      console.error(
-                        "Failed to load image:",
-                        post?.media?.[0]?.url,
-                      );
-                      e.currentTarget.style.display = "none";
-                    }}
-                  />
+                  >
+                    {post.media[0].type === "video" ? (
+                      <ReactPlayer
+                        src={post.media[0].url}
+                        width="100%"
+                        height={
+                          post.media[0].height
+                            ? Math.min(post.media[0].height, 400)
+                            : 300
+                        }
+                        controls
+                        light={post.media[0].thumbnailUrl}
+                        playsInline
+                        style={{
+                          borderRadius: "var(--mantine-radius-lg)",
+                        }}
+                      />
+                    ) : (
+                      <Image
+                        src={post.media[0].url}
+                        alt={post.media[0].filename || "Post media"}
+                        radius="lg"
+                        style={{
+                          maxHeight: 400,
+                          objectFit: "cover",
+                          width: "100%",
+                        }}
+                        onError={(e) => {
+                          console.error(
+                            "Failed to load image:",
+                            post?.media?.[0].url,
+                          );
+                          e.currentTarget.style.display = "none";
+                        }}
+                      />
+                    )}
+                  </Box>
                 ) : (
                   <Group gap="xs">
-                    {post?.media?.slice(0, 4).map((media, index) => (
+                    {post.media.slice(0, 4).map((media, index) => (
                       <Box
                         key={media.id || `media-${index}`}
                         style={{ position: "relative", flex: 1 }}
                       >
-                        <Image
-                          src={media.url}
-                          alt={media.filename || "Post media"}
-                          radius="md"
-                          style={{
-                            height: 150,
-                            objectFit: "cover",
-                            cursor: "pointer",
-                            transition: "transform 0.2s ease",
-                          }}
-                          onClick={handlePostClick}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.transform = "scale(1.02)";
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.transform = "scale(1)";
-                          }}
-                          onError={(e) => {
-                            console.error("Failed to load image:", media.url);
-                            e.currentTarget.style.display = "none";
-                          }}
-                        />
-                        {index === 3 &&
-                          post?.media &&
-                          post?.media?.length > 4 && (
-                            <Box
+                        {media.type === "video" ? (
+                          <Box
+                            style={{
+                              height: 150,
+                              borderRadius: "var(--mantine-radius-md)",
+                              overflow: "hidden",
+                              cursor: "pointer",
+                              transition: "transform 0.2s ease",
+                            }}
+                            onClick={handlePostClick}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.transform = "scale(1.02)";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.transform = "scale(1)";
+                            }}
+                          >
+                            <ReactPlayer
+                              src={media.url}
+                              width="100%"
+                              height="100%"
+                              controls
+                              light={media.thumbnailUrl}
+                              playsInline
                               style={{
-                                position: "absolute",
-                                top: 0,
-                                left: 0,
-                                right: 0,
-                                bottom: 0,
-                                backgroundColor: "rgba(0, 0, 0, 0.7)",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
                                 borderRadius: "var(--mantine-radius-md)",
                               }}
-                            >
-                            <Text size="lg" fw={600} >
-                                +{post?.media?.length - 4}
-                              </Text>
-                            </Box>
-                          )}
+                            />
+                          </Box>
+                        ) : (
+                          <Image
+                            src={media.url}
+                            alt={media.filename || "Post media"}
+                            radius="md"
+                            style={{
+                              height: 150,
+                              objectFit: "cover",
+                              cursor: "pointer",
+                              transition: "transform 0.2s ease",
+                            }}
+                            onClick={handlePostClick}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.transform = "scale(1.02)";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.transform = "scale(1)";
+                            }}
+                            onError={(e) => {
+                              console.error("Failed to load image:", media.url);
+                              e.currentTarget.style.display = "none";
+                            }}
+                          />
+                        )}
+                        {index === 3 && post.media && post.media.length > 4 && (
+                          <Box
+                            style={{
+                              position: "absolute",
+                              top: 0,
+                              left: 0,
+                              right: 0,
+                              bottom: 0,
+                              backgroundColor: "rgba(0, 0, 0, 0.7)",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              borderRadius: "var(--mantine-radius-md)",
+                            }}
+                          >
+                            <Text size="lg" fw={600} c="white">
+                              +{post.media.length - 4}
+                            </Text>
+                          </Box>
+                        )}
                       </Box>
                     ))}
                   </Group>
@@ -591,62 +643,6 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                   {post.location}
                 </Text>
               </Group>
-            )}
-
-            {/* Poll Display */}
-            {post?.type === "poll" && post?.pollQuestion && (
-              <Card withBorder p="sm" radius="md" bg="gray.0" mb="sm">
-                <Stack gap="xs">
-                  <Text size="sm" fw={600}>
-                    {post.pollQuestion}
-                  </Text>
-                  {post.pollOptions && post.pollOptions.length > 0 && (
-                    <Stack gap="xs">
-                      {post.pollOptions.map((option: string, index: number) => (
-                        <Text key={index} size="xs" c="dimmed">
-                          • {option}
-                        </Text>
-                      ))}
-                    </Stack>
-                  )}
-                  {post.pollEndDate && (
-                    <Text size="xs" c="dimmed">
-                      Ends: {format(new Date(post.pollEndDate))}
-                    </Text>
-                  )}
-                </Stack>
-              </Card>
-            )}
-
-            {/* Event Display */}
-            {post?.type === "event" && post?.eventTitle && (
-              <Card withBorder p="sm" radius="md" bg="blue.0" mb="sm">
-                <Stack gap="xs">
-                  <Text size="sm" fw={600} c="blue.7">
-                    {post.eventTitle}
-                  </Text>
-                  {post.eventDescription && (
-                    <Text size="xs" c="dimmed">
-                      {post.eventDescription}
-                    </Text>
-                  )}
-                  {post.eventStartDate && (
-                    <Text size="xs" c="blue.6">
-                      📅 {format(new Date(post.eventStartDate))}
-                    </Text>
-                  )}
-                  {post.eventLocation && (
-                    <Text size="xs" c="blue.6">
-                      📍 {post.eventLocation}
-                    </Text>
-                  )}
-                  {post.eventCapacity && (
-                    <Text size="xs" c="blue.6">
-                      👥 Capacity: {post.eventCapacity}
-                    </Text>
-                  )}
-                </Stack>
-              </Card>
             )}
 
             <Group justify="start" mb="sm">
@@ -779,15 +775,13 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
 
               {/* Post Statistics */}
               <Group gap="md" align="center">
-                <Text size="xs" c="dimmed">
-                  👀 {post.viewsCount || 0}
-                </Text>
-                <Text size="xs" c="dimmed">
-                  📊 {post.sharesCount || 0}
-                </Text>
-                <Text size="xs" c="dimmed">
-                  🔖 {post.bookmarksCount || 0}
-                </Text>
+                <PostEngagementButton
+                  postId={post.id}
+                  likesCount={post.likesCount || 0}
+                  dislikesCount={post.dislikesCount || 0}
+                  bookmarksCount={post.bookmarksCount || 0}
+                  viewsCount={post.viewsCount || 0}
+                />
               </Group>
             </Group>
 

@@ -7,10 +7,10 @@ import {
   ShareRequest,
   UpdatePostRequest,
   ReactionRequest,
+  CreatePostRequest,
 } from "../services/api";
-import { CreatePostData } from "../types/post";
 import { useAuthStore } from "../stores/authStore";
-import { Post, PostsResponse } from "../types";
+import { Post, PostsResponse, UsersResponse } from "../types";
 
 // Query keys
 export const postKeys = {
@@ -24,6 +24,12 @@ export const postKeys = {
   disliked: () => [...postKeys.all, "disliked"] as const,
   bookmarked: () => [...postKeys.all, "bookmarked"] as const,
   me: () => [...postKeys.all, "me"] as const,
+  // Engagement query keys
+  likers: (id: string) => [...postKeys.detail(id), "likers"] as const,
+  dislikers: (id: string) => [...postKeys.detail(id), "dislikers"] as const,
+  bookmarkers: (id: string) => [...postKeys.detail(id), "bookmarkers"] as const,
+  viewers: (id: string) => [...postKeys.detail(id), "viewers"] as const,
+  engagement: (id: string) => [...postKeys.detail(id), "engagement"] as const,
 };
 
 // Get posts with infinite scroll
@@ -210,7 +216,7 @@ export function useCreatePost() {
   const { user } = useAuthStore();
 
   return useMutation({
-    mutationFn: (data: CreatePostData) => apiService.createPost(data),
+    mutationFn: (data: CreatePostRequest) => apiService.createPost(data),
     onMutate: async (newPost) => {
       // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: postKeys.lists() });
@@ -232,15 +238,6 @@ export function useCreatePost() {
         isQuote: newPost.isQuote ?? false,
         isArticle: newPost.isArticle ?? false,
         isStory: newPost.isStory ?? false,
-        pollQuestion: newPost.pollQuestion,
-        pollOptions: newPost.pollOptions,
-        pollEndDate: newPost.pollEndDate,
-        eventTitle: newPost.eventTitle,
-        eventDescription: newPost.eventDescription,
-        eventStartDate: newPost.eventStartDate,
-        eventEndDate: newPost.eventEndDate,
-        eventLocation: newPost.eventLocation,
-        eventCapacity: newPost.eventCapacity,
         originalPost: newPost.originalPostId ? null : undefined,
         repostContent: newPost.repostContent,
         scheduledAt: newPost.scheduledAt,
@@ -290,39 +287,25 @@ export function useCreatePost() {
               createdAt: new Date().toISOString(),
               updatedAt: new Date().toISOString(),
             },
-        media: newPost.media?.map((m, index) => ({
+        media: newPost.media?.map((file, index) => ({
           id: `temp-media-${index}`,
-          url: m.url,
-          type: m.type,
-          filename: `temp-${index}`,
-          size: m.fileSize || 0,
-          thumbnailUrl: m.thumbnailUrl,
-          altText: m.altText,
-          caption: m.caption,
-          duration: m.duration,
-          width: m.width,
-          height: m.height,
-          format: m.format,
+          url: URL.createObjectURL(file),
+          type: file.type.startsWith("image/") ? "image" : "video",
+          filename: file.name,
+          size: file.size,
+          thumbnailUrl: undefined,
+          altText: file.name,
+          caption: undefined,
+          duration: undefined,
+          width: undefined,
+          height: undefined,
+          format: file.type,
           createdAt: new Date().toISOString(),
         })),
-        tags:
-          newPost.tags?.map((t) => ({
-            id: `temp-tag-${Date.now()}`,
-            name: t.name,
-            description: t.description,
-            postsCount: 0,
-          })) || [],
-        mentions:
-          newPost.mentions?.map((m) => ({
-            id: `temp-mention-${Date.now()}`,
-            mentionedUserId: m.mentionedUserId,
-            postId: m.postId,
-            commentId: m.commentId,
-            username: "",
-            userId: m.mentionedUserId,
-          })) || [],
+        tags: [],
+        mentions: [],
         // Legacy fields for backward compatibility
-        hashtags: newPost.tags?.map((t) => t.name) || [],
+        hashtags: [],
         likes: [],
         comments: [],
         shares: [],
@@ -880,5 +863,95 @@ export function useSharePost() {
       queryClient.invalidateQueries({ queryKey: postKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: postKeys.lists() });
     },
+  });
+}
+
+// Post engagement hooks
+export function usePostLikers(
+  postId: string,
+  params: { page?: number; limit?: number } = {},
+) {
+  return useInfiniteQuery({
+    queryKey: [...postKeys.likers(postId), params],
+    queryFn: ({ pageParam = 1 }) =>
+      apiService.getPostLikers(postId, { ...params, page: pageParam }),
+    getNextPageParam: (lastPage: UsersResponse) => {
+      const totalPages = Math.ceil(lastPage.total / lastPage.limit);
+      if (lastPage.page < totalPages) {
+        return lastPage.page + 1;
+      }
+      return undefined;
+    },
+    initialPageParam: 1,
+    enabled: !!postId,
+  });
+}
+
+export function usePostDislikers(
+  postId: string,
+  params: { page?: number; limit?: number } = {},
+) {
+  return useInfiniteQuery({
+    queryKey: [...postKeys.dislikers(postId), params],
+    queryFn: ({ pageParam = 1 }) =>
+      apiService.getPostDislikers(postId, { ...params, page: pageParam }),
+    getNextPageParam: (lastPage: UsersResponse) => {
+      const totalPages = Math.ceil(lastPage.total / lastPage.limit);
+      if (lastPage.page < totalPages) {
+        return lastPage.page + 1;
+      }
+      return undefined;
+    },
+    initialPageParam: 1,
+    enabled: !!postId,
+  });
+}
+
+export function usePostBookmarkers(
+  postId: string,
+  params: { page?: number; limit?: number } = {},
+) {
+  return useInfiniteQuery({
+    queryKey: [...postKeys.bookmarkers(postId), params],
+    queryFn: ({ pageParam = 1 }) =>
+      apiService.getPostBookmarkers(postId, { ...params, page: pageParam }),
+    getNextPageParam: (lastPage: UsersResponse) => {
+      const totalPages = Math.ceil(lastPage.total / lastPage.limit);
+      if (lastPage.page < totalPages) {
+        return lastPage.page + 1;
+      }
+      return undefined;
+    },
+    initialPageParam: 1,
+    enabled: !!postId,
+  });
+}
+
+export function usePostViewers(
+  postId: string,
+  params: { page?: number; limit?: number } = {},
+) {
+  return useInfiniteQuery({
+    queryKey: [...postKeys.viewers(postId), params],
+    queryFn: ({ pageParam = 1 }) =>
+      apiService.getPostViewers(postId, { ...params, page: pageParam }),
+    getNextPageParam: (lastPage: UsersResponse) => {
+      const totalPages = Math.ceil(lastPage.total / lastPage.limit);
+      if (lastPage.page < totalPages) {
+        return lastPage.page + 1;
+      }
+      return undefined;
+    },
+    initialPageParam: 1,
+    enabled: !!postId,
+  });
+}
+
+export function usePostEngagement(postId: string) {
+  return useQuery({
+    queryKey: postKeys.engagement(postId),
+    queryFn: () => apiService.getPostEngagement(postId),
+    enabled: !!postId,
+    staleTime: 2 * 60 * 1000, // 2 minutes
   });
 }

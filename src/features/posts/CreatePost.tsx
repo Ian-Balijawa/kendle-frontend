@@ -1,81 +1,47 @@
 import {
   ActionIcon,
   Avatar,
-  Badge,
   Box,
   Button,
-  Collapse,
   Group,
   Image,
   Modal,
-  NumberInput,
-  Paper,
-  Select,
   Stack,
   Switch,
   Text,
   Textarea,
   TextInput,
-  Title,
-  Transition,
 } from "@mantine/core";
-import { DateTimePicker } from "@mantine/dates";
 import {
-  IconCalendar,
-  IconCalendarEvent,
-  IconHash,
   IconLocation,
   IconMapPin,
   IconPhoto,
   IconSend,
-  IconUser,
   IconVideo,
   IconX,
 } from "@tabler/icons-react";
 import { useRef, useState } from "react";
 import { useCreatePost } from "../../hooks/usePosts";
-import { useFollowing } from "../../hooks/useFollow";
-import {
-  CreatePostData,
-  MediaInput,
-  TagInput,
-  MentionInput,
-} from "../../types/post";
+import { CreatePostRequest } from "../../services/api";
 import { useAuthStore } from "../../stores/authStore";
+import { generateVideoThumbnails } from "@rajesh896/video-thumbnails-generator";
 
 interface CreatePostProps {
   opened: boolean;
   onClose: () => void;
 }
 
-type PostType =
-  | "text"
-  | "image"
-  | "video"
-  | "poll"
-  | "event"
-  | "repost"
-  | "quote"
-  | "article"
-  | "story";
-
 export function CreatePost({ opened, onClose }: CreatePostProps) {
   const { user } = useAuthStore();
   const createPostMutation = useCreatePost();
-  const { data: followingData } = useFollowing(user?.id || "", 1, 100);
 
   // Main form state
   const [content, setContent] = useState("");
-  const [postType, setPostType] = useState<PostType>("text");
   const [media, setMedia] = useState<File[]>([]);
+  const [thumbnail, setThumbnail] = useState<File[]>([]);
   const [location, setLocation] = useState<string>("");
-  const [locationCoords, setLocationCoords] = useState<{
-    lat: number;
-    lng: number;
-  } | null>(null);
-  const [tags, setTags] = useState<TagInput[]>([]);
-  const [mentions, setMentions] = useState<MentionInput[]>([]);
-  const [scheduledAt, setScheduledAt] = useState<Date | null>(null);
+  const [isGettingLocation, setIsGettingLocation] = useState(false);
+  const [isGeneratingThumbnails, setIsGeneratingThumbnails] = useState(false);
 
   // Post settings
   const [isPublic, setIsPublic] = useState(true);
@@ -85,32 +51,9 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
   const [allowBookmarks, setAllowBookmarks] = useState(true);
   const [allowReactions, setAllowReactions] = useState(true);
 
-  // Poll state
-  const [pollQuestion, setPollQuestion] = useState("");
-  const [pollOptions, setPollOptions] = useState<string[]>(["", ""]);
-  const [pollEndDate, setPollEndDate] = useState<Date | null>(null);
-
-  // Event state
-  const [eventTitle, setEventTitle] = useState("");
-  const [eventDescription, setEventDescription] = useState("");
-  const [eventStartDate, setEventStartDate] = useState<Date | null>(null);
-  const [eventEndDate, setEventEndDate] = useState<Date | null>(null);
-  const [eventLocation, setEventLocation] = useState("");
-  const [eventCapacity, setEventCapacity] = useState<number | undefined>();
-
-  // UI state
-  const [tagInput, setTagInput] = useState("");
-  const [tagDescription, setTagDescription] = useState("");
-  const [mentionInput, setMentionInput] = useState("");
-  const [showAdvanced, setShowAdvanced] = useState(false);
-
-  const [showMentionPicker, setShowMentionPicker] = useState(false);
-  const [isGettingLocation, setIsGettingLocation] = useState(false);
-
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isSubmitting = createPostMutation.isPending;
-  const followingUsers = followingData?.following || [];
 
   // Geolocation function
   const getCurrentLocation = () => {
@@ -123,8 +66,7 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
-        setLocationCoords({ lat: latitude, lng: longitude });
-        setLocation(`${longitude},${latitude}`);
+        setLocation(`${latitude},${longitude}`);
         setIsGettingLocation(false);
       },
       (error) => {
@@ -135,17 +77,85 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
     );
   };
 
+  // Helper function to convert base64 to File
+  const base64ToFile = (
+    base64String: string,
+    filename: string,
+    mimeType: string,
+  ): File => {
+    const byteCharacters = atob(base64String.split(",")[1]);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    return new File([byteArray], filename, { type: mimeType });
+  };
+
   // Media handling
-  const handleMediaUpload = (files: File[] | null) => {
+  const handleMediaUpload = async (files: File[] | null) => {
     if (!files) return;
 
+    console.log("Selected files:", files);
+    files.forEach((file) => {
+      console.log(
+        `File: ${file.name}, Type: ${file.type}, Size: ${file.size} bytes`,
+      );
+    });
+
+    const supportedImageTypes = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/gif",
+      "image/webp",
+    ];
+    const supportedVideoTypes = [
+      "video/mp4",
+      "video/avi",
+      "video/mov",
+      "video/wmv",
+      "video/webm",
+      "video/quicktime",
+    ];
+
     const validFiles = files.filter((file) => {
+      const isValidImageType = supportedImageTypes.includes(
+        file.type.toLowerCase(),
+      );
+      const isValidVideoType = supportedVideoTypes.includes(
+        file.type.toLowerCase(),
+      );
+
+      // Fallback: check file extension if MIME type is not detected
+      const fileExtension = file.name.toLowerCase().split(".").pop();
+      const supportedImageExtensions = ["jpg", "jpeg", "png", "gif", "webp"];
+      const supportedVideoExtensions = ["mp4", "avi", "mov", "wmv", "webm"];
+
+      const isValidImageExtension = supportedImageExtensions.includes(
+        fileExtension || "",
+      );
+      const isValidVideoExtension = supportedVideoExtensions.includes(
+        fileExtension || "",
+      );
+
       const isValidType =
-        file.type.startsWith("image/") || file.type.startsWith("video/");
-      const isValidSize = file.size <= 10 * 1024 * 1024; // 10MB limit (reduced from 50MB)
+        isValidImageType ||
+        isValidVideoType ||
+        isValidImageExtension ||
+        isValidVideoExtension;
+      const isValidSize = file.size <= 50 * 1024 * 1024; // 50MB limit
 
       if (!isValidType) {
-        console.error("Invalid file type:", file.type);
+        console.error(
+          "Invalid file type:",
+          file.type,
+          "Extension:",
+          fileExtension,
+        );
+        alert(
+          `File "${file.name}" has an unsupported format. Please use images (JPEG, PNG, GIF, WebP) or videos (MP4, AVI, MOV, WMV, WebM).`,
+        );
         return false;
       }
 
@@ -153,150 +163,106 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
         console.error(
           "File too large:",
           file.size,
-          "bytes. Maximum allowed: 10MB",
+          "bytes. Maximum allowed: 50MB",
         );
-        alert(`File "${file.name}" is too large. Maximum file size is 10MB.`);
+        alert(`File "${file.name}" is too large. Maximum file size is 50MB.`);
         return false;
       }
 
       return true;
     });
 
-    setMedia((prev) => [...prev, ...validFiles].slice(0, 4)); // Max 4 files
+    if (validFiles.length > 0) {
+      setMedia((prev) => [...prev, ...validFiles].slice(0, 10)); // Max 10 files
+
+      // Generate thumbnails for video files
+      const videoFiles = validFiles.filter(
+        (file) =>
+          file.type.startsWith("video/") ||
+          ["mp4", "avi", "mov", "wmv", "webm"].includes(
+            file.name.toLowerCase().split(".").pop() || "",
+          ),
+      );
+
+      if (videoFiles.length > 0) {
+        setIsGeneratingThumbnails(true);
+        try {
+          for (const videoFile of videoFiles) {
+            console.log(`Generating thumbnail for: ${videoFile.name}`);
+            const thumbnails = await generateVideoThumbnails(
+              videoFile,
+              1,
+              "base64",
+            );
+
+            if (thumbnails && thumbnails.length > 0) {
+              const thumbnailFile = base64ToFile(
+                thumbnails[0],
+                `${videoFile.name.split(".")[0]}_thumbnail.jpg`,
+                "image/jpeg",
+              );
+
+              setThumbnail((prev) => [...prev, thumbnailFile].slice(0, 10));
+              console.log(`Generated thumbnail for: ${videoFile.name}`);
+            }
+          }
+        } catch (error) {
+          console.error("Error generating thumbnails:", error);
+          alert(
+            "Failed to generate video thumbnails. Videos will be uploaded without thumbnails.",
+          );
+        } finally {
+          setIsGeneratingThumbnails(false);
+        }
+      }
+    }
   };
 
-  const removeMedia = (index: number) => {
+  const removeThumbnail = (index: number) => {
+    setThumbnail((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const removeMediaAndThumbnail = (index: number) => {
     setMedia((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  // Tag handling
-  const handleTagAdd = () => {
-    if (tagInput.trim() && !tags.some((tag) => tag.name === tagInput.trim())) {
-      setTags((prev) => [
-        ...prev,
-        {
-          name: tagInput.trim(),
-          description: tagDescription.trim() || undefined,
-        },
-      ]);
-      setTagInput("");
-      setTagDescription("");
-    }
-  };
-
-  const removeTag = (tagToRemove: string) => {
-    setTags((prev) => prev.filter((tag) => tag.name !== tagToRemove));
-  };
-
-  // Mention handling
-  const handleMentionAdd = (userId: string) => {
-    if (!mentions.some((mention) => mention.mentionedUserId === userId)) {
-      setMentions((prev) => [...prev, { mentionedUserId: userId }]);
-    }
-    setMentionInput("");
-    setShowMentionPicker(false);
-  };
-
-  const removeMention = (userIdToRemove: string) => {
-    setMentions((prev) =>
-      prev.filter((mention) => mention.mentionedUserId !== userIdToRemove),
-    );
-  };
-
-  // Poll handling
-  const addPollOption = () => {
-    if (pollOptions.length < 6) {
-      setPollOptions((prev) => [...prev, ""]);
-    }
-  };
-
-  const updatePollOption = (index: number, value: string) => {
-    setPollOptions((prev) =>
-      prev.map((option, i) => (i === index ? value : option)),
-    );
-  };
-
-  const removePollOption = (index: number) => {
-    if (pollOptions.length > 2) {
-      setPollOptions((prev) => prev.filter((_, i) => i !== index));
+    // Also remove corresponding thumbnail if it exists
+    if (index < thumbnail.length) {
+      setThumbnail((prev) => prev.filter((_, i) => i !== index));
     }
   };
 
   // Form submission
   const handleSubmit = async () => {
-    if (!content.trim()) {
+    if (!content.trim() && media.length === 0) {
       return;
     }
 
-    // Prepare media data
-    const mediaData: MediaInput[] = media.map((file) => ({
-      type: file.type.startsWith("image/") ? "image" : "video",
-      url: URL.createObjectURL(file), // In real app, upload to server first
-      fileSize: file.size,
-      format: file.type.split("/")[1],
-    }));
-
     // Create the post data
-    const postData: CreatePostData = {
+    const postData: CreatePostRequest = {
       content: content.trim(),
-      type: postType,
+      type:
+        media.length > 0
+          ? media.some((f) => f.type.startsWith("video/"))
+            ? "video"
+            : "image"
+          : "text",
       isPublic,
       allowComments,
       allowLikes,
       allowShares,
       allowBookmarks,
       allowReactions,
-      media: mediaData.length > 0 ? mediaData : undefined,
+      media: media.length > 0 ? media : undefined,
+      thumbnail: thumbnail.length > 0 ? thumbnail : undefined,
       location: location || undefined,
-      tags: tags.length > 0 ? tags : undefined,
-      mentions: mentions.length > 0 ? mentions : undefined,
-      scheduledAt: scheduledAt?.toISOString(),
     };
-
-    // Add poll data if post type is poll
-    if (postType === "poll" && pollQuestion.trim()) {
-      postData.pollQuestion = pollQuestion.trim();
-      postData.pollOptions = pollOptions.filter((option) => option.trim());
-      postData.pollEndDate = pollEndDate?.toISOString();
-    }
-
-    // Add event data if post type is event
-    if (postType === "event" && eventTitle.trim()) {
-      postData.eventTitle = eventTitle.trim();
-      postData.eventDescription = eventDescription.trim();
-      postData.eventStartDate = eventStartDate?.toISOString();
-      postData.eventEndDate = eventEndDate?.toISOString();
-      postData.eventLocation = eventLocation.trim();
-      postData.eventCapacity = eventCapacity;
-    }
 
     createPostMutation.mutate(postData, {
       onSuccess: () => {
         // Reset form
         setContent("");
-        setPostType("text");
         setMedia([]);
+        setThumbnail([]);
         setLocation("");
-        setLocationCoords(null);
-        setTags([]);
-        setMentions([]);
-        setScheduledAt(null);
-        setPollQuestion("");
-        setPollOptions(["", ""]);
-        setPollEndDate(null);
-        setEventTitle("");
-        setEventDescription("");
-        setEventStartDate(null);
-        setEventEndDate(null);
-        setEventLocation("");
-        setEventCapacity(undefined);
-        setTagInput("");
-        setTagDescription("");
-        setMentionInput("");
-        setShowAdvanced(false);
-        setShowMentionPicker(false);
-
-        // Close modal
         onClose();
       },
       onError: (error) => {
@@ -310,27 +276,9 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
       if (window.confirm("Are you sure you want to discard this post?")) {
         // Reset all state
         setContent("");
-        setPostType("text");
         setMedia([]);
+        setThumbnail([]);
         setLocation("");
-        setLocationCoords(null);
-        setTags([]);
-        setMentions([]);
-        setScheduledAt(null);
-        setPollQuestion("");
-        setPollOptions(["", ""]);
-        setPollEndDate(null);
-        setEventTitle("");
-        setEventDescription("");
-        setEventStartDate(null);
-        setEventEndDate(null);
-        setEventLocation("");
-        setEventCapacity(undefined);
-        setTagInput("");
-        setTagDescription("");
-        setMentionInput("");
-        setShowAdvanced(false);
-        setShowMentionPicker(false);
         onClose();
       }
     } else {
@@ -338,12 +286,7 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
     }
   };
 
-  const canSubmit =
-    content.trim() &&
-    (postType !== "poll" ||
-      (pollQuestion.trim() &&
-        pollOptions.filter((opt) => opt.trim()).length >= 2)) &&
-    (postType !== "event" || eventTitle.trim());
+  const canSubmit = content.trim() || media.length > 0;
 
   return (
     <Modal
@@ -383,26 +326,6 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
           </Box>
         </Group>
 
-        {/* Post Type Selector */}
-        <Select
-          label="Post Type"
-          placeholder="Select post type"
-          size="sm"
-          value={postType}
-          onChange={(value) => setPostType(value as PostType)}
-          data={[
-            { value: "text", label: "Text Post" },
-            { value: "image", label: "Image Post" },
-            { value: "video", label: "Video Post" },
-            { value: "poll", label: "Poll" },
-            { value: "event", label: "Event" },
-            { value: "repost", label: "Repost" },
-            { value: "quote", label: "Quote" },
-            { value: "article", label: "Article" },
-            { value: "story", label: "Story" },
-          ]}
-        />
-
         {/* Main Content */}
         <Textarea
           placeholder="What's on your mind? Use Enter for new lines..."
@@ -422,137 +345,11 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
           }}
         />
 
-        {/* Poll Section */}
-        {postType === "poll" && (
-          <Box>
-            <Stack gap="md">
-              <Title order={5}>Create Poll</Title>
-              <TextInput
-                placeholder="What's your poll question?"
-                size="sm"
-                value={pollQuestion}
-                onChange={(e) => setPollQuestion(e.currentTarget.value)}
-                leftSection={<IconHash size={16} />}
-              />
-
-              <Stack gap="sm">
-                <Text size="sm" fw={500}>
-                  Poll Options
-                </Text>
-                {pollOptions.map((option, index) => (
-                  <Group key={index} gap="sm">
-                    <TextInput
-                      placeholder={`Option ${index + 1}`}
-                      size="sm"
-                      value={option}
-                      onChange={(e) =>
-                        updatePollOption(index, e.currentTarget.value)
-                      }
-                      style={{ flex: 1 }}
-                    />
-                    {pollOptions.length > 2 && (
-                      <ActionIcon
-                        color="red"
-                        variant="subtle"
-                        onClick={() => removePollOption(index)}
-                      >
-                        <IconX size={14} />
-                      </ActionIcon>
-                    )}
-                  </Group>
-                ))}
-                {pollOptions.length < 6 && (
-                  <Button
-                    variant="light"
-                    size="sm"
-                    onClick={addPollOption}
-                    leftSection={<IconHash size={14} />}
-                  >
-                    Add Option
-                  </Button>
-                )}
-              </Stack>
-
-              <DateTimePicker
-                label="Poll End Date"
-                placeholder="When should the poll end?"
-                value={pollEndDate}
-                onChange={setPollEndDate}
-                minDate={new Date()}
-                leftSection={<IconCalendar size={16} />}
-              />
-            </Stack>
-          </Box>
-        )}
-
-        {/* Event Section */}
-        {postType === "event" && (
-          <Box>
-            <Stack gap="md">
-              <Title order={5}>Create Event</Title>
-              <TextInput
-                placeholder="Event title"
-                size="sm"
-                value={eventTitle}
-                onChange={(e) => setEventTitle(e.currentTarget.value)}
-                leftSection={<IconCalendarEvent size={16} />}
-              />
-
-              <Textarea
-                placeholder="Event description"
-                size="sm"
-                value={eventDescription}
-                onChange={(e) => setEventDescription(e.currentTarget.value)}
-                minRows={3}
-                autosize
-              />
-
-              <Group grow>
-                <DateTimePicker
-                  label="Start Date"
-                  placeholder="When does it start?"
-                  value={eventStartDate}
-                  onChange={setEventStartDate}
-                  minDate={new Date()}
-                />
-                <DateTimePicker
-                  label="End Date"
-                  placeholder="When does it end?"
-                  value={eventEndDate}
-                  onChange={setEventEndDate}
-                  minDate={eventStartDate || new Date()}
-                />
-              </Group>
-
-              <Group grow>
-                <TextInput
-                  placeholder="Event location"
-                  value={eventLocation}
-                  onChange={(e) => setEventLocation(e.currentTarget.value)}
-                  leftSection={<IconMapPin size={16} />}
-                />
-                <NumberInput
-                  placeholder="Capacity"
-                  size="sm"
-                  value={eventCapacity}
-                  onChange={(value) =>
-                    setEventCapacity(
-                      typeof value === "number" ? value : undefined,
-                    )
-                  }
-                  min={1}
-                  max={10000}
-                />
-              </Group>
-            </Stack>
-          </Box>
-        )}
-
         {/* Media Preview */}
         {media.length > 0 && (
           <Stack gap="xs">
             <Text size="sm" fw={500}>
-              Media ({media.length}/4)
+              Media ({media.length}/10)
             </Text>
             <Group gap="sm">
               {media.map((file, index) => (
@@ -574,7 +371,7 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
                       top: -8,
                       right: -8,
                     }}
-                    onClick={() => removeMedia(index)}
+                    onClick={() => removeMediaAndThumbnail(index)}
                   >
                     <IconX size={12} />
                   </ActionIcon>
@@ -584,61 +381,40 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
           </Stack>
         )}
 
-        {/* Tags */}
-        {tags.length > 0 && (
-          <Group gap="xs">
-            {tags.map((tag) => (
-              <Badge
-                key={tag.name}
-                variant="light"
-                color="blue"
-                rightSection={
+        {/* Thumbnail Preview */}
+        {thumbnail.length > 0 && (
+          <Stack gap="xs">
+            <Text size="sm" fw={500}>
+              Thumbnails ({thumbnail.length}/10)
+            </Text>
+            <Group gap="sm">
+              {thumbnail.map((file, index) => (
+                <Box key={index} style={{ position: "relative" }}>
+                  <Image
+                    src={URL.createObjectURL(file)}
+                    alt={`Thumbnail ${index + 1}`}
+                    width={80}
+                    height={80}
+                    style={{ objectFit: "cover" }}
+                    radius="md"
+                  />
                   <ActionIcon
                     size="xs"
-                    color="blue"
-                    radius="xl"
-                    variant="transparent"
-                    onClick={() => removeTag(tag.name)}
+                    color="red"
+                    variant="filled"
+                    style={{
+                      position: "absolute",
+                      top: -8,
+                      right: -8,
+                    }}
+                    onClick={() => removeThumbnail(index)}
                   >
-                    <IconX size={10} />
+                    <IconX size={12} />
                   </ActionIcon>
-                }
-              >
-                #{tag.name}
-              </Badge>
-            ))}
-          </Group>
-        )}
-
-        {/* Mentions */}
-        {mentions.length > 0 && (
-          <Group gap="xs">
-            {mentions.map((mention) => {
-              const user = followingUsers.find(
-                (u: any) => u.id === mention.mentionedUserId,
-              );
-              return (
-                <Badge
-                  key={mention.mentionedUserId}
-                  variant="light"
-                  color="green"
-                  rightSection={
-                    <ActionIcon
-                      size="xs"
-                      color="green"
-                      radius="xl"
-                      variant="transparent"
-                      onClick={() => removeMention(mention.mentionedUserId)}
-                    >
-                      <IconX size={10} />
-                    </ActionIcon>
-                  }
-                >
-                  @{(user as any)?.username || (user as any)?.firstName}
-                </Badge>
-              );
-            })}
-          </Group>
+                </Box>
+              ))}
+            </Group>
+          </Stack>
         )}
 
         {/* Location */}
@@ -646,201 +422,91 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
           <Group gap="xs">
             <IconMapPin size={16} color="var(--mantine-color-blue-6)" />
             <Text size="sm" c="blue.6">
-              {locationCoords ? "Current location" : location}
+              {location}
             </Text>
             <ActionIcon
               size="xs"
               color="red"
               variant="subtle"
-              onClick={() => {
-                setLocation("");
-                setLocationCoords(null);
-              }}
+              onClick={() => setLocation("")}
             >
               <IconX size={12} />
             </ActionIcon>
           </Group>
         )}
 
-        {/* Advanced Options Toggle */}
-        <Button
-          variant="subtle"
-          size="sm"
-          onClick={() => setShowAdvanced(!showAdvanced)}
-          rightSection={
-            showAdvanced ? <IconX size={14} /> : <IconHash size={14} />
-          }
-        >
-          {showAdvanced ? "Hide" : "Show"} Advanced Options
-        </Button>
+        {/* Post Settings */}
+        <Stack gap="sm">
+          <Text size="sm" fw={500}>
+            Post Settings
+          </Text>
+          <Group grow>
+            <Switch
+              label="Public"
+              checked={isPublic}
+              size="sm"
+              onChange={(e) => setIsPublic(e.currentTarget.checked)}
+            />
+            <Switch
+              label="Allow Comments"
+              checked={allowComments}
+              size="sm"
+              onChange={(e) => setAllowComments(e.currentTarget.checked)}
+            />
+            <Switch
+              label="Allow Likes"
+              checked={allowLikes}
+              size="sm"
+              onChange={(e) => setAllowLikes(e.currentTarget.checked)}
+            />
+          </Group>
+          <Group grow>
+            <Switch
+              label="Allow Shares"
+              checked={allowShares}
+              size="sm"
+              onChange={(e) => setAllowShares(e.currentTarget.checked)}
+            />
+            <Switch
+              label="Allow Bookmarks"
+              checked={allowBookmarks}
+              size="sm"
+              onChange={(e) => setAllowBookmarks(e.currentTarget.checked)}
+            />
+            <Switch
+              label="Allow Reactions"
+              checked={allowReactions}
+              size="sm"
+              onChange={(e) => setAllowReactions(e.currentTarget.checked)}
+            />
+          </Group>
+        </Stack>
 
-        {/* Advanced Options */}
-        <Collapse in={showAdvanced}>
-          <Stack gap="md">
-            {/* Tag Input */}
-            <Stack gap="sm">
-              <Text size="sm" fw={500}>
-                Add Tags
-              </Text>
-              <Group gap="sm">
-                <TextInput
-                  placeholder="Tag name"
-                  value={tagInput}
-                  onChange={(e) => setTagInput(e.currentTarget.value)}
-                  leftSection={<IconHash size={16} />}
-                  style={{ flex: 1 }}
-                />
-                <TextInput
-                  placeholder="Description (optional)"
-                  value={tagDescription}
-                  size="sm"
-                  onChange={(e) => setTagDescription(e.currentTarget.value)}
-                  style={{ flex: 1 }}
-                />
-                <Button
-                  onClick={handleTagAdd}
-                  disabled={!tagInput.trim()}
-                  leftSection={<IconSend size={14} />}
-                >
-                  Add
-                </Button>
-              </Group>
-            </Stack>
-
-            {/* Mention Input */}
-            <Stack gap="sm">
-              <Text size="sm" fw={500}>
-                Mention Users
-              </Text>
-              <Group gap="sm">
-                <TextInput
-                  placeholder="Search users to mention..."
-                  value={mentionInput}
-                  size="sm"
-                  onChange={(e) => {
-                    setMentionInput(e.currentTarget.value);
-                    setShowMentionPicker(e.currentTarget.value.length > 0);
-                  }}
-                  leftSection={<IconUser size={16} />}
-                  style={{ flex: 1 }}
-                />
-              </Group>
-
-              <Transition mounted={showMentionPicker} transition="slide-down">
-                {(styles) => (
-                  <Paper withBorder p="sm" style={styles}>
-                    <Stack gap="xs">
-                      {followingUsers
-                        .filter(
-                          (user: any) =>
-                            user.firstName
-                              .toLowerCase()
-                              .includes(mentionInput.toLowerCase()) ||
-                            user.username
-                              ?.toLowerCase()
-                              .includes(mentionInput.toLowerCase()),
-                        )
-                        .slice(0, 5)
-                        .map((user: any) => (
-                          <Group
-                            key={user.id}
-                            gap="sm"
-                            style={{ cursor: "pointer" }}
-                            onClick={() => handleMentionAdd(user.id)}
-                          >
-                            <Avatar size="sm" src={user.avatar} radius="xl">
-                              {user.firstName.charAt(0)}
-                            </Avatar>
-                            <Box>
-                              <Text size="sm" fw={500}>
-                                {user.firstName} {user.lastName}
-                              </Text>
-                              <Text size="xs" c="dimmed">
-                                @{user.username || user.phoneNumber}
-                              </Text>
-                            </Box>
-                          </Group>
-                        ))}
-                    </Stack>
-                  </Paper>
-                )}
-              </Transition>
-            </Stack>
-
-            {/* Location */}
-            <Stack gap="sm">
-              <Text size="sm" fw={500}>
-                Location
-              </Text>
-              <Group gap="sm">
-                <TextInput
-                  placeholder="Add location manually"
-                  value={locationCoords ? "Current location" : location}
-                  size="sm"
-                  onChange={(e) => setLocation(e.currentTarget.value)}
-                  leftSection={<IconLocation size={16} />}
-                  style={{ flex: 1 }}
-                />
-                <Button
-                  variant="light"
-                  onClick={getCurrentLocation}
-                  loading={isGettingLocation}
-                  leftSection={<IconMapPin size={16} />}
-                  size="sm"
-                >
-                  Use Current Location
-                </Button>
-              </Group>
-            </Stack>
-
-            {/* Post Settings */}
-            <Stack gap="sm">
-              <Text size="sm" fw={500}>
-                Post Settings
-              </Text>
-              <Group grow>
-                <Switch
-                  label="Public"
-                  checked={isPublic}
-                  size="sm"
-                  onChange={(e) => setIsPublic(e.currentTarget.checked)}
-                />
-                <Switch
-                  label="Allow Comments"
-                  checked={allowComments}
-                  size="sm"
-                  onChange={(e) => setAllowComments(e.currentTarget.checked)}
-                />
-                <Switch
-                  label="Allow Likes"
-                  checked={allowLikes}
-                  size="sm"
-                  onChange={(e) => setAllowLikes(e.currentTarget.checked)}
-                />
-              </Group>
-              <Group grow>
-                <Switch
-                  label="Allow Shares"
-                  checked={allowShares}
-                  size="sm"
-                  onChange={(e) => setAllowShares(e.currentTarget.checked)}
-                />
-                <Switch
-                  label="Allow Bookmarks"
-                  checked={allowBookmarks}
-                  size="sm"
-                  onChange={(e) => setAllowBookmarks(e.currentTarget.checked)}
-                />
-                <Switch
-                  label="Allow Reactions"
-                  checked={allowReactions}
-                  size="sm"
-                  onChange={(e) => setAllowReactions(e.currentTarget.checked)}
-                />
-              </Group>
-            </Stack>
-          </Stack>
-        </Collapse>
+        {/* Location Input */}
+        <Stack gap="sm">
+          <Text size="sm" fw={500}>
+            Location
+          </Text>
+          <Group gap="sm">
+            <TextInput
+              placeholder="Add location manually"
+              value={location}
+              size="sm"
+              onChange={(e) => setLocation(e.currentTarget.value)}
+              leftSection={<IconLocation size={16} />}
+              style={{ flex: 1 }}
+            />
+            <Button
+              variant="light"
+              onClick={getCurrentLocation}
+              loading={isGettingLocation}
+              leftSection={<IconMapPin size={16} />}
+              size="sm"
+            >
+              Use Current Location
+            </Button>
+          </Group>
+        </Stack>
 
         {/* Actions */}
         <Group justify="space-between">
@@ -849,7 +515,7 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
               ref={fileInputRef}
               type="file"
               multiple
-              accept="image/*,video/*"
+              accept="image/*,video/mp4,video/avi,video/mov,video/wmv,video/webm,video/quicktime,.mp4,.avi,.mov,.wmv,.webm"
               onChange={(e) =>
                 handleMediaUpload(Array.from(e.target.files || []))
               }
@@ -859,13 +525,19 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
               variant="light"
               size="lg"
               onClick={() => fileInputRef.current?.click()}
-              disabled={media.length >= 4}
+              disabled={media.length >= 10}
+              title="Add photos or videos"
             >
-              <IconPhoto size={20} />
+              <Group gap={2}>
+                <IconPhoto size={16} />
+                <IconVideo size={16} />
+              </Group>
             </ActionIcon>
-            <ActionIcon variant="light" size="lg" disabled>
-              <IconVideo size={20} />
-            </ActionIcon>
+            {isGeneratingThumbnails && (
+              <Text size="sm" c="dimmed">
+                Generating thumbnails...
+              </Text>
+            )}
           </Group>
 
           <Group gap="sm">
@@ -875,11 +547,11 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
             <Button
               size="sm"
               onClick={handleSubmit}
-              disabled={!canSubmit}
-              loading={isSubmitting}
+              disabled={!canSubmit || isGeneratingThumbnails}
+              loading={isSubmitting || isGeneratingThumbnails}
               leftSection={<IconSend size={16} />}
             >
-              {scheduledAt ? "Schedule" : "Post"}
+              {isGeneratingThumbnails ? "Generating thumbnails..." : "Post"}
             </Button>
           </Group>
         </Group>

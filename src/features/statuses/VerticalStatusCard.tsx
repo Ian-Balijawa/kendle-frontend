@@ -95,12 +95,7 @@ export function VerticalStatusCard({
           >
             <IconPlus size={20} color="white" />
           </Box>
-          <Text
-            size="xs"
-            fw={600}
-            c={"white"}
-            ta="center"
-          >
+          <Text size="xs" fw={600} c={"white"} ta="center">
             Create Story
           </Text>
         </Stack>
@@ -148,7 +143,7 @@ export function VerticalStatusCard({
       {latestStatus.media && latestStatus.media.length > 0 ? (
         latestStatus.media[0].mediaType === "image" ? (
           <Image
-            src={latestStatus.media[0].url}
+            src={latestStatus.media[0].thumbnailUrl}
             alt="Status background"
             style={{
               position: "absolute",
@@ -161,19 +156,19 @@ export function VerticalStatusCard({
           />
         ) : (
           <video
-              src={latestStatus.media[0].url}
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-          }}
-              muted
-              loop
-              playsInline
-            />
+            src={latestStatus.media[0].url}
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+            }}
+            muted
+            loop
+            playsInline
+          />
         )
       ) : (
         <Box
@@ -189,7 +184,9 @@ export function VerticalStatusCard({
             justifyContent: "center",
           }}
         >
-          <Text c="dimmed" size="sm">No media</Text>
+          <Text c="dimmed" size="sm">
+            No media
+          </Text>
         </Box>
       )}
 
@@ -259,7 +256,6 @@ export function VerticalStatusCard({
         <Text
           size="xs"
           fw={600}
-
           ta="center"
           style={{
             lineHeight: 1.2,
@@ -273,36 +269,38 @@ export function VerticalStatusCard({
       </Box>
 
       {/* Video play indicator */}
-      {latestStatus.media && latestStatus.media.length > 0 && latestStatus.media[0].mediaType === "video" && (
-        <Box
-          style={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: "24px",
-            height: "24px",
-            borderRadius: "50%",
-            backgroundColor: "rgba(255, 255, 255, 0.2)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            backdropFilter: "blur(10px)",
-            zIndex: 3,
-          }}
-        >
+      {latestStatus.media &&
+        latestStatus.media.length > 0 &&
+        latestStatus.media[0].mediaType === "video" && (
           <Box
             style={{
-              width: "0",
-              height: "0",
-              borderLeft: "6px solid white",
-              borderTop: "4px solid transparent",
-              borderBottom: "4px solid transparent",
-              marginLeft: "2px",
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              width: "24px",
+              height: "24px",
+              borderRadius: "50%",
+              backgroundColor: "rgba(255, 255, 255, 0.2)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              backdropFilter: "blur(10px)",
+              zIndex: 3,
             }}
-          />
-        </Box>
-      )}
+          >
+            <Box
+              style={{
+                width: "0",
+                height: "0",
+                borderLeft: "6px solid white",
+                borderTop: "4px solid transparent",
+                borderBottom: "4px solid transparent",
+                marginLeft: "2px",
+              }}
+            />
+          </Box>
+        )}
     </Box>
   );
 }

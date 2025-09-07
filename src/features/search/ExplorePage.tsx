@@ -112,7 +112,9 @@ function CompactUserList({
               {emptyMessage || "No users found"}
             </Text>
             <Text c="dimmed" ta="center" size="sm">
-              {title ? `No ${title.toLowerCase()} to display` : "Check back later for updates!"}
+              {title
+                ? `No ${title.toLowerCase()} to display`
+                : "Check back later for updates!"}
             </Text>
           </Stack>
         </Stack>
@@ -369,7 +371,7 @@ export function ExplorePage() {
                     <ProfileSwipe
                       users={suggestedUsers.suggestions}
                       title="Discover Amazing People"
-                          subtitle="Connect with creators and influencers in your community"
+                      subtitle="Connect with creators and influencers in your community"
                     />
                   ) : (
                     <Box
@@ -404,13 +406,13 @@ export function ExplorePage() {
                       <Loader size="lg" />
                     </Group>
                   ) : followingData && followingData.following.length > 0 ? (
-                      <CompactUserList
-                        users={followingData.following}
-                        onFollow={handleFollowUser}
-                        onViewProfile={handleViewProfile}
-                        followLoading={followLoading}
-                        title="Following"
-                      />
+                    <CompactUserList
+                      users={followingData.following}
+                      onFollow={handleFollowUser}
+                      onViewProfile={handleViewProfile}
+                      followLoading={followLoading}
+                      title="Following"
+                    />
                   ) : (
                     <Box
                       p="xl"
@@ -444,13 +446,13 @@ export function ExplorePage() {
                       <Loader size="lg" />
                     </Group>
                   ) : followersData && followersData.followers.length > 0 ? (
-                      <CompactUserList
-                        users={followersData.followers}
-                        onFollow={handleFollowUser}
-                        onViewProfile={handleViewProfile}
-                        followLoading={followLoading}
-                        title="Followers"
-                      />
+                    <CompactUserList
+                      users={followersData.followers}
+                      onFollow={handleFollowUser}
+                      onViewProfile={handleViewProfile}
+                      followLoading={followLoading}
+                      title="Followers"
+                    />
                   ) : (
                     <Box
                       p="xl"

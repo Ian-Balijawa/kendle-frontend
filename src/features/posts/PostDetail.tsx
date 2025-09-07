@@ -34,7 +34,12 @@ import {
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { format } from "timeago.js";
-import { CommentSkeletonList, PostDetailSkeleton } from "../../components/ui";
+import ReactPlayer from "react-player";
+import {
+  CommentSkeletonList,
+  PostDetailSkeleton,
+  PostEngagementButton,
+} from "../../components/ui";
 import { useCreateComment, useInfiniteComments } from "../../hooks/useComments";
 import {
   useBookmarkPost,
@@ -443,11 +448,7 @@ export function PostDetail() {
                       ? "green"
                       : post.type === "video"
                         ? "purple"
-                        : post.type === "poll"
-                          ? "orange"
-                          : post.type === "event"
-                            ? "cyan"
-                            : "gray"
+                        : "gray"
                 }
                 radius="sm"
               >
@@ -523,29 +524,96 @@ export function PostDetail() {
                 </Group>
               </Stack>
             ) : (
-                <Box mb="md">{renderFormattedText(post.content, "md", "sm")}</Box>
+              <Box mb="md">{renderFormattedText(post.content, "md", "sm")}</Box>
             )}
 
             {/* Media */}
             {post?.media && post?.media?.length > 0 && (
               <Box mb="md">
-                {post?.media?.length === 1 ? (
-                  <Image
-                    src={post.media[0].url}
-                    alt={post.media[0].filename}
-                    radius="lg"
-                    style={{ maxHeight: 400, objectFit: "cover" }}
-                  />
+                {post.media.length === 1 ? (
+                  <Box
+                    style={{
+                      borderRadius: "var(--mantine-radius-lg)",
+                      overflow: "hidden",
+                    }}
+                  >
+                    {post.media[0].type === "video" ? (
+                      <ReactPlayer
+                        src={post.media[0].url}
+                        width="100%"
+                        height={
+                          post.media[0].height
+                            ? Math.min(post.media[0].height, 500)
+                            : 400
+                        }
+                        controls
+                        light={post.media[0].thumbnailUrl}
+                        playsInline
+                        style={{
+                          borderRadius: "var(--mantine-radius-lg)",
+                        }}
+                      />
+                    ) : (
+                      <Image
+                        src={post.media[0].url}
+                        alt={post.media[0].filename || "Post media"}
+                        radius="lg"
+                        style={{
+                          maxHeight: 500,
+                          objectFit: "cover",
+                          width: "100%",
+                        }}
+                        onError={(e) => {
+                          console.error(
+                            "Failed to load image:",
+                            post.media?.[0]?.url,
+                          );
+                          e.currentTarget.style.display = "none";
+                        }}
+                      />
+                    )}
+                  </Box>
                 ) : (
                   <Group gap="xs">
-                    {post?.media?.map((media) => (
-                      <Image
-                        key={media.id}
-                        src={media.url}
-                        alt={media.filename}
-                        radius="md"
-                        style={{ height: 180, objectFit: "cover", flex: 1 }}
-                      />
+                    {post.media.map((media) => (
+                      <Box key={media.id} style={{ flex: 1 }}>
+                        {media.type === "video" ? (
+                          <Box
+                            style={{
+                              height: 200,
+                              borderRadius: "var(--mantine-radius-md)",
+                              overflow: "hidden",
+                            }}
+                          >
+                            <ReactPlayer
+                              src={media.url}
+                              width="100%"
+                              height="100%"
+                              controls
+                              light={media.thumbnailUrl}
+                              playsInline
+                              style={{
+                                borderRadius: "var(--mantine-radius-md)",
+                              }}
+                            />
+                          </Box>
+                        ) : (
+                          <Image
+                            src={media.url}
+                            alt={media.filename || "Post media"}
+                            radius="md"
+                            style={{
+                              height: 200,
+                              objectFit: "cover",
+                              width: "100%",
+                            }}
+                            onError={(e) => {
+                              console.error("Failed to load image:", media.url);
+                              e.currentTarget.style.display = "none";
+                            }}
+                          />
+                        )}
+                      </Box>
                     ))}
                   </Group>
                 )}
@@ -614,64 +682,6 @@ export function PostDetail() {
                   {post.location}
                 </Text>
               </Group>
-            )}
-
-            {/* Poll Display */}
-            {post?.type === "poll" && post?.pollQuestion && (
-              <Box p="sm" bg="gray.0" mb="sm">
-                <Stack gap="sm">
-                  <Text size="md" fw={600}>
-                    {post.pollQuestion}
-                  </Text>
-                  {post.pollOptions && post.pollOptions.length > 0 && (
-                    <Stack gap="xs">
-                      {post.pollOptions.map((option: string, index: number) => (
-                        <Text key={index} size="sm" c="dimmed">
-                          • {option}
-                        </Text>
-                      ))}
-                    </Stack>
-                  )}
-                  {post.pollEndDate && (
-                    <Text size="sm" c="dimmed">
-                      Poll ends: {format(new Date(post.pollEndDate))}
-                    </Text>
-                  )}
-                </Stack>
-              </Box>
-            )}
-
-            {/* Event Display */}
-            {post?.type === "event" && post?.eventTitle && (
-              <Box p="sm" bg="blue.0" mb="sm">
-                <Stack gap="sm">
-                  <Text size="md" fw={600} c="blue.7">
-                    {post.eventTitle}
-                  </Text>
-                  {post.eventDescription && (
-                    <Text size="sm" c="dimmed">
-                      {post.eventDescription}
-                    </Text>
-                  )}
-                  <Group gap="md">
-                    {post.eventStartDate && (
-                      <Text size="sm" c="blue.6">
-                        📅 {format(new Date(post.eventStartDate))}
-                      </Text>
-                    )}
-                    {post.eventLocation && (
-                      <Text size="sm" c="blue.6">
-                        📍 {post.eventLocation}
-                      </Text>
-                    )}
-                    {post.eventCapacity && (
-                      <Text size="sm" c="blue.6">
-                        👥 Capacity: {post.eventCapacity}
-                      </Text>
-                    )}
-                  </Group>
-                </Stack>
-              </Box>
             )}
           </Box>
 
@@ -840,16 +850,18 @@ export function PostDetail() {
                   }}
                   onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
                     if (post.allowComments) {
-                      e.currentTarget.style.backgroundColor = commentContent.trim()
-                        ? "var(--mantine-color-blue-2)"
-                        : "var(--mantine-color-gray-1)";
+                      e.currentTarget.style.backgroundColor =
+                        commentContent.trim()
+                          ? "var(--mantine-color-blue-2)"
+                          : "var(--mantine-color-gray-1)";
                       e.currentTarget.style.transform = "translateY(-1px)";
                     }
                   }}
                   onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
-                    e.currentTarget.style.backgroundColor = commentContent.trim()
-                      ? "var(--mantine-color-blue-1)"
-                      : "transparent";
+                    e.currentTarget.style.backgroundColor =
+                      commentContent.trim()
+                        ? "var(--mantine-color-blue-1)"
+                        : "transparent";
                     e.currentTarget.style.transform = "translateY(0)";
                   }}
                 >
@@ -884,7 +896,8 @@ export function PostDetail() {
                   }}
                   onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
                     if (isAuthenticated && post.allowShares) {
-                      e.currentTarget.style.backgroundColor = "var(--mantine-color-gray-1)";
+                      e.currentTarget.style.backgroundColor =
+                        "var(--mantine-color-gray-1)";
                       e.currentTarget.style.transform = "translateY(-1px)";
                     }
                   }}
@@ -959,15 +972,13 @@ export function PostDetail() {
 
               {/* Post Statistics */}
               <Group gap="md" align="center">
-                <Text size="xs" c="dimmed">
-                  👀 {post.viewsCount || 0}
-                </Text>
-                <Text size="xs" c="dimmed">
-                  📊 {post.sharesCount || 0}
-                </Text>
-                <Text size="xs" c="dimmed">
-                  🔖 {post.bookmarksCount || 0}
-                </Text>
+                <PostEngagementButton
+                  postId={post.id}
+                  likesCount={post.likesCount || 0}
+                  dislikesCount={post.dislikesCount || 0}
+                  bookmarksCount={post.bookmarksCount || 0}
+                  viewsCount={post.viewsCount || 0}
+                />
               </Group>
             </Group>
           </Box>
@@ -1029,8 +1040,8 @@ export function PostDetail() {
               </Group>
             ) : (
               <Box
-                  p="sm"
-                  mb="sm"
+                p="sm"
+                mb="sm"
                 style={{
                   background: "var(--mantine-color-blue-0)",
                   borderRadius: "var(--mantine-radius-lg)",
@@ -1045,7 +1056,7 @@ export function PostDetail() {
             {/* Embedded Comments Section with Scroll */}
             {comments.length > 0 && (
               <Box data-interactive="true">
-                <Text fw={600} size="md" mb="sm" >
+                <Text fw={600} size="md" mb="sm">
                   Comments ({post?.commentsCount})
                 </Text>
 

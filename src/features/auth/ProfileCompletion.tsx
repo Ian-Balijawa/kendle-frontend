@@ -186,12 +186,7 @@ export function ProfileCompletion() {
                 {progress}%
               </Badge>
             </Group>
-            <Progress
-              value={progress}
-              size="md"
-              radius="xl"
-              color="blue"
-            />
+            <Progress value={progress} size="md" radius="xl" color="blue" />
           </Card>
         </Box>
 
@@ -296,7 +291,10 @@ export function ProfileCompletion() {
                     <TextInput
                       placeholder="your.email@example.com"
                       leftSection={
-                        <IconMail size={18} color="var(--mantine-color-gray-5)" />
+                        <IconMail
+                          size={18}
+                          color="var(--mantine-color-gray-5)"
+                        />
                       }
                       size="md"
                       radius="md"
@@ -325,7 +323,10 @@ export function ProfileCompletion() {
                     <TextInput
                       placeholder="+1234567890"
                       leftSection={
-                        <IconBrandWhatsapp size={18} color="var(--mantine-color-green-6)" />
+                        <IconBrandWhatsapp
+                          size={18}
+                          color="var(--mantine-color-green-6)"
+                        />
                       }
                       size="md"
                       radius="md"
@@ -383,7 +384,10 @@ export function ProfileCompletion() {
 
               <Box>
                 <Group align="center" mb="lg" gap="xs">
-                  <IconBrandTwitter size={20} color="var(--mantine-color-blue-6)" />
+                  <IconBrandTwitter
+                    size={20}
+                    color="var(--mantine-color-blue-6)"
+                  />
                   <Text fw={600} size="lg">
                     Socials
                   </Text>
@@ -397,7 +401,10 @@ export function ProfileCompletion() {
                     <TextInput
                       placeholder="https://twitter.com/yourusername"
                       leftSection={
-                        <IconBrandTwitter size={18} color="var(--mantine-color-blue-5)" />
+                        <IconBrandTwitter
+                          size={18}
+                          color="var(--mantine-color-blue-5)"
+                        />
                       }
                       size="md"
                       radius="md"
@@ -418,7 +425,10 @@ export function ProfileCompletion() {
                       {...form.getInputProps("twitterLink")}
                       value={form.getValues().twitterLink || ""}
                       onChange={(e) =>
-                        form.setFieldValue("twitterLink", e.target.value || null)
+                        form.setFieldValue(
+                          "twitterLink",
+                          e.target.value || null,
+                        )
                       }
                     />
                   </Grid.Col>
@@ -426,7 +436,10 @@ export function ProfileCompletion() {
                     <TextInput
                       placeholder="https://instagram.com/yourusername"
                       leftSection={
-                        <IconBrandInstagram size={18} color="var(--mantine-color-pink-6)" />
+                        <IconBrandInstagram
+                          size={18}
+                          color="var(--mantine-color-pink-6)"
+                        />
                       }
                       size="md"
                       radius="md"
@@ -447,7 +460,10 @@ export function ProfileCompletion() {
                       {...form.getInputProps("instagramLink")}
                       value={form.getValues().instagramLink || ""}
                       onChange={(e) =>
-                        form.setFieldValue("instagramLink", e.target.value || null)
+                        form.setFieldValue(
+                          "instagramLink",
+                          e.target.value || null,
+                        )
                       }
                     />
                   </Grid.Col>
@@ -455,7 +471,10 @@ export function ProfileCompletion() {
                     <TextInput
                       placeholder="https://tiktok.com/@yourusername"
                       leftSection={
-                        <IconBrandTiktok size={18} color="var(--mantine-color-gray-8)" />
+                        <IconBrandTiktok
+                          size={18}
+                          color="var(--mantine-color-gray-8)"
+                        />
                       }
                       size="md"
                       radius="md"
@@ -502,7 +521,7 @@ export function ProfileCompletion() {
                 </Button>
 
                 <Button
-                  variant="subtle"  
+                  variant="subtle"
                   onClick={() => navigate("/", { replace: true })}
                   disabled={isSubmitting}
                   radius="md"
@@ -517,7 +536,8 @@ export function ProfileCompletion() {
               </Stack>
 
               <Text size="sm" ta="center" mt="lg">
-                You can always update these details later in your profile settings
+                You can always update these details later in your profile
+                settings
               </Text>
             </Stack>
           </form>

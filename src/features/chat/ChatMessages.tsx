@@ -43,7 +43,12 @@ export function ChatMessages({ conversationId }: ChatMessagesProps) {
 
   // Mark conversation as read when component mounts and user is viewing
   useEffect(() => {
-    if (data && data.pages.length > 0 && !markAsRead.isPending && !markAsRead.isSuccess) {
+    if (
+      data &&
+      data.pages.length > 0 &&
+      !markAsRead.isPending &&
+      !markAsRead.isSuccess
+    ) {
       markAsRead.mutate(conversationId);
     }
   }, [conversationId]); // Only run when conversationId changes, not on every data change
