@@ -212,8 +212,8 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
 
     console.log("post.media", post.media);
 
-    const videoStreamUrl = `http://localhost:8084/api/v1/stream/video/${post.media?.[0]?.url.split("/").pop()}`;
-    const imageStreamUrl = `http://localhost:8084/api/v1/stream/image/${post.media?.[0]?.url.split("/").pop()}`;
+    const videoStreamUrl = `${import.meta.env.VITE_API_URL}/stream/video/${post.media?.[0]?.url.split("/").pop()}`;
+    const imageStreamUrl = `${import.meta.env.VITE_API_URL}/stream/image/${post.media?.[0]?.url.split("/").pop()}`;
 
     return (
       <>
