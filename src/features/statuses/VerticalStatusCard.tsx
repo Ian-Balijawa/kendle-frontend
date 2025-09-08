@@ -1,5 +1,6 @@
 import { Avatar, Box, Image, Stack, Text } from "@mantine/core";
 import { IconPlus } from "@tabler/icons-react";
+import ReactPlayer from "react-player";
 import { StatusCollection } from "../../types";
 
 interface VerticalStatusCardProps {
@@ -143,7 +144,7 @@ export function VerticalStatusCard({
       {latestStatus.media && latestStatus.media.length > 0 ? (
         latestStatus.media[0].mediaType === "image" ? (
           <Image
-            src={latestStatus.media[0].thumbnailUrl}
+            src={`${import.meta.env.VITE_API_URL}/stream/image/${latestStatus.media[0].url.split("/").pop()}`}
             alt="Status background"
             style={{
               position: "absolute",
@@ -153,10 +154,21 @@ export function VerticalStatusCard({
               height: "100%",
               objectFit: "cover",
             }}
+            onError={(e) => {
+              console.error("Failed to load status image:", latestStatus.media?.[0]?.url);
+              e.currentTarget.style.display = "none";
+            }}
           />
         ) : (
-          <video
-            src={latestStatus.media[0].url}
+            <ReactPlayer
+              src={`${import.meta.env.VITE_API_URL}/stream/video/${latestStatus.media[0].url.split("/").pop()}`}
+              width="100%"
+              height="100%"
+              playing={false}
+              muted
+              loop
+              playsInline
+              controls={false}
             style={{
               position: "absolute",
               top: 0,
@@ -165,9 +177,6 @@ export function VerticalStatusCard({
               height: "100%",
               objectFit: "cover",
             }}
-            muted
-            loop
-            playsInline
           />
         )
       ) : (

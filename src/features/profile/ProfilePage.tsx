@@ -106,20 +106,6 @@ export function ProfilePage() {
     await toggleFollow(profileUserId, followStatus?.isFollowing || false);
   };
 
-  // Debug logging
-  console.log("ProfilePage Debug:", {
-    userId,
-    currentUserId: currentUser?.id,
-    profileUserId,
-    isOwnProfile,
-    isAuthenticated,
-    userLoading,
-    userError,
-    user: user
-      ? { id: user.id, username: user.username, firstName: user.firstName }
-      : null,
-  });
-
   const handleEditProfile = () => {
     navigate("/settings");
   };

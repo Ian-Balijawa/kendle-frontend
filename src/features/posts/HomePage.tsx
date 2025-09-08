@@ -23,16 +23,15 @@ import { useInfinitePosts } from "../../hooks/usePosts";
 import { useSuggestedUsers } from "../../hooks/useFollow";
 import { useInfiniteStatuses, useViewStatus } from "../../hooks/useStatuses";
 import { useAuthStore } from "../../stores/authStore";
-import { useStatusStore } from "../../stores/statusStore";
 import { CreatePost } from "./CreatePost";
 import { PostCard } from "./PostCard";
 import { StatusStories } from "../statuses/StatusStories";
 import { CreateStatus } from "../statuses/CreateStatus";
 import { StatusDetailsModal } from "../statuses/StatusDetailsModal";
+import { StatusCollection } from "../../types";
 
 export function HomePage() {
   const { isAuthenticated, user } = useAuthStore();
-  const { statusCollections: storeStatusCollections } = useStatusStore();
   const [createPostOpened, setCreatePostOpened] = useState(false);
   const [createStatusOpened, setCreateStatusOpened] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<any>(null);
@@ -82,7 +81,7 @@ export function HomePage() {
   const statuses = statusData?.pages.flatMap((page) => page.statuses) || [];
 
   // Group statuses by author for stories display
-  const apiStatusCollections = statuses.reduce((collections: any[], status) => {
+  const statusCollections = statuses.reduce((collections: StatusCollection[], status) => {
     const existingCollection = collections.find(
       (collection) => collection.author.id === status.author.id,
     );
@@ -104,16 +103,10 @@ export function HomePage() {
   }, []);
 
   // Sort collections by last updated
-  apiStatusCollections.sort(
+  statusCollections.sort(
     (a, b) =>
       new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime(),
   );
-
-  // Use API status collections if available, otherwise fall back to store
-  const statusCollections =
-    apiStatusCollections.length > 0
-      ? apiStatusCollections
-      : storeStatusCollections;
 
   // Status handlers
   const handleCreateStatus = () => {
@@ -123,7 +116,7 @@ export function HomePage() {
     setCreateStatusOpened(true);
   };
 
-  const handleStatusClick = (collection: any) => {
+  const handleStatusClick = (collection: StatusCollection) => {
     const collectionIndex = statusCollections.findIndex(
       (c) => c.author.id === collection.author.id,
     );
@@ -191,6 +184,9 @@ export function HomePage() {
     currentCollectionIndex < statusCollections.length - 1;
   const canGoPreviousCollection = currentCollectionIndex > 0;
 
+
+  console.log("statusCollections", statusCollections);
+
   return (
     <Container size="xl" px="md">
       {/* Header Section */}
@@ -235,9 +231,7 @@ export function HomePage() {
       <Box my="md">
         {isAuthenticated && statusCollections.length > 0 && (
           <StatusStories
-            collections={statusCollections.filter(
-              (collection) => collection.author.id !== user?.id,
-            )}
+            collections={statusCollections}
             currentUserAvatar={user?.avatar}
             onCreateStatus={handleCreateStatus}
             onStatusClick={handleStatusClick}

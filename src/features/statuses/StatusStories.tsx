@@ -21,6 +21,8 @@ export function StatusStories({
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
 
+
+  console.log("collections", collections);
   const scroll = (direction: "left" | "right") => {
     if (!scrollAreaRef.current) return;
 

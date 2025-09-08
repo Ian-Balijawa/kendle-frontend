@@ -16,6 +16,7 @@ import {
   IconShare,
 } from "@tabler/icons-react";
 import { useEffect, useState, useRef } from "react";
+import ReactPlayer from "react-player";
 import { StatusCollection } from "../../types";
 
 interface StatusDetailsModalProps {
@@ -261,26 +262,27 @@ export function StatusDetailsModal({
           {currentStatus.media && currentStatus.media.length > 0 ? (
             currentStatus.media[0].mediaType === "image" ? (
               <Image
-                src={currentStatus.media[0].url}
+                src={`${import.meta.env.VITE_API_URL}/stream/image/${currentStatus.media[0].url.split("/").pop()}`}
                 alt="Status"
                 style={{
-                  width: "100%",
-                  height: "100%",
                   objectFit: "cover",
+                }}
+                onError={(e) => {
+                  console.error("Failed to load status image:", currentStatus.media?.[0]?.url);
+                  e.currentTarget.style.display = "none";
                 }}
               />
             ) : (
-              <video
-                src={currentStatus.media[0].url}
-                style={{
-                  width: "100%",
-                  height: "100%",
+                <ReactPlayer
+                  src={`${import.meta.env.VITE_API_URL}/stream/video/${currentStatus.media[0].url.split("/").pop()}`}
+                  playing={isPlaying}
+                  muted
+                  loop
+                  playsInline
+                  controls={false}
+                  style={{
                   objectFit: "cover",
-                }}
-                muted
-                loop
-                autoPlay={isPlaying}
-                playsInline
+                  }}
                 onEnded={() => setIsPlaying(false)}
               />
             )
