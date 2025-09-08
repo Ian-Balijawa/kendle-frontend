@@ -7,7 +7,6 @@ import {
   UpdateStatusRequest,
   StatusReactionRequest,
   StatusReplyRequest,
-  StatusViewRequest,
 } from "../services/api";
 import { CreateStatusData } from "../types/status";
 import { useAuthStore } from "../stores/authStore";
@@ -725,67 +724,6 @@ export function useReplyToStatus() {
 
       // Invalidate and refetch
       queryClient.invalidateQueries({ queryKey: statusKeys.replies(id) });
-    },
-  });
-}
-
-// View status mutation
-export function useViewStatus() {
-  return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: StatusViewRequest }) =>
-      apiService.viewStatus(id, data),
-    onMutate: async ({ id }) => {
-      // Cancel any outgoing refetches
-      await queryClient.cancelQueries({ queryKey: statusKeys.detail(id) });
-      await queryClient.cancelQueries({ queryKey: statusKeys.lists() });
-
-      // Optimistically update
-      const updateStatus = (status: Status) => ({
-        ...status,
-        isViewed: true,
-        viewsCount: status.viewsCount + 1,
-        views: [
-          ...(status.views || []),
-          {
-            id: `temp-view-${Date.now()}`,
-            userId: useAuthStore.getState().user?.id || "",
-            statusId: id,
-            viewedAt: new Date().toISOString(),
-          },
-        ],
-      });
-
-      // Update single status
-      queryClient.setQueryData(
-        statusKeys.detail(id),
-        (old: Status | undefined) => {
-          if (!old) return old;
-          return updateStatus(old);
-        },
-      );
-
-      // Update in lists
-      queryClient.setQueriesData(
-        { queryKey: statusKeys.lists() },
-        (old: any) => {
-          if (!old) return old;
-
-          return {
-            ...old,
-            pages: old.pages.map((page: StatusesResponse) => ({
-              ...page,
-              statuses: page.statuses.map((status: Status) =>
-                status.id === id ? updateStatus(status) : status,
-              ),
-            })),
-          };
-        },
-      );
-    },
-    onError: (_, { id }) => {
-      // Revert the optimistic updates
-      queryClient.invalidateQueries({ queryKey: statusKeys.detail(id) });
-      queryClient.invalidateQueries({ queryKey: statusKeys.lists() });
     },
   });
 }

@@ -108,6 +108,7 @@ export function VerticalStatusCard({
 
   const latestStatus = collection.statuses[0];
   const hasUnviewed = collection.hasUnviewed;
+  const hasMultipleStatuses = collection.statuses.length > 1;
 
   return (
     <Box
@@ -275,6 +276,21 @@ export function VerticalStatusCard({
         >
           {collection.author.firstName} {collection.author.lastName}
         </Text>
+
+        {/* Status count indicator */}
+        {hasMultipleStatuses && (
+          <Text
+            size="xs"
+            ta="center"
+            style={{
+              color: "rgba(255, 255, 255, 0.8)",
+              fontSize: "10px",
+              marginTop: "2px",
+            }}
+          >
+            {collection.statuses.length} stories
+          </Text>
+        )}
       </Box>
 
       {/* Video play indicator */}

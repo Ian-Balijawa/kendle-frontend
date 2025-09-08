@@ -1,27 +1,12 @@
-import {
-  ActionIcon,
-  Badge,
-  Box,
-  Button,
-  Card,
-  Container,
-  Group,
-  Stack,
-  Text,
-} from "@mantine/core";
+import { ActionIcon, Badge, Box, Button, Card, Container, Group, Stack, Text, } from "@mantine/core";
 import { useIntersection } from "@mantine/hooks";
-import {
-  IconPlus,
-  IconRefresh,
-  IconSparkles,
-  IconTrendingUp,
-} from "@tabler/icons-react";
-import { useState, useCallback } from "react";
+import { IconPlus, IconRefresh, IconSparkles, IconTrendingUp, } from "@tabler/icons-react";
+import { useState } from "react";
 import { InfiniteScrollLoader, PostSkeletonList } from "../../components/ui";
 import { ProfileSwipe } from "../../components/ui/ProfileSwipe";
 import { useInfinitePosts } from "../../hooks/usePosts";
 import { useSuggestedUsers } from "../../hooks/useFollow";
-import { useInfiniteStatuses, useViewStatus } from "../../hooks/useStatuses";
+import { useInfiniteStatuses } from "../../hooks/useStatuses";
 import { useAuthStore } from "../../stores/authStore";
 import { CreatePost } from "./CreatePost";
 import { PostCard } from "./PostCard";
@@ -38,6 +23,7 @@ export function HomePage() {
   const [currentStatusIndex, setCurrentStatusIndex] = useState(0);
   const [viewModalOpened, setViewModalOpened] = useState(false);
   const [currentCollectionIndex, setCurrentCollectionIndex] = useState(0);
+
 
   // Use infinite posts query
   const {
@@ -61,9 +47,6 @@ export function HomePage() {
     sortOrder: "desc",
   });
 
-  // Status view mutation
-  const viewStatusMutation = useViewStatus();
-
   // Intersection observer for infinite scroll
   const { ref, entry } = useIntersection({
     threshold: 1,
@@ -80,33 +63,77 @@ export function HomePage() {
   // Flatten all statuses from all pages
   const statuses = statusData?.pages.flatMap((page) => page.statuses) || [];
 
-  // Group statuses by author for stories display
-  const statusCollections = statuses.reduce((collections: StatusCollection[], status) => {
-    const existingCollection = collections.find(
+  // // Group statuses by author for stories display
+  // const statusCollections = statuses.reduce((collections: StatusCollection[], status) => {
+  //   const existingCollection = collections.find(
+  //     (collection) => collection.author.id === status.author.id,
+  //   );
+
+  //   console.log("existingCollection", existingCollection);
+
+  //   if (existingCollection) {
+  //     // Add the entire status (with all its media) to the collection
+  //     existingCollection.statuses.push(status);
+
+  //     // Update hasUnviewed if any status in the collection is unviewed
+  //     if (status.isViewed === false) {
+  //       existingCollection.hasUnviewed = true;
+  //     }
+
+  //     // Update lastUpdated to the most recent status
+  //     if (new Date(status.createdAt) > new Date(existingCollection.lastUpdated)) {
+  //       existingCollection.lastUpdated = status.createdAt;
+  //     }
+  //   } else {
+  //     collections.push({
+  //       author: status.author,
+  //       statuses: [status], // Each status contains its media array
+  //       hasUnviewed: status.isViewed === false,
+  //       lastUpdated: status.createdAt,
+  //     });
+  //   }
+
+  //   return collections;
+  // }, []);
+
+
+  //we shall group statuses by author for stories display using a for loop
+  const statusCollections: StatusCollection[] = [];
+  console.log("statusCollections", statusCollections);
+  console.log("statuses", statuses);
+
+  for (const status of statuses) {
+    const existingCollection = statusCollections.find(
       (collection) => collection.author.id === status.author.id,
     );
-
+    console.log("existingCollection", existingCollection);
     if (existingCollection) {
       existingCollection.statuses.push(status);
-      existingCollection.hasUnviewed =
-        existingCollection.hasUnviewed || !status.isViewed;
     } else {
-      collections.push({
+      console.log("statusCollections", statusCollections);
+      statusCollections.push({
         author: status.author,
         statuses: [status],
-        hasUnviewed: !status.isViewed || false, // Default to false if isViewed is undefined
+        hasUnviewed: status.isViewed === false,
         lastUpdated: status.createdAt,
       });
     }
+  }
 
-    return collections;
-  }, []);
+  console.log("statusCollections", statusCollections);
+
 
   // Sort collections by last updated
   statusCollections.sort(
-    (a, b) =>
-      new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime(),
+    (a, b) => new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime(),
   );
+
+  // Sort statuses within each collection by creation date (newest first)
+  statusCollections.forEach(collection => {
+    collection.statuses.sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+  });
 
   // Status handlers
   const handleCreateStatus = () => {
@@ -161,31 +188,12 @@ export function HomePage() {
     }
   };
 
-  const handleViewStatus = useCallback(
-    (statusId: string) => {
-      if (user?.id) {
-        viewStatusMutation.mutate({
-          id: statusId,
-          data: {
-            viewDuration: 5000, // 5 seconds default
-            deviceType: "web",
-          },
-        });
-      }
-    },
-    [user?.id, viewStatusMutation],
-  );
-
   const canGoNext = selectedStatus
     ? currentStatusIndex < selectedStatus.statuses.length - 1
     : false;
   const canGoPrevious = currentStatusIndex > 0;
-  const canGoNextCollection =
-    currentCollectionIndex < statusCollections.length - 1;
+  const canGoNextCollection = currentCollectionIndex < statusCollections.length - 1;
   const canGoPreviousCollection = currentCollectionIndex > 0;
-
-
-  console.log("statusCollections", statusCollections);
 
   return (
     <Container size="xl" px="md">
@@ -239,15 +247,13 @@ export function HomePage() {
         )}
       </Box>
 
-      {isAuthenticated &&
-        suggestedUsers &&
-        suggestedUsers.suggestions.length > 0 && (
-          <ProfileSwipe
-            users={suggestedUsers.suggestions}
-            title="Discover People"
-            subtitle="Find interesting people to follow"
-          />
-        )}
+      {isAuthenticated && suggestedUsers && suggestedUsers.suggestions.length > 0 && (
+        <ProfileSwipe
+          users={suggestedUsers.suggestions}
+          title="Discover People"
+          subtitle="Find interesting people to follow"
+        />
+      )}
 
       {/* Content Section */}
       <Stack gap="lg">
@@ -269,12 +275,7 @@ export function HomePage() {
               <Text c="red.6" ta="center" size="sm">
                 {error?.message || "We couldn't load the posts right now."}
               </Text>
-              <Button
-                variant="light"
-                color="red"
-                radius="xl"
-                onClick={() => refetch()}
-              >
+              <Button variant="light" color="red" radius="xl" onClick={() => refetch()}>
                 Try Again
               </Button>
             </Stack>
@@ -306,7 +307,6 @@ export function HomePage() {
                   Be the first to share something amazing with our community.
                 </Text>
               </div>
-
               {isAuthenticated && (
                 <Button
                   leftSection={<IconPlus size={16} />}
@@ -375,7 +375,6 @@ export function HomePage() {
         canGoPrevious={canGoPrevious}
         canGoNextCollection={canGoNextCollection}
         canGoPreviousCollection={canGoPreviousCollection}
-        onViewStatus={handleViewStatus}
       />
     </Container>
   );

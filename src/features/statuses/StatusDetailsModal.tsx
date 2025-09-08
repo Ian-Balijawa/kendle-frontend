@@ -32,7 +32,6 @@ interface StatusDetailsModalProps {
   canGoPrevious: boolean;
   canGoNextCollection: boolean;
   canGoPreviousCollection: boolean;
-  onViewStatus: (statusId: string) => void;
 }
 
 export function StatusDetailsModal({
@@ -48,7 +47,6 @@ export function StatusDetailsModal({
   canGoPrevious,
   canGoNextCollection,
   canGoPreviousCollection,
-  onViewStatus,
 }: StatusDetailsModalProps) {
   const [progress, setProgress] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
@@ -66,7 +64,6 @@ export function StatusDetailsModal({
       !viewedStatusesRef.current.has(currentStatus.id)
     ) {
       viewedStatusesRef.current.add(currentStatus.id);
-      onViewStatus(currentStatus.id);
     }
 
     // Reset progress and start playing
@@ -152,10 +149,8 @@ export function StatusDetailsModal({
     <Modal
       opened={opened}
       onClose={onClose}
-      size="100%"
       padding={0}
       withCloseButton={false}
-      centered
       styles={{
         content: {
           backgroundColor: "var(--mantine-color-dark-9)",
@@ -170,8 +165,6 @@ export function StatusDetailsModal({
       <Box
         style={{
           position: "relative",
-          width: "100vw",
-          height: "100vh",
           backgroundColor: "var(--mantine-color-dark-9)",
         }}
       >
@@ -234,6 +227,9 @@ export function StatusDetailsModal({
                 <Text size="xs" opacity={0.7}>
                   {formatTimeAgo(currentStatus.createdAt)} •{" "}
                   {getTimeRemaining()}
+                  {collection.statuses.length > 1 && (
+                    <> • {currentStatusIndex + 1} of {collection.statuses.length}</>
+                  )}
                 </Text>
               </Box>
             </Group>
@@ -268,7 +264,10 @@ export function StatusDetailsModal({
                   objectFit: "cover",
                 }}
                 onError={(e) => {
-                  console.error("Failed to load status image:", currentStatus.media?.[0]?.url);
+                  console.error(
+                    "Failed to load status image:",
+                    currentStatus.media?.[0]?.url,
+                  );
                   e.currentTarget.style.display = "none";
                 }}
               />

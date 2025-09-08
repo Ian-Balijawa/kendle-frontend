@@ -34,6 +34,7 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { format } from "timeago.js";
 import ReactPlayer from "react-player";
+import Masonry, { ResponsiveMasonry } from "react-responsive-masonry";
 import {
   CommentSkeletonList,
   PostDetailSkeleton,
@@ -568,137 +569,166 @@ export function PostDetail() {
                     )}
                   </Box>
                 ) : (
-                    <Box
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: post.media.length === 1
-                          ? "1fr"
-                          : post.media.length === 2
-                            ? "1fr 1fr"
-                            : post.media.length === 3
-                              ? "1fr 1fr 1fr"
-                              : "1fr 1fr",
-                        gap: "0.5rem",
-                        gridAutoRows: "minmax(200px, auto)",
-                      }}
-                    >
-                      {post.media.map((media, index) => {
-                        const mediaImageStreamUrl = `${import.meta.env.VITE_API_URL}/stream/image/${media.url.split("/").pop()}`;
-                        const mediaVideoStreamUrl = `${import.meta.env.VITE_API_URL}/stream/video/${media.url.split("/").pop()}`;
+                    <Box>
+                      {/* Separate videos and images */}
+                      {(() => {
+                        const videos = post.media.filter(media => media.type === "video");
+                        const images = post.media.filter(media => media.type === "image");
 
                         return (
-                          <Box
-                            key={media.id}
-                            style={{
-                              position: "relative",
-                              gridRow: post.media && post.media.length === 4 && index === 0 ? "span 2" : "span 1",
-                              cursor: "pointer",
-                              transition: "transform 0.2s ease",
-                            }}
-                            onClick={() => navigate(`/post/${post.id}`)}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.transform = "scale(1.02)";
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.transform = "scale(1)";
-                            }}
-                          >
-                            {media.type === "video" ? (
+                          <Stack gap="lg">
+                            {/* Videos in regular grid */}
+                            {videos.length > 0 && (
                               <Box
                                 style={{
-                                  height: "100%",
-                                  minHeight: 200,
-                                  borderRadius: "var(--mantine-radius-md)",
-                                  overflow: "hidden",
+                                  display: "grid",
+                                  gridTemplateColumns: videos.length === 1 ? "1fr" : videos.length === 2 ? "1fr 1fr" : "1fr 1fr 1fr",
+                                  gap: "1rem",
                                 }}
                               >
-                                <ReactPlayer
-                                  src={mediaVideoStreamUrl}
-                                  width="100%"
-                                  height="100%"
-                                  controls
-                                  light={media.thumbnailUrl ? `${import.meta.env.VITE_API_URL}/stream/image/${media.thumbnailUrl.split("/").pop()}` : undefined}
-                                  playsInline
-                                  style={{
-                                    borderRadius: "var(--mantine-radius-md)",
-                                  }}
-                                />
-                              </Box>
-                            ) : (
-                              <Image
-                                  src={mediaImageStreamUrl}
-                                  alt={media.filename || "Post media"}
-                                  radius="md"
-                                  style={{
-                                    height: "100%",
-                                    minHeight: 200,
-                                    objectFit: "cover",
-                                    width: "100%",
-                                  }}
-                                  onError={(e) => {
-                                  console.error("Failed to load image:", mediaImageStreamUrl);
-                                  e.currentTarget.style.display = "none";
-                                }}
-                              />
-                            )}
+                                {videos.map((media, index) => {
+                                  const mediaVideoStreamUrl = `${import.meta.env.VITE_API_URL}/stream/video/${media.url.split("/").pop()}`;
 
-                            {/* Video play indicator */}
-                            {media.type === "video" && (
-                              <Box
-                                style={{
-                                  position: "absolute",
-                                  top: "50%",
-                                  left: "50%",
-                                  transform: "translate(-50%, -50%)",
-                                  width: "48px",
-                                  height: "48px",
-                                  borderRadius: "50%",
-                                  backgroundColor: "rgba(0, 0, 0, 0.6)",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "center",
-                                  backdropFilter: "blur(10px)",
-                                  zIndex: 2,
-                                }}
-                              >
-                                <Box
-                                  style={{
-                                    width: "0",
-                                    height: "0",
-                                    borderLeft: "12px solid white",
-                                    borderTop: "8px solid transparent",
-                                    borderBottom: "8px solid transparent",
-                                    marginLeft: "4px",
-                                  }}
-                                />
+                                return (
+                                  <Box
+                                    key={media.id || `video-${index}`}
+                                    style={{
+                                      position: "relative",
+                                      cursor: "pointer",
+                                      transition: "transform 0.2s ease",
+                                      borderRadius: "var(--mantine-radius-md)",
+                                      overflow: "hidden",
+                                    }}
+                                    onClick={() => navigate(`/post/${post.id}`)}
+                                    onMouseEnter={(e) => {
+                                      e.currentTarget.style.transform = "scale(1.02)";
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      e.currentTarget.style.transform = "scale(1)";
+                                    }}
+                                  >
+                                    <ReactPlayer
+                                      src={mediaVideoStreamUrl}
+                                      width="100%"
+                                      height={300}
+                                      controls
+                                      light={media.thumbnailUrl ? `${import.meta.env.VITE_API_URL}/stream/image/${media.thumbnailUrl.split("/").pop()}` : undefined}
+                                      playsInline
+                                      style={{
+                                        borderRadius: "var(--mantine-radius-md)",
+                                      }}
+                                    />
+
+                                    {/* Video play indicator */}
+                                    <Box
+                                      style={{
+                                        position: "absolute",
+                                        top: "50%",
+                                        left: "50%",
+                                        transform: "translate(-50%, -50%)",
+                                        width: "48px",
+                                        height: "48px",
+                                        borderRadius: "50%",
+                                        backgroundColor: "rgba(0, 0, 0, 0.6)",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        backdropFilter: "blur(10px)",
+                                        zIndex: 2,
+                                      }}
+                                    >
+                                      <Box
+                                        style={{
+                                          width: "0",
+                                          height: "0",
+                                          borderLeft: "12px solid white",
+                                          borderTop: "8px solid transparent",
+                                          borderBottom: "8px solid transparent",
+                                          marginLeft: "4px",
+                                        }}
+                                      />
+                                    </Box>
+                                  </Box>
+                                );
+                              })}
                               </Box>
                             )}
 
-                            {/* More images indicator */}
-                            {index === 3 && post.media && post.media.length > 4 && (
-                              <Box
-                                style={{
-                                  position: "absolute",
-                                  top: 0,
-                                  left: 0,
-                                  right: 0,
-                                  bottom: 0,
-                                  backgroundColor: "rgba(0, 0, 0, 0.7)",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "center",
-                                  borderRadius: "var(--mantine-radius-md)",
-                                  zIndex: 3,
-                                }}
+                            {/* Images in masonry layout */}
+                            {images.length > 0 && (
+                              <ResponsiveMasonry
+                                columnsCountBreakPoints={{ 350: 1, 750: 2, 900: 3, 1200: 4 }}
                               >
-                                <Text size="xl" fw={600} c="white">
-                                  +{(post.media?.length || 0) - 4}
-                                </Text>
-                              </Box>
+                                <Masonry gutter="20px">
+                                  {images.map((media, index) => {
+                                    const mediaImageStreamUrl = `${import.meta.env.VITE_API_URL}/stream/image/${media.url.split("/").pop()}`;
+
+                                    return (
+                                      <Box
+                                        key={media.id || `image-${index}`}
+                                        style={{
+                                          position: "relative",
+                                          cursor: "pointer",
+                                          transition: "transform 0.2s ease",
+                                          borderRadius: "var(--mantine-radius-md)",
+                                          overflow: "hidden",
+                                          marginBottom: "20px",
+                                        }}
+                                        onClick={() => navigate(`/post/${post.id}`)}
+                                        onMouseEnter={(e) => {
+                                          e.currentTarget.style.transform = "scale(1.02)";
+                                        }}
+                                        onMouseLeave={(e) => {
+                                          e.currentTarget.style.transform = "scale(1)";
+                                        }}
+                                      >
+                                        <Image
+                                          src={mediaImageStreamUrl}
+                                          alt={media.filename || "Post media"}
+                                          radius="md"
+                                          style={{
+                                            width: "100%",
+                                            height: "auto",
+                                            objectFit: "cover",
+                                            display: "block",
+                                          }}
+                                          onError={(e) => {
+                                            console.error("Failed to load image:", mediaImageStreamUrl);
+                                            e.currentTarget.style.display = "none";
+                                          }}
+                                        />
+
+                                      {/* More images indicator */}
+                                      {index === 3 && images.length > 4 && (
+                                        <Box
+                                          style={{
+                                            position: "absolute",
+                                            top: 0,
+                                            left: 0,
+                                            right: 0,
+                                            bottom: 0,
+                                            backgroundColor: "rgba(0, 0, 0, 0.7)",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                            borderRadius: "var(--mantine-radius-md)",
+                                            zIndex: 3,
+                                          }}
+                                        >
+                                          <Text size="xl" fw={600} c="white">
+                                            +{images.length - 4}
+                                          </Text>
+                                        </Box>
+                                      )}
+                                    </Box>
+                                  );
+                                })}
+                                </Masonry>
+                              </ResponsiveMasonry>
                             )}
-                          </Box>
+                          </Stack>
                         );
-                      })}
+                      })()}
                     </Box>
                 )}
               </Box>

@@ -21,8 +21,6 @@ export function StatusStories({
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
 
-
-  console.log("collections", collections);
   const scroll = (direction: "left" | "right") => {
     if (!scrollAreaRef.current) return;
 
@@ -51,6 +49,7 @@ export function StatusStories({
     setCanScrollLeft(scrollLeft > 0);
     setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10); // 10px buffer
   };
+
 
   return (
     <Box style={{ position: "relative" }}>

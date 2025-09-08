@@ -15,7 +15,6 @@ interface StatusStore {
   setStatusCollections: (collections: StatusCollection[]) => void;
   addStatus: (status: Status) => void;
   deleteStatus: (id: string) => void;
-  viewStatus: (id: string, userId: string) => void;
   setSelectedStatus: (status: Status | null) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
@@ -140,98 +139,6 @@ export const useStatusStore = create<StatusStore>()(
             },
             false,
             "status/deleteStatus",
-          );
-        },
-
-        viewStatus: (id: string, userId: string) => {
-          set(
-            (state) => {
-              const now = new Date().toISOString();
-
-              // Check if user has already viewed this status
-              const status = state.statuses.find((s) => s.id === id);
-              if (!status || status.isViewed) {
-                return state; // No changes needed
-              }
-
-              const newStatuses = state.statuses.map((status) =>
-                status.id === id
-                  ? {
-                      ...status,
-                      isViewed: true,
-                      viewsCount: status.viewsCount + 1,
-                      views: [
-                        ...(status.views || []),
-                        {
-                          id: Date.now().toString(),
-                          userId,
-                          statusId: id,
-                          viewedAt: now,
-                        },
-                      ],
-                    }
-                  : status,
-              );
-
-              // Update status collections
-              const newStatusCollections = state.statusCollections.map(
-                (collection) => {
-                  const updatedStatuses = collection.statuses.map((status) =>
-                    status.id === id
-                      ? {
-                          ...status,
-                          isViewed: true,
-                          viewsCount: status.viewsCount + 1,
-                          views: [
-                            ...(status.views || []),
-                            {
-                              id: Date.now().toString(),
-                              userId,
-                              statusId: id,
-                              viewedAt: now,
-                            },
-                          ],
-                        }
-                      : status,
-                  );
-
-                  // Check if all statuses in this collection are viewed
-                  const hasUnviewed = updatedStatuses.some(
-                    (status) => !status.isViewed,
-                  );
-
-                  return {
-                    ...collection,
-                    statuses: updatedStatuses,
-                    hasUnviewed,
-                  };
-                },
-              );
-
-              return {
-                statuses: newStatuses,
-                statusCollections: newStatusCollections,
-                selectedStatus:
-                  state.selectedStatus?.id === id
-                    ? {
-                        ...state.selectedStatus,
-                        isViewed: true,
-                        viewsCount: state.selectedStatus.viewsCount + 1,
-                        views: [
-                          ...(state.selectedStatus.views || []),
-                          {
-                            id: Date.now().toString(),
-                            userId,
-                            statusId: id,
-                            viewedAt: now,
-                          },
-                        ],
-                      }
-                    : state.selectedStatus,
-              };
-            },
-            false,
-            "status/viewStatus",
           );
         },
 

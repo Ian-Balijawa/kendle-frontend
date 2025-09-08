@@ -1294,10 +1294,6 @@ class ApiService {
     return response.data.data;
   }
 
-  async viewStatus(id: string, data: StatusViewRequest): Promise<void> {
-    await this.api.post(`/statuses/${id}/view`, data);
-  }
-
   async getStatusAnalytics(id: string): Promise<StatusAnalytics> {
     const response: AxiosResponse<ApiResponse<StatusAnalytics>> =
       await this.api.get(`/statuses/${id}/analytics`);

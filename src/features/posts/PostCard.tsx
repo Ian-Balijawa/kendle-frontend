@@ -30,6 +30,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "timeago.js";
 import ReactPlayer from "react-player";
+import Masonry, { ResponsiveMasonry } from "react-responsive-masonry";
 import { CommentSkeletonList, PostEngagementButton } from "../../components/ui";
 import { useInfiniteComments, useCreateComment } from "../../hooks/useComments";
 import {
@@ -503,125 +504,161 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                     )}
                   </Box>
                 ) : (
-                    <Box
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: post.media.length === 2
-                          ? "1fr 1fr"
-                          : post.media.length === 3
-                            ? "1fr 1fr"
-                            : "repeat(2, 1fr)",
-                        gridTemplateRows: post.media.length === 2
-                          ? "1fr"
-                          : post.media.length === 3
-                            ? "1fr 1fr"
-                            : "repeat(2, 1fr)",
-                        gap: "0.5rem",
-                        borderRadius: "var(--mantine-radius-lg)",
-                        overflow: "hidden",
-                      }}
-                    >
-                      {post.media.slice(0, 4).map((media, index) => {
-                        // Calculate grid positioning for masonry effect
-                        const getGridPosition = (idx: number, total: number) => {
-                          if (total === 2) {
-                            return { gridColumn: `${idx + 1}`, gridRow: "1" };
-                          } else if (total === 3) {
-                            if (idx === 0) return { gridColumn: "1", gridRow: "1 / 3" };
-                            return { gridColumn: "2", gridRow: `${idx}` };
-                          } else if (total >= 4) {
-                            if (idx === 0) return { gridColumn: "1", gridRow: "1 / 3" };
-                            if (idx === 1) return { gridColumn: "2", gridRow: "1" };
-                            if (idx === 2) return { gridColumn: "2", gridRow: "2" };
-                            if (idx === 3) return { gridColumn: "1 / 3", gridRow: "3" };
-                          }
-                          return {};
-                        };
-
-                        const gridPosition = getGridPosition(index, post.media?.length || 0);
+                    <Box>
+                      {/* Separate videos and images */}
+                      {(() => {
+                        const videos = post.media.filter(media => media.type === "video");
+                        const images = post.media.filter(media => media.type === "image");
 
                         return (
-                          <Box
-                            key={media.id || `media-${index}`}
-                            style={{ 
-                            position: "relative",
-                            ...gridPosition,
-                            cursor: "pointer",
-                            transition: "transform 0.2s ease",
-                            borderRadius: "var(--mantine-radius-md)",
-                            overflow: "hidden",
-                            }}
-                            onClick={handlePostClick}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.transform = "scale(1.02)";
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.transform = "scale(1)";
-                            }}
-                          >
-                            {media.type === "video" ? (
+                          <Stack gap="md">
+                            {/* Videos in regular grid */}
+                            {videos.length > 0 && (
                               <Box
                                 style={{
-                                  height: "100%",
-                                  width: "100%",
-                                  borderRadius: "var(--mantine-radius-md)",
-                                  overflow: "hidden",
+                                  display: "grid",
+                                  gridTemplateColumns: videos.length === 1 ? "1fr" : "1fr 1fr",
+                                  gap: "0.5rem",
                                 }}
                               >
-                                <ReactPlayer
-                                  src={getVideoStreamUrl(media.url)}
-                                  width="100%"
-                                  height="100%"
-                                  controls
-                                  autoPlay
-                                  playsInline
+                                {videos.slice(0, 2).map((media, index) => (
+                                  <Box
+                                  key={media.id || `video-${index}`}
                                   style={{
+                                    position: "relative",
+                                    cursor: "pointer",
+                                    transition: "transform 0.2s ease",
                                     borderRadius: "var(--mantine-radius-md)",
+                                    overflow: "hidden",
                                   }}
-                                />
+                                  onClick={handlePostClick}
+                                  onMouseEnter={(e) => {
+                                    e.currentTarget.style.transform = "scale(1.02)";
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    e.currentTarget.style.transform = "scale(1)";
+                                  }}
+                                >
+                                  <ReactPlayer
+                                    src={getVideoStreamUrl(media.url)}
+                                    width="100%"
+                                    height={200}
+                                    controls
+                                    light={media.thumbnailUrl ? getImageStreamUrl(media.thumbnailUrl) : undefined}
+                                    playsInline
+                                    style={{
+                                      borderRadius: "var(--mantine-radius-md)",
+                                    }}
+                                  />
+
+                                  {/* Video play indicator */}
+                                  <Box
+                                    style={{
+                                      position: "absolute",
+                                      top: "50%",
+                                      left: "50%",
+                                      transform: "translate(-50%, -50%)",
+                                      width: "40px",
+                                      height: "40px",
+                                      borderRadius: "50%",
+                                      backgroundColor: "rgba(0, 0, 0, 0.6)",
+                                      display: "flex",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                      backdropFilter: "blur(10px)",
+                                      zIndex: 2,
+                                    }}
+                                  >
+                                    <Box
+                                      style={{
+                                        width: "0",
+                                        height: "0",
+                                        borderLeft: "10px solid white",
+                                        borderTop: "6px solid transparent",
+                                        borderBottom: "6px solid transparent",
+                                        marginLeft: "3px",
+                                      }}
+                                    />
+                                  </Box>
+                                </Box>
+                              ))}
                               </Box>
-                            ) : (
-                              <Image
-                                  src={getImageStreamUrl(media.url)}
-                                  alt={media.filename || "Post media"}
-                                  radius="md"
-                                  style={{
-                                  height: "100%",
-                                  width: "100%",
-                                  objectFit: "cover",
-                                  }}
-                                  onError={(e) => {
-                                  console.error(
-                                    "Failed to load image:",
-                                    getImageStreamUrl(media.url),
-                                  );
-                                  e.currentTarget.style.display = "none";
-                                }}
-                              />
                             )}
-                            {index === 3 && post.media && post.media.length > 4 && (
-                              <Box
-                                style={{
-                                  position: "absolute",
-                                  top: 0,
-                                  left: 0,
-                                  right: 0,
-                                  bottom: 0,
-                                  backgroundColor: "rgba(0, 0, 0, 0.7)",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "center",
-                                  borderRadius: "var(--mantine-radius-md)",
-                                }}
+
+                            {/* Images in masonry layout */}
+                            {images.length > 0 && (
+                              <ResponsiveMasonry
+                                columnsCountBreakPoints={{ 350: 1, 750: 2, 900: 3 }}
                               >
-                                <Text size="lg" fw={600} c="white">
-                                  +{post.media.length - 4}
-                                </Text>
-                              </Box>
+                                <Masonry gutter="12px">
+                                  {images.slice(0, 4).map((media, index) => (
+                                    <Box
+                                      key={media.id || `image-${index}`}
+                                      style={{
+                                        position: "relative",
+                                        cursor: "pointer",
+                                        transition: "transform 0.2s ease",
+                                        borderRadius: "var(--mantine-radius-md)",
+                                        overflow: "hidden",
+                                        marginBottom: "12px",
+                                      }}
+                                      onClick={handlePostClick}
+                                      onMouseEnter={(e) => {
+                                        e.currentTarget.style.transform = "scale(1.02)";
+                                      }}
+                                      onMouseLeave={(e) => {
+                                        e.currentTarget.style.transform = "scale(1)";
+                                      }}
+                                    >
+                                      <Image
+                                        src={getImageStreamUrl(media.url)}
+                                        alt={media.filename || "Post media"}
+                                        radius="md"
+                                        style={{
+                                        width: "100%",
+                                        height: "auto",
+                                        objectFit: "cover",
+                                        display: "block",
+                                      }}
+                                      onError={(e) => {
+                                        console.error(
+                                          "Failed to load image:",
+                                          getImageStreamUrl(media.url),
+                                        );
+                                        e.currentTarget.style.display = "none";
+                                      }}
+                                    />
+
+                                    {/* More images indicator */}
+                                    {index === 3 && images.length > 4 && (
+                                      <Box
+                                        style={{
+                                          position: "absolute",
+                                          top: 0,
+                                          left: 0,
+                                          right: 0,
+                                          bottom: 0,
+                                          backgroundColor: "rgba(0, 0, 0, 0.7)",
+                                          display: "flex",
+                                          alignItems: "center",
+                                          justifyContent: "center",
+                                          borderRadius: "var(--mantine-radius-md)",
+                                          zIndex: 3,
+                                        }}
+                                      >
+                                        <Text size="lg" fw={600} c="white">
+                                          +{images.length - 4}
+                                        </Text>
+                                      </Box>
+                                    )}
+                                  </Box>
+                                ))}
+                                </Masonry>
+                              </ResponsiveMasonry>
                             )}
-                          </Box>
+                          </Stack>
                         );
-                      })}
+                      })()}
                     </Box>
                 )}
               </Box>
