@@ -16,6 +16,7 @@ import {
   UnstyledButton,
 } from "@mantine/core";
 import {
+  IconArrowRight,
   IconBookmark,
   IconDotsVertical,
   IconEdit,
@@ -23,7 +24,6 @@ import {
   IconHeart,
   IconMapPin,
   IconMessageCircle,
-  IconSend,
   IconTrash,
 } from "@tabler/icons-react";
 import { useState } from "react";
@@ -450,7 +450,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
             </Box>
 
             {post?.media && post?.media?.length > 0 && (
-              <Box>
+              <>
                 {post?.media?.length === 1 ? (
                   <Box
                     style={{
@@ -477,7 +477,6 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                             : 300
                         }
                         controls
-                        autoPlay
                         playsInline
                         style={{
                           borderRadius: "var(--mantine-radius-lg)",
@@ -485,7 +484,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                       />
                     ) : (
                       <Image
-                          src={getImageStreamUrl(post.media[0].url)}
+                        src={getImageStreamUrl(post.media[0].url)}
                         alt={post.media[0].filename || "Post media"}
                         radius="lg"
                         style={{
@@ -504,25 +503,30 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                     )}
                   </Box>
                 ) : (
-                    <Box>
-                      {/* Separate videos and images */}
-                      {(() => {
-                        const videos = post.media.filter(media => media.type === "video");
-                        const images = post.media.filter(media => media.type === "image");
+                  <Box>
+                    {/* Separate videos and images */}
+                    {(() => {
+                      const videos = post.media.filter(
+                        (media) => media.type === "video",
+                      );
+                      const images = post.media.filter(
+                        (media) => media.type === "image",
+                      );
 
-                        return (
-                          <Stack gap="md">
-                            {/* Videos in regular grid */}
-                            {videos.length > 0 && (
-                              <Box
-                                style={{
-                                  display: "grid",
-                                  gridTemplateColumns: videos.length === 1 ? "1fr" : "1fr 1fr",
-                                  gap: "0.5rem",
-                                }}
-                              >
-                                {videos.slice(0, 2).map((media, index) => (
-                                  <Box
+                      return (
+                        <Stack gap="md">
+                          {/* Videos in regular grid */}
+                          {videos.length > 0 && (
+                            <Box
+                              style={{
+                                display: "grid",
+                                gridTemplateColumns:
+                                  videos.length === 1 ? "1fr" : "1fr 1fr",
+                                gap: "0.5rem",
+                              }}
+                            >
+                              {videos.slice(0, 2).map((media, index) => (
+                                <Box
                                   key={media.id || `video-${index}`}
                                   style={{
                                     position: "relative",
@@ -533,10 +537,12 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                                   }}
                                   onClick={handlePostClick}
                                   onMouseEnter={(e) => {
-                                    e.currentTarget.style.transform = "scale(1.02)";
+                                    e.currentTarget.style.transform =
+                                      "scale(1.02)";
                                   }}
                                   onMouseLeave={(e) => {
-                                    e.currentTarget.style.transform = "scale(1)";
+                                    e.currentTarget.style.transform =
+                                      "scale(1)";
                                   }}
                                 >
                                   <ReactPlayer
@@ -544,7 +550,11 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                                     width="100%"
                                     height={200}
                                     controls
-                                    light={media.thumbnailUrl ? getImageStreamUrl(media.thumbnailUrl) : undefined}
+                                    light={
+                                      media.thumbnailUrl
+                                        ? getImageStreamUrl(media.thumbnailUrl)
+                                        : undefined
+                                    }
                                     playsInline
                                     style={{
                                       borderRadius: "var(--mantine-radius-md)",
@@ -582,39 +592,45 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                                   </Box>
                                 </Box>
                               ))}
-                              </Box>
-                            )}
+                            </Box>
+                          )}
 
-                            {/* Images in masonry layout */}
-                            {images.length > 0 && (
-                              <ResponsiveMasonry
-                                columnsCountBreakPoints={{ 350: 1, 750: 2, 900: 3 }}
-                              >
-                                <Masonry gutter="12px">
-                                  {images.slice(0, 4).map((media, index) => (
-                                    <Box
-                                      key={media.id || `image-${index}`}
+                          {/* Images in masonry layout */}
+                          {images.length > 0 && (
+                            <ResponsiveMasonry
+                              columnsCountBreakPoints={{
+                                350: 1,
+                                750: 2,
+                                900: 3,
+                              }}
+                            >
+                              <Masonry gutter="12px">
+                                {images.slice(0, 4).map((media, index) => (
+                                  <Box
+                                    key={media.id || `image-${index}`}
+                                    style={{
+                                      position: "relative",
+                                      cursor: "pointer",
+                                      transition: "transform 0.2s ease",
+                                      borderRadius: "var(--mantine-radius-md)",
+                                      overflow: "hidden",
+                                      marginBottom: "12px",
+                                    }}
+                                    onClick={handlePostClick}
+                                    onMouseEnter={(e) => {
+                                      e.currentTarget.style.transform =
+                                        "scale(1.02)";
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      e.currentTarget.style.transform =
+                                        "scale(1)";
+                                    }}
+                                  >
+                                    <Image
+                                      src={getImageStreamUrl(media.url)}
+                                      alt={media.filename || "Post media"}
+                                      radius="md"
                                       style={{
-                                        position: "relative",
-                                        cursor: "pointer",
-                                        transition: "transform 0.2s ease",
-                                        borderRadius: "var(--mantine-radius-md)",
-                                        overflow: "hidden",
-                                        marginBottom: "12px",
-                                      }}
-                                      onClick={handlePostClick}
-                                      onMouseEnter={(e) => {
-                                        e.currentTarget.style.transform = "scale(1.02)";
-                                      }}
-                                      onMouseLeave={(e) => {
-                                        e.currentTarget.style.transform = "scale(1)";
-                                      }}
-                                    >
-                                      <Image
-                                        src={getImageStreamUrl(media.url)}
-                                        alt={media.filename || "Post media"}
-                                        radius="md"
-                                        style={{
                                         width: "100%",
                                         height: "auto",
                                         objectFit: "cover",
@@ -642,7 +658,8 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                                           display: "flex",
                                           alignItems: "center",
                                           justifyContent: "center",
-                                          borderRadius: "var(--mantine-radius-md)",
+                                          borderRadius:
+                                            "var(--mantine-radius-md)",
                                           zIndex: 3,
                                         }}
                                       >
@@ -653,15 +670,15 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                                     )}
                                   </Box>
                                 ))}
-                                </Masonry>
-                              </ResponsiveMasonry>
-                            )}
-                          </Stack>
-                        );
-                      })()}
-                    </Box>
+                              </Masonry>
+                            </ResponsiveMasonry>
+                          )}
+                        </Stack>
+                      );
+                    })()}
+                  </Box>
                 )}
-              </Box>
+              </>
             )}
 
             {/* Tags */}
@@ -752,111 +769,31 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                 )}
               </Group>
             </Group>
-            <Group justify="space-between" align="center" mb="sm">
-              {/* Action Buttons */}
-              <Group gap="xs" align="center">
-                <UnstyledButton
-                  onClick={handleLike}
-                  disabled={!isAuthenticated || !post.allowLikes}
-                  data-interactive="true"
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.25rem",
-                    padding: "0.5rem 0.75rem",
-                    borderRadius: "var(--mantine-radius-md)",
-                    transition: "all 0.2s ease",
-                    color: post?.isLiked
-                      ? "var(--mantine-color-blue-6)"
-                      : "var(--mantine-color-gray-6)",
-                    fontWeight: post?.isLiked ? 600 : 500,
-                    backgroundColor: post?.isLiked
-                      ? "var(--mantine-color-blue-1)"
-                      : "transparent",
-                    border: post?.isLiked
-                      ? "1px solid var(--mantine-color-blue-3)"
-                      : "1px solid transparent",
-                  }}
-                  onMouseEnter={(e) => {
-                    if (isAuthenticated && post.allowLikes) {
-                      e.currentTarget.style.backgroundColor = post?.isLiked
-                        ? "var(--mantine-color-blue-2)"
-                        : "var(--mantine-color-gray-1)";
-                      e.currentTarget.style.transform = "translateY(-1px)";
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = post?.isLiked
-                      ? "var(--mantine-color-blue-1)"
-                      : "transparent";
-                    e.currentTarget.style.transform = "translateY(0)";
-                  }}
-                >
-                  <IconHeart
-                    size={16}
-                    style={{
-                      fill: post?.isLiked ? "currentColor" : "none",
-                      stroke: "currentColor",
-                      strokeWidth: 2,
-                    }}
-                  />
-                  <Text size="sm" fw={post?.isLiked ? 600 : 500}>
-                    Like
-                  </Text>
-                </UnstyledButton>
 
-                <UnstyledButton
-                  onClick={() => setShowComments(!showComments)}
-                  disabled={!post.allowComments}
+            <Group justify="space-between" align="center">
+              <Group gap="xs" align="center">
+                <IconHeart
+                  size={16}
+                  onClick={handleLike}
                   data-interactive="true"
                   style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.25rem",
-                    padding: "0.5rem 0.75rem",
-                    borderRadius: "var(--mantine-radius-md)",
-                    transition: "all 0.2s ease",
-                    color: showComments
-                      ? "var(--mantine-color-blue-6)"
-                      : "var(--mantine-color-gray-6)",
-                    fontWeight: showComments ? 600 : 500,
-                    backgroundColor: showComments
-                      ? "var(--mantine-color-blue-1)"
-                      : "transparent",
-                    border: showComments
-                      ? "1px solid var(--mantine-color-blue-3)"
-                      : "1px solid transparent",
+                    fill: post?.isLiked ? "currentColor" : "none",
+                    stroke: "currentColor",
+                    strokeWidth: 2,
                   }}
-                  onMouseEnter={(e) => {
-                    if (post.allowComments) {
-                      e.currentTarget.style.backgroundColor = showComments
-                        ? "var(--mantine-color-blue-2)"
-                        : "var(--mantine-color-gray-1)";
-                      e.currentTarget.style.transform = "translateY(-1px)";
-                    }
+                />
+                <IconMessageCircle
+                  size={16}
+                  onClick={() => setShowComments(!showComments)}
+                  data-interactive="true"
+                  style={{
+                    fill: showComments ? "currentColor" : "none",
+                    stroke: "currentColor",
+                    strokeWidth: 2,
                   }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = showComments
-                      ? "var(--mantine-color-blue-1)"
-                      : "transparent";
-                    e.currentTarget.style.transform = "translateY(0)";
-                  }}
-                >
-                  <IconMessageCircle
-                    size={16}
-                    style={{
-                      fill: showComments ? "currentColor" : "none",
-                      stroke: "currentColor",
-                      strokeWidth: 2,
-                    }}
-                  />
-                  <Text size="sm" fw={showComments ? 600 : 500}>
-                    Comment
-                  </Text>
-                </UnstyledButton>
+                />
               </Group>
 
-              {/* Post Statistics */}
               <Group gap="md" align="center">
                 <PostEngagementButton
                   postId={post.id}
@@ -891,52 +828,31 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                 }}
                 data-interactive="true"
               >
-                <Group gap="sm" align="flex-start">
-                  <Avatar
-                    size="sm"
-                    src={user?.avatar}
-                    radius="xl"
-                    style={{ flexShrink: 0 }}
-                  >
-                    {user?.firstName?.charAt(0) || "U"}
-                  </Avatar>
-                  <Box style={{ flex: 1 }}>
-                    <Textarea
-                      placeholder="Write a comment..."
-                      value={commentContent}
-                      onChange={(e) => setCommentContent(e.currentTarget.value)}
-                      minRows={1}
-                      maxRows={3}
-                      autosize
-                      radius="xl"
-                      size="sm"
-                      rightSection={
-                        commentContent.trim() ? (
-                          <ActionIcon
-                            onClick={handleComment}
-                            loading={isCommenting}
-                            color="blue"
-                            variant="filled"
-                            radius="xl"
-                            size="sm"
-                          >
-                            <IconSend size={14} />
-                          </ActionIcon>
-                        ) : null
-                      }
-                      onKeyPress={(e) => e.key === "Enter" && handleComment()}
-                      style={{
-                        flex: 1,
-                      }}
-                      styles={{
-                        input: {
-                          backgroundColor: "var(--mantine-color-gray-1)",
-                          fontSize: "0.875rem",
-                        },
-                      }}
-                    />
-                  </Box>
-                </Group>
+                <Textarea
+                  placeholder="Write a comment..."
+                  value={commentContent}
+                  onChange={(e) => setCommentContent(e.currentTarget.value)}
+                  minRows={1}
+                  maxRows={3}
+                  autosize
+                  w="100%"
+                  radius="xl"
+                  size="sm"
+                  rightSection={
+                    commentContent.trim() ? (
+                      <ActionIcon
+                        onClick={handleComment}
+                        loading={isCommenting}
+                        color="blue"
+                        variant="filled"
+                        radius="xl"
+                      >
+                        <IconArrowRight size={14} />
+                      </ActionIcon>
+                    ) : null
+                  }
+                  onKeyPress={(e) => e.key === "Enter" && handleComment()}
+                />
               </Box>
             )}
 

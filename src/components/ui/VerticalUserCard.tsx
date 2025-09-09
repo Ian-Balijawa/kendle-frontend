@@ -1,5 +1,5 @@
-import { Avatar, Box, Button, Group, Stack, Text } from "@mantine/core";
-import { IconUserCheck, IconUserPlus, IconSparkles } from "@tabler/icons-react";
+import { Avatar, Box, Button, Center, Group, Stack, Text } from "@mantine/core";
+import { IconUserCheck, IconUserPlus } from "@tabler/icons-react";
 import { User } from "../../types";
 
 interface VerticalUserCardProps {
@@ -42,185 +42,71 @@ export function VerticalUserCard({
     <Box
       style={{
         position: "relative",
-        // width: "160px",
-        // height: "240px",
-        borderRadius: "20px",
+        width: "160px",
+        borderRadius: "12px",
         overflow: "hidden",
         cursor: "pointer",
         background: "rgba(255, 255, 255, 0.95)",
-        backdropFilter: "blur(20px)",
         border: "1px solid rgba(255, 255, 255, 0.2)",
-        boxShadow:
-          "0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04)",
-        transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
       }}
       onClick={handleViewProfile}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.transform = "translateY(-4px) scale(1.02)";
-        e.currentTarget.style.boxShadow =
-          "0 16px 48px rgba(0, 0, 0, 0.12), 0 4px 16px rgba(0, 0, 0, 0.08)";
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.transform = "translateY(0) scale(1)";
-        e.currentTarget.style.boxShadow =
-          "0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04)";
-      }}
     >
-      {/* Gradient Background */}
       <Box
         style={{
           position: "absolute",
           top: 0,
           left: 0,
           right: 0,
-          height: "60%",
+          height: "55%",
           background:
             "linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)",
           opacity: 0.1,
         }}
       />
 
-      {/* Floating Orbs */}
-      <Box
-        style={{
-          position: "absolute",
-          top: "10%",
-          right: "15%",
-          width: "40px",
-          height: "40px",
-          borderRadius: "50%",
-          background:
-            "linear-gradient(135deg, rgba(102, 126, 234, 0.15), rgba(118, 75, 162, 0.1))",
-          filter: "blur(8px)",
-        }}
-      />
-      <Box
-        style={{
-          position: "absolute",
-          bottom: "20%",
-          left: "10%",
-          width: "30px",
-          height: "30px",
-          borderRadius: "50%",
-          background:
-            "linear-gradient(135deg, rgba(240, 147, 251, 0.15), rgba(102, 126, 234, 0.1))",
-          filter: "blur(6px)",
-        }}
-      />
-
-      {/* Content */}
       <Stack
-        p="lg"
         style={{ position: "relative", zIndex: 2, height: "100%" }}
         justify="space-between"
         align="center"
       >
-        {/* Avatar Section */}
-        <Box style={{ position: "relative", marginTop: "8px" }}>
-          <Avatar
-            src={user.avatar || "/user.png"}
-            alt={user.firstName || user.username || "User"}
-            size={72}
-            radius="xl"
-            style={{
-              border: "3px solid rgba(255, 255, 255, 0.8)",
-              boxShadow:
-                "0 8px 24px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(255, 255, 255, 0.05)",
-              background: "linear-gradient(135deg, #f8fafc, #e2e8f0)",
-            }}
-          >
-            <Text size="xl" fw={700} c="gray.6">
-              {user.firstName?.charAt(0) || user.username?.charAt(0)}
-              {user.lastName?.charAt(0) || user.username?.charAt(1)}
-            </Text>
-          </Avatar>
-
-          {/* Enhanced Verification Badge */}
-          {user.isVerified && (
-            <Box
+        <Box pos="relative">
+          <Center>
+            <Avatar
+              src={user.avatar}
+              alt={user.firstName || user.username || "User"}
+              size={60}
+              m="xs"
+              radius="50%"
               style={{
-                position: "absolute",
-                bottom: 2,
-                right: 2,
-                width: "24px",
-                height: "24px",
-                borderRadius: "50%",
-                background: "linear-gradient(135deg, #1d9bf0, #0ea5e9)",
-                border: "2px solid white",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                boxShadow: "0 4px 12px rgba(29, 155, 240, 0.3)",
-                zIndex: 1,
+                border: "3px solid rgba(255, 255, 255, 0.8)",
+                boxShadow:
+                  "0 8px 24px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(255, 255, 255, 0.05)",
+                background: "linear-gradient(135deg, #f8fafc, #e2e8f0)",
               }}
             >
-              <IconSparkles size={12} color="white" />
-            </Box>
-          )}
+              <Text size="lg" fw={700} c="gray.6" mt="xs">
+                {user.firstName?.charAt(0) || user.username?.charAt(0)}
+                {user.lastName?.charAt(0) || user.username?.charAt(1)}
+              </Text>
+            </Avatar>
+          </Center>
+          <Text size="sm" c="gray.8" ta="center" mb={"xs"}>
+            @{user.username}
+          </Text>
         </Box>
 
-        {/* User Info */}
         <Stack
           gap="xs"
           align="center"
-          style={{ flex: 1, justifyContent: "center" }}
+          style={{ flex: 1, justifyContent: "space-between" }}
         >
-          <Text
-            size="md"
-            fw={700}
-            ta="center"
-            c="gray.8"
-            style={{
-              lineHeight: 1.3,
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-              width: "100%",
-              letterSpacing: "-0.02em",
-            }}
-          >
-            {user.firstName} {user.lastName}
-          </Text>
-          <Text
-            size="sm"
-            c="gray.5"
-            ta="center"
-            fw={500}
-            style={{
-              lineHeight: 1.2,
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-              width: "100%",
-            }}
-          >
-            @{user.username}
-          </Text>
-
-          {/* Enhanced Stats */}
-          <Group gap="lg" justify="center" mt="xs">
+          <Group justify="center">
             <Box ta="center">
               <Text size="sm" fw={700} c="gray.8" lh={1}>
                 {formatNumber(user.followersCount || 0)}
               </Text>
               <Text size="xs" c="gray.5" fw={500} style={{ fontSize: "10px" }}>
                 Followers
-              </Text>
-            </Box>
-            <Box
-              style={{
-                width: "1px",
-                height: "24px",
-                background:
-                  "linear-gradient(to bottom, transparent, rgba(0,0,0,0.1), transparent)",
-              }}
-            />
-            <Box ta="center">
-              <Text size="sm" fw={700} c="gray.8" lh={1}>
-                {formatNumber(user.postsCount || 0)}
-              </Text>
-              <Text size="xs" c="gray.5" fw={500} style={{ fontSize: "10px" }}>
-                Posts
               </Text>
             </Box>
             <Box
@@ -242,11 +128,9 @@ export function VerticalUserCard({
           </Group>
         </Stack>
 
-        {/* Modern Follow Button */}
         {showActions && (
           <Button
-            size="sm"
-            radius="xl"
+            size="xs"
             loading={followLoading}
             onClick={handleFollow}
             leftSection={
@@ -264,27 +148,10 @@ export function VerticalUserCard({
               border: isFollowing ? "1px solid rgba(15, 23, 42, 0.1)" : "none",
               fontWeight: 600,
               fontSize: "12px",
-              padding: "8px 20px",
-              height: "36px",
               width: "100%",
               boxShadow: isFollowing
                 ? "none"
                 : "0 4px 16px rgba(102, 126, 234, 0.3), 0 2px 4px rgba(0, 0, 0, 0.1)",
-              transition: "all 0.2s ease",
-            }}
-            onMouseEnter={(e) => {
-              if (!isFollowing) {
-                e.currentTarget.style.boxShadow =
-                  "0 6px 20px rgba(102, 126, 234, 0.4), 0 4px 8px rgba(0, 0, 0, 0.15)";
-                e.currentTarget.style.transform = "translateY(-1px)";
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!isFollowing) {
-                e.currentTarget.style.boxShadow =
-                  "0 4px 16px rgba(102, 126, 234, 0.3), 0 2px 4px rgba(0, 0, 0, 0.1)";
-                e.currentTarget.style.transform = "translateY(0)";
-              }
             }}
           >
             {isFollowing ? "Following" : "Follow"}

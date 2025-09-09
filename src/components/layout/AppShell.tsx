@@ -30,7 +30,7 @@ export function AppShell() {
           top: 0,
         }}
       >
-        <Container size="md">
+        <Container size="sm">
           <HeaderContent />
         </Container>
       </MantineAppShell.Header>
@@ -48,7 +48,7 @@ export function AppShell() {
           }}
         >
           <Box>
-            <Container size="md">
+            <Container size="sm">
               <Box
                 style={{
                   position: "relative",

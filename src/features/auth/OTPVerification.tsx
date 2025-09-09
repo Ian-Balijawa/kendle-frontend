@@ -44,7 +44,7 @@ export function OTPVerification() {
   const isSubmitting =
     verifyOTPMutation.isPending || resendOTPMutation.isPending;
 
-  const [countdown, setCountdown] = useState(10); // 5 minutes
+  const [countdown, setCountdown] = useState(300); // 5 minutes
   const [canResend, setCanResend] = useState(false);
 
   const phoneNumber = location.state?.phoneNumber;

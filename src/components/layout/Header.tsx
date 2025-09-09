@@ -1,7 +1,6 @@
 import {
   ActionIcon,
   Avatar,
-  Box,
   Button,
   Group,
   Image,
@@ -10,7 +9,6 @@ import {
   Paper,
   Stack,
   Text,
-  TextInput,
   Tooltip,
   UnstyledButton,
 } from "@mantine/core";
@@ -20,11 +18,9 @@ import {
   IconLogout,
   IconMenu2,
   IconPlus,
-  IconSearch,
   IconSettings,
   IconUser,
 } from "@tabler/icons-react";
-import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../stores/authStore";
 import { useUIStore } from "../../stores/uiStore";
@@ -39,16 +35,6 @@ export function HeaderContent() {
   const location = useLocation();
   const { user, logout, isAuthenticated } = useAuthStore();
   const { unreadCount } = useUIStore();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchFocused, setSearchFocused] = useState(false);
-
-  const handleSearch = (event: React.FormEvent) => {
-    event.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/explore?q=${encodeURIComponent(searchQuery.trim())}`);
-      setSearchFocused(false);
-    }
-  };
 
   const handleLogout = () => {
     logout();
@@ -136,45 +122,6 @@ export function HeaderContent() {
             })}
           </Group>
         </Group>
-
-        <Box style={{ flex: 1, maxWidth: 400 }} visibleFrom="sm">
-          <form onSubmit={handleSearch}>
-            <TextInput
-              placeholder="Search Kendle..."
-              value={searchQuery}
-              onChange={(event) => setSearchQuery(event.currentTarget.value)}
-              onFocus={() => setSearchFocused(true)}
-              onBlur={() => setSearchFocused(false)}
-              leftSection={
-                <IconSearch
-                  size={18}
-                  color={
-                    searchFocused
-                      ? "var(--mantine-color-blue-6)"
-                      : "var(--mantine-color-gray-5)"
-                  }
-                />
-              }
-              size="md"
-              radius="xl"
-              styles={{
-                input: {
-                  backgroundColor: searchFocused
-                    ? "var(--mantine-color-white)"
-                    : "var(--mantine-color-gray-0)",
-                  border: searchFocused
-                    ? "2px solid var(--mantine-color-blue-6)"
-                    : "1px solid var(--mantine-color-gray-2)",
-                  transition: "all 0.2s ease",
-                  "&:hover": {
-                    backgroundColor: "var(--mantine-color-white)",
-                    borderColor: "var(--mantine-color-blue-4)",
-                  },
-                },
-              }}
-            />
-          </form>
-        </Box>
 
         <Group gap="sm">
           {!isAuthenticated ? (

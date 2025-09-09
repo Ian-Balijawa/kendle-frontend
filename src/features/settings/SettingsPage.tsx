@@ -184,10 +184,8 @@ export function SettingsPage() {
             </Tabs.Tab>
           </Tabs.List>
 
-          {/* Account Settings */}
           <Tabs.Panel value="account" pt="xl">
             <Stack gap="lg">
-              {/* Profile Overview */}
               <Card withBorder p="lg">
                 <Stack gap="md">
                   <Group justify="space-between" align="flex-start">
@@ -359,7 +357,6 @@ export function SettingsPage() {
             </Stack>
           </Tabs.Panel>
 
-          {/* Appearance Settings */}
           <Tabs.Panel value="appearance" pt="xl">
             <Stack gap="lg">
               <Card withBorder p="lg">
@@ -437,7 +434,6 @@ export function SettingsPage() {
             </Stack>
           </Tabs.Panel>
 
-          {/* Notification Settings */}
           <Tabs.Panel value="notifications" pt="xl">
             <Stack gap="lg">
               <Card withBorder p="lg">
@@ -529,7 +525,6 @@ export function SettingsPage() {
             </Stack>
           </Tabs.Panel>
 
-          {/* Privacy Settings */}
           <Tabs.Panel value="privacy" pt="xl">
             <Stack gap="lg">
               <Card withBorder p="lg">
@@ -633,7 +628,6 @@ export function SettingsPage() {
         </Tabs>
       </Stack>
 
-      {/* Edit Profile Modal */}
       <Modal
         opened={editModalOpen}
         onClose={() => setEditModalOpen(false)}
@@ -661,328 +655,326 @@ export function SettingsPage() {
         }}
       >
         <form onSubmit={editForm.onSubmit(handleSaveProfile)}>
-          <Stack gap="lg">
-            <Grid>
-              <Grid.Col span={6}>
-                <TextInput
-                  label="First Name"
-                  placeholder="Enter first name"
-                  size="md"
-                  radius="md"
-                  styles={{
-                    label: {
-                      fontWeight: 600,
-                      marginBottom: "0.5rem",
-                      color: "var(--mantine-color-text)",
-                    },
-                    input: {
-                      backgroundColor: "var(--mantine-color-body)",
-                      borderColor: "var(--mantine-color-gray-4)",
-                      color: "var(--mantine-color-text)",
-                      "&:focus": {
-                        borderColor: "var(--mantine-color-blue-6)",
-                        boxShadow: "0 0 0 2px var(--mantine-color-blue-1)",
-                      },
-                      "&::placeholder": {
-                        color: "var(--mantine-color-dimmed)",
-                      },
-                    },
-                  }}
-                  {...editForm.getInputProps("firstName")}
-                />
-              </Grid.Col>
-              <Grid.Col span={6}>
-                <TextInput
-                  label="Last Name"
-                  placeholder="Enter last name"
-                  size="md"
-                  radius="md"
-                  styles={{
-                    label: {
-                      fontWeight: 600,
-                      marginBottom: "0.5rem",
-                      color: "var(--mantine-color-text)",
-                    },
-                    input: {
-                      backgroundColor: "var(--mantine-color-body)",
-                      borderColor: "var(--mantine-color-gray-4)",
-                      color: "var(--mantine-color-text)",
-                      "&:focus": {
-                        borderColor: "var(--mantine-color-blue-6)",
-                        boxShadow: "0 0 0 2px var(--mantine-color-blue-1)",
-                      },
-                      "&::placeholder": {
-                        color: "var(--mantine-color-dimmed)",
-                      },
-                    },
-                  }}
-                  {...editForm.getInputProps("lastName")}
-                />
-              </Grid.Col>
-            </Grid>
-
-            <TextInput
-              label="Username"
-              placeholder="Enter username"
-              size="md"
-              radius="md"
-              leftSection={
-                <Text size="sm" c="dimmed">
-                  @
-                </Text>
-              }
-              styles={{
-                label: {
-                  fontWeight: 600,
-                  marginBottom: "0.5rem",
-                  color: "var(--mantine-color-text)",
-                },
-                input: {
-                  backgroundColor: "var(--mantine-color-body)",
-                  borderColor: "var(--mantine-color-gray-4)",
-                  color: "var(--mantine-color-text)",
-                  "&:focus": {
-                    borderColor: "var(--mantine-color-blue-6)",
-                    boxShadow: "0 0 0 2px rgba(102, 126, 234, 0.1)",
-                  },
-                  "&::placeholder": {
-                    color: "var(--mantine-color-dimmed)",
-                  },
-                },
-              }}
-              {...editForm.getInputProps("username")}
-            />
-
-            <TextInput
-              label="Email"
-              placeholder="Enter email"
-              type="email"
-              size="md"
-              radius="md"
-              styles={{
-                label: {
-                  fontWeight: 600,
-                  marginBottom: "0.5rem",
-                  color: "var(--mantine-color-text)",
-                },
-                input: {
-                  backgroundColor: "var(--mantine-color-body)",
-                  borderColor: "var(--mantine-color-gray-4)",
-                  color: "var(--mantine-color-text)",
-                  "&:focus": {
-                    borderColor: "var(--mantine-color-blue-6)",
-                    boxShadow: "0 0 0 2px rgba(102, 126, 234, 0.1)",
-                  },
-                  "&::placeholder": {
-                    color: "var(--mantine-color-dimmed)",
-                  },
-                },
-              }}
-              {...editForm.getInputProps("email")}
-            />
-
-            <Textarea
-              label="Bio"
-              placeholder="Tell us about yourself"
-              minRows={3}
-              size="md"
-              radius="md"
-              styles={{
-                label: {
-                  fontWeight: 600,
-                  marginBottom: "0.5rem",
-                  color: "var(--mantine-color-text)",
-                },
-                input: {
-                  backgroundColor: "var(--mantine-color-body)",
-                  borderColor: "var(--mantine-color-gray-4)",
-                  color: "var(--mantine-color-text)",
-                  "&:focus": {
-                    borderColor: "var(--mantine-color-blue-6)",
-                    boxShadow: "0 0 0 2px rgba(102, 126, 234, 0.1)",
-                  },
-                  "&::placeholder": {
-                    color: "var(--mantine-color-dimmed)",
-                  },
-                },
-              }}
-              {...editForm.getInputProps("bio")}
-              value={editForm.getValues().bio || ""}
-              onChange={(e) =>
-                editForm.setFieldValue("bio", e.target.value || null)
-              }
-            />
-
-            <Divider
-              label="Social Media Links"
-              labelPosition="center"
-              styles={{
-                label: {
-                  color: "var(--mantine-color-text)",
-                  fontWeight: 600,
-                },
-                root: {
-                  borderColor: "var(--mantine-color-gray-3)",
-                },
-              }}
-            />
-
-            <Grid>
-              <Grid.Col span={6}>
-                <TextInput
-                  label="WhatsApp"
-                  placeholder="Enter WhatsApp number"
-                  leftSection={<IconBrandWhatsapp size={16} />}
-                  size="md"
-                  radius="md"
-                  styles={{
-                    label: {
-                      fontWeight: 600,
-                      marginBottom: "0.5rem",
-                      color: "var(--mantine-color-text)",
-                    },
-                    input: {
-                      backgroundColor: "var(--mantine-color-body)",
-                      borderColor: "var(--mantine-color-gray-4)",
-                      color: "var(--mantine-color-text)",
-                      "&:focus": {
-                        borderColor: "var(--mantine-color-blue-6)",
-                        boxShadow: "0 0 0 2px var(--mantine-color-blue-1)",
-                      },
-                      "&::placeholder": {
-                        color: "var(--mantine-color-dimmed)",
-                      },
-                    },
-                  }}
-                  {...editForm.getInputProps("whatsapp")}
-                />
-              </Grid.Col>
-              <Grid.Col span={6}>
-                <TextInput
-                  label="Twitter Link"
-                  placeholder="Enter Twitter profile URL"
-                  leftSection={<IconBrandTwitter size={16} />}
-                  size="md"
-                  radius="md"
-                  styles={{
-                    label: {
-                      fontWeight: 600,
-                      marginBottom: "0.5rem",
-                      color: "var(--mantine-color-text)",
-                    },
-                    input: {
-                      backgroundColor: "var(--mantine-color-body)",
-                      borderColor: "var(--mantine-color-gray-4)",
-                      color: "var(--mantine-color-text)",
-                      "&:focus": {
-                        borderColor: "var(--mantine-color-blue-6)",
-                        boxShadow: "0 0 0 2px var(--mantine-color-blue-1)",
-                      },
-                      "&::placeholder": {
-                        color: "var(--mantine-color-dimmed)",
-                      },
-                    },
-                  }}
-                  {...editForm.getInputProps("twitterLink")}
-                />
-              </Grid.Col>
-            </Grid>
-
-            <Grid>
-              <Grid.Col span={6}>
-                <TextInput
-                  label="Instagram Link"
-                  placeholder="Enter Instagram profile URL"
-                  leftSection={<IconBrandInstagram size={16} />}
-                  size="md"
-                  radius="md"
-                  styles={{
-                    label: {
-                      fontWeight: 600,
-                      marginBottom: "0.5rem",
-                      color: "var(--mantine-color-text)",
-                    },
-                    input: {
-                      backgroundColor: "var(--mantine-color-body)",
-                      borderColor: "var(--mantine-color-gray-4)",
-                      color: "var(--mantine-color-text)",
-                      "&:focus": {
-                        borderColor: "var(--mantine-color-blue-6)",
-                        boxShadow: "0 0 0 2px var(--mantine-color-blue-1)",
-                      },
-                      "&::placeholder": {
-                        color: "var(--mantine-color-dimmed)",
-                      },
-                    },
-                  }}
-                  {...editForm.getInputProps("instagramLink")}
-                />
-              </Grid.Col>
-              <Grid.Col span={6}>
-                <TextInput
-                  label="TikTok Link"
-                  placeholder="Enter TikTok profile URL"
-                  leftSection={<IconBrandTiktok size={16} />}
-                  size="md"
-                  radius="md"
-                  styles={{
-                    label: {
-                      fontWeight: 600,
-                      marginBottom: "0.5rem",
-                      color: "var(--mantine-color-text)",
-                    },
-                    input: {
-                      backgroundColor: "var(--mantine-color-body)",
-                      borderColor: "var(--mantine-color-gray-4)",
-                      color: "var(--mantine-color-text)",
-                      "&:focus": {
-                        borderColor: "var(--mantine-color-blue-6)",
-                        boxShadow: "0 0 0 2px var(--mantine-color-blue-1)",
-                      },
-                      "&::placeholder": {
-                        color: "var(--mantine-color-dimmed)",
-                      },
-                    },
-                  }}
-                  {...editForm.getInputProps("tiktokLink")}
-                />
-              </Grid.Col>
-            </Grid>
-
-            <Group justify="flex-end" mt="xl">
-              <Button
-                variant="light"
-                onClick={() => setEditModalOpen(false)}
-                size="md"
+          <Grid>
+            <Grid.Col span={6}>
+              <TextInput
+                label="First Name"
+                placeholder="Enter first name"
+                size="sm"
                 radius="md"
                 styles={{
-                  root: {
+                  label: {
+                    fontWeight: 600,
+                    marginBottom: "0.5rem",
                     color: "var(--mantine-color-text)",
-                    backgroundColor: "var(--mantine-color-gray-1)",
+                  },
+                  input: {
+                    backgroundColor: "var(--mantine-color-body)",
                     borderColor: "var(--mantine-color-gray-4)",
-                    "&:hover": {
-                      backgroundColor: "var(--mantine-color-gray-2)",
+                    color: "var(--mantine-color-text)",
+                    "&:focus": {
+                      borderColor: "var(--mantine-color-blue-6)",
+                      boxShadow: "0 0 0 2px var(--mantine-color-blue-1)",
+                    },
+                    "&::placeholder": {
+                      color: "var(--mantine-color-dimmed)",
                     },
                   },
                 }}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                loading={updateProfileMutation.isPending}
-                size="md"
+                {...editForm.getInputProps("firstName")}
+              />
+            </Grid.Col>
+            <Grid.Col span={6}>
+              <TextInput
+                label="Last Name"
+                placeholder="Enter last name"
+                size="sm"
                 radius="md"
-                style={{
-                  background:
-                    "linear-gradient(135deg, var(--mantine-color-blue-6), var(--mantine-color-violet-6))",
-                  border: "none",
+                styles={{
+                  label: {
+                    fontWeight: 600,
+                    marginBottom: "0.5rem",
+                    color: "var(--mantine-color-text)",
+                  },
+                  input: {
+                    backgroundColor: "var(--mantine-color-body)",
+                    borderColor: "var(--mantine-color-gray-4)",
+                    color: "var(--mantine-color-text)",
+                    "&:focus": {
+                      borderColor: "var(--mantine-color-blue-6)",
+                      boxShadow: "0 0 0 2px var(--mantine-color-blue-1)",
+                    },
+                    "&::placeholder": {
+                      color: "var(--mantine-color-dimmed)",
+                    },
+                  },
                 }}
-              >
-                Save Changes
-              </Button>
-            </Group>
-          </Stack>
+                {...editForm.getInputProps("lastName")}
+              />
+            </Grid.Col>
+          </Grid>
+
+          <TextInput
+            label="Username"
+            placeholder="Enter username"
+            size="sm"
+            radius="md"
+            leftSection={
+              <Text size="sm" c="dimmed">
+                @
+              </Text>
+            }
+            styles={{
+              label: {
+                fontWeight: 600,
+                marginBottom: "0.5rem",
+                color: "var(--mantine-color-text)",
+              },
+              input: {
+                backgroundColor: "var(--mantine-color-body)",
+                borderColor: "var(--mantine-color-gray-4)",
+                color: "var(--mantine-color-text)",
+                "&:focus": {
+                  borderColor: "var(--mantine-color-blue-6)",
+                  boxShadow: "0 0 0 2px rgba(102, 126, 234, 0.1)",
+                },
+                "&::placeholder": {
+                  color: "var(--mantine-color-dimmed)",
+                },
+              },
+            }}
+            {...editForm.getInputProps("username")}
+          />
+
+          <TextInput
+            label="Email"
+            placeholder="Enter email"
+            type="email"
+            size="sm"
+            radius="md"
+            styles={{
+              label: {
+                fontWeight: 600,
+                marginBottom: "0.5rem",
+                color: "var(--mantine-color-text)",
+              },
+              input: {
+                backgroundColor: "var(--mantine-color-body)",
+                borderColor: "var(--mantine-color-gray-4)",
+                color: "var(--mantine-color-text)",
+                "&:focus": {
+                  borderColor: "var(--mantine-color-blue-6)",
+                  boxShadow: "0 0 0 2px rgba(102, 126, 234, 0.1)",
+                },
+                "&::placeholder": {
+                  color: "var(--mantine-color-dimmed)",
+                },
+              },
+            }}
+            {...editForm.getInputProps("email")}
+          />
+
+          <Textarea
+            label="Bio"
+            placeholder="Tell us about yourself"
+            minRows={3}
+            size="sm"
+            radius="md"
+            styles={{
+              label: {
+                fontWeight: 600,
+                marginBottom: "0.5rem",
+                color: "var(--mantine-color-text)",
+              },
+              input: {
+                backgroundColor: "var(--mantine-color-body)",
+                borderColor: "var(--mantine-color-gray-4)",
+                color: "var(--mantine-color-text)",
+                "&:focus": {
+                  borderColor: "var(--mantine-color-blue-6)",
+                  boxShadow: "0 0 0 2px rgba(102, 126, 234, 0.1)",
+                },
+                "&::placeholder": {
+                  color: "var(--mantine-color-dimmed)",
+                },
+              },
+            }}
+            {...editForm.getInputProps("bio")}
+            value={editForm.getValues().bio || ""}
+            onChange={(e) =>
+              editForm.setFieldValue("bio", e.target.value || null)
+            }
+          />
+
+          <Divider
+            label="Social Media Links"
+            labelPosition="center"
+            styles={{
+              label: {
+                color: "var(--mantine-color-text)",
+                fontWeight: 600,
+              },
+              root: {
+                borderColor: "var(--mantine-color-gray-3)",
+              },
+            }}
+          />
+
+          <Grid>
+            <Grid.Col span={6}>
+              <TextInput
+                label="WhatsApp"
+                placeholder="Enter WhatsApp number"
+                leftSection={<IconBrandWhatsapp size={16} />}
+                size="sm"
+                radius="md"
+                styles={{
+                  label: {
+                    fontWeight: 600,
+                    marginBottom: "0.5rem",
+                    color: "var(--mantine-color-text)",
+                  },
+                  input: {
+                    backgroundColor: "var(--mantine-color-body)",
+                    borderColor: "var(--mantine-color-gray-4)",
+                    color: "var(--mantine-color-text)",
+                    "&:focus": {
+                      borderColor: "var(--mantine-color-blue-6)",
+                      boxShadow: "0 0 0 2px var(--mantine-color-blue-1)",
+                    },
+                    "&::placeholder": {
+                      color: "var(--mantine-color-dimmed)",
+                    },
+                  },
+                }}
+                {...editForm.getInputProps("whatsapp")}
+              />
+            </Grid.Col>
+            <Grid.Col span={6}>
+              <TextInput
+                label="Twitter Link"
+                placeholder="Enter Twitter profile URL"
+                leftSection={<IconBrandTwitter size={16} />}
+                size="sm"
+                radius="md"
+                styles={{
+                  label: {
+                    fontWeight: 600,
+                    marginBottom: "0.5rem",
+                    color: "var(--mantine-color-text)",
+                  },
+                  input: {
+                    backgroundColor: "var(--mantine-color-body)",
+                    borderColor: "var(--mantine-color-gray-4)",
+                    color: "var(--mantine-color-text)",
+                    "&:focus": {
+                      borderColor: "var(--mantine-color-blue-6)",
+                      boxShadow: "0 0 0 2px var(--mantine-color-blue-1)",
+                    },
+                    "&::placeholder": {
+                      color: "var(--mantine-color-dimmed)",
+                    },
+                  },
+                }}
+                {...editForm.getInputProps("twitterLink")}
+              />
+            </Grid.Col>
+          </Grid>
+
+          <Grid>
+            <Grid.Col span={6}>
+              <TextInput
+                label="Instagram Link"
+                placeholder="Enter Instagram profile URL"
+                leftSection={<IconBrandInstagram size={16} />}
+                size="sm"
+                radius="md"
+                styles={{
+                  label: {
+                    fontWeight: 600,
+                    marginBottom: "0.5rem",
+                    color: "var(--mantine-color-text)",
+                  },
+                  input: {
+                    backgroundColor: "var(--mantine-color-body)",
+                    borderColor: "var(--mantine-color-gray-4)",
+                    color: "var(--mantine-color-text)",
+                    "&:focus": {
+                      borderColor: "var(--mantine-color-blue-6)",
+                      boxShadow: "0 0 0 2px var(--mantine-color-blue-1)",
+                    },
+                    "&::placeholder": {
+                      color: "var(--mantine-color-dimmed)",
+                    },
+                  },
+                }}
+                {...editForm.getInputProps("instagramLink")}
+              />
+            </Grid.Col>
+            <Grid.Col span={6}>
+              <TextInput
+                label="TikTok Link"
+                placeholder="Enter TikTok profile URL"
+                leftSection={<IconBrandTiktok size={16} />}
+                size="sm"
+                radius="md"
+                styles={{
+                  label: {
+                    fontWeight: 600,
+                    marginBottom: "0.5rem",
+                    color: "var(--mantine-color-text)",
+                  },
+                  input: {
+                    backgroundColor: "var(--mantine-color-body)",
+                    borderColor: "var(--mantine-color-gray-4)",
+                    color: "var(--mantine-color-text)",
+                    "&:focus": {
+                      borderColor: "var(--mantine-color-blue-6)",
+                      boxShadow: "0 0 0 2px var(--mantine-color-blue-1)",
+                    },
+                    "&::placeholder": {
+                      color: "var(--mantine-color-dimmed)",
+                    },
+                  },
+                }}
+                {...editForm.getInputProps("tiktokLink")}
+              />
+            </Grid.Col>
+          </Grid>
+
+          <Group justify="flex-end" mt="xl">
+            <Button
+              variant="light"
+              onClick={() => setEditModalOpen(false)}
+              size="sm"
+              radius="md"
+              styles={{
+                root: {
+                  color: "var(--mantine-color-text)",
+                  backgroundColor: "var(--mantine-color-gray-1)",
+                  borderColor: "var(--mantine-color-gray-4)",
+                  "&:hover": {
+                    backgroundColor: "var(--mantine-color-gray-2)",
+                  },
+                },
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              loading={updateProfileMutation.isPending}
+              size="sm"
+              radius="md"
+              style={{
+                background:
+                  "linear-gradient(135deg, var(--mantine-color-blue-6), var(--mantine-color-violet-6))",
+                border: "none",
+              }}
+            >
+              Save Changes
+            </Button>
+          </Group>
         </form>
       </Modal>
     </Box>

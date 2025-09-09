@@ -249,7 +249,8 @@ export function useCreateStatus() {
               if (index === 0) {
                 // Find or create collection for the optimistic status
                 const existingCollection = page.groupedStatuses.find(
-                  (collection) => collection.author.id === optimisticStatus.author.id
+                  (collection) =>
+                    collection.author.id === optimisticStatus.author.id,
                 );
 
                 if (existingCollection) {
@@ -291,15 +292,16 @@ export function useCreateStatus() {
               pages: old.pages.map((page: StatusesResponse, index: number) => {
                 if (index === 0) {
                   // Remove the optimistic status from its collection
-                  page.groupedStatuses.forEach(collection => {
+                  page.groupedStatuses.forEach((collection) => {
                     collection.statuses = collection.statuses.filter(
-                      (status: Status) => status.id !== context.optimisticStatus.id
+                      (status: Status) =>
+                        status.id !== context.optimisticStatus.id,
                     );
                   });
 
                   // Remove empty collections
                   page.groupedStatuses = page.groupedStatuses.filter(
-                    collection => collection.statuses.length > 0
+                    (collection) => collection.statuses.length > 0,
                   );
 
                   return {
@@ -327,9 +329,12 @@ export function useCreateStatus() {
               pages: old.pages.map((page: StatusesResponse, index: number) => {
                 if (index === 0) {
                   // Replace the optimistic status with the real one in its collection
-                  page.groupedStatuses.forEach(collection => {
-                    collection.statuses = collection.statuses.map((status: Status) =>
-                      status.id === context.optimisticStatus.id ? newStatus : status
+                  page.groupedStatuses.forEach((collection) => {
+                    collection.statuses = collection.statuses.map(
+                      (status: Status) =>
+                        status.id === context.optimisticStatus.id
+                          ? newStatus
+                          : status,
                     );
                   });
 
@@ -385,11 +390,15 @@ export function useUpdateStatus() {
             ...old,
             pages: old.pages.map((page: StatusesResponse) => ({
               ...page,
-              groupedStatuses: page.groupedStatuses.map(collection => ({
+              groupedStatuses: page.groupedStatuses.map((collection) => ({
                 ...collection,
                 statuses: collection.statuses.map((status: Status) =>
                   status.id === id
-                    ? { ...status, ...data, updatedAt: new Date().toISOString() }
+                    ? {
+                        ...status,
+                        ...data,
+                        updatedAt: new Date().toISOString(),
+                      }
                     : status,
                 ),
               })),
@@ -438,15 +447,15 @@ export function useDeleteStatus() {
             ...old,
             pages: old.pages.map((page: StatusesResponse) => {
               // Remove the status from all collections
-              page.groupedStatuses.forEach(collection => {
+              page.groupedStatuses.forEach((collection) => {
                 collection.statuses = collection.statuses.filter(
-                  (status: Status) => status.id !== id
+                  (status: Status) => status.id !== id,
                 );
               });
 
               // Remove empty collections
               page.groupedStatuses = page.groupedStatuses.filter(
-                collection => collection.statuses.length > 0
+                (collection) => collection.statuses.length > 0,
               );
 
               return {
@@ -522,7 +531,7 @@ export function useReactToStatus() {
             ...old,
             pages: old.pages.map((page: StatusesResponse) => ({
               ...page,
-              groupedStatuses: page.groupedStatuses.map(collection => ({
+              groupedStatuses: page.groupedStatuses.map((collection) => ({
                 ...collection,
                 statuses: collection.statuses.map((status: Status) =>
                   status.id === id ? updateStatus(status) : status,
@@ -579,7 +588,7 @@ export function useRemoveStatusReaction() {
             ...old,
             pages: old.pages.map((page: StatusesResponse) => ({
               ...page,
-              groupedStatuses: page.groupedStatuses.map(collection => ({
+              groupedStatuses: page.groupedStatuses.map((collection) => ({
                 ...collection,
                 statuses: collection.statuses.map((status: Status) =>
                   status.id === id ? updateStatus(status) : status,

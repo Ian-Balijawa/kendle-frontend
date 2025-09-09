@@ -58,7 +58,6 @@ export function StatusDetailsModal({
   useEffect(() => {
     if (!currentStatus) return;
 
-    // Mark as viewed only if not already viewed and not already tracked
     if (
       !currentStatus.isViewed &&
       !viewedStatusesRef.current.has(currentStatus.id)
@@ -66,7 +65,6 @@ export function StatusDetailsModal({
       viewedStatusesRef.current.add(currentStatus.id);
     }
 
-    // Reset progress and start playing
     setProgress(0);
     setIsPlaying(true);
 
@@ -82,7 +80,6 @@ export function StatusDetailsModal({
         const newProgress = prev + 100 / (duration * 10);
         if (newProgress >= 100) {
           setIsPlaying(false);
-          // Auto-advance to next status
           setTimeout(() => {
             if (canGoNext) {
               onNext();
@@ -108,7 +105,6 @@ export function StatusDetailsModal({
     onClose,
   ]);
 
-  // Reset viewed statuses when modal closes
   useEffect(() => {
     if (!opened) {
       viewedStatusesRef.current.clear();
@@ -150,6 +146,7 @@ export function StatusDetailsModal({
       opened={opened}
       onClose={onClose}
       padding={0}
+      centered
       withCloseButton={false}
       styles={{
         content: {
@@ -168,7 +165,6 @@ export function StatusDetailsModal({
           backgroundColor: "var(--mantine-color-dark-9)",
         }}
       >
-        {/* Progress indicators */}
         <Box
           style={{
             position: "absolute",
@@ -201,7 +197,6 @@ export function StatusDetailsModal({
             ))}
           </Group>
 
-          {/* Header */}
           <Group justify="space-between" align="center">
             <Group gap="sm">
               <Avatar
@@ -228,7 +223,10 @@ export function StatusDetailsModal({
                   {formatTimeAgo(currentStatus.createdAt)} •{" "}
                   {getTimeRemaining()}
                   {collection.statuses.length > 1 && (
-                    <> • {currentStatusIndex + 1} of {collection.statuses.length}</>
+                    <>
+                      {" "}
+                      • {currentStatusIndex + 1} of {collection.statuses.length}
+                    </>
                   )}
                 </Text>
               </Box>
@@ -245,7 +243,6 @@ export function StatusDetailsModal({
           </Group>
         </Box>
 
-        {/* Media content */}
         <Box
           style={{
             position: "relative",
@@ -272,16 +269,16 @@ export function StatusDetailsModal({
                 }}
               />
             ) : (
-                <ReactPlayer
-                  src={`${import.meta.env.VITE_API_URL}/stream/video/${currentStatus.media[0].url.split("/").pop()}`}
-                  playing={isPlaying}
-                  muted
-                  loop
-                  playsInline
-                  controls={false}
-                  style={{
+              <ReactPlayer
+                src={`${import.meta.env.VITE_API_URL}/stream/video/${currentStatus.media[0].url.split("/").pop()}`}
+                playing={isPlaying}
+                muted
+                loop
+                playsInline
+                controls={false}
+                style={{
                   objectFit: "cover",
-                  }}
+                }}
                 onEnded={() => setIsPlaying(false)}
               />
             )
@@ -300,7 +297,6 @@ export function StatusDetailsModal({
             </Box>
           )}
 
-          {/* Navigation areas */}
           <Box
             style={{
               position: "absolute",
@@ -339,7 +335,6 @@ export function StatusDetailsModal({
             }}
           />
 
-          {/* Play/Pause indicator */}
           {!isPlaying &&
             currentStatus.media &&
             currentStatus.media.length > 0 &&
@@ -375,7 +370,6 @@ export function StatusDetailsModal({
             )}
         </Box>
 
-        {/* Bottom section with content and actions */}
         <Box
           style={{
             position: "absolute",
@@ -388,7 +382,6 @@ export function StatusDetailsModal({
             zIndex: 10,
           }}
         >
-          {/* Content text */}
           {currentStatus.content && (
             <Text
               size="md"
@@ -403,7 +396,6 @@ export function StatusDetailsModal({
             </Text>
           )}
 
-          {/* Action buttons */}
           <Group justify="space-between" align="center">
             <Group gap="md">
               <ActionIcon
@@ -424,14 +416,12 @@ export function StatusDetailsModal({
                 size="xl"
                 onClick={(e) => {
                   e.stopPropagation();
-                  // Handle share
                 }}
               >
                 <IconShare size={24} />
               </ActionIcon>
             </Group>
 
-            {/* View count */}
             <Group gap="xs" align="center">
               <Text size="sm" opacity={0.7} fw={500}>
                 {currentStatus.viewsCount}{" "}
@@ -441,7 +431,6 @@ export function StatusDetailsModal({
           </Group>
         </Box>
 
-        {/* Navigation arrows */}
         {(canGoPrevious || canGoPreviousCollection) && (
           <ActionIcon
             variant="filled"

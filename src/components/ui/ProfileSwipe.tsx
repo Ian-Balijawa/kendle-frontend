@@ -28,7 +28,6 @@ interface ProfileSwipeProps {
 
 export function ProfileSwipe({
   users,
-  title = "Discover People",
   subtitle = "Find interesting people to follow",
   onUserClick,
 }: ProfileSwipeProps) {
@@ -132,21 +131,14 @@ export function ProfileSwipe({
 
   return (
     <Box>
-      {/* Enhanced Header */}
       <Box mb="xl" style={{ position: "relative" }}>
         <Group align="center" gap="xs">
           <IconSparkles size={24} color="#667eea" />
-          <Box>
-            <Text size="xl" fw={700} lh={1.2}>
-              {title}
-            </Text>
-            <Text size="sm" fw={500} mt={2}>
-              {subtitle}
-            </Text>
-          </Box>
+          <Text size="sm" fw={500} mt={2}>
+            {subtitle}
+          </Text>
         </Group>
 
-        {/* Decorative gradient line */}
         <Box
           style={{
             position: "absolute",
@@ -160,24 +152,16 @@ export function ProfileSwipe({
         />
       </Box>
 
-      {/* Enhanced Scrollable Container */}
       <Box style={{ position: "relative" }}>
-        {/* Modern Left Arrow */}
         {canScrollLeft && (
           <ActionIcon
-            variant="white"
-            size="xl"
-            radius="xl"
+            variant="transparent"
             style={{
               position: "absolute",
               left: -24,
               top: "50%",
               transform: "translateY(-50%)",
               zIndex: 15,
-              border: "1px solid rgba(255, 255, 255, 0.8)",
-              backdropFilter: "blur(20px)",
-              background: "rgba(255, 255, 255, 0.95)",
-              transition: "all 0.2s ease",
             }}
             onClick={() => scroll("left")}
             onMouseEnter={(e) => {
@@ -191,22 +175,15 @@ export function ProfileSwipe({
           </ActionIcon>
         )}
 
-        {/* Modern Right Arrow */}
         {canScrollRight && (
           <ActionIcon
-            variant="white"
-            size="xl"
-            radius="xl"
+            variant="transparent"
             style={{
               position: "absolute",
               right: -24,
               top: "50%",
               transform: "translateY(-50%)",
               zIndex: 15,
-              border: "1px solid rgba(255, 255, 255, 0.8)",
-              backdropFilter: "blur(20px)",
-              background: "rgba(255, 255, 255, 0.95)",
-              transition: "all 0.2s ease",
             }}
             onClick={() => scroll("right")}
             onMouseEnter={(e) => {
@@ -216,11 +193,10 @@ export function ProfileSwipe({
               e.currentTarget.style.transform = "translateY(-50%) scale(1)";
             }}
           >
-            <IconChevronRight size={18} color="#475569" />
+            <IconChevronRight />
           </ActionIcon>
         )}
 
-        {/* Enhanced Scroll Area */}
         <ScrollArea
           ref={scrollAreaRef}
           onScrollPositionChange={handleScroll}
@@ -230,7 +206,7 @@ export function ProfileSwipe({
             paddingLeft: "4px",
           }}
         >
-          <Group gap="xl" style={{ paddingBottom: "12px", paddingTop: "8px" }}>
+          <Group pb="sm">
             {users.map((user) => (
               <Box key={user.id} style={{ flexShrink: 0 }}>
                 <VerticalUserCard

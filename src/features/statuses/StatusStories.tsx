@@ -50,7 +50,6 @@ export function StatusStories({
     setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10); // 10px buffer
   };
 
-
   return (
     <Box style={{ position: "relative" }}>
       {canScrollLeft && (

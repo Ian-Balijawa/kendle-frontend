@@ -156,20 +156,23 @@ export function VerticalStatusCard({
               objectFit: "cover",
             }}
             onError={(e) => {
-              console.error("Failed to load status image:", latestStatus.media?.[0]?.url);
+              console.error(
+                "Failed to load status image:",
+                latestStatus.media?.[0]?.url,
+              );
               e.currentTarget.style.display = "none";
             }}
           />
         ) : (
-            <ReactPlayer
-              src={`${import.meta.env.VITE_API_URL}/stream/video/${latestStatus.media[0].url.split("/").pop()}`}
-              width="100%"
-              height="100%"
-              playing={false}
-              muted
-              loop
-              playsInline
-              controls={false}
+          <ReactPlayer
+            src={`${import.meta.env.VITE_API_URL}/stream/video/${latestStatus.media[0].url.split("/").pop()}`}
+            width="100%"
+            height="100%"
+            playing={false}
+            muted
+            loop
+            playsInline
+            controls={false}
             style={{
               position: "absolute",
               top: 0,

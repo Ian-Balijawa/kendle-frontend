@@ -10,16 +10,17 @@ import {
   Loader,
   Menu,
   Modal,
+  Paper,
   rem,
   ScrollArea,
   Stack,
   Text,
   Textarea,
   TextInput,
-  UnstyledButton,
 } from "@mantine/core";
 import {
   IconArrowLeft,
+  IconArrowRight,
   IconBookmark,
   IconDotsVertical,
   IconEdit,
@@ -27,7 +28,6 @@ import {
   IconHeart,
   IconMapPin,
   IconMessageCircle,
-  IconSend,
   IconTrash,
 } from "@tabler/icons-react";
 import { useState } from "react";
@@ -285,521 +285,524 @@ export function PostDetail() {
         </Group>
 
         {/* Main Post Card */}
-        <Box
-          p={0}
-          mb="lg"
-          style={{
-            overflow: "hidden",
-            borderRadius: "var(--mantine-radius-lg)",
-            boxShadow: "var(--mantine-shadow-xl)",
-          }}
-        >
-          <Box p="lg">
-            {/* Author Header */}
-            <Group justify="space-between" mb="md">
-              <Group
-                gap="md"
-                style={{ cursor: "pointer" }}
-                onClick={handleAuthorClick}
+        <Paper p="sm">
+          {/* Author Header */}
+          <Group justify="space-between" mb="md">
+            <Group
+              gap="md"
+              style={{ cursor: "pointer" }}
+              onClick={handleAuthorClick}
+            >
+              <Avatar
+                src={post?.author?.avatar}
+                alt={
+                  post?.author?.firstName || post?.author?.username || "User"
+                }
+                size={48}
+                radius="xl"
+                color="white"
+                style={{
+                  border: post?.author?.isVerified
+                    ? "2px solid var(--mantine-color-blue-6)"
+                    : "none",
+                }}
               >
-                <Avatar
-                  src={post?.author?.avatar}
-                  alt={
-                    post?.author?.firstName || post?.author?.username || "User"
-                  }
-                  size={48}
-                  radius="xl"
-                  color="white"
-                  style={{
-                    border: post?.author?.isVerified
-                      ? "2px solid var(--mantine-color-blue-6)"
-                      : "none",
-                  }}
-                >
-                  {(
-                    post?.author?.firstName ||
-                    post?.author?.username ||
-                    post?.author?.phoneNumber ||
-                    "U"
-                  )
-                    .charAt(0)
-                    .toUpperCase()}
-                </Avatar>
-                <Box>
-                  <Group gap="xs" align="center">
-                    <Text fw={600} size="md">
-                      {post?.author?.firstName && post?.author?.lastName
-                        ? `${post.author.firstName} ${post.author.lastName}`
-                        : post?.author?.username
-                          ? post.author.username
-                          : post?.author?.phoneNumber || "Unknown User"}
-                    </Text>
-                    {post?.author?.isVerified && (
-                      <Badge
-                        size="xs"
-                        color="blue"
-                        radius="sm"
-                        variant="filled"
-                      >
-                        ✓
-                      </Badge>
-                    )}
-                    {post?.author?.isProfileComplete === false && (
+                {(
+                  post?.author?.firstName ||
+                  post?.author?.username ||
+                  post?.author?.phoneNumber ||
+                  "U"
+                )
+                  .charAt(0)
+                  .toUpperCase()}
+              </Avatar>
+              <Box>
+                <Group gap="xs" align="center">
+                  <Text fw={600} size="md">
+                    {post?.author?.firstName && post?.author?.lastName
+                      ? `${post.author.firstName} ${post.author.lastName}`
+                      : post?.author?.username
+                        ? post.author.username
+                        : post?.author?.phoneNumber || "Unknown User"}
+                  </Text>
+                  {post?.author?.isVerified && (
+                    <Badge size="xs" color="blue" radius="sm" variant="filled">
+                      ✓
+                    </Badge>
+                  )}
+                  {post?.author?.isProfileComplete === false && (
+                    <Badge size="xs" variant="light" color="orange" radius="sm">
+                      Incomplete
+                    </Badge>
+                  )}
+                </Group>
+                <Group gap="xs" align="center">
+                  <Text c="dimmed" size="sm">
+                    @
+                    {post?.author?.username ||
+                      post?.author?.phoneNumber ||
+                      "unknown"}
+                  </Text>
+                  <Text c="dimmed" size="xs">
+                    •
+                  </Text>
+                  <Text c="dimmed" size="sm">
+                    {formatDate(post?.createdAt)}
+                    {post?.updatedAt !== post?.createdAt && " Edited"}
+                  </Text>
+                  {post?.author?.status && (
+                    <>
+                      <Text c="dimmed" size="xs">
+                        •
+                      </Text>
                       <Badge
                         size="xs"
                         variant="light"
-                        color="orange"
+                        color={
+                          post.author.status === "active" ? "green" : "yellow"
+                        }
                         radius="sm"
                       >
-                        Incomplete
+                        {post.author.status}
                       </Badge>
-                    )}
-                  </Group>
-                  <Group gap="xs" align="center">
-                    <Text c="dimmed" size="sm">
-                      @
-                      {post?.author?.username ||
-                        post?.author?.phoneNumber ||
-                        "unknown"}
-                    </Text>
-                    <Text c="dimmed" size="xs">
-                      •
-                    </Text>
-                    <Text c="dimmed" size="sm">
-                      {formatDate(post?.createdAt)}
-                      {post?.updatedAt !== post?.createdAt && " Edited"}
-                    </Text>
-                    {post?.author?.status && (
-                      <>
-                        <Text c="dimmed" size="xs">
-                          •
-                        </Text>
-                        <Badge
-                          size="xs"
-                          variant="light"
-                          color={
-                            post.author.status === "active" ? "green" : "yellow"
-                          }
-                          radius="sm"
-                        >
-                          {post.author.status}
-                        </Badge>
-                      </>
-                    )}
-                  </Group>
-                </Box>
-              </Group>
-
-              {isAuthenticated && (
-                <Menu shadow="lg" width={180} position="bottom-end" radius="md">
-                  <Menu.Target>
-                    <ActionIcon
-                      variant="subtle"
-                      size="md"
-                      radius="xl"
-                      data-interactive="true"
-                    >
-                      <IconDotsVertical size={16} />
-                    </ActionIcon>
-                  </Menu.Target>
-                  <Menu.Dropdown>
-                    {isAuthor && (
-                      <>
-                        <Menu.Item
-                          leftSection={<IconEdit size={14} />}
-                          onClick={handleEdit}
-                        >
-                          Edit
-                        </Menu.Item>
-                        <Menu.Item
-                          leftSection={<IconTrash size={14} />}
-                          color="red"
-                          onClick={() => setShowDeleteConfirm(true)}
-                        >
-                          Delete
-                        </Menu.Item>
-                        <Menu.Divider />
-                      </>
-                    )}
-                    <Menu.Item
-                      leftSection={<IconFlag size={14} />}
-                      color="orange"
-                    >
-                      Report
-                    </Menu.Item>
-                  </Menu.Dropdown>
-                </Menu>
-              )}
-            </Group>
-
-            {/* Post Type and Status Indicators */}
-            <Group gap="xs" mb="sm">
-              <Badge
-                size="sm"
-                variant="light"
-                color={
-                  post.type === "text"
-                    ? "blue"
-                    : post.type === "image"
-                      ? "green"
-                      : post.type === "video"
-                        ? "purple"
-                        : "gray"
-                }
-                radius="sm"
-              >
-                {post.type}
-              </Badge>
-              <Badge
-                size="sm"
-                variant="light"
-                color={post.status === "published" ? "green" : "yellow"}
-                radius="sm"
-              >
-                {post.status}
-              </Badge>
-              {!post.isPublic && (
-                <Badge size="sm" variant="light" color="red" radius="sm">
-                  Private
-                </Badge>
-              )}
-              {post.scheduledAt && (
-                <Badge size="sm" variant="light" color="purple" radius="sm">
-                  Scheduled
-                </Badge>
-              )}
-            </Group>
-
-            {/* Post Content */}
-            {isEditing ? (
-              <Stack gap="sm">
-                <Textarea
-                  placeholder="What's on your mind? "
-                  value={editContent}
-                  onChange={(e) => setEditContent(e.currentTarget.value)}
-                  minRows={4}
-                  maxRows={10}
-                  autosize
-                  radius="md"
-                  style={{ fontSize: rem(15) }}
-                />
-
-                {/* Preview of edited content */}
-                {editContent.trim() && (
-                  <Box
-                    p="sm"
-                    style={{
-                      backgroundColor: "var(--mantine-color-gray-1)",
-                      borderRadius: "var(--mantine-radius-md)",
-                      border: "1px solid var(--mantine-color-gray-3)",
-                    }}
-                  >
-                    <Text size="xs" c="dimmed" mb="xs" fw={500}>
-                      Preview:
-                    </Text>
-                    {renderFormattedText(editContent, "md", "sm")}
-                  </Box>
-                )}
-
-                <Group justify="flex-end" gap="sm">
-                  <Button
-                    variant="subtle"
-                    color="gray"
-                    onClick={() => setIsEditing(false)}
-                    radius="xl"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    onClick={handleSaveEdit}
-                    loading={isSubmitting}
-                    radius="xl"
-                  >
-                    Save
-                  </Button>
+                    </>
+                  )}
                 </Group>
-              </Stack>
-            ) : (
-              <Box mb="md">{renderFormattedText(post.content, "md", "sm")}</Box>
-            )}
+              </Box>
+            </Group>
 
-            {/* Media */}
-            {post?.media && post?.media?.length > 0 && (
-              <Box mb="md">
-                {post.media.length === 1 ? (
-                  <Box
-                    style={{
-                      borderRadius: "var(--mantine-radius-lg)",
-                      overflow: "hidden",
-                    }}
+            {isAuthenticated && (
+              <Menu shadow="lg" width={180} position="bottom-end" radius="md">
+                <Menu.Target>
+                  <ActionIcon
+                    variant="subtle"
+                    size="md"
+                    radius="xl"
+                    data-interactive="true"
                   >
-                    {post.media[0].type === "video" ? (
-                      <ReactPlayer
-                        src={videoStreamUrl}
-                        width="100%"
-                        height={
-                          post.media[0].height
-                            ? Math.min(post.media[0].height, 500)
-                            : 400
-                        }
-                        controls
-                        playsInline
-                        style={{
-                          borderRadius: "var(--mantine-radius-lg)",
-                        }}
-                      />
-                    ) : (
-                      <Image
-                          src={imageStreamUrl}
-                        alt={post.media[0].filename || "Post media"}
-                        radius="lg"
-                        style={{
-                          maxHeight: 500,
-                          objectFit: "cover",
-                          width: "100%",
-                        }}
-                        onError={(e) => {
-                          console.error(
-                            "Failed to load image:",
-                            imageStreamUrl,
-                          );
-                          e.currentTarget.style.display = "none";
-                        }}
-                      />
-                    )}
-                  </Box>
-                ) : (
-                    <Box>
-                      {/* Separate videos and images */}
-                      {(() => {
-                        const videos = post.media.filter(media => media.type === "video");
-                        const images = post.media.filter(media => media.type === "image");
+                    <IconDotsVertical size={16} />
+                  </ActionIcon>
+                </Menu.Target>
+                <Menu.Dropdown>
+                  {isAuthor && (
+                    <>
+                      <Menu.Item
+                        leftSection={<IconEdit size={14} />}
+                        onClick={handleEdit}
+                      >
+                        Edit
+                      </Menu.Item>
+                      <Menu.Item
+                        leftSection={<IconTrash size={14} />}
+                        color="red"
+                        onClick={() => setShowDeleteConfirm(true)}
+                      >
+                        Delete
+                      </Menu.Item>
+                      <Menu.Divider />
+                    </>
+                  )}
+                  <Menu.Item
+                    leftSection={<IconFlag size={14} />}
+                    color="orange"
+                  >
+                    Report
+                  </Menu.Item>
+                </Menu.Dropdown>
+              </Menu>
+            )}
+          </Group>
 
-                        return (
-                          <Stack gap="lg">
-                            {/* Videos in regular grid */}
-                            {videos.length > 0 && (
-                              <Box
-                                style={{
-                                  display: "grid",
-                                  gridTemplateColumns: videos.length === 1 ? "1fr" : videos.length === 2 ? "1fr 1fr" : "1fr 1fr 1fr",
-                                  gap: "1rem",
-                                }}
-                              >
-                                {videos.map((media, index) => {
-                                  const mediaVideoStreamUrl = `${import.meta.env.VITE_API_URL}/stream/video/${media.url.split("/").pop()}`;
+          {/* Post Type and Status Indicators */}
+          <Group gap="xs" mb="sm">
+            <Badge
+              size="sm"
+              variant="light"
+              color={
+                post.type === "text"
+                  ? "blue"
+                  : post.type === "image"
+                    ? "green"
+                    : post.type === "video"
+                      ? "purple"
+                      : "gray"
+              }
+              radius="sm"
+            >
+              {post.type}
+            </Badge>
+            <Badge
+              size="sm"
+              variant="light"
+              color={post.status === "published" ? "green" : "yellow"}
+              radius="sm"
+            >
+              {post.status}
+            </Badge>
+            {!post.isPublic && (
+              <Badge size="sm" variant="light" color="red" radius="sm">
+                Private
+              </Badge>
+            )}
+            {post.scheduledAt && (
+              <Badge size="sm" variant="light" color="purple" radius="sm">
+                Scheduled
+              </Badge>
+            )}
+          </Group>
+
+          {/* Post Content */}
+          {isEditing ? (
+            <Stack gap="sm">
+              <Textarea
+                placeholder="What's on your mind? "
+                value={editContent}
+                onChange={(e) => setEditContent(e.currentTarget.value)}
+                minRows={4}
+                maxRows={10}
+                autosize
+                radius="md"
+                style={{ fontSize: rem(15) }}
+              />
+
+              {/* Preview of edited content */}
+              {editContent.trim() && (
+                <Box
+                  p="sm"
+                  style={{
+                    backgroundColor: "var(--mantine-color-gray-1)",
+                    borderRadius: "var(--mantine-radius-md)",
+                    border: "1px solid var(--mantine-color-gray-3)",
+                  }}
+                >
+                  <Text size="xs" c="dimmed" mb="xs" fw={500}>
+                    Preview:
+                  </Text>
+                  {renderFormattedText(editContent, "md", "sm")}
+                </Box>
+              )}
+
+              <Group justify="flex-end" gap="sm">
+                <Button
+                  variant="subtle"
+                  color="gray"
+                  onClick={() => setIsEditing(false)}
+                  radius="xl"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleSaveEdit}
+                  loading={isSubmitting}
+                  radius="xl"
+                >
+                  Save
+                </Button>
+              </Group>
+            </Stack>
+          ) : (
+            <Box mb="md">{renderFormattedText(post.content, "md", "sm")}</Box>
+          )}
+
+          {/* Media */}
+          {post?.media && post?.media?.length > 0 && (
+            <Box mb="md">
+              {post.media.length === 1 ? (
+                <Box
+                  style={{
+                    borderRadius: "var(--mantine-radius-lg)",
+                    overflow: "hidden",
+                  }}
+                >
+                  {post.media[0].type === "video" ? (
+                    <ReactPlayer
+                      src={videoStreamUrl}
+                      width="100%"
+                      height={
+                        post.media[0].height
+                          ? Math.min(post.media[0].height, 500)
+                          : 400
+                      }
+                      controls
+                      playsInline
+                      style={{
+                        borderRadius: "var(--mantine-radius-lg)",
+                      }}
+                    />
+                  ) : (
+                    <Image
+                      src={imageStreamUrl}
+                      alt={post.media[0].filename || "Post media"}
+                      radius="lg"
+                      style={{
+                        maxHeight: 500,
+                        objectFit: "cover",
+                        width: "100%",
+                      }}
+                      onError={(e) => {
+                        console.error("Failed to load image:", imageStreamUrl);
+                        e.currentTarget.style.display = "none";
+                      }}
+                    />
+                  )}
+                </Box>
+              ) : (
+                <Box>
+                  {/* Separate videos and images */}
+                  {(() => {
+                    const videos = post.media.filter(
+                      (media) => media.type === "video",
+                    );
+                    const images = post.media.filter(
+                      (media) => media.type === "image",
+                    );
+
+                    return (
+                      <Stack gap="lg">
+                        {/* Videos in regular grid */}
+                        {videos.length > 0 && (
+                          <Box
+                            style={{
+                              display: "grid",
+                              gridTemplateColumns:
+                                videos.length === 1
+                                  ? "1fr"
+                                  : videos.length === 2
+                                    ? "1fr 1fr"
+                                    : "1fr 1fr 1fr",
+                              gap: "1rem",
+                            }}
+                          >
+                            {videos.map((media, index) => {
+                              const mediaVideoStreamUrl = `${import.meta.env.VITE_API_URL}/stream/video/${media.url.split("/").pop()}`;
+
+                              return (
+                                <Box
+                                  key={media.id || `video-${index}`}
+                                  style={{
+                                    position: "relative",
+                                    cursor: "pointer",
+                                    transition: "transform 0.2s ease",
+                                    borderRadius: "var(--mantine-radius-md)",
+                                    overflow: "hidden",
+                                  }}
+                                  onClick={() => navigate(`/post/${post.id}`)}
+                                  onMouseEnter={(e) => {
+                                    e.currentTarget.style.transform =
+                                      "scale(1.02)";
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    e.currentTarget.style.transform =
+                                      "scale(1)";
+                                  }}
+                                >
+                                  <ReactPlayer
+                                    src={mediaVideoStreamUrl}
+                                    width="100%"
+                                    height={300}
+                                    controls
+                                    light={
+                                      media.thumbnailUrl
+                                        ? `${import.meta.env.VITE_API_URL}/stream/image/${media.thumbnailUrl.split("/").pop()}`
+                                        : undefined
+                                    }
+                                    playsInline
+                                    style={{
+                                      borderRadius: "var(--mantine-radius-md)",
+                                    }}
+                                  />
+
+                                  {/* Video play indicator */}
+                                  <Box
+                                    style={{
+                                      position: "absolute",
+                                      top: "50%",
+                                      left: "50%",
+                                      transform: "translate(-50%, -50%)",
+                                      width: "48px",
+                                      height: "48px",
+                                      borderRadius: "50%",
+                                      backgroundColor: "rgba(0, 0, 0, 0.6)",
+                                      display: "flex",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                      backdropFilter: "blur(10px)",
+                                      zIndex: 2,
+                                    }}
+                                  >
+                                    <Box
+                                      style={{
+                                        width: "0",
+                                        height: "0",
+                                        borderLeft: "12px solid white",
+                                        borderTop: "8px solid transparent",
+                                        borderBottom: "8px solid transparent",
+                                        marginLeft: "4px",
+                                      }}
+                                    />
+                                  </Box>
+                                </Box>
+                              );
+                            })}
+                          </Box>
+                        )}
+
+                        {/* Images in masonry layout */}
+                        {images.length > 0 && (
+                          <ResponsiveMasonry
+                            columnsCountBreakPoints={{
+                              350: 1,
+                              750: 2,
+                              900: 3,
+                              1200: 4,
+                            }}
+                          >
+                            <Masonry gutter="20px">
+                              {images.map((media, index) => {
+                                const mediaImageStreamUrl = `${import.meta.env.VITE_API_URL}/stream/image/${media.url.split("/").pop()}`;
 
                                 return (
                                   <Box
-                                    key={media.id || `video-${index}`}
+                                    key={media.id || `image-${index}`}
                                     style={{
                                       position: "relative",
                                       cursor: "pointer",
                                       transition: "transform 0.2s ease",
                                       borderRadius: "var(--mantine-radius-md)",
                                       overflow: "hidden",
+                                      marginBottom: "20px",
                                     }}
                                     onClick={() => navigate(`/post/${post.id}`)}
                                     onMouseEnter={(e) => {
-                                      e.currentTarget.style.transform = "scale(1.02)";
+                                      e.currentTarget.style.transform =
+                                        "scale(1.02)";
                                     }}
                                     onMouseLeave={(e) => {
-                                      e.currentTarget.style.transform = "scale(1)";
+                                      e.currentTarget.style.transform =
+                                        "scale(1)";
                                     }}
                                   >
-                                    <ReactPlayer
-                                      src={mediaVideoStreamUrl}
-                                      width="100%"
-                                      height={300}
-                                      controls
-                                      light={media.thumbnailUrl ? `${import.meta.env.VITE_API_URL}/stream/image/${media.thumbnailUrl.split("/").pop()}` : undefined}
-                                      playsInline
+                                    <Image
+                                      src={mediaImageStreamUrl}
+                                      alt={media.filename || "Post media"}
+                                      radius="md"
                                       style={{
-                                        borderRadius: "var(--mantine-radius-md)",
+                                        width: "100%",
+                                        height: "auto",
+                                        objectFit: "cover",
+                                        display: "block",
+                                      }}
+                                      onError={(e) => {
+                                        console.error(
+                                          "Failed to load image:",
+                                          mediaImageStreamUrl,
+                                        );
+                                        e.currentTarget.style.display = "none";
                                       }}
                                     />
 
-                                    {/* Video play indicator */}
-                                    <Box
-                                      style={{
-                                        position: "absolute",
-                                        top: "50%",
-                                        left: "50%",
-                                        transform: "translate(-50%, -50%)",
-                                        width: "48px",
-                                        height: "48px",
-                                        borderRadius: "50%",
-                                        backgroundColor: "rgba(0, 0, 0, 0.6)",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                        backdropFilter: "blur(10px)",
-                                        zIndex: 2,
-                                      }}
-                                    >
+                                    {/* More images indicator */}
+                                    {index === 3 && images.length > 4 && (
                                       <Box
                                         style={{
-                                          width: "0",
-                                          height: "0",
-                                          borderLeft: "12px solid white",
-                                          borderTop: "8px solid transparent",
-                                          borderBottom: "8px solid transparent",
-                                          marginLeft: "4px",
+                                          position: "absolute",
+                                          top: 0,
+                                          left: 0,
+                                          right: 0,
+                                          bottom: 0,
+                                          backgroundColor: "rgba(0, 0, 0, 0.7)",
+                                          display: "flex",
+                                          alignItems: "center",
+                                          justifyContent: "center",
+                                          borderRadius:
+                                            "var(--mantine-radius-md)",
+                                          zIndex: 3,
                                         }}
-                                      />
-                                    </Box>
+                                      >
+                                        <Text size="xl" fw={600} c="white">
+                                          +{images.length - 4}
+                                        </Text>
+                                      </Box>
+                                    )}
                                   </Box>
                                 );
                               })}
-                              </Box>
-                            )}
+                            </Masonry>
+                          </ResponsiveMasonry>
+                        )}
+                      </Stack>
+                    );
+                  })()}
+                </Box>
+              )}
+            </Box>
+          )}
 
-                            {/* Images in masonry layout */}
-                            {images.length > 0 && (
-                              <ResponsiveMasonry
-                                columnsCountBreakPoints={{ 350: 1, 750: 2, 900: 3, 1200: 4 }}
-                              >
-                                <Masonry gutter="20px">
-                                  {images.map((media, index) => {
-                                    const mediaImageStreamUrl = `${import.meta.env.VITE_API_URL}/stream/image/${media.url.split("/").pop()}`;
+          {/* Tags */}
+          {post?.tags && post?.tags?.length > 0 && (
+            <Group gap="xs" mb="sm">
+              {post?.tags?.map((tag: any) => (
+                <Badge
+                  key={tag.id || tag.name}
+                  variant="light"
+                  color="blue"
+                  size="sm"
+                  radius="md"
+                  style={{ cursor: "pointer" }}
+                >
+                  #{tag.name}
+                </Badge>
+              ))}
+            </Group>
+          )}
 
-                                    return (
-                                      <Box
-                                        key={media.id || `image-${index}`}
-                                        style={{
-                                          position: "relative",
-                                          cursor: "pointer",
-                                          transition: "transform 0.2s ease",
-                                          borderRadius: "var(--mantine-radius-md)",
-                                          overflow: "hidden",
-                                          marginBottom: "20px",
-                                        }}
-                                        onClick={() => navigate(`/post/${post.id}`)}
-                                        onMouseEnter={(e) => {
-                                          e.currentTarget.style.transform = "scale(1.02)";
-                                        }}
-                                        onMouseLeave={(e) => {
-                                          e.currentTarget.style.transform = "scale(1)";
-                                        }}
-                                      >
-                                        <Image
-                                          src={mediaImageStreamUrl}
-                                          alt={media.filename || "Post media"}
-                                          radius="md"
-                                          style={{
-                                            width: "100%",
-                                            height: "auto",
-                                            objectFit: "cover",
-                                            display: "block",
-                                          }}
-                                          onError={(e) => {
-                                            console.error("Failed to load image:", mediaImageStreamUrl);
-                                            e.currentTarget.style.display = "none";
-                                          }}
-                                        />
+          {/* Legacy hashtags for backward compatibility */}
+          {post?.hashtags && post?.hashtags?.length > 0 && (
+            <Group gap="xs" mb="sm">
+              {post?.hashtags?.map((hashtag: string) => (
+                <Badge
+                  key={hashtag}
+                  variant="light"
+                  color="blue"
+                  size="sm"
+                  radius="md"
+                  style={{ cursor: "pointer" }}
+                >
+                  #{hashtag}
+                </Badge>
+              ))}
+            </Group>
+          )}
 
-                                      {/* More images indicator */}
-                                      {index === 3 && images.length > 4 && (
-                                        <Box
-                                          style={{
-                                            position: "absolute",
-                                            top: 0,
-                                            left: 0,
-                                            right: 0,
-                                            bottom: 0,
-                                            backgroundColor: "rgba(0, 0, 0, 0.7)",
-                                            display: "flex",
-                                            alignItems: "center",
-                                            justifyContent: "center",
-                                            borderRadius: "var(--mantine-radius-md)",
-                                            zIndex: 3,
-                                          }}
-                                        >
-                                          <Text size="xl" fw={600} c="white">
-                                            +{images.length - 4}
-                                          </Text>
-                                        </Box>
-                                      )}
-                                    </Box>
-                                  );
-                                })}
-                                </Masonry>
-                              </ResponsiveMasonry>
-                            )}
-                          </Stack>
-                        );
-                      })()}
-                    </Box>
-                )}
-              </Box>
-            )}
+          {/* Mentions */}
+          {post?.mentions && post?.mentions?.length > 0 && (
+            <Group gap="xs" mb="sm">
+              {post?.mentions?.map((mention: any) => (
+                <Badge
+                  key={mention.id || mention.mentionedUserId}
+                  variant="light"
+                  color="green"
+                  size="sm"
+                  radius="md"
+                  style={{ cursor: "pointer" }}
+                >
+                  @{mention.username || mention.mentionedUserId}
+                </Badge>
+              ))}
+            </Group>
+          )}
 
-            {/* Tags */}
-            {post?.tags && post?.tags?.length > 0 && (
-              <Group gap="xs" mb="sm">
-                {post?.tags?.map((tag: any) => (
-                  <Badge
-                    key={tag.id || tag.name}
-                    variant="light"
-                    color="blue"
-                    size="sm"
-                    radius="md"
-                    style={{ cursor: "pointer" }}
-                  >
-                    #{tag.name}
-                  </Badge>
-                ))}
-              </Group>
-            )}
+          {/* Location */}
+          {post?.location && (
+            <Group gap="xs" mb="sm">
+              <IconMapPin size={16} color="var(--mantine-color-blue-6)" />
+              <Text size="sm" c="blue.6">
+                {post.location}
+              </Text>
+            </Group>
+          )}
 
-            {/* Legacy hashtags for backward compatibility */}
-            {post?.hashtags && post?.hashtags?.length > 0 && (
-              <Group gap="xs" mb="sm">
-                {post?.hashtags?.map((hashtag: string) => (
-                  <Badge
-                    key={hashtag}
-                    variant="light"
-                    color="blue"
-                    size="sm"
-                    radius="md"
-                    style={{ cursor: "pointer" }}
-                  >
-                    #{hashtag}
-                  </Badge>
-                ))}
-              </Group>
-            )}
-
-            {/* Mentions */}
-            {post?.mentions && post?.mentions?.length > 0 && (
-              <Group gap="xs" mb="sm">
-                {post?.mentions?.map((mention: any) => (
-                  <Badge
-                    key={mention.id || mention.mentionedUserId}
-                    variant="light"
-                    color="green"
-                    size="sm"
-                    radius="md"
-                    style={{ cursor: "pointer" }}
-                  >
-                    @{mention.username || mention.mentionedUserId}
-                  </Badge>
-                ))}
-              </Group>
-            )}
-
-            {/* Location */}
-            {post?.location && (
-              <Group gap="xs" mb="sm">
-                <IconMapPin size={16} color="var(--mantine-color-blue-6)" />
-                <Text size="sm" c="blue.6">
-                  {post.location}
-                </Text>
-              </Group>
-            )}
-          </Box>
-
-          <Box px="lg" pb="sm">
+          <Box>
             {(!post.allowComments ||
               !post.allowLikes ||
               !post.allowShares ||
@@ -838,7 +841,7 @@ export function PostDetail() {
             )}
           </Box>
 
-          <Box px="lg" pb="md">
+          <Box>
             <Group justify="space-between" mb="sm">
               <Group gap="md">
                 {post?.likesCount > 0 && (
@@ -878,57 +881,17 @@ export function PostDetail() {
             <Group justify="space-between" align="center">
               {/* Action Buttons */}
               <Group gap="xs" align="center">
-                <UnstyledButton
+                <IconHeart
+                  size={16}
                   onClick={handleLike}
-                  disabled={!isAuthenticated || !post.allowLikes}
-                  data-interactive="true"
                   style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.25rem",
-                    padding: "0.5rem 0.75rem",
-                    borderRadius: "var(--mantine-radius-md)",
-                    transition: "all 0.2s ease",
-                    color: post?.isLiked
-                      ? "var(--mantine-color-blue-6)"
-                      : "var(--mantine-color-gray-6)",
-                    fontWeight: post?.isLiked ? 600 : 500,
-                    backgroundColor: post?.isLiked
-                      ? "var(--mantine-color-blue-1)"
-                      : "transparent",
-                    border: post?.isLiked
-                      ? "1px solid var(--mantine-color-blue-3)"
-                      : "1px solid transparent",
+                    fill: post?.isLiked ? "currentColor" : "none",
+                    stroke: "currentColor",
                   }}
-                  onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
-                    if (isAuthenticated && post.allowLikes) {
-                      e.currentTarget.style.backgroundColor = post?.isLiked
-                        ? "var(--mantine-color-blue-2)"
-                        : "var(--mantine-color-gray-1)";
-                      e.currentTarget.style.transform = "translateY(-1px)";
-                    }
-                  }}
-                  onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
-                    e.currentTarget.style.backgroundColor = post?.isLiked
-                      ? "var(--mantine-color-blue-1)"
-                      : "transparent";
-                    e.currentTarget.style.transform = "translateY(0)";
-                  }}
-                >
-                  <IconHeart
-                    size={16}
-                    style={{
-                      fill: post?.isLiked ? "currentColor" : "none",
-                      stroke: "currentColor",
-                      strokeWidth: 2,
-                    }}
-                  />
-                  <Text size="sm" fw={post?.isLiked ? 600 : 500}>
-                    Like
-                  </Text>
-                </UnstyledButton>
+                />
 
-                <UnstyledButton
+                <IconMessageCircle
+                  size={16}
                   onClick={() => {
                     // Scroll to comment input
                     const commentInput = document.querySelector(
@@ -942,105 +905,19 @@ export function PostDetail() {
                       (commentInput as HTMLInputElement).focus();
                     }
                   }}
-                  disabled={!post.allowComments}
-                  data-interactive="true"
                   style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.25rem",
-                    padding: "0.5rem 0.75rem",
-                    borderRadius: "var(--mantine-radius-md)",
-                    transition: "all 0.2s ease",
-                    color: commentContent.trim()
-                      ? "var(--mantine-color-blue-6)"
-                      : "var(--mantine-color-gray-6)",
-                    fontWeight: commentContent.trim() ? 600 : 500,
-                    backgroundColor: commentContent.trim()
-                      ? "var(--mantine-color-blue-1)"
-                      : "transparent",
-                    border: commentContent.trim()
-                      ? "1px solid var(--mantine-color-blue-3)"
-                      : "1px solid transparent",
+                    fill: commentContent.trim() ? "currentColor" : "none",
+                    stroke: "currentColor",
                   }}
-                  onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
-                    if (post.allowComments) {
-                      e.currentTarget.style.backgroundColor =
-                        commentContent.trim()
-                          ? "var(--mantine-color-blue-2)"
-                          : "var(--mantine-color-gray-1)";
-                      e.currentTarget.style.transform = "translateY(-1px)";
-                    }
-                  }}
-                  onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
-                    e.currentTarget.style.backgroundColor =
-                      commentContent.trim()
-                        ? "var(--mantine-color-blue-1)"
-                        : "transparent";
-                    e.currentTarget.style.transform = "translateY(0)";
-                  }}
-                >
-                  <IconMessageCircle
-                    size={16}
-                    style={{
-                      fill: commentContent.trim() ? "currentColor" : "none",
-                      stroke: "currentColor",
-                      strokeWidth: 2,
-                    }}
-                  />
-                  <Text size="sm" fw={commentContent.trim() ? 600 : 500}>
-                    Comment
-                  </Text>
-                </UnstyledButton>
+                />
 
-                <UnstyledButton
+                <IconBookmark
+                  size={16}
                   onClick={handleBookmark}
-                  disabled={!isAuthenticated || !post.allowBookmarks}
-                  data-interactive="true"
                   style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.25rem",
-                    padding: "0.5rem 0.75rem",
-                    borderRadius: "var(--mantine-radius-md)",
-                    transition: "all 0.2s ease",
-                    color: post?.isBookmarked
-                      ? "var(--mantine-color-yellow-6)"
-                      : "var(--mantine-color-gray-6)",
-                    fontWeight: post?.isBookmarked ? 600 : 500,
-                    backgroundColor: post?.isBookmarked
-                      ? "var(--mantine-color-yellow-1)"
-                      : "transparent",
-                    border: post?.isBookmarked
-                      ? "1px solid var(--mantine-color-yellow-3)"
-                      : "1px solid transparent",
+                    fill: post?.isBookmarked ? "currentColor" : "none",
                   }}
-                  onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
-                    if (isAuthenticated && post.allowBookmarks) {
-                      e.currentTarget.style.backgroundColor = post?.isBookmarked
-                        ? "var(--mantine-color-yellow-2)"
-                        : "var(--mantine-color-gray-1)";
-                      e.currentTarget.style.transform = "translateY(-1px)";
-                    }
-                  }}
-                  onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
-                    e.currentTarget.style.backgroundColor = post?.isBookmarked
-                      ? "var(--mantine-color-yellow-1)"
-                      : "transparent";
-                    e.currentTarget.style.transform = "translateY(0)";
-                  }}
-                >
-                  <IconBookmark
-                    size={16}
-                    style={{
-                      fill: post?.isBookmarked ? "currentColor" : "none",
-                      stroke: "currentColor",
-                      strokeWidth: 2,
-                    }}
-                  />
-                  <Text size="sm" fw={post?.isBookmarked ? 600 : 500}>
-                    Save
-                  </Text>
-                </UnstyledButton>
+                />
               </Group>
 
               {/* Post Statistics */}
@@ -1056,61 +933,30 @@ export function PostDetail() {
             </Group>
           </Box>
 
-          {/* Facebook-style Comment Input - Embedded in Post */}
-          <Box
-            px="lg"
-            pb="md"
-            style={{
-              paddingTop: "0.75rem",
-              marginTop: "0.75rem",
-            }}
-          >
+          <Box>
             {isAuthenticated ? (
-              <Group
-                align="flex-start"
-                gap="sm"
-                mb="sm"
-                data-interactive="true"
-              >
-                <Avatar
-                  src={user?.avatar}
-                  size="md"
-                  radius="xl"
-                  style={{ flexShrink: 0 }}
-                >
-                  {user?.firstName?.charAt(0) || "U"}
-                </Avatar>
-                <Box style={{ flex: 1 }}>
-                  <TextInput
-                    placeholder="Write a comment..."
-                    value={commentContent}
-                    onChange={(e) => setCommentContent(e.currentTarget.value)}
-                    style={{ flex: 1 }}
-                    radius="xl"
-                    rightSection={
-                      commentContent.trim() ? (
-                        <ActionIcon
-                          onClick={handleComment}
-                          loading={isCommenting}
-                          color="blue"
-                          variant="filled"
-                          radius="xl"
-                          size="sm"
-                        >
-                          <IconSend size={16} />
-                        </ActionIcon>
-                      ) : null
-                    }
-                    onKeyPress={(e) => e.key === "Enter" && handleComment()}
-                    styles={{
-                      input: {
-                        backgroundColor: "var(--mantine-color-gray-1)",
-                        fontSize: "0.875rem",
-                      },
-                    }}
-                  />
-                </Box>
-              </Group>
+              <TextInput
+                placeholder="Write a comment..."
+                value={commentContent}
+                onChange={(e) => setCommentContent(e.currentTarget.value)}
+                radius="xl"
+                size="sm"
+                rightSection={
+                  commentContent.trim() ? (
+                    <ActionIcon
+                      onClick={handleComment}
+                      loading={isCommenting}
+                      color="blue"
+                      variant="filled"
+                      radius="xl"
+                    >
+                      <IconArrowRight size={16} />
+                    </ActionIcon>
+                  ) : null
+                }
+                onKeyPress={(e) => e.key === "Enter" && handleComment()}
+                w="100%"
+              />
             ) : (
               <Box
                 p="sm"
@@ -1146,7 +992,7 @@ export function PostDetail() {
                     },
                   }}
                 >
-                  <Stack gap="xs" pr="xs">
+                  <Box>
                     {comments
                       .filter((comment) => comment && comment.id)
                       .map((comment, index) => (
@@ -1176,7 +1022,7 @@ export function PostDetail() {
                         )}
                       </Center>
                     )}
-                  </Stack>
+                  </Box>
                 </ScrollArea>
               </Box>
             )}
@@ -1213,7 +1059,7 @@ export function PostDetail() {
               <CommentSkeletonList count={3} />
             )}
           </Box>
-        </Box>
+        </Paper>
 
         {/* Delete Confirmation Modal */}
         <Modal

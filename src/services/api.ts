@@ -1258,10 +1258,13 @@ class ApiService {
 
     // Process the response to add missing fields for compatibility
     const data = response.data.data;
-    const processedGroupedStatuses = data.groupedStatuses.map(collection => ({
+    const processedGroupedStatuses = data.groupedStatuses.map((collection) => ({
       ...collection,
       hasUnviewed: collection.hasUnviewed ?? false,
-      lastUpdated: collection.lastUpdated ?? collection.statuses[0]?.createdAt ?? new Date().toISOString(),
+      lastUpdated:
+        collection.lastUpdated ??
+        collection.statuses[0]?.createdAt ??
+        new Date().toISOString(),
     }));
 
     return {
@@ -1328,10 +1331,13 @@ class ApiService {
 
     // Process the response to add missing fields for compatibility
     const data = response.data.data;
-    const processedGroupedStatuses = data.groupedStatuses.map(collection => ({
+    const processedGroupedStatuses = data.groupedStatuses.map((collection) => ({
       ...collection,
       hasUnviewed: collection.hasUnviewed ?? false,
-      lastUpdated: collection.lastUpdated ?? collection.statuses[0]?.createdAt ?? new Date().toISOString(),
+      lastUpdated:
+        collection.lastUpdated ??
+        collection.statuses[0]?.createdAt ??
+        new Date().toISOString(),
     }));
 
     return {
@@ -1355,10 +1361,13 @@ class ApiService {
 
     // Process the response to add missing fields for compatibility
     const data = response.data.data;
-    const processedGroupedStatuses = data.groupedStatuses.map(collection => ({
+    const processedGroupedStatuses = data.groupedStatuses.map((collection) => ({
       ...collection,
       hasUnviewed: collection.hasUnviewed ?? false,
-      lastUpdated: collection.lastUpdated ?? collection.statuses[0]?.createdAt ?? new Date().toISOString(),
+      lastUpdated:
+        collection.lastUpdated ??
+        collection.statuses[0]?.createdAt ??
+        new Date().toISOString(),
     }));
 
     return {

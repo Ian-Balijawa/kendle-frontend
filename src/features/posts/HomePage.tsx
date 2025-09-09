@@ -1,6 +1,21 @@
-import { ActionIcon, Badge, Box, Button, Card, Container, Group, Stack, Text, } from "@mantine/core";
+import {
+  ActionIcon,
+  Badge,
+  Box,
+  Button,
+  Card,
+  Container,
+  Group,
+  Stack,
+  Text,
+} from "@mantine/core";
 import { useIntersection } from "@mantine/hooks";
-import { IconPlus, IconRefresh, IconSparkles, IconTrendingUp, } from "@tabler/icons-react";
+import {
+  IconPlus,
+  IconRefresh,
+  IconSparkles,
+  IconTrendingUp,
+} from "@tabler/icons-react";
 import { useState } from "react";
 import { InfiniteScrollLoader, PostSkeletonList } from "../../components/ui";
 import { ProfileSwipe } from "../../components/ui/ProfileSwipe";
@@ -23,7 +38,6 @@ export function HomePage() {
   const [currentStatusIndex, setCurrentStatusIndex] = useState(0);
   const [viewModalOpened, setViewModalOpened] = useState(false);
   const [currentCollectionIndex, setCurrentCollectionIndex] = useState(0);
-
 
   // Use infinite posts query
   const {
@@ -61,20 +75,23 @@ export function HomePage() {
   const posts = data?.pages.flatMap((page) => page.posts) || [];
 
   // Get grouped statuses from all pages (server already groups them)
-  const statusCollections = statusData?.pages.flatMap((page) => page.groupedStatuses) || [];
-
+  const statusCollections =
+    statusData?.pages.flatMap((page) => page.groupedStatuses) || [];
 
   // Sort collections by last updated (fallback to first status's createdAt)
   statusCollections.sort((a, b) => {
-    const aLastUpdated = a.lastUpdated || a.statuses[0]?.createdAt || new Date().toISOString();
-    const bLastUpdated = b.lastUpdated || b.statuses[0]?.createdAt || new Date().toISOString();
+    const aLastUpdated =
+      a.lastUpdated || a.statuses[0]?.createdAt || new Date().toISOString();
+    const bLastUpdated =
+      b.lastUpdated || b.statuses[0]?.createdAt || new Date().toISOString();
     return new Date(bLastUpdated).getTime() - new Date(aLastUpdated).getTime();
   });
 
   // Sort statuses within each collection by creation date (newest first)
-  statusCollections.forEach(collection => {
+  statusCollections.forEach((collection) => {
     collection.statuses.sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     );
   });
 
@@ -135,7 +152,8 @@ export function HomePage() {
     ? currentStatusIndex < selectedStatus.statuses.length - 1
     : false;
   const canGoPrevious = currentStatusIndex > 0;
-  const canGoNextCollection = currentCollectionIndex < statusCollections.length - 1;
+  const canGoNextCollection =
+    currentCollectionIndex < statusCollections.length - 1;
   const canGoPreviousCollection = currentCollectionIndex > 0;
 
   return (
@@ -190,13 +208,11 @@ export function HomePage() {
         )}
       </Box>
 
-      {isAuthenticated && suggestedUsers && suggestedUsers.suggestions.length > 0 && (
-        <ProfileSwipe
-          users={suggestedUsers.suggestions}
-          title="Discover People"
-          subtitle="Find interesting people to follow"
-        />
-      )}
+      {isAuthenticated &&
+        suggestedUsers &&
+        suggestedUsers.suggestions.length > 0 && (
+          <ProfileSwipe users={suggestedUsers.suggestions} />
+        )}
 
       {/* Content Section */}
       <Stack gap="lg">
@@ -218,7 +234,12 @@ export function HomePage() {
               <Text c="red.6" ta="center" size="sm">
                 {error?.message || "We couldn't load the posts right now."}
               </Text>
-              <Button variant="light" color="red" radius="xl" onClick={() => refetch()}>
+              <Button
+                variant="light"
+                color="red"
+                radius="xl"
+                onClick={() => refetch()}
+              >
                 Try Again
               </Button>
             </Stack>
