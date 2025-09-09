@@ -130,12 +130,12 @@ export interface CreateStatusData {
 export interface StatusCollection {
   author: User;
   statuses: Status[];
-  hasUnviewed: boolean;
-  lastUpdated: string;
+  hasUnviewed?: boolean;
+  lastUpdated?: string;
 }
 
 export interface StatusesResponse {
-  statuses: Status[];
+  groupedStatuses: StatusCollection[];
   total: number;
   page: number;
   limit: number;

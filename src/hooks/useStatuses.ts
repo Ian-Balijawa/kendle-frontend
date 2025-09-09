@@ -247,9 +247,26 @@ export function useCreateStatus() {
             ...old,
             pages: old.pages.map((page: StatusesResponse, index: number) => {
               if (index === 0) {
+                // Find or create collection for the optimistic status
+                const existingCollection = page.groupedStatuses.find(
+                  (collection) => collection.author.id === optimisticStatus.author.id
+                );
+
+                if (existingCollection) {
+                  // Add to existing collection
+                  existingCollection.statuses.unshift(optimisticStatus);
+                } else {
+                  // Create new collection
+                  page.groupedStatuses.unshift({
+                    author: optimisticStatus.author,
+                    statuses: [optimisticStatus],
+                    hasUnviewed: false,
+                    lastUpdated: optimisticStatus.createdAt,
+                  });
+                }
+
                 return {
                   ...page,
-                  statuses: [optimisticStatus, ...page.statuses],
                   total: page.total + 1,
                 };
               }
@@ -273,12 +290,20 @@ export function useCreateStatus() {
               ...old,
               pages: old.pages.map((page: StatusesResponse, index: number) => {
                 if (index === 0) {
+                  // Remove the optimistic status from its collection
+                  page.groupedStatuses.forEach(collection => {
+                    collection.statuses = collection.statuses.filter(
+                      (status: Status) => status.id !== context.optimisticStatus.id
+                    );
+                  });
+
+                  // Remove empty collections
+                  page.groupedStatuses = page.groupedStatuses.filter(
+                    collection => collection.statuses.length > 0
+                  );
+
                   return {
                     ...page,
-                    statuses: page.statuses.filter(
-                      (status: Status) =>
-                        status.id !== context.optimisticStatus.id,
-                    ),
                     total: Math.max(0, page.total - 1),
                   };
                 }
@@ -301,14 +326,14 @@ export function useCreateStatus() {
               ...old,
               pages: old.pages.map((page: StatusesResponse, index: number) => {
                 if (index === 0) {
-                  return {
-                    ...page,
-                    statuses: page.statuses.map((status: Status) =>
-                      status.id === context.optimisticStatus.id
-                        ? newStatus
-                        : status,
-                    ),
-                  };
+                  // Replace the optimistic status with the real one in its collection
+                  page.groupedStatuses.forEach(collection => {
+                    collection.statuses = collection.statuses.map((status: Status) =>
+                      status.id === context.optimisticStatus.id ? newStatus : status
+                    );
+                  });
+
+                  return page;
                 }
                 return page;
               }),
@@ -360,11 +385,14 @@ export function useUpdateStatus() {
             ...old,
             pages: old.pages.map((page: StatusesResponse) => ({
               ...page,
-              statuses: page.statuses.map((status: Status) =>
-                status.id === id
-                  ? { ...status, ...data, updatedAt: new Date().toISOString() }
-                  : status,
-              ),
+              groupedStatuses: page.groupedStatuses.map(collection => ({
+                ...collection,
+                statuses: collection.statuses.map((status: Status) =>
+                  status.id === id
+                    ? { ...status, ...data, updatedAt: new Date().toISOString() }
+                    : status,
+                ),
+              })),
             })),
           };
         },
@@ -408,13 +436,24 @@ export function useDeleteStatus() {
 
           return {
             ...old,
-            pages: old.pages.map((page: StatusesResponse) => ({
-              ...page,
-              statuses: page.statuses.filter(
-                (status: Status) => status.id !== id,
-              ),
-              total: Math.max(0, page.total - 1),
-            })),
+            pages: old.pages.map((page: StatusesResponse) => {
+              // Remove the status from all collections
+              page.groupedStatuses.forEach(collection => {
+                collection.statuses = collection.statuses.filter(
+                  (status: Status) => status.id !== id
+                );
+              });
+
+              // Remove empty collections
+              page.groupedStatuses = page.groupedStatuses.filter(
+                collection => collection.statuses.length > 0
+              );
+
+              return {
+                ...page,
+                total: Math.max(0, page.total - 1),
+              };
+            }),
           };
         },
       );
@@ -483,9 +522,12 @@ export function useReactToStatus() {
             ...old,
             pages: old.pages.map((page: StatusesResponse) => ({
               ...page,
-              statuses: page.statuses.map((status: Status) =>
-                status.id === id ? updateStatus(status) : status,
-              ),
+              groupedStatuses: page.groupedStatuses.map(collection => ({
+                ...collection,
+                statuses: collection.statuses.map((status: Status) =>
+                  status.id === id ? updateStatus(status) : status,
+                ),
+              })),
             })),
           };
         },
@@ -537,9 +579,12 @@ export function useRemoveStatusReaction() {
             ...old,
             pages: old.pages.map((page: StatusesResponse) => ({
               ...page,
-              statuses: page.statuses.map((status: Status) =>
-                status.id === id ? updateStatus(status) : status,
-              ),
+              groupedStatuses: page.groupedStatuses.map(collection => ({
+                ...collection,
+                statuses: collection.statuses.map((status: Status) =>
+                  status.id === id ? updateStatus(status) : status,
+                ),
+              })),
             })),
           };
         },

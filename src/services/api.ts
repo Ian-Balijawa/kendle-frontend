@@ -1255,7 +1255,19 @@ class ApiService {
 
     const response: AxiosResponse<ApiResponse<StatusesResponse>> =
       await this.api.get(`/statuses?${searchParams.toString()}`);
-    return response.data.data;
+
+    // Process the response to add missing fields for compatibility
+    const data = response.data.data;
+    const processedGroupedStatuses = data.groupedStatuses.map(collection => ({
+      ...collection,
+      hasUnviewed: collection.hasUnviewed ?? false,
+      lastUpdated: collection.lastUpdated ?? collection.statuses[0]?.createdAt ?? new Date().toISOString(),
+    }));
+
+    return {
+      ...data,
+      groupedStatuses: processedGroupedStatuses,
+    };
   }
 
   async getStatus(id: string): Promise<Status> {
@@ -1313,7 +1325,19 @@ class ApiService {
 
     const response: AxiosResponse<ApiResponse<StatusesResponse>> =
       await this.api.get(`/statuses/user/${userId}?${searchParams.toString()}`);
-    return response.data.data;
+
+    // Process the response to add missing fields for compatibility
+    const data = response.data.data;
+    const processedGroupedStatuses = data.groupedStatuses.map(collection => ({
+      ...collection,
+      hasUnviewed: collection.hasUnviewed ?? false,
+      lastUpdated: collection.lastUpdated ?? collection.statuses[0]?.createdAt ?? new Date().toISOString(),
+    }));
+
+    return {
+      ...data,
+      groupedStatuses: processedGroupedStatuses,
+    };
   }
 
   async getMyStatuses(
@@ -1328,7 +1352,19 @@ class ApiService {
 
     const response: AxiosResponse<ApiResponse<StatusesResponse>> =
       await this.api.get(`/statuses/user/me?${searchParams.toString()}`);
-    return response.data.data;
+
+    // Process the response to add missing fields for compatibility
+    const data = response.data.data;
+    const processedGroupedStatuses = data.groupedStatuses.map(collection => ({
+      ...collection,
+      hasUnviewed: collection.hasUnviewed ?? false,
+      lastUpdated: collection.lastUpdated ?? collection.statuses[0]?.createdAt ?? new Date().toISOString(),
+    }));
+
+    return {
+      ...data,
+      groupedStatuses: processedGroupedStatuses,
+    };
   }
 
   async getStatusReplies(

@@ -60,73 +60,16 @@ export function HomePage() {
   // Flatten all posts from all pages
   const posts = data?.pages.flatMap((page) => page.posts) || [];
 
-  // Flatten all statuses from all pages
-  const statuses = statusData?.pages.flatMap((page) => page.statuses) || [];
-
-  // // Group statuses by author for stories display
-  // const statusCollections = statuses.reduce((collections: StatusCollection[], status) => {
-  //   const existingCollection = collections.find(
-  //     (collection) => collection.author.id === status.author.id,
-  //   );
-
-  //   console.log("existingCollection", existingCollection);
-
-  //   if (existingCollection) {
-  //     // Add the entire status (with all its media) to the collection
-  //     existingCollection.statuses.push(status);
-
-  //     // Update hasUnviewed if any status in the collection is unviewed
-  //     if (status.isViewed === false) {
-  //       existingCollection.hasUnviewed = true;
-  //     }
-
-  //     // Update lastUpdated to the most recent status
-  //     if (new Date(status.createdAt) > new Date(existingCollection.lastUpdated)) {
-  //       existingCollection.lastUpdated = status.createdAt;
-  //     }
-  //   } else {
-  //     collections.push({
-  //       author: status.author,
-  //       statuses: [status], // Each status contains its media array
-  //       hasUnviewed: status.isViewed === false,
-  //       lastUpdated: status.createdAt,
-  //     });
-  //   }
-
-  //   return collections;
-  // }, []);
+  // Get grouped statuses from all pages (server already groups them)
+  const statusCollections = statusData?.pages.flatMap((page) => page.groupedStatuses) || [];
 
 
-  //we shall group statuses by author for stories display using a for loop
-  const statusCollections: StatusCollection[] = [];
-  console.log("statusCollections", statusCollections);
-  console.log("statuses", statuses);
-
-  for (const status of statuses) {
-    const existingCollection = statusCollections.find(
-      (collection) => collection.author.id === status.author.id,
-    );
-    console.log("existingCollection", existingCollection);
-    if (existingCollection) {
-      existingCollection.statuses.push(status);
-    } else {
-      console.log("statusCollections", statusCollections);
-      statusCollections.push({
-        author: status.author,
-        statuses: [status],
-        hasUnviewed: status.isViewed === false,
-        lastUpdated: status.createdAt,
-      });
-    }
-  }
-
-  console.log("statusCollections", statusCollections);
-
-
-  // Sort collections by last updated
-  statusCollections.sort(
-    (a, b) => new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime(),
-  );
+  // Sort collections by last updated (fallback to first status's createdAt)
+  statusCollections.sort((a, b) => {
+    const aLastUpdated = a.lastUpdated || a.statuses[0]?.createdAt || new Date().toISOString();
+    const bLastUpdated = b.lastUpdated || b.statuses[0]?.createdAt || new Date().toISOString();
+    return new Date(bLastUpdated).getTime() - new Date(aLastUpdated).getTime();
+  });
 
   // Sort statuses within each collection by creation date (newest first)
   statusCollections.forEach(collection => {
