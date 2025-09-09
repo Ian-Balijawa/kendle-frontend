@@ -182,7 +182,7 @@ export function NotificationsPage() {
 
   return (
     <>
-      <Stack gap="lg">
+      <Stack gap="sm">
         <Group justify="space-between" align="center">
           <Box>
             <Title order={1} size="h2">
@@ -199,9 +199,9 @@ export function NotificationsPage() {
           )}
         </Group>
 
-        <Stack gap="md">
+        <Stack gap="sm">
           {notifications.length === 0 ? (
-            <Card withBorder p="xl">
+            <Card withBorder p="sm">
               <Box ta="center" py="xl">
                 <IconBell size={48} color="var(--mantine-color-gray-4)" />
                 <Text size="lg" fw={500} mt="md">
@@ -217,7 +217,7 @@ export function NotificationsPage() {
               <Card
                 key={notification.id}
                 withBorder
-                p="md"
+                p="sm"
                 style={{
                   backgroundColor: notification.isRead
                     ? "transparent"
@@ -227,7 +227,7 @@ export function NotificationsPage() {
                     : `4px solid var(--mantine-color-${getNotificationColor(notification.type)}-6)`,
                 }}
               >
-                <Group align="flex-start" gap="md">
+                <Group align="flex-start" gap="sm">
                   <Avatar
                     src={notification.actor.avatar}
                     alt={notification.actor.firstName}

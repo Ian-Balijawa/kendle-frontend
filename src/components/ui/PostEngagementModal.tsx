@@ -109,16 +109,16 @@ export function PostEngagementModal({
 
   return (
     <Modal opened={opened} onClose={onClose} title="Post Engagement" size="md">
-      <Stack gap="md">
+      <Stack gap="sm">
         {/* Engagement Summary */}
         {engagement && (
           <Group
             justify="space-between"
-            p="md"
+            p="sm"
             bg="gray.0"
             style={{ borderRadius: "var(--mantine-radius-md)" }}
           >
-            <Group gap="lg">
+            <Group gap="sm">
               <Group gap="xs">
                 <IconHeart size={16} color="var(--mantine-color-red-6)" />
                 <Text size="sm" c={engagement.hasLiked ? "red.6" : "dimmed"}>

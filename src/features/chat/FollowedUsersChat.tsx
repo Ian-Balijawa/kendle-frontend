@@ -152,7 +152,7 @@ export function FollowedUsersChat({
 
             {following.length === 0 && (
               <Box
-                p="md"
+                p="sm"
                 style={{
                   textAlign: "center",
                   color: "var(--mantine-color-gray-6)",

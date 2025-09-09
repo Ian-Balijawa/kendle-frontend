@@ -102,7 +102,7 @@ export function StatusStories({
           paddingRight: "16px",
         }}
       >
-        <Group gap="md" style={{ paddingBottom: "8px" }}>
+        <Group gap="sm" style={{ paddingBottom: "8px" }}>
           <VerticalStatusCard
             isCreateCard={true}
             currentUserAvatar={currentUserAvatar}

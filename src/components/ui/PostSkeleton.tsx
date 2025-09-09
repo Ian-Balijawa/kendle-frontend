@@ -2,8 +2,8 @@ import { Box, Card, Group, Skeleton, Stack } from "@mantine/core";
 
 export function PostSkeleton() {
   return (
-    <Card withBorder p="md" radius="md">
-      <Stack gap="md">
+    <Card withBorder p="sm" radius="md">
+      <Stack gap="sm">
         <Group justify="space-between">
           <Group>
             <Skeleton height={40} width={40} radius="xl" />
@@ -30,7 +30,7 @@ export function PostSkeleton() {
         </Group>
 
         <Group justify="space-between">
-          <Group gap="lg">
+          <Group gap="sm">
             <Group gap={4}>
               <Skeleton height={24} width={24} />
               <Skeleton height={16} width={20} />
@@ -60,7 +60,7 @@ export function PostSkeleton() {
 
 export function PostSkeletonList({ count = 3 }: { count?: number }) {
   return (
-    <Stack gap="md">
+    <Stack gap="sm">
       {Array.from({ length: count }).map((_, index) => (
         <PostSkeleton key={index} />
       ))}

@@ -11,7 +11,7 @@ export function InfiniteScrollLoader({
 }: InfiniteScrollLoaderProps) {
   if (variant === "posts") {
     return (
-      <Stack gap="md">
+      <Stack gap="sm">
         {Array.from({ length: count }).map((_, index) => (
           <Box key={index}>
             <Stack gap="sm">

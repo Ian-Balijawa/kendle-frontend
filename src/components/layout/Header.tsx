@@ -55,8 +55,8 @@ export function HeaderContent() {
         transition: "box-shadow 0.2s ease",
       }}
     >
-      <Group justify="space-between" h={60} gap="md">
-        <Group gap="xl">
+      <Group justify="space-between" h={60} gap="sm">
+        <Group gap="sm">
           <UnstyledButton
             onClick={() => navigate("/")}
             style={{
@@ -68,7 +68,7 @@ export function HeaderContent() {
             <Image src="/logo.png" alt="Kendle" width={50} height={50} />
           </UnstyledButton>
 
-          <Group gap="xs" visibleFrom="md">
+          <Group gap="xs" visibleFrom="sm">
             {navigationItems.map((item) => {
               const isCurrentActive = isActive(item.path);
               const needsAuth =
@@ -152,7 +152,7 @@ export function HeaderContent() {
                 size="lg"
                 radius="xl"
                 onClick={() => navigate("/statuses")}
-                hiddenFrom="md"
+                  hiddenFrom="sm"
               >
                 <IconPlus size={20} />
               </ActionIcon>
@@ -230,7 +230,7 @@ export function HeaderContent() {
                 variant="subtle"
                 size="lg"
                 radius="xl"
-                hiddenFrom="md"
+                  hiddenFrom="sm"
                 visibleFrom="xs"
               >
                 <IconMenu2 size={20} />

@@ -11,8 +11,8 @@ export function PostDetailSkeleton() {
       </Group>
 
       {/* Post Content */}
-      <Card withBorder p="lg" radius="md" mb="md">
-        <Stack gap="md">
+      <Card withBorder p="sm" radius="md" mb="md">
+        <Stack gap="sm">
           <Group justify="space-between">
             <Group>
               <Skeleton height={48} width={48} radius="xl" />
@@ -44,7 +44,7 @@ export function PostDetailSkeleton() {
 
           {/* Actions */}
           <Group justify="space-between" pt="md">
-            <Group gap="lg">
+            <Group gap="sm">
               <Group gap={4}>
                 <Skeleton height={24} width={24} />
                 <Skeleton height={18} width={30} />
@@ -69,12 +69,12 @@ export function PostDetailSkeleton() {
       </Card>
 
       {/* Comment Input */}
-      <Card withBorder p="md" radius="md" mb="md">
+      <Card withBorder p="sm" radius="md" mb="md">
         <Skeleton height={36} width="100%" radius="sm" />
       </Card>
 
       {/* Comments */}
-      <Stack gap="md">
+      <Stack gap="sm">
         <CommentSkeletonList count={3} />
       </Stack>
     </Box>

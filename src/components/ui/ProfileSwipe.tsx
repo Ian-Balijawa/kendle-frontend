@@ -80,14 +80,14 @@ export function ProfileSwipe({
     return (
       <Card
         radius="24"
-        p="xl"
+        p="sm"
         style={{
           background: "rgba(255, 255, 255, 0.6)",
           backdropFilter: "blur(20px)",
           border: "1px solid rgba(255, 255, 255, 0.2)",
         }}
       >
-        <Stack align="center" gap="xl" py="xl">
+        <Stack align="center" gap="sm" py="xl">
           <Box
             style={{
               width: 96,

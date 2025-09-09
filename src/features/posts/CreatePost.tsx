@@ -305,7 +305,7 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
         },
       }}
     >
-      <Stack gap="md">
+      <Stack gap="sm">
         {/* Author Header */}
         <Group gap="sm">
           <Avatar

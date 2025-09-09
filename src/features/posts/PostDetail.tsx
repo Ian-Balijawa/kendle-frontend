@@ -60,7 +60,6 @@ export function PostDetail() {
   const { user, isAuthenticated } = useAuthStore();
 
   try {
-    // React Query hooks
     const {
       data: post,
       isLoading: postLoading,
@@ -104,8 +103,8 @@ export function PostDetail() {
     if (postError || !post) {
       return (
         <Center py={60}>
-          <Box p="xl" w="100%" maw={400}>
-            <Stack align="center" gap="lg">
+          <Box p="sm" w="100%" maw={400}>
+            <Stack align="center" gap="sm">
               <Box
                 w={60}
                 h={60}
@@ -234,14 +233,11 @@ export function PostDetail() {
 
     const isAuthor = user?.id === post?.author?.id;
 
-    // Helper function to render formatted text with newlines
     const renderFormattedText = (
       text: string,
       size: "sm" | "md" | "lg" = "md",
-      spacing: "xs" | "sm" | "md" = "sm",
     ) => {
       const lines = text.split("\n");
-      const spacingMap = { xs: "0.25rem", sm: "0.5rem", md: "0.75rem" };
 
       return (
         <Box>
@@ -249,11 +245,6 @@ export function PostDetail() {
             <Text
               key={index}
               size={size}
-              style={{
-                lineHeight: 1.6,
-                marginBottom:
-                  index < lines.length - 1 ? spacingMap[spacing] : 0,
-              }}
             >
               {line || "\u00A0"}
             </Text>
@@ -266,8 +257,7 @@ export function PostDetail() {
     const imageStreamUrl = `${import.meta.env.VITE_API_URL}/stream/image/${post.media?.[0]?.url.split("/").pop()}`;
 
     return (
-      <Box mx="auto" p="md">
-        {/* Header */}
+      <Box mx="auto" p="sm">
         <Group justify="space-between" mb="lg">
           <ActionIcon
             variant="light"
@@ -281,15 +271,12 @@ export function PostDetail() {
             {post.content.split("\n")[0].slice(0, 50)}
             {post.content.split("\n")[0].length > 50 ? "..." : ""}
           </Text>
-          <Box w={40} />
         </Group>
 
-        {/* Main Post Card */}
         <Paper p="sm">
-          {/* Author Header */}
           <Group justify="space-between" mb="md">
             <Group
-              gap="md"
+              gap="sm"
               style={{ cursor: "pointer" }}
               onClick={handleAuthorClick}
             >
@@ -300,12 +287,6 @@ export function PostDetail() {
                 }
                 size={48}
                 radius="xl"
-                color="white"
-                style={{
-                  border: post?.author?.isVerified
-                    ? "2px solid var(--mantine-color-blue-6)"
-                    : "none",
-                }}
               >
                 {(
                   post?.author?.firstName ||
@@ -413,7 +394,6 @@ export function PostDetail() {
             )}
           </Group>
 
-          {/* Post Type and Status Indicators */}
           <Group gap="xs" mb="sm">
             <Badge
               size="sm"
@@ -451,7 +431,6 @@ export function PostDetail() {
             )}
           </Group>
 
-          {/* Post Content */}
           {isEditing ? (
             <Stack gap="sm">
               <Textarea
@@ -465,7 +444,6 @@ export function PostDetail() {
                 style={{ fontSize: rem(15) }}
               />
 
-              {/* Preview of edited content */}
               {editContent.trim() && (
                 <Box
                   p="sm"
@@ -478,7 +456,7 @@ export function PostDetail() {
                   <Text size="xs" c="dimmed" mb="xs" fw={500}>
                     Preview:
                   </Text>
-                  {renderFormattedText(editContent, "md", "sm")}
+                  {renderFormattedText(editContent, "md")}
                 </Box>
               )}
 
@@ -501,10 +479,9 @@ export function PostDetail() {
               </Group>
             </Stack>
           ) : (
-            <Box mb="md">{renderFormattedText(post.content, "md", "sm")}</Box>
+              renderFormattedText(post.content, "md")
           )}
 
-          {/* Media */}
           {post?.media && post?.media?.length > 0 && (
             <Box mb="md">
               {post.media.length === 1 ? (
@@ -547,8 +524,7 @@ export function PostDetail() {
                   )}
                 </Box>
               ) : (
-                <Box>
-                  {/* Separate videos and images */}
+                  <Box>
                   {(() => {
                     const videos = post.media.filter(
                       (media) => media.type === "video",
@@ -558,8 +534,7 @@ export function PostDetail() {
                     );
 
                     return (
-                      <Stack gap="lg">
-                        {/* Videos in regular grid */}
+                      <Stack gap="sm">
                         {videos.length > 0 && (
                           <Box
                             style={{
@@ -843,7 +818,7 @@ export function PostDetail() {
 
           <Box>
             <Group justify="space-between" mb="sm">
-              <Group gap="md">
+              <Group gap="sm">
                 {post?.likesCount > 0 && (
                   <Group gap="xs">
                     <Text size="sm" c="dimmed">
@@ -879,7 +854,6 @@ export function PostDetail() {
 
             {/* Action Buttons */}
             <Group justify="space-between" align="center">
-              {/* Action Buttons */}
               <Group gap="xs" align="center">
                 <IconHeart
                   size={16}
@@ -893,7 +867,6 @@ export function PostDetail() {
                 <IconMessageCircle
                   size={16}
                   onClick={() => {
-                    // Scroll to comment input
                     const commentInput = document.querySelector(
                       'input[placeholder="Write a comment..."]',
                     );
@@ -920,8 +893,7 @@ export function PostDetail() {
                 />
               </Group>
 
-              {/* Post Statistics */}
-              <Group gap="md" align="center">
+              <Group gap="sm" align="center">
                 <PostEngagementButton
                   postId={post.id}
                   likesCount={post.likesCount || 0}
@@ -972,10 +944,9 @@ export function PostDetail() {
               </Box>
             )}
 
-            {/* Embedded Comments Section with Scroll */}
             {comments.length > 0 && (
               <Box data-interactive="true">
-                <Text fw={600} size="md" mb="sm">
+                <Text fw={600} size="md" my="sm">
                   Comments ({post?.commentsCount})
                 </Text>
 
@@ -1027,7 +998,6 @@ export function PostDetail() {
               </Box>
             )}
 
-            {/* No Comments State */}
             {comments.length === 0 && !commentsLoading && (
               <Center py="lg">
                 <Stack align="center" gap="sm">
@@ -1054,14 +1024,12 @@ export function PostDetail() {
               </Center>
             )}
 
-            {/* Loading State */}
             {commentsLoading && comments.length === 0 && (
               <CommentSkeletonList count={3} />
             )}
           </Box>
         </Paper>
 
-        {/* Delete Confirmation Modal */}
         <Modal
           opened={showDeleteConfirm}
           onClose={() => setShowDeleteConfirm(false)}
@@ -1069,7 +1037,7 @@ export function PostDetail() {
           radius="lg"
           centered
         >
-          <Stack gap="lg">
+          <Stack gap="sm">
             <Text c="dimmed">
               This action cannot be undone. Your post will be permanently
               deleted.
@@ -1100,8 +1068,8 @@ export function PostDetail() {
     console.error("PostDetail: Error rendering component", error);
     return (
       <Center py={60}>
-        <Box p="xl" w="100%" maw={400}>
-          <Stack align="center" gap="lg" w="100%">
+        <Box p="sm" w="100%" maw={400}>
+          <Stack align="center" gap="sm" w="100%">
             <Box
               w={60}
               h={60}

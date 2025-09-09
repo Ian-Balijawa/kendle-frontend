@@ -19,7 +19,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
     return (
       <Box h="100vh" w="100vw" pos="relative">
         <Center h="100%">
-          <Stack align="center" gap="md">
+          <Stack align="center" gap="sm">
             <Image src="/logo.png" alt="Loading" w={120} h={120} />
           </Stack>
         </Center>

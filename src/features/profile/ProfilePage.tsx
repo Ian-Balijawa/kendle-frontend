@@ -148,12 +148,12 @@ export function ProfilePage() {
         <Center py={100}>
           <Card
             withBorder
-            p="xl"
+            p="sm"
             radius="xl"
             shadow="sm"
             style={{ maxWidth: 400, width: "100%" }}
           >
-            <Stack align="center" gap="lg">
+            <Stack align="center" gap="sm">
               <Box
                 style={{
                   width: 80,
@@ -190,12 +190,12 @@ export function ProfilePage() {
         <Center py={100}>
           <Card
             withBorder
-            p="xl"
+            p="sm"
             radius="xl"
             shadow="sm"
             style={{ maxWidth: 400, width: "100%" }}
           >
-            <Stack align="center" gap="lg">
+            <Stack align="center" gap="sm">
               <Box
                 style={{
                   width: 80,
@@ -229,7 +229,7 @@ export function ProfilePage() {
     return (
       <Box>
         <Center py={100}>
-          <Stack align="center" gap="xl">
+          <Stack align="center" gap="sm">
             <Loader size={60} />
             <Stack align="center" gap="xs">
               <Text size="lg" fw={500}>
@@ -251,12 +251,12 @@ export function ProfilePage() {
         <Center>
           <Card
             withBorder
-            p="xl"
+            p="sm"
             radius="xl"
             shadow="sm"
             style={{ maxWidth: 400, width: "100%" }}
           >
-            <Stack align="center" gap="lg">
+            <Stack align="center" gap="sm">
               <Box
                 style={{
                   width: 80,
@@ -352,7 +352,7 @@ export function ProfilePage() {
               )}
             </Group>
 
-            <Group gap="xl" mb="lg" align="center">
+            <Group gap="sm" mb="lg" align="center">
               <Text c="dimmed" size="lg" fw={500}>
                 @{user.username || user.phoneNumber || "unknown"}
               </Text>
@@ -444,7 +444,7 @@ export function ProfilePage() {
 
         {socialLinks.length > 0 && (
           <>
-            <Group gap="md">
+            <Group gap="sm">
               {socialLinks.map(({ key, url, icon: Icon, label, color }) => (
                 <Button
                   key={key}
@@ -524,10 +524,10 @@ export function ProfilePage() {
         </Tabs.List>
 
         <Tabs.Panel value="posts" pt="xl">
-          <Stack gap="lg">
+          <Stack gap="sm">
             {postsLoading ? (
               <Center py={60}>
-                <Stack align="center" gap="md">
+                <Stack align="center" gap="sm">
                   <Loader size="lg" />
                   <Text size="sm" c="dimmed" fw={500}>
                     Loading posts...
@@ -536,12 +536,12 @@ export function ProfilePage() {
               </Center>
             ) : posts.length === 0 ? (
               <Card
-                p="xl"
+                  p="sm"
                 style={{
                   border: "none",
                 }}
               >
-                <Stack align="center" gap="md">
+                  <Stack align="center" gap="sm">
                   <Box
                     style={{
                       width: 80,
@@ -577,10 +577,10 @@ export function ProfilePage() {
         </Tabs.Panel>
 
         <Tabs.Panel value="media" pt="xl">
-          <Stack gap="lg">
+          <Stack gap="sm">
             {postsLoading ? (
               <Center py={60}>
-                <Stack align="center" gap="md">
+                <Stack align="center" gap="sm">
                   <Loader size="lg" />
                   <Text size="sm" c="dimmed" fw={500}>
                     Loading media posts...
@@ -590,12 +590,12 @@ export function ProfilePage() {
             ) : posts.filter((post) => post.media && post.media.length > 0)
                 .length === 0 ? (
               <Card
-                p="xl"
+                    p="sm"
                 style={{
                   border: "none",
                 }}
               >
-                <Stack align="center" gap="md">
+                    <Stack align="center" gap="sm">
                   <Box
                     style={{
                       width: 80,
@@ -633,10 +633,10 @@ export function ProfilePage() {
         </Tabs.Panel>
 
         <Tabs.Panel value="likes" pt="xl">
-          <Stack gap="lg">
+          <Stack gap="sm">
             {likedPostsLoading ? (
               <Center py={60}>
-                <Stack align="center" gap="md">
+                <Stack align="center" gap="sm">
                   <Loader size="lg" />
                   <Text size="sm" c="dimmed" fw={500}>
                     Loading liked posts...
@@ -645,12 +645,12 @@ export function ProfilePage() {
               </Center>
             ) : likedPosts.length === 0 ? (
               <Card
-                p="xl"
+                  p="sm"
                 style={{
                   border: "none",
                 }}
               >
-                <Stack align="center" gap="md">
+                  <Stack align="center" gap="sm">
                   <Box
                     style={{
                       width: 80,
@@ -683,10 +683,10 @@ export function ProfilePage() {
         </Tabs.Panel>
 
         <Tabs.Panel value="bookmarks" pt="xl">
-          <Stack gap="lg">
+          <Stack gap="sm">
             {bookmarkedPostsLoading ? (
               <Center py={60}>
-                <Stack align="center" gap="md">
+                <Stack align="center" gap="sm">
                   <Loader size="lg" />
                   <Text size="sm" c="dimmed" fw={500}>
                     Loading bookmarked posts...
@@ -695,14 +695,14 @@ export function ProfilePage() {
               </Center>
             ) : bookmarkedPosts.length === 0 ? (
               <Card
-                p="xl"
+                  p="sm"
                 style={{
                   background:
                     "linear-gradient(135deg, var(--mantine-color-yellow-0), var(--mantine-color-yellow-1))",
                   border: "none",
                 }}
               >
-                <Stack align="center" gap="md">
+                  <Stack align="center" gap="sm">
                   <Box
                     style={{
                       width: 80,

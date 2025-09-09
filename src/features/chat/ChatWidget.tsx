@@ -222,7 +222,7 @@ export function ChatWidget({ onClose }: ChatWidgetProps) {
       }}
     >
       {/* Header */}
-      <Group justify="space-between" p="md">
+      <Group justify="space-between" p="sm">
         <Group gap="xs">
           <IconMessage size={20} />
           <Text fw={600}>Messages</Text>

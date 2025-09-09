@@ -53,7 +53,7 @@ export function PhoneAuth() {
   return (
     <Box className="auth-container">
       <Container size="xs" style={{ width: "100%", maxWidth: "400px" }}>
-        <Stack className="auth-paper" p="xl">
+        <Stack className="auth-paper" p="sm">
           <Box
             className="auth-decoration"
             style={{
@@ -103,7 +103,7 @@ export function PhoneAuth() {
             )}
 
             <form onSubmit={form.onSubmit(handleSubmit)}>
-              <Stack gap="lg">
+              <Stack gap="sm">
                 <TextInput
                   placeholder="Sign in with your phone"
                   leftSection={<IconPhone size={18} />}

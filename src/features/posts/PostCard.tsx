@@ -57,7 +57,6 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
     const navigate = useNavigate();
     const { user, isAuthenticated } = useAuthStore();
 
-    // Defensive programming - ensure post exists and has required properties
     if (!post || !post.id) {
       console.error("PostCard: Invalid post data", post);
       return null;
@@ -238,7 +237,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
             e.currentTarget.style.transform = "translateY(0)";
           }}
         >
-          <Stack gap="md">
+          <Stack gap="sm">
             <Group justify="space-between" align="flex-start">
               <Group
                 gap="sm"
@@ -514,7 +513,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                       );
 
                       return (
-                        <Stack gap="md">
+                        <Stack gap="sm">
                           {/* Videos in regular grid */}
                           {videos.length > 0 && (
                             <Box
@@ -794,7 +793,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                 />
               </Group>
 
-              <Group gap="md" align="center">
+              <Group gap="sm" align="center">
                 <PostEngagementButton
                   postId={post.id}
                   likesCount={post.likesCount || 0}
@@ -913,7 +912,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
           radius="xl"
           centered
         >
-          <Stack gap="lg">
+          <Stack gap="sm">
             <Textarea
               placeholder="What's on your mind? "
               value={editContent}
@@ -926,7 +925,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
 
             {editContent.trim() && (
               <Box
-                p="md"
+                p="sm"
                 style={{
                   backgroundColor: "var(--mantine-color-gray-1)",
                   borderRadius: "var(--mantine-radius-md)",
@@ -968,7 +967,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
           radius="xl"
           centered
         >
-          <Stack gap="lg">
+          <Stack gap="sm">
             <Text>
               Are you sure you want to delete this post? This action cannot be
               undone.
@@ -997,7 +996,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
   } catch (error) {
     console.error("PostCard: Error rendering post", error, post);
     return (
-      <Box p="md" mb="md">
+      <Box p="sm" mb="md">
         <Text c="red" size="sm" w="100%">
           Error loading post. Please try refreshing the page.
         </Text>

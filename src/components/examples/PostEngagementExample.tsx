@@ -26,8 +26,8 @@ export function PostEngagementExample({ postId }: PostEngagementExampleProps) {
   }
 
   return (
-    <Card withBorder p="md">
-      <Stack gap="md">
+    <Card withBorder p="sm">
+      <Stack gap="sm">
         <Title order={4}>Post Engagement Example</Title>
 
         {/* Current User's Engagement Status */}
@@ -40,7 +40,7 @@ export function PostEngagementExample({ postId }: PostEngagementExampleProps) {
             <Text size="sm" fw={600} mb="xs">
               Your Engagement Status:
             </Text>
-            <Group gap="lg">
+            <Group gap="sm">
               <Text size="sm" color={engagement.hasLiked ? "blue" : "dimmed"}>
                 {engagement.hasLiked ? "✓ Liked" : "○ Not liked"}
               </Text>

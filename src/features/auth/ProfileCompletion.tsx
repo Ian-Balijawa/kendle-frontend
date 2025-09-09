@@ -177,7 +177,7 @@ export function ProfileCompletion() {
             Help others get to know you better
           </Text>
 
-          <Card withBorder radius="lg" p="md" mb="xl">
+          <Card withBorder radius="lg" p="sm" mb="xl">
             <Group justify="space-between" mb="sm">
               <Text size="sm" fw={600}>
                 Profile Completion
@@ -190,7 +190,7 @@ export function ProfileCompletion() {
           </Card>
         </Box>
 
-        <Paper withBorder radius="lg" p="xl">
+        <Paper withBorder radius="lg" p="sm">
           {error && (
             <Alert
               icon={<IconAlertCircle size={18} />}
@@ -205,7 +205,7 @@ export function ProfileCompletion() {
           )}
 
           <form onSubmit={form.onSubmit(handleSubmit as any)}>
-            <Stack gap="xl">
+            <Stack gap="sm">
               <Box>
                 <Group align="center" mb="lg" gap="xs">
                   <IconUser size={20} color="var(--mantine-color-blue-6)" />
@@ -502,7 +502,7 @@ export function ProfileCompletion() {
                 </Grid>
               </Box>
 
-              <Stack gap="md" mt="xl">
+              <Stack gap="sm" mt="xl">
                 <Button
                   type="submit"
                   loading={isSubmitting}

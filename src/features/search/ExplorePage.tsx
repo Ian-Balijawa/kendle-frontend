@@ -44,7 +44,6 @@ const mockTrendingHashtags = [
   { name: "Design", postsCount: 4320 },
 ];
 
-// Compact User List component for displaying users in a horizontal scrollable format
 interface CompactUserListProps {
   users: User[];
   onFollow: (userId: string, isFollowing: boolean) => void;
@@ -71,7 +70,7 @@ function CompactUserList({
   const scroll = (direction: "left" | "right") => {
     if (!scrollAreaRef.current) return;
 
-    const scrollAmount = 160; // Width of one card + gap
+    const scrollAmount = 160;
     const currentScroll = scrollAreaRef.current.scrollLeft;
     const maxScroll =
       scrollAreaRef.current.scrollWidth - scrollAreaRef.current.clientWidth;
@@ -94,18 +93,18 @@ function CompactUserList({
 
     const { scrollLeft, scrollWidth, clientWidth } = scrollAreaRef.current;
     setCanScrollLeft(scrollLeft > 0);
-    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10); // 10px buffer
+    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
   };
 
   if (!users.length) {
     return (
       <Box
-        p="xl"
+        p="sm"
         style={{
           border: "none",
         }}
       >
-        <Stack align="center" gap="md">
+        <Stack align="center" gap="sm">
           {emptyIcon}
           <Stack align="center" gap="xs">
             <Text fw={600} size="lg">
@@ -174,7 +173,7 @@ function CompactUserList({
           paddingRight: "16px",
         }}
       >
-        <Group gap="md" style={{ paddingBottom: "8px" }}>
+        <Group gap="sm" style={{ paddingBottom: "8px" }}>
           {users.map((user) => (
             <VerticalUserCard
               key={user.id}
@@ -197,14 +196,11 @@ export function ExplorePage() {
   const [peopleTab, setPeopleTab] = useState("suggestions");
   const navigate = useNavigate();
 
-  // Get current user profile
   const { data: currentUser } = useUserProfile();
 
-  // Get suggested users for people discovery
   const { data: suggestedUsers, isLoading: usersLoading } =
     useSuggestedUsers(15);
 
-  // Get followers and following
   const { data: followersData, isLoading: followersLoading } = useFollowers(
     currentUser?.id || "",
     1,
@@ -219,10 +215,8 @@ export function ExplorePage() {
   console.log(followingData);
   console.log(followersData);
 
-  // Follow functionality
   const { toggleFollow, isLoading: followLoading } = useToggleFollow();
 
-  // Get trending posts
   const { data: trendingPosts, isLoading: postsLoading } = useInfinitePosts({
     limit: 10,
     sortBy: "likesCount",
@@ -239,7 +233,7 @@ export function ExplorePage() {
 
   return (
     <>
-      <Stack gap="lg">
+      <Stack gap="sm">
         <Box>
           <Title order={1} size="h2">
             Explore
@@ -278,7 +272,7 @@ export function ExplorePage() {
           </Tabs.List>
 
           <Tabs.Panel value="trending" pt="md">
-            <Stack gap="md">
+            <Stack gap="sm">
               {postsLoading ? (
                 <Group justify="center" py="xl">
                   <Loader size="lg" />
@@ -290,12 +284,12 @@ export function ExplorePage() {
                 ))
               ) : (
                 <Box
-                  p="xl"
+                      p="sm"
                   style={{
                     border: "none",
                   }}
                 >
-                  <Stack align="center" gap="md">
+                      <Stack align="center" gap="sm">
                     <IconTrendingUp
                       size={48}
                       color="var(--mantine-color-blue-6)"
@@ -315,8 +309,7 @@ export function ExplorePage() {
           </Tabs.Panel>
 
           <Tabs.Panel value="people" pt="md">
-            <Stack gap="lg">
-              {/* People Tab Navigation */}
+            <Stack gap="sm">
               <Tabs
                 value={peopleTab}
                 onChange={(value) => setPeopleTab(value || "suggestions")}
@@ -324,11 +317,11 @@ export function ExplorePage() {
               >
                 <Tabs.List
                   style={{
-                    padding: "4px",
                     borderRadius: "16px",
                   }}
                 >
                   <Tabs.Tab
+                    size="sm"
                     value="suggestions"
                     leftSection={<IconUsers size={16} />}
                     style={{
@@ -340,6 +333,7 @@ export function ExplorePage() {
                   </Tabs.Tab>
                   <Tabs.Tab
                     value="following"
+                    size="sm"
                     leftSection={<IconUserCheck size={16} />}
                     style={{
                       borderRadius: "12px",
@@ -350,6 +344,7 @@ export function ExplorePage() {
                   </Tabs.Tab>
                   <Tabs.Tab
                     value="followers"
+                    size="sm"
                     leftSection={<IconUserPlus size={16} />}
                     style={{
                       borderRadius: "12px",
@@ -360,7 +355,6 @@ export function ExplorePage() {
                   </Tabs.Tab>
                 </Tabs.List>
 
-                {/* Suggestions Tab */}
                 <Tabs.Panel value="suggestions" pt="md">
                   {usersLoading ? (
                     <Group justify="center" py="xl">
@@ -375,12 +369,12 @@ export function ExplorePage() {
                     />
                   ) : (
                     <Box
-                      p="xl"
+                          p="sm"
                       style={{
                         border: "none",
                       }}
                     >
-                      <Stack align="center" gap="md">
+                          <Stack align="center" gap="sm">
                         <IconUsers
                           size={48}
                           color="var(--mantine-color-cyan-6)"
@@ -399,7 +393,6 @@ export function ExplorePage() {
                   )}
                 </Tabs.Panel>
 
-                {/* Following Tab */}
                 <Tabs.Panel value="following" pt="md">
                   {followingLoading ? (
                     <Group justify="center" py="xl">
@@ -415,12 +408,12 @@ export function ExplorePage() {
                     />
                   ) : (
                     <Box
-                      p="xl"
+                          p="sm"
                       style={{
                         border: "none",
                       }}
                     >
-                      <Stack align="center" gap="md">
+                          <Stack align="center" gap="sm">
                         <IconUserCheck
                           size={48}
                           color="var(--mantine-color-green-6)"
@@ -439,7 +432,6 @@ export function ExplorePage() {
                   )}
                 </Tabs.Panel>
 
-                {/* Followers Tab */}
                 <Tabs.Panel value="followers" pt="md">
                   {followersLoading ? (
                     <Group justify="center" py="xl">
@@ -455,12 +447,12 @@ export function ExplorePage() {
                     />
                   ) : (
                     <Box
-                      p="xl"
+                          p="sm"
                       style={{
                         border: "none",
                       }}
                     >
-                      <Stack align="center" gap="md">
+                          <Stack align="center" gap="sm">
                         <IconUserPlus
                           size={48}
                           color="var(--mantine-color-yellow-6)"
@@ -482,9 +474,9 @@ export function ExplorePage() {
           </Tabs.Panel>
 
           <Tabs.Panel value="hashtags" pt="md">
-            <Stack gap="md">
+            <Stack gap="sm">
               {mockTrendingHashtags.map((hashtag, index) => (
-                <Box key={hashtag.name} p="md">
+                <Box key={hashtag.name} p="sm">
                   <Group justify="space-between" align="center">
                     <Group>
                       <Badge size="lg" variant="light" color="blue">

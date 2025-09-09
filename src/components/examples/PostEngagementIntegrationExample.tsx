@@ -24,8 +24,8 @@ export function PostEngagementIntegrationExample({
   }
 
   return (
-    <Card withBorder p="md">
-      <Stack gap="md">
+    <Card withBorder p="sm">
+      <Stack gap="sm">
         <Title order={4}>Post Engagement Integration Example</Title>
 
         <Text size="sm" c="dimmed">

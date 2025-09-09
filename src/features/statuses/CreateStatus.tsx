@@ -249,7 +249,7 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
     >
       <LoadingOverlay visible={createStatusMutation.isPending} />
 
-      <Stack gap="lg" mt="md">
+      <Stack gap="sm" mt="md">
         {/* User info */}
         <Group gap="sm">
           <Avatar
@@ -282,7 +282,7 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
 
         {/* Media preview */}
         {media.length > 0 && previewUrls.length > 0 && (
-          <Card p="md" withBorder radius="md">
+          <Card p="sm" withBorder radius="md">
             <Stack gap="sm">
               <Group justify="space-between" align="center">
                 <Text fw={500} size="sm">
@@ -371,8 +371,8 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
 
         {/* Media upload section */}
         {media.length === 0 && (
-          <Card p="xl" radius="md">
-            <Stack gap="lg" align="center">
+          <Card p="sm" radius="md">
+            <Stack gap="sm" align="center">
               <Box
                 style={{
                   width: 80,

@@ -120,7 +120,7 @@ export function SettingsPage() {
 
   return (
     <Box>
-      <Stack gap="xl">
+      <Stack gap="sm">
         {/* Header */}
         <Box>
           <Title order={1} size="h2" fw={700} mb="xs">
@@ -185,11 +185,11 @@ export function SettingsPage() {
           </Tabs.List>
 
           <Tabs.Panel value="account" pt="xl">
-            <Stack gap="lg">
-              <Card withBorder p="lg">
-                <Stack gap="md">
+            <Stack gap="sm">
+              <Card withBorder p="sm">
+                <Stack gap="sm">
                   <Group justify="space-between" align="flex-start">
-                    <Group gap="md">
+                    <Group gap="sm">
                       <Avatar
                         src={user?.avatar || "/user.png"}
                         alt={user?.firstName || user?.username || "User"}
@@ -272,8 +272,8 @@ export function SettingsPage() {
               </Card>
 
               {/* Account Information */}
-              <Card withBorder p="lg">
-                <Stack gap="md">
+              <Card withBorder p="sm">
+                <Stack gap="sm">
                   <Title order={4} size="h5" fw={600}>
                     Account Information
                   </Title>
@@ -318,8 +318,8 @@ export function SettingsPage() {
               </Card>
 
               {/* Security Settings */}
-              <Card withBorder p="lg">
-                <Stack gap="md">
+              <Card withBorder p="sm">
+                <Stack gap="sm">
                   <Title order={4} size="h5" fw={600}>
                     Security
                   </Title>
@@ -358,14 +358,14 @@ export function SettingsPage() {
           </Tabs.Panel>
 
           <Tabs.Panel value="appearance" pt="xl">
-            <Stack gap="lg">
-              <Card withBorder p="lg">
-                <Stack gap="md">
+            <Stack gap="sm">
+              <Card withBorder p="sm">
+                <Stack gap="sm">
                   <Title order={4} size="h5" fw={600}>
                     Theme
                   </Title>
                   <Group justify="space-between" align="center">
-                    <Group gap="md">
+                    <Group gap="sm">
                       {theme === "dark" ? (
                         <IconMoon
                           size={20}
@@ -401,8 +401,8 @@ export function SettingsPage() {
                 </Stack>
               </Card>
 
-              <Card withBorder p="lg">
-                <Stack gap="md">
+              <Card withBorder p="sm">
+                <Stack gap="sm">
                   <Title order={4} size="h5" fw={600}>
                     Display Preferences
                   </Title>
@@ -435,9 +435,9 @@ export function SettingsPage() {
           </Tabs.Panel>
 
           <Tabs.Panel value="notifications" pt="xl">
-            <Stack gap="lg">
-              <Card withBorder p="lg">
-                <Stack gap="md">
+            <Stack gap="sm">
+              <Card withBorder p="sm">
+                <Stack gap="sm">
                   <Title order={4} size="h5" fw={600}>
                     Push Notifications
                   </Title>
@@ -492,8 +492,8 @@ export function SettingsPage() {
                 </Stack>
               </Card>
 
-              <Card withBorder p="lg">
-                <Stack gap="md">
+              <Card withBorder p="sm">
+                <Stack gap="sm">
                   <Title order={4} size="h5" fw={600}>
                     Email Notifications
                   </Title>
@@ -526,9 +526,9 @@ export function SettingsPage() {
           </Tabs.Panel>
 
           <Tabs.Panel value="privacy" pt="xl">
-            <Stack gap="lg">
-              <Card withBorder p="lg">
-                <Stack gap="md">
+            <Stack gap="sm">
+              <Card withBorder p="sm">
+                <Stack gap="sm">
                   <Title order={4} size="h5" fw={600}>
                     Profile Visibility
                   </Title>
@@ -558,8 +558,8 @@ export function SettingsPage() {
                 </Stack>
               </Card>
 
-              <Card withBorder p="lg">
-                <Stack gap="md">
+              <Card withBorder p="sm">
+                <Stack gap="sm">
                   <Title order={4} size="h5" fw={600}>
                     Data & Privacy
                   </Title>
@@ -589,8 +589,8 @@ export function SettingsPage() {
                 </Stack>
               </Card>
 
-              <Card withBorder p="lg">
-                <Stack gap="md">
+              <Card withBorder p="sm">
+                <Stack gap="sm">
                   <Title order={4} size="h5" fw={600}>
                     Account Actions
                   </Title>
@@ -641,7 +641,7 @@ export function SettingsPage() {
         }
         size="lg"
         radius="xl"
-        padding="xl"
+        p="sm"
         styles={{
           content: {
             backgroundColor: "var(--mantine-color-body)",

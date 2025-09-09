@@ -145,7 +145,6 @@ export function StatusDetailsModal({
     <Modal
       opened={opened}
       onClose={onClose}
-      padding={0}
       centered
       withCloseButton={false}
       styles={{
@@ -397,7 +396,7 @@ export function StatusDetailsModal({
           )}
 
           <Group justify="space-between" align="center">
-            <Group gap="md">
+            <Group gap="sm">
               <ActionIcon
                 variant="subtle"
                 color={isLiked ? "red" : "white"}

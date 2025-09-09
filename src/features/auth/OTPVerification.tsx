@@ -129,7 +129,7 @@ export function OTPVerification() {
   return (
     <Box className="auth-container">
       <Container size="xs" style={{ width: "100%", maxWidth: "400px" }}>
-        <Paper radius="xl" shadow="xl" className="auth-paper" p="xl" withBorder>
+        <Paper radius="xl" shadow="xl" className="auth-paper" p="sm" withBorder>
           <LoadingOverlay visible={isSubmitting} />
           <Box
             className="auth-decoration"
@@ -194,7 +194,7 @@ export function OTPVerification() {
                 handleSubmit({ otp: value });
               }}
             />
-            <Stack gap="md" align="center">
+            <Stack gap="sm" align="center">
               <Text size="sm" c="dimmed" ta="center">
                 Didn't receive the code?
               </Text>

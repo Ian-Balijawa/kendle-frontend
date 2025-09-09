@@ -11,7 +11,6 @@ import {
   Stack,
   Text,
   Textarea,
-  UnstyledButton,
   rem,
 } from "@mantine/core";
 import {
@@ -155,26 +154,26 @@ export function CommentCard({ comment }: CommentCardProps) {
         <Paper
           withBorder
           radius="lg"
-          p="md"
+          p="sm"
           style={{
             borderColor: "var(--mantine-color-blue-4)",
             backgroundColor: "var(--mantine-color-blue-1)",
           }}
         >
-          <Stack gap="md">
+          <Stack gap="sm">
             <Group gap="sm">
               <Avatar
                 src={comment.author?.avatar}
                 alt={
-                  comment.author?.username ||
-                  comment.author?.firstName ||
+                  comment.author?.username?.charAt(0).toUpperCase() ||
+                  comment.author?.firstName?.charAt(0).toUpperCase() ||
                   "User"
                 }
                 size={36}
                 radius="xl"
               >
                 <Text size="xs" fw={600}>
-                  {comment.author?.username?.charAt(0) ||
+                  {comment.author?.username?.charAt(0).toUpperCase() ||
                     comment.author?.firstName?.charAt(0) ||
                     comment.author?.username?.charAt(0) ||
                     comment.author?.phoneNumber?.charAt(0) ||
@@ -230,21 +229,15 @@ export function CommentCard({ comment }: CommentCardProps) {
             <Avatar
               src={comment.author?.avatar}
               alt={
-                comment.author?.username || comment.author?.firstName || "User"
+                comment.author?.username?.charAt(0).toUpperCase() || comment.author?.firstName?.charAt(0).toUpperCase() || "User"
               }
               size={32}
               radius="xl"
-              style={{
-                border: comment.author?.isVerified
-                  ? "2px solid var(--mantine-color-blue-5)"
-                  : "none",
-                flexShrink: 0,
-              }}
             >
-              <Text size="xs" color="dimmed" fw={600}>
-                {comment.author?.username?.charAt(0) ||
-                  comment.author?.firstName?.charAt(0) ||
-                  comment.author?.username?.charAt(0) ||
+              <Text size="xs" fw={600}>
+                {comment.author?.username?.charAt(0).toUpperCase() + "" + comment.author?.lastName?.charAt(0).toUpperCase() ||
+                  comment.author?.firstName?.charAt(0).toUpperCase() + "" + comment.author?.lastName?.charAt(0).toUpperCase() ||
+                  comment.author?.username?.charAt(0).toUpperCase() ||
                   comment.author?.phoneNumber?.charAt(0) ||
                   "U"}
               </Text>
@@ -358,106 +351,36 @@ export function CommentCard({ comment }: CommentCardProps) {
               </Box>
 
               {/* Facebook-style Comment Reactions */}
-              <Group gap="md" mt="xs">
-                <UnstyledButton
-                  onClick={handleLike}
-                  disabled={!isAuthenticated}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.25rem",
-                    padding: "0.25rem 0.5rem",
-                    borderRadius: "var(--mantine-radius-sm)",
-                    transition: "background-color 0.2s ease",
-                    color: comment.isLiked
-                      ? "var(--mantine-color-blue-6)"
-                      : "var(--mantine-color-gray-6)",
-                    fontSize: "0.75rem",
-                    fontWeight: comment.isLiked ? 600 : 400,
-                  }}
-                  onMouseEnter={(e) => {
-                    if (isAuthenticated) {
-                      e.currentTarget.style.backgroundColor =
-                        "var(--mantine-color-gray-2)";
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = "transparent";
-                  }}
-                >
+              <Group gap="sm" mt="xs">
                   <IconHeart
                     size={12}
+                  onClick={handleLike}
                     style={{
                       fill: comment.isLiked ? "currentColor" : "none",
                       stroke: "currentColor",
+                      cursor: "pointer",
                     }}
                   />
                   {comment.likesCount > 0 && (
                     <Text size="xs" c="currentColor">
                       {comment.likesCount}
                     </Text>
-                  )}
-                </UnstyledButton>
+                )}
 
-                <UnstyledButton
-                  onClick={handleDislike}
-                  disabled={!isAuthenticated}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.25rem",
-                    padding: "0.25rem 0.5rem",
-                    borderRadius: "var(--mantine-radius-sm)",
-                    transition: "background-color 0.2s ease",
-                    color: comment.isDisliked
-                      ? "var(--mantine-color-gray-7)"
-                      : "var(--mantine-color-gray-6)",
-                    fontSize: "0.75rem",
-                    fontWeight: comment.isDisliked ? 600 : 400,
-                  }}
-                  onMouseEnter={(e) => {
-                    if (isAuthenticated) {
-                      e.currentTarget.style.backgroundColor =
-                        "var(--mantine-color-gray-2)";
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = "transparent";
-                  }}
-                >
                   <IconChevronDown
                     size={12}
+                  onClick={handleDislike}
                     style={{
                       fill: comment.isDisliked ? "currentColor" : "none",
                       stroke: "currentColor",
+                      cursor: "pointer",
                     }}
                   />
                   {comment.dislikesCount > 0 && (
                     <Text size="xs" c="currentColor">
                       {comment.dislikesCount}
                     </Text>
-                  )}
-                </UnstyledButton>
-
-                <UnstyledButton
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.25rem",
-                    padding: "0.25rem 0.5rem",
-                    borderRadius: "var(--mantine-radius-sm)",
-                    transition: "background-color 0.2s ease",
-                    color: "var(--mantine-color-gray-6)",
-                    fontSize: "0.75rem",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor =
-                      "var(--mantine-color-gray-2)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = "transparent";
-                  }}
-                ></UnstyledButton>
+                )}
               </Group>
             </Box>
           </Group>
@@ -471,7 +394,7 @@ export function CommentCard({ comment }: CommentCardProps) {
           centered
           size="sm"
         >
-          <Stack gap="lg">
+          <Stack gap="sm">
             <Text size="sm" c="dimmed">
               This action cannot be undone. Your comment will be permanently
               deleted.
@@ -507,7 +430,7 @@ export function CommentCard({ comment }: CommentCardProps) {
       <Paper
         withBorder
         radius="lg"
-        p="md"
+        p="sm"
         style={{ borderColor: "var(--mantine-color-red-3)" }}
       >
         <Text c="red" size="sm">

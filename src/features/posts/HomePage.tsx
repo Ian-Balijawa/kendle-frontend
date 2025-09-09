@@ -215,19 +215,19 @@ export function HomePage() {
         )}
 
       {/* Content Section */}
-      <Stack gap="lg">
+      <Stack gap="sm">
         {/* Error State */}
         {isError && (
           <Card
             radius="lg"
-            p="xl"
+            p="sm"
             style={{
               background:
                 "linear-gradient(135deg, var(--mantine-color-red-0) 0%, var(--mantine-color-red-1) 100%)",
               border: "1px solid var(--mantine-color-red-2)",
             }}
           >
-            <Stack align="center" gap="md">
+            <Stack align="center" gap="sm">
               <Text size="lg" fw={600} c="red.7">
                 Oops! Something went wrong
               </Text>
@@ -253,7 +253,7 @@ export function HomePage() {
         {!isLoading && posts.length === 0 && !isError && (
           <Card
             radius="lg"
-            p="xl"
+            p="sm"
             style={{
               background:
                 "linear-gradient(135deg, var(--mantine-color-blue-0) 0%, var(--mantine-color-cyan-1) 100%)",
@@ -261,7 +261,7 @@ export function HomePage() {
               textAlign: "center",
             }}
           >
-            <Stack align="center" gap="lg" py="xl">
+            <Stack align="center" gap="sm" py="xl">
               <IconSparkles size={48} color="var(--mantine-color-blue-6)" />
               <div>
                 <Text size="xl" fw={600} c="blue.8" mb="xs">
