@@ -38,11 +38,14 @@ export function VerticalUserCard({
     return num?.toString();
   };
 
+  const avatarURL = `${import.meta.env.VITE_API_URL}/stream/image/${user.avatar?.split("/").pop()}`;
+
   return (
     <Box
       style={{
         position: "relative",
         width: "160px",
+        flexShrink: 0,
         borderRadius: "12px",
         overflow: "hidden",
         cursor: "pointer",
@@ -73,7 +76,7 @@ export function VerticalUserCard({
         <Box pos="relative">
           <Center>
             <Avatar
-              src={user.avatar}
+              src={avatarURL || "/user.png"}
               alt={user.firstName || user.username || "User"}
               size={60}
               m="xs"
@@ -86,8 +89,8 @@ export function VerticalUserCard({
               }}
             >
               <Text size="lg" fw={700} c="gray.6" mt="xs">
-                {user.firstName?.charAt(0) || user.username?.charAt(0)}
-                {user.lastName?.charAt(0) || user.username?.charAt(1)}
+                {user.firstName?.charAt(0).toUpperCase() || user.username?.charAt(0)}
+                {user.lastName?.charAt(0).toUpperCase() || user.username?.charAt(1)}
               </Text>
             </Avatar>
           </Center>

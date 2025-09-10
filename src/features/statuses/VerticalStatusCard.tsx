@@ -21,7 +21,6 @@ export function VerticalStatusCard({
       <Box
         style={{
           position: "relative",
-          width: "100px",
           height: "180px",
           borderRadius: "12px",
           overflow: "hidden",
@@ -110,11 +109,12 @@ export function VerticalStatusCard({
   const hasUnviewed = collection.hasUnviewed;
   const hasMultipleStatuses = collection.statuses.length > 1;
 
+  const avatarURL = `${import.meta.env.VITE_API_URL}/stream/image/${collection.author.avatar?.split("/").pop()}`;
+
   return (
     <Box
       style={{
         position: "relative",
-        width: "100px",
         height: "180px",
         borderRadius: "12px",
         overflow: "hidden",
@@ -226,7 +226,7 @@ export function VerticalStatusCard({
         }}
       >
         <Avatar
-          src={collection.author.avatar}
+          src={avatarURL || "/user.png"}
           alt={collection.author.firstName || "User"}
           size={32}
           radius="xl"

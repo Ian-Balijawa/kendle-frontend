@@ -70,7 +70,7 @@ function CompactUserList({
   const scroll = (direction: "left" | "right") => {
     if (!scrollAreaRef.current) return;
 
-    const scrollAmount = 160;
+    const scrollAmount = 176; // Card width (160px) + gap (16px)
     const currentScroll = scrollAreaRef.current.scrollLeft;
     const maxScroll =
       scrollAreaRef.current.scrollWidth - scrollAreaRef.current.clientWidth;
@@ -169,6 +169,7 @@ function CompactUserList({
         ref={scrollAreaRef}
         onScrollPositionChange={handleScroll}
         scrollbarSize={0}
+        type="scroll"
         style={{
           paddingRight: "16px",
         }}

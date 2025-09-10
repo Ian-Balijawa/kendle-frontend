@@ -14,6 +14,9 @@ import {
   TextInput,
   Textarea,
   Title,
+  ActionIcon,
+  FileInput,
+  Image,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import {
@@ -30,6 +33,8 @@ import {
   IconSun,
   IconUser,
   IconUserCheck,
+  IconCamera,
+  IconTrash,
 } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { useUpdateProfile } from "../../hooks/useUser";
@@ -37,14 +42,30 @@ import { UpdateProfileRequest } from "../../services/api";
 import { useAuthStore } from "../../stores/authStore";
 import { useUIStore } from "../../stores/uiStore";
 import { User } from "../../types/auth";
+import {
+  useUploadAvatar,
+  useDeleteAvatar,
+  useUploadBackgroundImage,
+  useDeleteBackgroundImage,
+} from "../../hooks/useProfileImages";
 
 export function SettingsPage() {
   const { user } = useAuthStore();
   const { theme, setTheme } = useUIStore();
   const [activeTab, setActiveTab] = useState("account");
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [avatarModalOpen, setAvatarModalOpen] = useState(false);
+  const [backgroundModalOpen, setBackgroundModalOpen] = useState(false);
+  const [selectedAvatarFile, setSelectedAvatarFile] = useState<File | null>(null);
+  const [selectedBackgroundFile, setSelectedBackgroundFile] = useState<File | null>(null);
 
   const updateProfileMutation = useUpdateProfile();
+
+  // Image management hooks
+  const uploadAvatar = useUploadAvatar();
+  const deleteAvatar = useDeleteAvatar();
+  const uploadBackgroundImage = useUploadBackgroundImage();
+  const deleteBackgroundImage = useDeleteBackgroundImage();
 
   const editForm = useForm<UpdateProfileRequest>({
     initialValues: {
@@ -86,6 +107,45 @@ export function SettingsPage() {
       },
     });
   };
+
+  // Avatar management handlers
+  const handleAvatarFileSelect = (file: File | null) => {
+    setSelectedAvatarFile(file);
+  };
+
+  const handleAvatarUpload = async () => {
+    if (selectedAvatarFile) {
+      await uploadAvatar.mutateAsync(selectedAvatarFile);
+      setAvatarModalOpen(false);
+      setSelectedAvatarFile(null);
+    }
+  };
+
+  const handleAvatarDelete = async () => {
+    await deleteAvatar.mutateAsync();
+    setAvatarModalOpen(false);
+  };
+
+  // Background image management handlers
+  const handleBackgroundFileSelect = (file: File | null) => {
+    setSelectedBackgroundFile(file);
+  };
+
+  const handleBackgroundUpload = async () => {
+    if (selectedBackgroundFile) {
+      await uploadBackgroundImage.mutateAsync(selectedBackgroundFile);
+      setBackgroundModalOpen(false);
+      setSelectedBackgroundFile(null);
+    }
+  };
+
+  const handleBackgroundDelete = async () => {
+    await deleteBackgroundImage.mutateAsync();
+    setBackgroundModalOpen(false);
+  };
+
+
+  const avatarURL = `${import.meta.env.VITE_API_URL}/stream/image/${user?.avatar?.split("/").pop()}`;
 
   const socialLinks = [
     {
@@ -190,21 +250,39 @@ export function SettingsPage() {
                 <Stack gap="sm">
                   <Group justify="space-between" align="flex-start">
                     <Group gap="sm">
-                      <Avatar
-                        src={user?.avatar || "/user.png"}
-                        alt={user?.firstName || user?.username || "User"}
-                        size={80}
-                        radius="50%"
-                        style={{
-                          border: "3px solid var(--mantine-color-gray-2)",
-                        }}
-                      >
-                        <Text size="2rem" fw={600}>
-                          {(user?.firstName || user?.username || "U")
-                            .charAt(0)
-                            .toUpperCase()}
-                        </Text>
-                      </Avatar>
+                      <Box style={{ position: "relative" }}>
+                        <Avatar
+                          src={avatarURL || "/user.png"}
+                          alt={user?.firstName || user?.username || "User"}
+                          size={80}
+                          radius="50%"
+                          style={{
+                            border: "3px solid var(--mantine-color-gray-2)",
+                          }}
+                        >
+                          <Text size="2rem" fw={600}>
+                            {(user?.firstName || user?.username || "U")
+                              .charAt(0)
+                              .toUpperCase()}
+                          </Text>
+                        </Avatar>
+                        <ActionIcon
+                          variant="filled"
+                          color="blue"
+                          size="sm"
+                          radius="xl"
+                          style={{
+                            position: "absolute",
+                            bottom: -5,
+                            right: -5,
+                            border: "2px solid white",
+                            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                          }}
+                          onClick={() => setAvatarModalOpen(true)}
+                        >
+                          <IconCamera size={12} />
+                        </ActionIcon>
+                      </Box>
                       <Box>
                         <Title order={3} size="h4" fw={600}>
                           {user?.firstName && user?.lastName
@@ -976,6 +1054,146 @@ export function SettingsPage() {
             </Button>
           </Group>
         </form>
+      </Modal>
+
+      {/* Avatar Upload Modal */}
+      <Modal
+        opened={avatarModalOpen}
+        onClose={() => {
+          setAvatarModalOpen(false);
+          setSelectedAvatarFile(null);
+        }}
+        title="Update Profile Picture"
+        centered
+        size="sm"
+      >
+        <Stack gap="md">
+          <FileInput
+            label="Select Profile Picture"
+            placeholder="Choose an image file"
+            accept="image/*"
+            value={selectedAvatarFile}
+            onChange={handleAvatarFileSelect}
+          />
+
+          {selectedAvatarFile && (
+            <Box>
+              <Text size="sm" fw={500} mb="xs">
+                Preview:
+              </Text>
+              <Image
+                src={URL.createObjectURL(selectedAvatarFile)}
+                alt="Preview"
+                height={100}
+                width={100}
+                radius="md"
+                style={{ objectFit: "cover" }}
+              />
+            </Box>
+          )}
+
+          <Group justify="space-between">
+            <Button
+              variant="light"
+              color="red"
+              leftSection={<IconTrash size={16} />}
+              onClick={handleAvatarDelete}
+              loading={deleteAvatar.isPending}
+              disabled={!user?.avatar}
+            >
+              Remove Current
+            </Button>
+
+            <Group>
+              <Button
+                variant="light"
+                onClick={() => {
+                  setAvatarModalOpen(false);
+                  setSelectedAvatarFile(null);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleAvatarUpload}
+                loading={uploadAvatar.isPending}
+                disabled={!selectedAvatarFile}
+              >
+                Upload
+              </Button>
+            </Group>
+          </Group>
+        </Stack>
+      </Modal>
+
+      {/* Background Image Upload Modal */}
+      <Modal
+        opened={backgroundModalOpen}
+        onClose={() => {
+          setBackgroundModalOpen(false);
+          setSelectedBackgroundFile(null);
+        }}
+        title="Update Background Image"
+        centered
+        size="sm"
+      >
+        <Stack gap="md">
+          <FileInput
+            label="Select Background Image"
+            placeholder="Choose an image file"
+            accept="image/*"
+            value={selectedBackgroundFile}
+            onChange={handleBackgroundFileSelect}
+          />
+
+          {selectedBackgroundFile && (
+            <Box>
+              <Text size="sm" fw={500} mb="xs">
+                Preview:
+              </Text>
+              <Image
+                src={URL.createObjectURL(selectedBackgroundFile)}
+                alt="Preview"
+                height={120}
+                width="100%"
+                radius="md"
+                style={{ objectFit: "cover" }}
+              />
+            </Box>
+          )}
+
+          <Group justify="space-between">
+            <Button
+              variant="light"
+              color="red"
+              leftSection={<IconTrash size={16} />}
+              onClick={handleBackgroundDelete}
+              loading={deleteBackgroundImage.isPending}
+              disabled={!user?.backgroundImage}
+            >
+              Remove Current
+            </Button>
+
+            <Group>
+              <Button
+                variant="light"
+                onClick={() => {
+                  setBackgroundModalOpen(false);
+                  setSelectedBackgroundFile(null);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleBackgroundUpload}
+                loading={uploadBackgroundImage.isPending}
+                disabled={!selectedBackgroundFile}
+              >
+                Upload
+              </Button>
+            </Group>
+          </Group>
+        </Stack>
       </Modal>
     </Box>
   );

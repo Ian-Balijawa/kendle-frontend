@@ -10,6 +10,7 @@ export interface User {
   tiktokLink?: string;
   instagramLink?: string;
   avatar?: string;
+  backgroundImage?: string;
   bio?: string;
   isVerified: boolean;
   isProfileComplete: boolean;

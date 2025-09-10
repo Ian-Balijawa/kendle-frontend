@@ -162,8 +162,7 @@ export function HomePage() {
       <Group justify="space-between" align="center" mb="md">
         <Badge
           leftSection={<IconTrendingUp size={12} />}
-          variant="gradient"
-          gradient={{ from: "blue", to: "cyan" }}
+          variant="outline"
           size="sm"
           radius="xl"
         >
@@ -186,8 +185,6 @@ export function HomePage() {
               leftSection={<IconPlus size={16} />}
               onClick={() => setCreatePostOpened(true)}
               radius="xl"
-              variant="gradient"
-              gradient={{ from: "blue", to: "cyan" }}
               size="sm"
             >
               Create Post
@@ -198,7 +195,7 @@ export function HomePage() {
 
       {/* Status Stories Section */}
       <Box my="md">
-        {isAuthenticated && statusCollections.length > 0 && (
+        {isAuthenticated && (
           <StatusStories
             collections={statusCollections}
             currentUserAvatar={user?.avatar}

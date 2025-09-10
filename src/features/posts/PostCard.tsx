@@ -217,6 +217,8 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
       return `${import.meta.env.VITE_API_URL}/stream/image/${url.split("/").pop()}`;
     };
 
+    const avatarURL = `${import.meta.env.VITE_API_URL}/stream/image/${post.author?.avatar?.split("/").pop()}`;
+
     return (
       <>
         <Card
@@ -246,7 +248,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                 data-interactive="true"
               >
                 <Avatar
-                  src={post.author?.avatar}
+                  src={avatarURL || "/user.png"}
                   alt={
                     post.author?.firstName || post.author?.username || "User"
                   }
@@ -275,8 +277,6 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                     {post.author?.isVerified && (
                       <Badge
                         size="xs"
-                        variant="gradient"
-                        gradient={{ from: "blue", to: "cyan" }}
                         radius="xl"
                       >
                         ✓

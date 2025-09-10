@@ -3,7 +3,6 @@ import {
   Box,
   Card,
   Group,
-  ScrollArea,
   Stack,
   Text,
 } from "@mantine/core";
@@ -13,11 +12,20 @@ import {
   IconUserPlus,
   IconSparkles,
 } from "@tabler/icons-react";
-import { useRef, useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, FreeMode, A11y } from 'swiper/modules';
+import type { Swiper as SwiperType } from 'swiper';
 import { useToggleFollow } from "../../hooks/useFollow";
 import { User } from "../../types";
 import { VerticalUserCard } from "./VerticalUserCard";
+
+// Import Swiper styles
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/free-mode';
+import 'swiper/css/a11y';
 
 interface ProfileSwipeProps {
   users: User[];
@@ -31,38 +39,11 @@ export function ProfileSwipe({
   subtitle = "Find interesting people to follow",
   onUserClick,
 }: ProfileSwipeProps) {
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(true);
   const navigate = useNavigate();
   const { toggleFollow, isLoading } = useToggleFollow();
-
-  const scroll = (direction: "left" | "right") => {
-    if (!scrollAreaRef.current) return;
-    const scrollAmount = 180; // Updated for new card width + gap
-    const currentScroll = scrollAreaRef.current.scrollLeft;
-    const maxScroll =
-      scrollAreaRef.current.scrollWidth - scrollAreaRef.current.clientWidth;
-
-    if (direction === "left") {
-      scrollAreaRef.current.scrollTo({
-        left: Math.max(0, currentScroll - scrollAmount),
-        behavior: "smooth",
-      });
-    } else {
-      scrollAreaRef.current.scrollTo({
-        left: Math.min(maxScroll, currentScroll + scrollAmount),
-        behavior: "smooth",
-      });
-    }
-  };
-
-  const handleScroll = () => {
-    if (!scrollAreaRef.current) return;
-    const { scrollLeft, scrollWidth, clientWidth } = scrollAreaRef.current;
-    setCanScrollLeft(scrollLeft > 0);
-    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
-  };
+  const swiperRef = useRef<SwiperType | null>(null);
+  const [isBeginning, setIsBeginning] = useState(true);
+  const [isEnd, setIsEnd] = useState(false);
 
   const handleFollow = async (userId: string, isFollowing: boolean) => {
     await toggleFollow(userId, isFollowing);
@@ -73,6 +54,30 @@ export function ProfileSwipe({
       onUserClick(userId);
     } else {
       navigate(`/profile/${userId}`);
+    }
+  };
+
+  const handleSlidePrev = () => {
+    swiperRef.current?.slidePrev();
+  };
+
+  const handleSlideNext = () => {
+    swiperRef.current?.slideNext();
+  };
+
+  const handleSlideChange = (swiper: SwiperType) => {
+    setIsBeginning(swiper.isBeginning);
+    setIsEnd(swiper.isEnd);
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent, direction: 'prev' | 'next') => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      if (direction === 'prev') {
+        handleSlidePrev();
+      } else {
+        handleSlideNext();
+      }
     }
   };
 
@@ -130,7 +135,7 @@ export function ProfileSwipe({
   }
 
   return (
-    <Box>
+    <Box style={{ position: "relative" }}>
       <Box mb="xl" style={{ position: "relative" }}>
         <Group align="center" gap="xs">
           <IconSparkles size={24} color="#667eea" />
@@ -138,7 +143,6 @@ export function ProfileSwipe({
             {subtitle}
           </Text>
         </Group>
-
         <Box
           style={{
             position: "absolute",
@@ -152,74 +156,142 @@ export function ProfileSwipe({
         />
       </Box>
 
-      <Box style={{ position: "relative" }}>
-        {canScrollLeft && (
+      <Box
+        style={{
+          position: "relative",
+          width: "100%",
+          overflow: "visible",
+        }}
+      >
+        {!isBeginning && (
           <ActionIcon
-            variant="transparent"
+            variant="filled"
+            size="lg"
             style={{
               position: "absolute",
-              left: -24,
+              left: "8px",
               top: "50%",
               transform: "translateY(-50%)",
-              zIndex: 15,
+              zIndex: 20,
+              backgroundColor: "rgba(255, 255, 255, 0.95)",
+              borderRadius: "50%",
+              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+              border: "1px solid rgba(0, 0, 0, 0.1)",
             }}
-            onClick={() => scroll("left")}
+            onClick={handleSlidePrev}
+            onKeyDown={(e) => handleKeyDown(e, 'prev')}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = "translateY(-50%) scale(1.1)";
+              e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 1)";
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = "translateY(-50%) scale(1)";
+              e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.95)";
             }}
+            aria-label="Previous users"
+            role="button"
+            tabIndex={0}
           >
             <IconChevronLeft size={18} color="#475569" />
           </ActionIcon>
         )}
 
-        {canScrollRight && (
+        {!isEnd && (
           <ActionIcon
-            variant="transparent"
+            variant="filled"
+            size="lg"
             style={{
               position: "absolute",
-              right: -24,
+              right: "8px",
               top: "50%",
               transform: "translateY(-50%)",
-              zIndex: 15,
+              zIndex: 20,
+              backgroundColor: "rgba(255, 255, 255, 0.95)",
+              borderRadius: "50%",
+              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+              border: "1px solid rgba(0, 0, 0, 0.1)",
             }}
-            onClick={() => scroll("right")}
+            onClick={handleSlideNext}
+            onKeyDown={(e) => handleKeyDown(e, 'next')}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = "translateY(-50%) scale(1.1)";
+              e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 1)";
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = "translateY(-50%) scale(1)";
+              e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.95)";
             }}
+            aria-label="Next users"
+            role="button"
+            tabIndex={0}
           >
-            <IconChevronRight />
+            <IconChevronRight size={18} color="#475569" />
           </ActionIcon>
         )}
 
-        <ScrollArea
-          ref={scrollAreaRef}
-          onScrollPositionChange={handleScroll}
-          scrollbarSize={0}
-          style={{
-            paddingRight: "20px",
-            paddingLeft: "4px",
+        <Swiper
+          onSwiper={(swiper) => {
+            swiperRef.current = swiper;
+            setIsBeginning(swiper.isBeginning);
+            setIsEnd(swiper.isEnd);
           }}
+          onSlideChange={handleSlideChange}
+          modules={[Navigation, FreeMode, A11y]}
+          spaceBetween={16}
+          slidesPerView="auto"
+          freeMode={{
+            enabled: true,
+            sticky: false,
+            momentum: true,
+            momentumBounce: false,
+          }}
+          grabCursor={true}
+          centeredSlides={false}
+          centeredSlidesBounds={false}
+          watchSlidesProgress={true}
+          watchOverflow={true}
+          resistance={true}
+          resistanceRatio={0.85}
+          a11y={{
+            enabled: true,
+            prevSlideMessage: 'Previous user',
+            nextSlideMessage: 'Next user',
+            firstSlideMessage: 'This is the first user',
+            lastSlideMessage: 'This is the last user',
+          }}
+          style={{
+            paddingLeft: "0px",
+            paddingRight: "0px",
+            paddingBottom: "8px",
+            overflow: "hidden",
+            width: "100%",
+            margin: 0,
+          }}
+          role="region"
+          aria-label="User profiles carousel"
         >
-          <Group pb="sm">
-            {users.map((user) => (
-              <Box key={user.id} style={{ flexShrink: 0 }}>
-                <VerticalUserCard
-                  user={user}
-                  onFollow={handleFollow}
-                  onViewProfile={handleViewProfile}
-                  followLoading={isLoading}
-                  showActions={true}
-                />
-              </Box>
-            ))}
-          </Group>
-        </ScrollArea>
+          {users.map((user, index) => (
+            <SwiperSlide
+              key={user.id}
+              style={{
+                width: "160px",
+                height: "auto",
+                flexShrink: 0,
+              }}
+              role="group"
+              aria-roledescription="slide"
+              aria-label={`User profile ${index + 1} of ${users.length}`}
+            >
+              <VerticalUserCard
+                user={user}
+                onFollow={handleFollow}
+                onViewProfile={handleViewProfile}
+                followLoading={isLoading}
+                showActions={true}
+              />
+            </SwiperSlide>
+          ))}
+        </Swiper>
       </Box>
     </Box>
   );

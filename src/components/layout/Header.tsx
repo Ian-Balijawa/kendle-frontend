@@ -48,6 +48,8 @@ export function HeaderContent() {
     return location.pathname.startsWith(path);
   };
 
+  const avatarURL = `${import.meta.env.VITE_API_URL}/stream/image/${user?.avatar?.split("/").pop()}`;
+
   return (
     <Paper
       style={{
@@ -167,7 +169,7 @@ export function HeaderContent() {
                     className="avatar-hover"
                   >
                     <Avatar
-                      src={user?.avatar}
+                        src={avatarURL || "/user.png"}
                       alt={user?.firstName}
                       size="md"
                       radius="xl"
@@ -176,7 +178,7 @@ export function HeaderContent() {
                         cursor: "pointer",
                       }}
                     >
-                      {user?.firstName?.charAt(0)}
+                        {user?.firstName?.charAt(0).toUpperCase()}
                     </Avatar>
                   </UnstyledButton>
                 </Menu.Target>
@@ -184,8 +186,8 @@ export function HeaderContent() {
                 <Menu.Dropdown>
                   <Menu.Label>
                     <Group gap="sm">
-                      <Avatar src={user?.avatar} size="sm" radius="xl">
-                        {user?.firstName?.charAt(0)}
+                        <Avatar src={avatarURL || "/user.png"} size="sm" radius="xl">
+                          {user?.firstName?.charAt(0).toUpperCase()}
                       </Avatar>
                       <Stack gap={0}>
                         <Text size="sm" fw={600}>

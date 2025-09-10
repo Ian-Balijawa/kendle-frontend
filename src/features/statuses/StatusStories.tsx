@@ -1,8 +1,17 @@
-import { ActionIcon, Box, Group, ScrollArea } from "@mantine/core";
+import { ActionIcon, Box } from "@mantine/core";
 import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
 import { useRef, useState } from "react";
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, FreeMode, A11y } from 'swiper/modules';
+import type { Swiper as SwiperType } from 'swiper';
 import { StatusCollection } from "../../types";
 import { VerticalStatusCard } from "./VerticalStatusCard";
+
+// Import Swiper styles
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/free-mode';
+import 'swiper/css/a11y';
 
 interface StatusStoriesProps {
   collections: StatusCollection[];
@@ -17,107 +26,185 @@ export function StatusStories({
   onCreateStatus,
   onStatusClick,
 }: StatusStoriesProps) {
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(true);
+  const swiperRef = useRef<SwiperType | null>(null);
+  const [isBeginning, setIsBeginning] = useState(true);
+  const [isEnd, setIsEnd] = useState(false);
 
-  const scroll = (direction: "left" | "right") => {
-    if (!scrollAreaRef.current) return;
-
-    const scrollAmount = 120; // Width of one card + gap
-    const currentScroll = scrollAreaRef.current.scrollLeft;
-    const maxScroll =
-      scrollAreaRef.current.scrollWidth - scrollAreaRef.current.clientWidth;
-
-    if (direction === "left") {
-      scrollAreaRef.current.scrollTo({
-        left: Math.max(0, currentScroll - scrollAmount),
-        behavior: "smooth",
-      });
-    } else {
-      scrollAreaRef.current.scrollTo({
-        left: Math.min(maxScroll, currentScroll + scrollAmount),
-        behavior: "smooth",
-      });
-    }
+  const handleSlidePrev = () => {
+    swiperRef.current?.slidePrev();
   };
 
-  const handleScroll = () => {
-    if (!scrollAreaRef.current) return;
+  const handleSlideNext = () => {
+    swiperRef.current?.slideNext();
+  };
 
-    const { scrollLeft, scrollWidth, clientWidth } = scrollAreaRef.current;
-    setCanScrollLeft(scrollLeft > 0);
-    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10); // 10px buffer
+  const handleSlideChange = (swiper: SwiperType) => {
+    setIsBeginning(swiper.isBeginning);
+    setIsEnd(swiper.isEnd);
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent, direction: 'prev' | 'next') => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      if (direction === 'prev') {
+        handleSlidePrev();
+      } else {
+        handleSlideNext();
+      }
+    }
   };
 
   return (
     <Box style={{ position: "relative" }}>
-      {canScrollLeft && (
-        <ActionIcon
-          variant="filled"
-          color="white"
-          size="lg"
-          radius="xl"
-          style={{
-            position: "absolute",
-            left: -20,
-            top: "50%",
-            transform: "translateY(-50%)",
-            zIndex: 10,
-            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-            border: "1px solid var(--mantine-color-gray-3)",
-          }}
-          onClick={() => scroll("left")}
-        >
-          <IconChevronLeft size={16} color="var(--mantine-color-gray-7)" />
-        </ActionIcon>
-      )}
-
-      {canScrollRight && (
-        <ActionIcon
-          variant="filled"
-          color="white"
-          size="lg"
-          radius="xl"
-          style={{
-            position: "absolute",
-            right: -20,
-            top: "50%",
-            transform: "translateY(-50%)",
-            zIndex: 10,
-            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-            border: "1px solid var(--mantine-color-gray-3)",
-          }}
-          onClick={() => scroll("right")}
-        >
-          <IconChevronRight size={16} color="var(--mantine-color-gray-7)" />
-        </ActionIcon>
-      )}
-
-      <ScrollArea
-        ref={scrollAreaRef}
-        onScrollPositionChange={handleScroll}
-        scrollbarSize={0}
+      <Box
         style={{
-          paddingRight: "16px",
+          position: "relative",
+          width: "100%",
+          overflow: "visible",
         }}
       >
-        <Group gap="sm" style={{ paddingBottom: "8px" }}>
-          <VerticalStatusCard
-            isCreateCard={true}
-            currentUserAvatar={currentUserAvatar}
-            onClick={onCreateStatus}
-          />
+        {!isBeginning && (
+          <ActionIcon
+            variant="filled"
+            style={{
+              position: "absolute",
+              left: "8px",
+              top: "50%",
+              transform: "translateY(-50%)",
+              zIndex: 20,
+              backgroundColor: "rgba(255, 255, 255, 0.95)",
+              borderRadius: "50%",
+              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+              border: "1px solid rgba(0, 0, 0, 0.1)",
+            }}
+            onClick={handleSlidePrev}
+            onKeyDown={(e) => handleKeyDown(e, 'prev')}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = "translateY(-50%) scale(1.1)";
+              e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 1)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "translateY(-50%) scale(1)";
+              e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.95)";
+            }}
+            aria-label="Previous statuses"
+            role="button"
+            tabIndex={0}
+          >
+            <IconChevronLeft size={18} color="#475569" />
+          </ActionIcon>
+        )}
 
-          {collections.map((collection) => (
+        {!isEnd && (
+          <ActionIcon
+            variant="filled"
+            style={{
+              position: "absolute",
+              right: "8px",
+              top: "50%",
+              transform: "translateY(-50%)",
+              zIndex: 20,
+              backgroundColor: "rgba(255, 255, 255, 0.95)",
+              borderRadius: "50%",
+              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+              border: "1px solid rgba(0, 0, 0, 0.1)",
+            }}
+            onClick={handleSlideNext}
+            onKeyDown={(e) => handleKeyDown(e, 'next')}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = "translateY(-50%) scale(1.1)";
+              e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 1)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "translateY(-50%) scale(1)";
+              e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.95)";
+            }}
+            aria-label="Next statuses"
+            role="button"
+            tabIndex={0}
+          >
+            <IconChevronRight size={18} color="#475569" />
+          </ActionIcon>
+        )}
+
+        <Swiper
+          onSwiper={(swiper) => {
+            swiperRef.current = swiper;
+            setIsBeginning(swiper.isBeginning);
+            setIsEnd(swiper.isEnd);
+          }}
+          onSlideChange={handleSlideChange}
+          modules={[Navigation, FreeMode, A11y]}
+          spaceBetween={8}
+          slidesPerView="auto"
+          freeMode={{
+            enabled: true,
+            sticky: false,
+            momentum: true,
+            momentumBounce: false,
+          }}
+          grabCursor={true}
+          centeredSlides={false}
+          centeredSlidesBounds={false}
+          watchSlidesProgress={true}
+          watchOverflow={true}
+          resistance={true}
+          resistanceRatio={0.85}
+          a11y={{
+            enabled: true,
+            prevSlideMessage: 'Previous status',
+            nextSlideMessage: 'Next status',
+            firstSlideMessage: 'This is the first status',
+            lastSlideMessage: 'This is the last status',
+          }}
+          style={{
+            paddingLeft: "0px",
+            paddingRight: "0px",
+            paddingBottom: "8px",
+            overflow: "hidden",
+            width: "100%",
+            margin: 0,
+          }}
+          role="region"
+          aria-label="Status stories carousel"
+        >
+          <SwiperSlide
+            style={{
+              width: "120px",
+              height: "auto",
+              flexShrink: 0,
+            }}
+            role="group"
+            aria-roledescription="slide"
+            aria-label="Create new status"
+          >
             <VerticalStatusCard
-              key={collection.author.id}
-              collection={collection}
-              onClick={() => onStatusClick?.(collection)}
+              isCreateCard={true}
+              currentUserAvatar={currentUserAvatar}
+              onClick={onCreateStatus}
             />
+          </SwiperSlide>
+
+          {collections.map((collection, index) => (
+            <SwiperSlide
+              key={collection.author.id}
+              style={{
+                width: "120px",
+                height: "auto",
+                flexShrink: 0,
+              }}
+              role="group"
+              aria-roledescription="slide"
+              aria-label={`Status story ${index + 1} of ${collections.length}`}
+            >
+              <VerticalStatusCard
+                collection={collection}
+                onClick={() => onStatusClick?.(collection)}
+              />
+            </SwiperSlide>
           ))}
-        </Group>
-      </ScrollArea>
+        </Swiper>
+      </Box>
     </Box>
   );
 }

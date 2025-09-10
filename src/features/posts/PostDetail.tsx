@@ -256,6 +256,8 @@ export function PostDetail() {
     const videoStreamUrl = `${import.meta.env.VITE_API_URL}/stream/video/${post.media?.[0]?.url.split("/").pop()}`;
     const imageStreamUrl = `${import.meta.env.VITE_API_URL}/stream/image/${post.media?.[0]?.url.split("/").pop()}`;
 
+    const avatarURL = `${import.meta.env.VITE_API_URL}/stream/image/${post.author?.avatar?.split("/").pop()}`;
+
     return (
       <Box mx="auto" p="sm">
         <Group justify="space-between" mb="lg">
@@ -281,7 +283,7 @@ export function PostDetail() {
               onClick={handleAuthorClick}
             >
               <Avatar
-                src={post?.author?.avatar}
+                src={avatarURL || "/user.png"}
                 alt={
                   post?.author?.firstName || post?.author?.username || "User"
                 }

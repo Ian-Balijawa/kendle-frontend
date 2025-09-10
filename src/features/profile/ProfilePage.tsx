@@ -12,6 +12,8 @@ import {
   Text,
   Title,
   rem,
+  ActionIcon,
+  Menu,
 } from "@mantine/core";
 import {
   IconBookmark,
@@ -28,8 +30,11 @@ import {
   IconPhoto,
   IconUserCheck,
   IconUserPlus,
+  IconCamera,
+  IconTrash,
+  IconUpload,
 } from "@tabler/icons-react";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   useUserPosts,
@@ -41,12 +46,26 @@ import { useFollowStatus, useToggleFollow } from "../../hooks/useFollow";
 import { useAuthStore } from "../../stores/authStore";
 import { User } from "../../types/auth";
 import { PostCard } from "../posts/PostCard";
+import {
+  useUploadAvatar,
+  useUploadBackgroundImage,
+  useDeleteBackgroundImage,
+} from "../../hooks/useProfileImages";
 
 export function ProfilePage() {
   const { userId } = useParams<{ userId?: string }>();
   const { user: currentUser, isAuthenticated } = useAuthStore();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("posts");
+
+  // File input refs for direct access
+  const avatarFileInputRef = useRef<HTMLInputElement>(null);
+  const backgroundFileInputRef = useRef<HTMLInputElement>(null);
+
+  // Image management hooks
+  const uploadAvatar = useUploadAvatar();
+  const uploadBackgroundImage = useUploadBackgroundImage();
+  const deleteBackgroundImage = useDeleteBackgroundImage();
 
   // Determine if this is the current user's own profile
   const isOwnProfile = !userId || userId === currentUser?.id;
@@ -108,6 +127,38 @@ export function ProfilePage() {
 
   const handleEditProfile = () => {
     navigate("/settings");
+  };
+
+  // Avatar management handlers
+  const handleAvatarButtonClick = () => {
+    avatarFileInputRef.current?.click();
+  };
+
+  const handleAvatarFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      await uploadAvatar.mutateAsync(file);
+      // Reset the input value to allow selecting the same file again
+      event.target.value = '';
+    }
+  };
+
+  // Background image management handlers
+  const handleBackgroundButtonClick = () => {
+    backgroundFileInputRef.current?.click();
+  };
+
+  const handleBackgroundFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      await uploadBackgroundImage.mutateAsync(file);
+      // Reset the input value to allow selecting the same file again
+      event.target.value = '';
+    }
+  };
+
+  const handleBackgroundDelete = async () => {
+    await deleteBackgroundImage.mutateAsync();
   };
 
   const socialLinks = [
@@ -287,35 +338,142 @@ export function ProfilePage() {
     );
   }
 
+  const avatarURL = `${import.meta.env.VITE_API_URL}/stream/image/${user.avatar?.split("/").pop()}`;
+  const backgroundURL = `${import.meta.env.VITE_API_URL}/stream/image/${user.backgroundImage?.split("/").pop()}`;
+
+
   return (
     <Box>
+      {/* Hidden file inputs */}
+      <input
+        type="file"
+        ref={avatarFileInputRef}
+        accept="image/*"
+        style={{ display: 'none' }}
+        onChange={handleAvatarFileChange}
+      />
+      <input
+        type="file"
+        ref={backgroundFileInputRef}
+        accept="image/*"
+        style={{ display: 'none' }}
+        onChange={handleBackgroundFileChange}
+      />
+
       <Box
         style={{
           height: 200,
-          background:
-            "linear-gradient(135deg, var(--mantine-color-blue-6) 0%, var(--mantine-color-violet-6) 100%)",
+          background: user.backgroundImage
+            ? `url(${backgroundURL})`
+            : "linear-gradient(135deg, var(--mantine-color-blue-6) 0%, var(--mantine-color-violet-6) 100%)",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
           position: "relative",
         }}
       >
-        <Avatar
-          src={user.avatar || "/user.png"}
-          alt={user.firstName || user.username || "User"}
-          size={120}
-          radius="50%"
-          style={{
-            position: "absolute",
-            bottom: -60,
-            left: 30,
-            border: "4px solid white",
-            boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
-          }}
-        >
-          <Text size="2rem" fw={600}>
-            {(user.firstName || user.username || user.phoneNumber || "U")
-              .charAt(0)
-              .toUpperCase()}
-          </Text>
-        </Avatar>
+        {/* Background image overlay for better text readability */}
+        {user.backgroundImage && (
+          <Box
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: "rgba(0, 0, 0, 0.3)",
+            }}
+          />
+        )}
+
+        {/* Background image edit button for own profile */}
+        {isOwnProfile && (
+          <Box
+            style={{
+              position: "absolute",
+              top: 16,
+              right: 16,
+            }}
+          >
+            <Menu shadow="md" width={200}>
+              <Menu.Target>
+                <ActionIcon
+                  variant="filled"
+                  color="dark"
+                  size="lg"
+                  radius="xl"
+                  style={{
+                    background: "rgba(0, 0, 0, 0.6)",
+                    backdropFilter: "blur(10px)",
+                  }}
+                  loading={uploadBackgroundImage.isPending || deleteBackgroundImage.isPending}
+                >
+                  <IconCamera size={18} />
+                </ActionIcon>
+              </Menu.Target>
+              <Menu.Dropdown>
+                <Menu.Item
+                  leftSection={<IconUpload size={16} />}
+                  onClick={handleBackgroundButtonClick}
+                >
+                  Change Background
+                </Menu.Item>
+                {user.backgroundImage && (
+                  <Menu.Item
+                    leftSection={<IconTrash size={16} />}
+                    color="red"
+                    onClick={handleBackgroundDelete}
+                  >
+                    Remove Background
+                  </Menu.Item>
+                )}
+              </Menu.Dropdown>
+            </Menu>
+          </Box>
+        )}
+
+        <Box style={{ position: "relative" }}>
+          <Avatar
+            src={avatarURL || "/user.png"}
+            alt={user.firstName || user.username || "User"}
+            size={120}
+            radius="50%"
+            style={{
+              position: "absolute",
+              bottom: -60,
+              left: 30,
+              border: "4px solid white",
+              boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+            }}
+          >
+            <Text size="2rem" fw={600}>
+              {(user.firstName || user.username || user.phoneNumber || "U")
+                .charAt(0)
+                .toUpperCase()}
+            </Text>
+          </Avatar>
+
+          {/* Avatar edit button for own profile */}
+          {isOwnProfile && (
+            <ActionIcon
+              variant="filled"
+              color="blue"
+              size="lg"
+              radius="xl"
+              style={{
+                position: "absolute",
+                bottom: -40,
+                left: 100,
+                border: "3px solid white",
+                boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+              }}
+              onClick={handleAvatarButtonClick}
+              loading={uploadAvatar.isPending}
+            >
+              <IconCamera size={18} />
+            </ActionIcon>
+          )}
+        </Box>
       </Box>
 
       <Box py="xl" pt={80}>
@@ -426,14 +584,14 @@ export function ProfilePage() {
                 style={
                   followStatus?.isFollowing
                     ? {
-                        color: "var(--mantine-color-blue-6)",
-                        borderColor: "var(--mantine-color-blue-6)",
-                      }
+                      color: "var(--mantine-color-blue-6)",
+                      borderColor: "var(--mantine-color-blue-6)",
+                    }
                     : {
-                        background:
-                          "linear-gradient(135deg, var(--mantine-color-blue-6), var(--mantine-color-violet-6))",
-                        border: "none",
-                      }
+                      background:
+                        "linear-gradient(135deg, var(--mantine-color-blue-6), var(--mantine-color-violet-6))",
+                      border: "none",
+                    }
                 }
               >
                 {followStatus?.isFollowing ? "Following" : "Follow"}

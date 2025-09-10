@@ -10,14 +10,10 @@ import {
   Switch,
   Text,
   Textarea,
-  TextInput,
 } from "@mantine/core";
 import {
-  IconLocation,
-  IconMapPin,
   IconPhoto,
   IconSend,
-  IconVideo,
   IconX,
 } from "@tabler/icons-react";
 import { useRef, useState } from "react";
@@ -39,8 +35,6 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
   const [content, setContent] = useState("");
   const [media, setMedia] = useState<File[]>([]);
   const [thumbnail, setThumbnail] = useState<File[]>([]);
-  const [location, setLocation] = useState<string>("");
-  const [isGettingLocation, setIsGettingLocation] = useState(false);
   const [isGeneratingThumbnails, setIsGeneratingThumbnails] = useState(false);
 
   // Post settings
@@ -55,27 +49,6 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
 
   const isSubmitting = createPostMutation.isPending;
 
-  // Geolocation function
-  const getCurrentLocation = () => {
-    if (!navigator.geolocation) {
-      alert("Geolocation is not supported by this browser.");
-      return;
-    }
-
-    setIsGettingLocation(true);
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
-        setLocation(`${latitude},${longitude}`);
-        setIsGettingLocation(false);
-      },
-      (error) => {
-        console.error("Error getting location:", error);
-        alert("Unable to get your location. Please try again.");
-        setIsGettingLocation(false);
-      },
-    );
-  };
 
   // Helper function to convert base64 to File
   const base64ToFile = (
@@ -144,7 +117,7 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
         isValidVideoType ||
         isValidImageExtension ||
         isValidVideoExtension;
-      const isValidSize = file.size <= 500 * 1024 * 1024; // 50MB limit
+      const isValidSize = file.size <= 100 * 1024 * 1024; // 100MB limit
 
       if (!isValidType) {
         console.error(
@@ -163,9 +136,9 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
         console.error(
           "File too large:",
           file.size,
-          "bytes. Maximum allowed: 50MB",
+          "bytes. Maximum allowed: 100MB",
         );
-        alert(`File "${file.name}" is too large. Maximum file size is 50MB.`);
+        alert(`File "${file.name}" is too large. Maximum file size is 100MB.`);
         return false;
       }
 
@@ -253,7 +226,6 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
       allowReactions,
       media: media.length > 0 ? media : undefined,
       thumbnail: thumbnail.length > 0 ? thumbnail : undefined,
-      location: location || undefined,
     };
 
     createPostMutation.mutate(postData, {
@@ -262,7 +234,6 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
         setContent("");
         setMedia([]);
         setThumbnail([]);
-        setLocation("");
         onClose();
       },
       onError: (error) => {
@@ -278,7 +249,6 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
         setContent("");
         setMedia([]);
         setThumbnail([]);
-        setLocation("");
         onClose();
       }
     } else {
@@ -314,7 +284,7 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
             size={40}
             radius="xl"
           >
-            {user?.firstName?.charAt(0) || "U"}
+            {user?.firstName?.charAt(0).toUpperCase() || "U"}
           </Avatar>
           <Box>
             <Text fw={500} size="sm">
@@ -339,7 +309,6 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
             input: {
               border: "none",
               fontSize: "16px",
-              padding: 0,
               lineHeight: "1.6",
             },
           }}
@@ -381,7 +350,6 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
           </Stack>
         )}
 
-        {/* Thumbnail Preview */}
         {thumbnail.length > 0 && (
           <Stack gap="xs">
             <Text size="sm" fw={500}>
@@ -415,24 +383,6 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
               ))}
             </Group>
           </Stack>
-        )}
-
-        {/* Location */}
-        {location && (
-          <Group gap="xs">
-            <IconMapPin size={16} color="var(--mantine-color-blue-6)" />
-            <Text size="sm" c="blue.6">
-              {location}
-            </Text>
-            <ActionIcon
-              size="xs"
-              color="red"
-              variant="subtle"
-              onClick={() => setLocation("")}
-            >
-              <IconX size={12} />
-            </ActionIcon>
-          </Group>
         )}
 
         {/* Post Settings */}
@@ -482,32 +432,6 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
           </Group>
         </Stack>
 
-        {/* Location Input */}
-        <Stack gap="sm">
-          <Text size="sm" fw={500}>
-            Location
-          </Text>
-          <Group gap="sm">
-            <TextInput
-              placeholder="Add location manually"
-              value={location}
-              size="sm"
-              onChange={(e) => setLocation(e.currentTarget.value)}
-              leftSection={<IconLocation size={16} />}
-              style={{ flex: 1 }}
-            />
-            <Button
-              variant="light"
-              onClick={getCurrentLocation}
-              loading={isGettingLocation}
-              leftSection={<IconMapPin size={16} />}
-              size="sm"
-            >
-              Use Current Location
-            </Button>
-          </Group>
-        </Stack>
-
         {/* Actions */}
         <Group justify="space-between">
           <Group gap="sm">
@@ -523,15 +447,11 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
             />
             <ActionIcon
               variant="light"
-              size="lg"
               onClick={() => fileInputRef.current?.click()}
               disabled={media.length >= 10}
               title="Add photos or videos"
             >
-              <Group gap={2}>
-                <IconPhoto size={16} />
-                <IconVideo size={16} />
-              </Group>
+              <IconPhoto size={16} />
             </ActionIcon>
             {isGeneratingThumbnails && (
               <Text size="sm" c="dimmed">
@@ -550,6 +470,9 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
               disabled={!canSubmit || isGeneratingThumbnails}
               loading={isSubmitting || isGeneratingThumbnails}
               leftSection={<IconSend size={16} />}
+              radius="xl"
+              variant="gradient"
+              gradient={{ from: "blue", to: "cyan" }}
             >
               {isGeneratingThumbnails ? "Generating thumbnails..." : "Post"}
             </Button>

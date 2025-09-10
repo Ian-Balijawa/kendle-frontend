@@ -13,7 +13,6 @@ import {
   Avatar,
   Card,
   Progress,
-  Badge,
 } from "@mantine/core";
 import { IconPhoto, IconSend, IconX, IconUpload } from "@tabler/icons-react";
 import { useRef, useState } from "react";
@@ -33,12 +32,8 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
   const [content, setContent] = useState("");
   const [media, setMedia] = useState<File[]>([]);
   const [thumbnail, setThumbnail] = useState<File[]>([]);
-  const [privacy, setPrivacy] = useState<
-    "public" | "followers" | "close_friends" | "private"
-  >("public");
   const [type, setType] = useState<"image" | "video" | "text">("text");
   const [location, setLocation] = useState("");
-  const [expirationHours, setExpirationHours] = useState(24);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isGeneratingThumbnails, setIsGeneratingThumbnails] = useState(false);
@@ -163,11 +158,11 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
       const statusData: CreateStatusData = {
         content: content.trim(),
         type: type,
-        privacy: privacy,
+        privacy: "public",
         media: media.length > 0 ? media : undefined,
         thumbnail: thumbnail.length > 0 ? thumbnail : undefined,
         location: location.trim() || undefined,
-        expirationHours: expirationHours,
+        expirationHours: 24,
       };
 
       await createStatusMutation.mutateAsync(statusData);
@@ -219,7 +214,7 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
             size={36}
             radius="xl"
           >
-            {user?.firstName?.charAt(0) || "U"}
+            {user?.firstName?.charAt(0).toUpperCase() || "U"}
           </Avatar>
           <Box>
             <Text fw={600} size="sm">
@@ -250,37 +245,6 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
       <LoadingOverlay visible={createStatusMutation.isPending} />
 
       <Stack gap="sm" mt="md">
-        {/* User info */}
-        <Group gap="sm">
-          <Avatar
-            src={user?.avatar}
-            alt={user?.firstName || "User"}
-            size={48}
-            radius="xl"
-            style={{
-              border: "2px solid var(--mantine-color-gray-3)",
-            }}
-          >
-            {user?.firstName?.charAt(0) || "U"}
-          </Avatar>
-          <Box>
-            <Group gap="xs" align="center">
-              <Text fw={600} size="md">
-                {user?.firstName} {user?.lastName}
-              </Text>
-              {user?.isVerified && (
-                <Badge size="xs" color="blue" variant="light">
-                  ✓
-                </Badge>
-              )}
-            </Group>
-            <Text size="sm" c="dimmed">
-              Status will be visible for 24 hours
-            </Text>
-          </Box>
-        </Group>
-
-        {/* Media preview */}
         {media.length > 0 && previewUrls.length > 0 && (
           <Card p="sm" withBorder radius="md">
             <Stack gap="sm">
@@ -369,7 +333,6 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
           </Card>
         )}
 
-        {/* Media upload section */}
         {media.length === 0 && (
           <Card p="sm" radius="md">
             <Stack gap="sm" align="center">
@@ -387,15 +350,9 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
                 <IconUpload size={32} color="var(--mantine-color-gray-6)" />
               </Box>
 
-              <Box ta="center">
                 <Text fw={500} size="lg" mb="xs">
                   Add Photo or Video
-                </Text>
-                <Text size="sm" c="dimmed" maw={300}>
-                  Share a moment with your friends. Choose an image or video to
-                  get started.
-                </Text>
-              </Box>
+              </Text>
 
               <Group gap="sm">
                 <FileInput
@@ -414,15 +371,10 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
                   Choose Media
                 </Button>
               </Group>
-
-              <Text size="xs" c="dimmed" ta="center">
-                Supported formats: JPG, PNG, MP4, MOV • Max size: 100MB
-              </Text>
             </Stack>
           </Card>
         )}
 
-        {/* Caption input */}
         <Box>
           <Text fw={500} size="sm" mb="xs">
             Caption (Optional)
@@ -432,76 +384,17 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
             value={content}
             onChange={(e) => setContent(e.currentTarget.value)}
             minRows={3}
-            maxRows={5}
+            maxRows={2}
             autosize
             styles={{
               input: {
-                border: "2px solid var(--mantine-color-gray-3)",
                 borderRadius: 12,
                 fontSize: 14,
-                "&:focus": {
-                  borderColor: "var(--mantine-color-blue-6)",
-                },
               },
             }}
           />
-          <Group justify="space-between" mt="xs">
-            <Text size="xs" c="dimmed">
-              Share what's on your mind
-            </Text>
-            <Text size="xs" c={content.length > 500 ? "red" : "dimmed"}>
-              {content.length}/500
-            </Text>
-          </Group>
         </Box>
 
-        {/* Additional settings */}
-        <Box>
-          <Text fw={500} size="sm" mb="xs">
-            Settings
-          </Text>
-          <Stack gap="sm">
-            <Group justify="space-between">
-              <Text size="sm">Privacy</Text>
-              <select
-                value={privacy}
-                onChange={(e) => setPrivacy(e.target.value as any)}
-                style={{
-                  padding: "8px 12px",
-                  borderRadius: "8px",
-                  fontSize: "14px",
-                }}
-              >
-                <option value="public">Public</option>
-                <option value="followers">Followers Only</option>
-                <option value="close_friends">Close Friends</option>
-                <option value="private">Private</option>
-              </select>
-            </Group>
-
-            <Group justify="space-between">
-              <Text size="sm">Expires in</Text>
-              <select
-                value={expirationHours}
-                onChange={(e) => setExpirationHours(Number(e.target.value))}
-                style={{
-                  padding: "8px 12px",
-                  borderRadius: "8px",
-                  border: "1px solid var(--mantine-color-gray-3)",
-                  fontSize: "14px",
-                }}
-              >
-                <option value={1}>1 hour</option>
-                <option value={6}>6 hours</option>
-                <option value={12}>12 hours</option>
-                <option value={24}>24 hours</option>
-                <option value={48}>48 hours</option>
-              </select>
-            </Group>
-          </Stack>
-        </Box>
-
-        {/* Action buttons */}
         <Group justify="space-between" pt="md">
           <Button variant="light" onClick={handleClose} radius="xl" size="md">
             Cancel
@@ -526,7 +419,6 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
           </Button>
         </Group>
 
-        {/* Footer info */}
         <Box ta="center" pt="sm">
           <Text size="xs" c="dimmed">
             🔒 Your status will automatically disappear after 24 hours

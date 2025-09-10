@@ -1391,6 +1391,45 @@ class ApiService {
       await this.api.get(`/statuses/${id}/replies?${searchParams.toString()}`);
     return response.data.data;
   }
+
+  // Avatar and Background Image API methods
+  async uploadAvatar(file: File): Promise<User> {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response: AxiosResponse<ApiResponse<{ user: User }>> =
+      await this.api.post("/user/profile/avatar", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+    return response.data.data.user;
+  }
+
+  async deleteAvatar(): Promise<User> {
+    const response: AxiosResponse<ApiResponse<{ user: User }>> =
+      await this.api.delete("/user/profile/avatar");
+    return response.data.data.user;
+  }
+
+  async uploadBackgroundImage(file: File): Promise<User> {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response: AxiosResponse<ApiResponse<{ user: User }>> =
+      await this.api.post("/user/profile/background", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+    return response.data.data.user;
+  }
+
+  async deleteBackgroundImage(): Promise<User> {
+    const response: AxiosResponse<ApiResponse<{ user: User }>> =
+      await this.api.delete("/user/profile/background");
+    return response.data.data.user;
+  }
 }
 
 export const apiService = new ApiService();
