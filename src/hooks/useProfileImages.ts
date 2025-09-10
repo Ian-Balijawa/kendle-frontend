@@ -8,7 +8,7 @@ import { userKeys } from "./useUser";
 
 // Upload avatar mutation
 export function useUploadAvatar() {
-    const { user, updateUser } = useAuthStore();
+    const { updateUser } = useAuthStore();
 
     return useMutation({
         mutationFn: (file: File) => apiService.uploadAvatar(file),
@@ -71,7 +71,7 @@ export function useUploadAvatar() {
 
 // Delete avatar mutation
 export function useDeleteAvatar() {
-    const { user, updateUser } = useAuthStore();
+    const { updateUser } = useAuthStore();
 
     return useMutation({
         mutationFn: () => apiService.deleteAvatar(),
@@ -134,7 +134,7 @@ export function useDeleteAvatar() {
 
 // Upload background image mutation
 export function useUploadBackgroundImage() {
-    const { user, updateUser } = useAuthStore();
+    const { updateUser } = useAuthStore();
 
     return useMutation({
         mutationFn: (file: File) => apiService.uploadBackgroundImage(file),
@@ -197,7 +197,7 @@ export function useUploadBackgroundImage() {
 
 // Delete background image mutation
 export function useDeleteBackgroundImage() {
-    const { user, updateUser } = useAuthStore();
+    const { updateUser } = useAuthStore();
 
     return useMutation({
         mutationFn: () => apiService.deleteBackgroundImage(),
