@@ -140,6 +140,8 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
     }
   };
 
+  console.log(media);
+
   const removeMedia = () => {
     previewUrls.forEach((url) => URL.revokeObjectURL(url));
     setMedia([]);
@@ -410,8 +412,6 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
             leftSection={<IconSend size={16} />}
             radius="xl"
             size="md"
-            variant="gradient"
-            gradient={{ from: "blue", to: "cyan" }}
           >
             {isGeneratingThumbnails
               ? "Generating thumbnails..."

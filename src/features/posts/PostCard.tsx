@@ -6,6 +6,7 @@ import {
   Button,
   Card,
   Collapse,
+  Flex,
   Group,
   Image,
   Menu,
@@ -18,6 +19,7 @@ import {
 import {
   IconArrowRight,
   IconBookmark,
+  IconBookmarks,
   IconDotsVertical,
   IconEdit,
   IconFlag,
@@ -741,53 +743,45 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
               </Group>
             )}
 
-            <Group justify="start" mb="sm">
-              <Group gap="xs">
-                {post?.likesCount > 0 && (
-                  <Group gap={4}>
-                    <Text size="sm" c="dimmed">
-                      👍
-                    </Text>
-                    <Text size="sm" c="dimmed" fw={500}>
-                      {post?.likesCount}
-                    </Text>
-                  </Group>
-                )}
-                {post?.sharesCount > 0 && (
-                  <Group gap={4}>
-                    <Text size="sm" c="dimmed">
-                      📤
-                    </Text>
-                    <Text size="sm" c="dimmed" fw={500}>
-                      {post?.sharesCount} shares
-                    </Text>
-                  </Group>
-                )}
-              </Group>
-            </Group>
-
-            <Group justify="space-between" align="center">
+            <Group mt="sm" justify="space-between" align="center">
               <Group gap="xs" align="center">
-                <IconHeart
-                  size={16}
-                  onClick={handleLike}
-                  data-interactive="true"
-                  style={{
-                    fill: post?.isLiked ? "currentColor" : "none",
-                    stroke: "currentColor",
-                    strokeWidth: 2,
-                  }}
-                />
-                <IconMessageCircle
-                  size={16}
-                  onClick={() => setShowComments(!showComments)}
-                  data-interactive="true"
-                  style={{
-                    fill: showComments ? "currentColor" : "none",
-                    stroke: "currentColor",
-                    strokeWidth: 2,
-                  }}
-                />
+                <Flex justify="space-between" align="end">
+                  <IconHeart
+                    cursor="pointer"
+                    onClick={handleLike}
+                    // color={"blue"}
+                    fillOpacity={"blue"}
+                  />
+                  <Text fz="sm">{post.likesCount}</Text>
+                </Flex>
+
+                <Flex justify="space-between" align="end">
+                  <IconMessageCircle
+                    cursor="pointer"
+                    onClick={() => {
+                      const commentInput = document.querySelector(
+                        'input[placeholder="Write a comment..."]',
+                      );
+                      if (commentInput) {
+                        commentInput.scrollIntoView({
+                          behavior: "smooth",
+                          block: "center",
+                        });
+                        (commentInput as HTMLInputElement).focus();
+                      }
+                    }}
+                    style={{
+                      fill: commentContent.trim() ? "currentColor" : "none",
+                      stroke: "currentColor",
+                    }}
+                  />
+                  <Text fz="sm">{post.commentsCount}</Text>
+                </Flex>
+
+                <Flex justify="space-between" align="end">
+                  <IconBookmarks cursor="pointer" onClick={handleBookmark} />
+                  <Text fz="sm">{post.bookmarksCount}</Text>
+                </Flex>
               </Group>
 
               <Group gap="sm" align="center">

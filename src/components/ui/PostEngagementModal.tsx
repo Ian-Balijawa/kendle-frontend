@@ -24,6 +24,7 @@ import {
   usePostViewers,
 } from "../../hooks/usePosts";
 import { User } from "../../types";
+import { getImageUrl } from "../../lib/stream-urls";
 
 interface PostEngagementModalProps {
   postId: string;
@@ -81,9 +82,13 @@ export function PostEngagementModal({
       {users.map((user) => (
         <Group key={user.id} justify="space-between">
           <Group gap="sm">
-            <Avatar src={user.avatar} size="sm" radius="xl">
-              {user.firstName?.[0]}
-              {user.lastName?.[0]}
+            <Avatar
+              src={getImageUrl(user.avatar!) || user.avatar}
+              size="sm"
+              radius="xl"
+            >
+              {user.firstName?.[0].toUpperCase()}
+              {user.lastName?.[0].toUpperCase()}
             </Avatar>
             <div>
               <Text size="sm" fw={500}>

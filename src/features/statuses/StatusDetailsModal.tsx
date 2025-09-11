@@ -72,7 +72,7 @@ export function StatusDetailsModal({
       currentStatus.media &&
       currentStatus.media.length > 0 &&
       currentStatus.media[0].mediaType === "video"
-        ? currentStatus.media[0].duration || 300
+        ? currentStatus.media[0].duration || 10
         : 5;
 
     console.log(duration);
@@ -208,7 +208,7 @@ export function StatusDetailsModal({
                 radius="xl"
                 style={{ border: "2px solid rgba(255, 255, 255, 0.2)" }}
               >
-                {(collection.author.firstName || "U").charAt(0)}
+                {(collection.author.firstName || "U").charAt(0).toUpperCase()}
               </Avatar>
               <Box>
                 <Group gap="xs" align="center">

@@ -22,17 +22,8 @@ export function AppShell() {
         },
       }}
     >
-      <MantineAppShell.Header
-        style={{
-          border: "none",
-          backgroundColor: "transparent",
-          position: "sticky",
-          top: 0,
-        }}
-      >
-        <Container size="sm">
-          <HeaderContent />
-        </Container>
+      <MantineAppShell.Header withBorder={false}>
+        <HeaderContent />
       </MantineAppShell.Header>
 
       <MantineAppShell.Main>
@@ -47,32 +38,30 @@ export function AppShell() {
             },
           }}
         >
-          <Box>
-            <Container size="sm">
-              <Box
-                style={{
-                  position: "relative",
-                  zIndex: 1,
-                }}
-              >
-                <Outlet />
-              </Box>
-            </Container>
-
-            <FloatingChatWidget />
-
+          <Container size="sm" p={0}>
             <Box
               style={{
-                position: "fixed",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                pointerEvents: "none",
-                zIndex: 0,
+                position: "relative",
+                zIndex: 1,
               }}
-            />
-          </Box>
+            >
+              <Outlet />
+            </Box>
+          </Container>
+
+          <FloatingChatWidget />
+
+          <Box
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              pointerEvents: "none",
+              zIndex: 0,
+            }}
+          />
         </ScrollArea>
       </MantineAppShell.Main>
 

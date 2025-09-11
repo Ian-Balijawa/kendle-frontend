@@ -464,7 +464,7 @@ export function PostDetail() {
               </Group>
             </Stack>
           ) : (
-              renderFormattedText(post.content, "md")
+            renderFormattedText(post.content, "md")
           )}
 
           {post?.media && post?.media?.length > 0 && (
@@ -502,7 +502,7 @@ export function PostDetail() {
                   )}
                 </>
               ) : (
-                  <Box>
+                <Box>
                   {(() => {
                     const videos = post.media.filter(
                       (media) => media.type === "video",
@@ -795,7 +795,7 @@ export function PostDetail() {
           </Box>
 
           <Group mt="sm" justify="space-between" align="center">
-              <Group gap="xs" align="center">
+            <Group gap="xs" align="center">
               <Flex justify="space-between" align="end">
                 <IconHeart
                   cursor="pointer"
@@ -842,17 +842,17 @@ export function PostDetail() {
                 />
                 <Text fz="sm">{post.bookmarksCount}</Text>
               </Flex>
-              </Group>
+            </Group>
 
-              <Group gap="sm" align="center">
-                <PostEngagementButton
-                  postId={post.id}
-                  likesCount={post.likesCount || 0}
-                  dislikesCount={post.dislikesCount || 0}
-                  bookmarksCount={post.bookmarksCount || 0}
-                  viewsCount={post.viewsCount || 0}
-                />
-              </Group>
+            <Group gap="sm" align="center">
+              <PostEngagementButton
+                postId={post.id}
+                likesCount={post.likesCount || 0}
+                dislikesCount={post.dislikesCount || 0}
+                bookmarksCount={post.bookmarksCount || 0}
+                viewsCount={post.viewsCount || 0}
+              />
+            </Group>
           </Group>
 
           <Box>

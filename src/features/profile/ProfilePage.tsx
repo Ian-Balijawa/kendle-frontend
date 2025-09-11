@@ -564,12 +564,6 @@ export function ProfilePage() {
                 leftSection={<IconEdit size={18} />}
                 onClick={handleEditProfile}
                 radius="xl"
-                style={{
-                  background:
-                    "linear-gradient(135deg, var(--mantine-color-blue-6), var(--mantine-color-violet-6))",
-                  color: "white",
-                  border: "none",
-                }}
               >
                 Edit Profile
               </Button>

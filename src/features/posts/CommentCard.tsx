@@ -280,6 +280,38 @@ export function CommentCard({ comment }: CommentCardProps) {
                   {comment.updatedAt !== comment.createdAt && " Edited"}
                 </Text>
 
+                <Group gap="sm">
+                  <IconHeart
+                    size={12}
+                    onClick={handleLike}
+                    style={{
+                      fill: comment.isLiked ? "currentColor" : "none",
+                      stroke: "currentColor",
+                      cursor: "pointer",
+                    }}
+                  />
+                  {comment.likesCount > 0 && (
+                    <Text size="xs" c="currentColor">
+                      {comment.likesCount}
+                    </Text>
+                  )}
+
+                  <IconChevronDown
+                    size={12}
+                    onClick={handleDislike}
+                    style={{
+                      fill: comment.isDisliked ? "currentColor" : "none",
+                      stroke: "currentColor",
+                      cursor: "pointer",
+                    }}
+                  />
+                  {comment.dislikesCount > 0 && (
+                    <Text size="xs" c="currentColor">
+                      {comment.dislikesCount}
+                    </Text>
+                  )}
+                </Group>
+
                 {/* Menu Button */}
                 {isAuthenticated && (
                   <Menu
@@ -355,39 +387,6 @@ export function CommentCard({ comment }: CommentCardProps) {
                   </Text>
                 ))}
               </Box>
-
-              {/* Facebook-style Comment Reactions */}
-              <Group gap="sm" mt="xs">
-                <IconHeart
-                  size={12}
-                  onClick={handleLike}
-                  style={{
-                    fill: comment.isLiked ? "currentColor" : "none",
-                    stroke: "currentColor",
-                    cursor: "pointer",
-                  }}
-                />
-                {comment.likesCount > 0 && (
-                  <Text size="xs" c="currentColor">
-                    {comment.likesCount}
-                  </Text>
-                )}
-
-                <IconChevronDown
-                  size={12}
-                  onClick={handleDislike}
-                  style={{
-                    fill: comment.isDisliked ? "currentColor" : "none",
-                    stroke: "currentColor",
-                    cursor: "pointer",
-                  }}
-                />
-                {comment.dislikesCount > 0 && (
-                  <Text size="xs" c="currentColor">
-                    {comment.dislikesCount}
-                  </Text>
-                )}
-              </Group>
             </Box>
           </Group>
         </Box>
