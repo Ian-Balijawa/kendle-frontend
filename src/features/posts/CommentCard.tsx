@@ -229,14 +229,20 @@ export function CommentCard({ comment }: CommentCardProps) {
             <Avatar
               src={comment.author?.avatar}
               alt={
-                comment.author?.username?.charAt(0).toUpperCase() || comment.author?.firstName?.charAt(0).toUpperCase() || "User"
+                comment.author?.username?.charAt(0).toUpperCase() ||
+                comment.author?.firstName?.charAt(0).toUpperCase() ||
+                "User"
               }
               size={32}
               radius="xl"
             >
               <Text size="xs" fw={600}>
-                {comment.author?.username?.charAt(0).toUpperCase() + "" + comment.author?.lastName?.charAt(0).toUpperCase() ||
-                  comment.author?.firstName?.charAt(0).toUpperCase() + "" + comment.author?.lastName?.charAt(0).toUpperCase() ||
+                {comment.author?.username?.charAt(0).toUpperCase() +
+                  "" +
+                  comment.author?.lastName?.charAt(0).toUpperCase() ||
+                  comment.author?.firstName?.charAt(0).toUpperCase() +
+                    "" +
+                    comment.author?.lastName?.charAt(0).toUpperCase() ||
                   comment.author?.username?.charAt(0).toUpperCase() ||
                   comment.author?.phoneNumber?.charAt(0) ||
                   "U"}
@@ -352,34 +358,34 @@ export function CommentCard({ comment }: CommentCardProps) {
 
               {/* Facebook-style Comment Reactions */}
               <Group gap="sm" mt="xs">
-                  <IconHeart
-                    size={12}
+                <IconHeart
+                  size={12}
                   onClick={handleLike}
-                    style={{
-                      fill: comment.isLiked ? "currentColor" : "none",
-                      stroke: "currentColor",
-                      cursor: "pointer",
-                    }}
-                  />
-                  {comment.likesCount > 0 && (
-                    <Text size="xs" c="currentColor">
-                      {comment.likesCount}
-                    </Text>
+                  style={{
+                    fill: comment.isLiked ? "currentColor" : "none",
+                    stroke: "currentColor",
+                    cursor: "pointer",
+                  }}
+                />
+                {comment.likesCount > 0 && (
+                  <Text size="xs" c="currentColor">
+                    {comment.likesCount}
+                  </Text>
                 )}
 
-                  <IconChevronDown
-                    size={12}
+                <IconChevronDown
+                  size={12}
                   onClick={handleDislike}
-                    style={{
-                      fill: comment.isDisliked ? "currentColor" : "none",
-                      stroke: "currentColor",
-                      cursor: "pointer",
-                    }}
-                  />
-                  {comment.dislikesCount > 0 && (
-                    <Text size="xs" c="currentColor">
-                      {comment.dislikesCount}
-                    </Text>
+                  style={{
+                    fill: comment.isDisliked ? "currentColor" : "none",
+                    stroke: "currentColor",
+                    cursor: "pointer",
+                  }}
+                />
+                {comment.dislikesCount > 0 && (
+                  <Text size="xs" c="currentColor">
+                    {comment.dislikesCount}
+                  </Text>
                 )}
               </Group>
             </Box>

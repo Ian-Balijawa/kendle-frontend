@@ -275,10 +275,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                           : post.author?.phoneNumber || "Unknown User"}
                     </Text>
                     {post.author?.isVerified && (
-                      <Badge
-                        size="xs"
-                        radius="xl"
-                      >
+                      <Badge size="xs" radius="xl">
                         ✓
                       </Badge>
                     )}

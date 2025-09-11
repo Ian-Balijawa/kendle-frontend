@@ -11,11 +11,7 @@ import {
   Text,
   Textarea,
 } from "@mantine/core";
-import {
-  IconPhoto,
-  IconSend,
-  IconX,
-} from "@tabler/icons-react";
+import { IconPhoto, IconSend, IconX } from "@tabler/icons-react";
 import { useRef, useState } from "react";
 import { useCreatePost } from "../../hooks/usePosts";
 import { CreatePostRequest } from "../../services/api";
@@ -48,7 +44,6 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isSubmitting = createPostMutation.isPending;
-
 
   // Helper function to convert base64 to File
   const base64ToFile = (
@@ -263,7 +258,7 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
       opened={opened}
       onClose={handleClose}
       title="Create Post"
-      size="lg"
+      size="xl"
       closeOnClickOutside={false}
       closeOnEscape={false}
       styles={{

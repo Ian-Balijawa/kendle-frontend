@@ -350,8 +350,8 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
                 <IconUpload size={32} color="var(--mantine-color-gray-6)" />
               </Box>
 
-                <Text fw={500} size="lg" mb="xs">
-                  Add Photo or Video
+              <Text fw={500} size="lg" mb="xs">
+                Add Photo or Video
               </Text>
 
               <Group gap="sm">

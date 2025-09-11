@@ -72,8 +72,10 @@ export function StatusDetailsModal({
       currentStatus.media &&
       currentStatus.media.length > 0 &&
       currentStatus.media[0].mediaType === "video"
-        ? currentStatus.media[0].duration || 5
+        ? currentStatus.media[0].duration || 300
         : 5;
+
+    console.log(duration);
 
     const interval = setInterval(() => {
       setProgress((prev) => {
@@ -146,6 +148,7 @@ export function StatusDetailsModal({
       opened={opened}
       onClose={onClose}
       centered
+      size="xl"
       withCloseButton={false}
       styles={{
         content: {
@@ -271,7 +274,6 @@ export function StatusDetailsModal({
               <ReactPlayer
                 src={`${import.meta.env.VITE_API_URL}/stream/video/${currentStatus.media[0].url.split("/").pop()}`}
                 playing={isPlaying}
-                muted
                 loop
                 playsInline
                 controls={false}

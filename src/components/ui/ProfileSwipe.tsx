@@ -1,11 +1,4 @@
-import {
-  ActionIcon,
-  Box,
-  Card,
-  Group,
-  Stack,
-  Text,
-} from "@mantine/core";
+import { ActionIcon, Box, Card, Group, Stack, Text } from "@mantine/core";
 import {
   IconChevronLeft,
   IconChevronRight,
@@ -14,18 +7,18 @@ import {
 } from "@tabler/icons-react";
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, FreeMode, A11y } from 'swiper/modules';
-import type { Swiper as SwiperType } from 'swiper';
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, FreeMode, A11y } from "swiper/modules";
+import type { Swiper as SwiperType } from "swiper";
 import { useToggleFollow } from "../../hooks/useFollow";
 import { User } from "../../types";
 import { VerticalUserCard } from "./VerticalUserCard";
 
 // Import Swiper styles
-import 'swiper/css';
-import 'swiper/css/navigation';
-import 'swiper/css/free-mode';
-import 'swiper/css/a11y';
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/free-mode";
+import "swiper/css/a11y";
 
 interface ProfileSwipeProps {
   users: User[];
@@ -70,10 +63,13 @@ export function ProfileSwipe({
     setIsEnd(swiper.isEnd);
   };
 
-  const handleKeyDown = (event: React.KeyboardEvent, direction: 'prev' | 'next') => {
-    if (event.key === 'Enter' || event.key === ' ') {
+  const handleKeyDown = (
+    event: React.KeyboardEvent,
+    direction: "prev" | "next",
+  ) => {
+    if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
-      if (direction === 'prev') {
+      if (direction === "prev") {
         handleSlidePrev();
       } else {
         handleSlideNext();
@@ -179,14 +175,15 @@ export function ProfileSwipe({
               border: "1px solid rgba(0, 0, 0, 0.1)",
             }}
             onClick={handleSlidePrev}
-            onKeyDown={(e) => handleKeyDown(e, 'prev')}
+            onKeyDown={(e) => handleKeyDown(e, "prev")}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = "translateY(-50%) scale(1.1)";
               e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 1)";
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = "translateY(-50%) scale(1)";
-              e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.95)";
+              e.currentTarget.style.backgroundColor =
+                "rgba(255, 255, 255, 0.95)";
             }}
             aria-label="Previous users"
             role="button"
@@ -212,14 +209,15 @@ export function ProfileSwipe({
               border: "1px solid rgba(0, 0, 0, 0.1)",
             }}
             onClick={handleSlideNext}
-            onKeyDown={(e) => handleKeyDown(e, 'next')}
+            onKeyDown={(e) => handleKeyDown(e, "next")}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = "translateY(-50%) scale(1.1)";
               e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 1)";
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = "translateY(-50%) scale(1)";
-              e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.95)";
+              e.currentTarget.style.backgroundColor =
+                "rgba(255, 255, 255, 0.95)";
             }}
             aria-label="Next users"
             role="button"
@@ -254,10 +252,10 @@ export function ProfileSwipe({
           resistanceRatio={0.85}
           a11y={{
             enabled: true,
-            prevSlideMessage: 'Previous user',
-            nextSlideMessage: 'Next user',
-            firstSlideMessage: 'This is the first user',
-            lastSlideMessage: 'This is the last user',
+            prevSlideMessage: "Previous user",
+            nextSlideMessage: "Next user",
+            firstSlideMessage: "This is the first user",
+            lastSlideMessage: "This is the last user",
           }}
           style={{
             paddingLeft: "0px",

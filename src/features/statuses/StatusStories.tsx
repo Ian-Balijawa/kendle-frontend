@@ -1,17 +1,17 @@
 import { ActionIcon, Box } from "@mantine/core";
 import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
 import { useRef, useState } from "react";
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, FreeMode, A11y } from 'swiper/modules';
-import type { Swiper as SwiperType } from 'swiper';
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, FreeMode, A11y } from "swiper/modules";
+import type { Swiper as SwiperType } from "swiper";
 import { StatusCollection } from "../../types";
 import { VerticalStatusCard } from "./VerticalStatusCard";
 
 // Import Swiper styles
-import 'swiper/css';
-import 'swiper/css/navigation';
-import 'swiper/css/free-mode';
-import 'swiper/css/a11y';
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/free-mode";
+import "swiper/css/a11y";
 
 interface StatusStoriesProps {
   collections: StatusCollection[];
@@ -43,10 +43,13 @@ export function StatusStories({
     setIsEnd(swiper.isEnd);
   };
 
-  const handleKeyDown = (event: React.KeyboardEvent, direction: 'prev' | 'next') => {
-    if (event.key === 'Enter' || event.key === ' ') {
+  const handleKeyDown = (
+    event: React.KeyboardEvent,
+    direction: "prev" | "next",
+  ) => {
+    if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
-      if (direction === 'prev') {
+      if (direction === "prev") {
         handleSlidePrev();
       } else {
         handleSlideNext();
@@ -78,14 +81,15 @@ export function StatusStories({
               border: "1px solid rgba(0, 0, 0, 0.1)",
             }}
             onClick={handleSlidePrev}
-            onKeyDown={(e) => handleKeyDown(e, 'prev')}
+            onKeyDown={(e) => handleKeyDown(e, "prev")}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = "translateY(-50%) scale(1.1)";
               e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 1)";
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = "translateY(-50%) scale(1)";
-              e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.95)";
+              e.currentTarget.style.backgroundColor =
+                "rgba(255, 255, 255, 0.95)";
             }}
             aria-label="Previous statuses"
             role="button"
@@ -110,14 +114,15 @@ export function StatusStories({
               border: "1px solid rgba(0, 0, 0, 0.1)",
             }}
             onClick={handleSlideNext}
-            onKeyDown={(e) => handleKeyDown(e, 'next')}
+            onKeyDown={(e) => handleKeyDown(e, "next")}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = "translateY(-50%) scale(1.1)";
               e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 1)";
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = "translateY(-50%) scale(1)";
-              e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.95)";
+              e.currentTarget.style.backgroundColor =
+                "rgba(255, 255, 255, 0.95)";
             }}
             aria-label="Next statuses"
             role="button"
@@ -152,10 +157,10 @@ export function StatusStories({
           resistanceRatio={0.85}
           a11y={{
             enabled: true,
-            prevSlideMessage: 'Previous status',
-            nextSlideMessage: 'Next status',
-            firstSlideMessage: 'This is the first status',
-            lastSlideMessage: 'This is the last status',
+            prevSlideMessage: "Previous status",
+            nextSlideMessage: "Next status",
+            firstSlideMessage: "This is the first status",
+            lastSlideMessage: "This is the last status",
           }}
           style={{
             paddingLeft: "0px",

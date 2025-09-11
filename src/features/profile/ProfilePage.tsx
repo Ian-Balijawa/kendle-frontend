@@ -134,12 +134,14 @@ export function ProfilePage() {
     avatarFileInputRef.current?.click();
   };
 
-  const handleAvatarFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
     if (file) {
       await uploadAvatar.mutateAsync(file);
       // Reset the input value to allow selecting the same file again
-      event.target.value = '';
+      event.target.value = "";
     }
   };
 
@@ -148,12 +150,14 @@ export function ProfilePage() {
     backgroundFileInputRef.current?.click();
   };
 
-  const handleBackgroundFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleBackgroundFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
     if (file) {
       await uploadBackgroundImage.mutateAsync(file);
       // Reset the input value to allow selecting the same file again
-      event.target.value = '';
+      event.target.value = "";
     }
   };
 
@@ -341,7 +345,6 @@ export function ProfilePage() {
   const avatarURL = `${import.meta.env.VITE_API_URL}/stream/image/${user.avatar?.split("/").pop()}`;
   const backgroundURL = `${import.meta.env.VITE_API_URL}/stream/image/${user.backgroundImage?.split("/").pop()}`;
 
-
   return (
     <Box>
       {/* Hidden file inputs */}
@@ -349,20 +352,20 @@ export function ProfilePage() {
         type="file"
         ref={avatarFileInputRef}
         accept="image/*"
-        style={{ display: 'none' }}
+        style={{ display: "none" }}
         onChange={handleAvatarFileChange}
       />
       <input
         type="file"
         ref={backgroundFileInputRef}
         accept="image/*"
-        style={{ display: 'none' }}
+        style={{ display: "none" }}
         onChange={handleBackgroundFileChange}
       />
 
       <Box
         style={{
-          height: 200,
+          height: 150,
           background: user.backgroundImage
             ? `url(${backgroundURL})`
             : "linear-gradient(135deg, var(--mantine-color-blue-6) 0%, var(--mantine-color-violet-6) 100%)",
@@ -406,7 +409,10 @@ export function ProfilePage() {
                     background: "rgba(0, 0, 0, 0.6)",
                     backdropFilter: "blur(10px)",
                   }}
-                  loading={uploadBackgroundImage.isPending || deleteBackgroundImage.isPending}
+                  loading={
+                    uploadBackgroundImage.isPending ||
+                    deleteBackgroundImage.isPending
+                  }
                 >
                   <IconCamera size={18} />
                 </ActionIcon>
@@ -439,9 +445,8 @@ export function ProfilePage() {
             size={120}
             radius="50%"
             style={{
-              position: "absolute",
-              bottom: -60,
-              left: 30,
+              bottom: -70,
+              left: -10,
               border: "4px solid white",
               boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
             }}
@@ -584,14 +589,14 @@ export function ProfilePage() {
                 style={
                   followStatus?.isFollowing
                     ? {
-                      color: "var(--mantine-color-blue-6)",
-                      borderColor: "var(--mantine-color-blue-6)",
-                    }
+                        color: "var(--mantine-color-blue-6)",
+                        borderColor: "var(--mantine-color-blue-6)",
+                      }
                     : {
-                      background:
-                        "linear-gradient(135deg, var(--mantine-color-blue-6), var(--mantine-color-violet-6))",
-                      border: "none",
-                    }
+                        background:
+                          "linear-gradient(135deg, var(--mantine-color-blue-6), var(--mantine-color-violet-6))",
+                        border: "none",
+                      }
                 }
               >
                 {followStatus?.isFollowing ? "Following" : "Follow"}
@@ -694,12 +699,12 @@ export function ProfilePage() {
               </Center>
             ) : posts.length === 0 ? (
               <Card
-                  p="sm"
+                p="sm"
                 style={{
                   border: "none",
                 }}
               >
-                  <Stack align="center" gap="sm">
+                <Stack align="center" gap="sm">
                   <Box
                     style={{
                       width: 80,
@@ -748,12 +753,12 @@ export function ProfilePage() {
             ) : posts.filter((post) => post.media && post.media.length > 0)
                 .length === 0 ? (
               <Card
-                    p="sm"
+                p="sm"
                 style={{
                   border: "none",
                 }}
               >
-                    <Stack align="center" gap="sm">
+                <Stack align="center" gap="sm">
                   <Box
                     style={{
                       width: 80,
@@ -803,12 +808,12 @@ export function ProfilePage() {
               </Center>
             ) : likedPosts.length === 0 ? (
               <Card
-                  p="sm"
+                p="sm"
                 style={{
                   border: "none",
                 }}
               >
-                  <Stack align="center" gap="sm">
+                <Stack align="center" gap="sm">
                   <Box
                     style={{
                       width: 80,
@@ -853,14 +858,14 @@ export function ProfilePage() {
               </Center>
             ) : bookmarkedPosts.length === 0 ? (
               <Card
-                  p="sm"
+                p="sm"
                 style={{
                   background:
                     "linear-gradient(135deg, var(--mantine-color-yellow-0), var(--mantine-color-yellow-1))",
                   border: "none",
                 }}
               >
-                  <Stack align="center" gap="sm">
+                <Stack align="center" gap="sm">
                   <Box
                     style={{
                       width: 80,

@@ -285,12 +285,12 @@ export function ExplorePage() {
                 ))
               ) : (
                 <Box
-                      p="sm"
+                  p="sm"
                   style={{
                     border: "none",
                   }}
                 >
-                      <Stack align="center" gap="sm">
+                  <Stack align="center" gap="sm">
                     <IconTrendingUp
                       size={48}
                       color="var(--mantine-color-blue-6)"
@@ -370,12 +370,12 @@ export function ExplorePage() {
                     />
                   ) : (
                     <Box
-                          p="sm"
+                      p="sm"
                       style={{
                         border: "none",
                       }}
                     >
-                          <Stack align="center" gap="sm">
+                      <Stack align="center" gap="sm">
                         <IconUsers
                           size={48}
                           color="var(--mantine-color-cyan-6)"
@@ -409,12 +409,12 @@ export function ExplorePage() {
                     />
                   ) : (
                     <Box
-                          p="sm"
+                      p="sm"
                       style={{
                         border: "none",
                       }}
                     >
-                          <Stack align="center" gap="sm">
+                      <Stack align="center" gap="sm">
                         <IconUserCheck
                           size={48}
                           color="var(--mantine-color-green-6)"
@@ -448,12 +448,12 @@ export function ExplorePage() {
                     />
                   ) : (
                     <Box
-                          p="sm"
+                      p="sm"
                       style={{
                         border: "none",
                       }}
                     >
-                          <Stack align="center" gap="sm">
+                      <Stack align="center" gap="sm">
                         <IconUserPlus
                           size={48}
                           color="var(--mantine-color-yellow-6)"

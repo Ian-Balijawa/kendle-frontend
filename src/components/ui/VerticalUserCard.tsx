@@ -89,8 +89,10 @@ export function VerticalUserCard({
               }}
             >
               <Text size="lg" fw={700} c="gray.6" mt="xs">
-                {user.firstName?.charAt(0).toUpperCase() || user.username?.charAt(0)}
-                {user.lastName?.charAt(0).toUpperCase() || user.username?.charAt(1)}
+                {user.firstName?.charAt(0).toUpperCase() ||
+                  user.username?.charAt(0)}
+                {user.lastName?.charAt(0).toUpperCase() ||
+                  user.username?.charAt(1)}
               </Text>
             </Avatar>
           </Center>

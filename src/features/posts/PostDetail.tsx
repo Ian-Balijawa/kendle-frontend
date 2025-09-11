@@ -5,6 +5,7 @@ import {
   Box,
   Button,
   Center,
+  Flex,
   Group,
   Image,
   Loader,
@@ -242,10 +243,7 @@ export function PostDetail() {
       return (
         <Box>
           {lines.map((line, index) => (
-            <Text
-              key={index}
-              size={size}
-            >
+            <Text key={index} size={size}>
               {line || "\u00A0"}
             </Text>
           ))}
@@ -260,21 +258,6 @@ export function PostDetail() {
 
     return (
       <Box mx="auto" p="sm">
-        <Group justify="space-between" mb="lg">
-          <ActionIcon
-            variant="light"
-            size="lg"
-            radius="xl"
-            onClick={() => navigate(-1)}
-          >
-            <IconArrowLeft size={18} />
-          </ActionIcon>
-          <Text fw={600} size="lg" style={{ maxWidth: "60%" }}>
-            {post.content.split("\n")[0].slice(0, 50)}
-            {post.content.split("\n")[0].length > 50 ? "..." : ""}
-          </Text>
-        </Group>
-
         <Paper p="sm">
           <Group justify="space-between" mb="md">
             <Group
@@ -485,14 +468,9 @@ export function PostDetail() {
           )}
 
           {post?.media && post?.media?.length > 0 && (
-            <Box mb="md">
+            <Box mt="md">
               {post.media.length === 1 ? (
-                <Box
-                  style={{
-                    borderRadius: "var(--mantine-radius-lg)",
-                    overflow: "hidden",
-                  }}
-                >
+                <>
                   {post.media[0].type === "video" ? (
                     <ReactPlayer
                       src={videoStreamUrl}
@@ -502,11 +480,9 @@ export function PostDetail() {
                           ? Math.min(post.media[0].height, 500)
                           : 400
                       }
-                      controls
                       playsInline
-                      style={{
-                        borderRadius: "var(--mantine-radius-lg)",
-                      }}
+                      controls
+                      autoPlay
                     />
                   ) : (
                     <Image
@@ -515,7 +491,7 @@ export function PostDetail() {
                       radius="lg"
                       style={{
                         maxHeight: 500,
-                        objectFit: "cover",
+                        objectFit: "contain",
                         width: "100%",
                       }}
                       onError={(e) => {
@@ -524,7 +500,7 @@ export function PostDetail() {
                       }}
                     />
                   )}
-                </Box>
+                </>
               ) : (
                   <Box>
                   {(() => {
@@ -666,7 +642,7 @@ export function PostDetail() {
                                       style={{
                                         width: "100%",
                                         height: "auto",
-                                        objectFit: "cover",
+                                        objectFit: "fill",
                                         display: "block",
                                       }}
                                       onError={(e) => {
@@ -818,56 +794,24 @@ export function PostDetail() {
             )}
           </Box>
 
-          <Box>
-            <Group justify="space-between" mb="sm">
-              <Group gap="sm">
-                {post?.likesCount > 0 && (
-                  <Group gap="xs">
-                    <Text size="sm" c="dimmed">
-                      👍
-                    </Text>
-                    <Text size="sm" c="dimmed" fw={500}>
-                      {post?.likesCount}
-                    </Text>
-                  </Group>
-                )}
-                {post?.commentsCount > 0 && (
-                  <Group gap="xs">
-                    <Text size="sm" c="dimmed">
-                      💬
-                    </Text>
-                    <Text size="sm" c="dimmed" fw={500}>
-                      {post?.commentsCount} comments
-                    </Text>
-                  </Group>
-                )}
-                {post?.sharesCount > 0 && (
-                  <Group gap="xs">
-                    <Text size="sm" c="dimmed">
-                      📤
-                    </Text>
-                    <Text size="sm" c="dimmed" fw={500}>
-                      {post?.sharesCount} shares
-                    </Text>
-                  </Group>
-                )}
-              </Group>
-            </Group>
-
-            {/* Action Buttons */}
-            <Group justify="space-between" align="center">
+          <Group mt="sm" justify="space-between" align="center">
               <Group gap="xs" align="center">
+              <Flex justify="space-between" align="end">
                 <IconHeart
-                  size={16}
+                  cursor="pointer"
                   onClick={handleLike}
+                  color={post?.isLiked ? "currentColor" : "none"}
                   style={{
                     fill: post?.isLiked ? "currentColor" : "none",
                     stroke: "currentColor",
                   }}
                 />
+                <Text fz="sm">{post.likesCount}</Text>
+              </Flex>
 
+              <Flex justify="space-between" align="end">
                 <IconMessageCircle
-                  size={16}
+                  cursor="pointer"
                   onClick={() => {
                     const commentInput = document.querySelector(
                       'input[placeholder="Write a comment..."]',
@@ -885,14 +829,19 @@ export function PostDetail() {
                     stroke: "currentColor",
                   }}
                 />
+                <Text fz="sm">{post.commentsCount}</Text>
+              </Flex>
 
+              <Flex justify="space-between" align="end">
                 <IconBookmark
-                  size={16}
+                  cursor="pointer"
                   onClick={handleBookmark}
                   style={{
                     fill: post?.isBookmarked ? "currentColor" : "none",
                   }}
                 />
+                <Text fz="sm">{post.bookmarksCount}</Text>
+              </Flex>
               </Group>
 
               <Group gap="sm" align="center">
@@ -904,8 +853,7 @@ export function PostDetail() {
                   viewsCount={post.viewsCount || 0}
                 />
               </Group>
-            </Group>
-          </Box>
+          </Group>
 
           <Box>
             {isAuthenticated ? (
@@ -953,7 +901,7 @@ export function PostDetail() {
                 </Text>
 
                 <ScrollArea
-                  h={400}
+                  h={200}
                   type="scroll"
                   scrollbarSize={6}
                   styles={{

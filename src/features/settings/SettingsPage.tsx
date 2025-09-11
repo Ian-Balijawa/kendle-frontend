@@ -56,8 +56,11 @@ export function SettingsPage() {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [avatarModalOpen, setAvatarModalOpen] = useState(false);
   const [backgroundModalOpen, setBackgroundModalOpen] = useState(false);
-  const [selectedAvatarFile, setSelectedAvatarFile] = useState<File | null>(null);
-  const [selectedBackgroundFile, setSelectedBackgroundFile] = useState<File | null>(null);
+  const [selectedAvatarFile, setSelectedAvatarFile] = useState<File | null>(
+    null,
+  );
+  const [selectedBackgroundFile, setSelectedBackgroundFile] =
+    useState<File | null>(null);
 
   const updateProfileMutation = useUpdateProfile();
 
@@ -144,7 +147,6 @@ export function SettingsPage() {
     setBackgroundModalOpen(false);
   };
 
-
   const avatarURL = `${import.meta.env.VITE_API_URL}/stream/image/${user?.avatar?.split("/").pop()}`;
 
   const socialLinks = [
@@ -181,7 +183,6 @@ export function SettingsPage() {
   return (
     <Box>
       <Stack gap="sm">
-        {/* Header */}
         <Box>
           <Title order={1} size="h2" fw={700} mb="xs">
             Settings
@@ -196,57 +197,30 @@ export function SettingsPage() {
           onChange={(value) => setActiveTab(value || "account")}
           variant="pills"
         >
-          <Tabs.List
-            style={{
-              padding: "4px",
-              borderRadius: "16px",
-            }}
-          >
-            <Tabs.Tab
-              value="account"
-              leftSection={<IconUser size={16} />}
-              style={{
-                borderRadius: "12px",
-                fontWeight: 500,
-              }}
-            >
+          <Tabs.List>
+            <Tabs.Tab value="account" leftSection={<IconUser size={16} />}>
               Account
             </Tabs.Tab>
             <Tabs.Tab
               value="appearance"
               leftSection={<IconPalette size={16} />}
-              style={{
-                borderRadius: "12px",
-                fontWeight: 500,
-              }}
             >
               Appearance
             </Tabs.Tab>
             <Tabs.Tab
               value="notifications"
               leftSection={<IconBell size={16} />}
-              style={{
-                borderRadius: "12px",
-                fontWeight: 500,
-              }}
             >
               Notifications
             </Tabs.Tab>
-            <Tabs.Tab
-              value="privacy"
-              leftSection={<IconShield size={16} />}
-              style={{
-                borderRadius: "12px",
-                fontWeight: 500,
-              }}
-            >
+            <Tabs.Tab value="privacy" leftSection={<IconShield size={16} />}>
               Privacy
             </Tabs.Tab>
           </Tabs.List>
 
           <Tabs.Panel value="account" pt="xl">
             <Stack gap="sm">
-              <Card withBorder p="sm">
+              <Card p="sm">
                 <Stack gap="sm">
                   <Group justify="space-between" align="flex-start">
                     <Group gap="sm">
@@ -322,7 +296,7 @@ export function SettingsPage() {
                   )}
 
                   {socialLinks.length > 0 && (
-                    <Group gap="sm">
+                    <Group mt="xs" gap="sm">
                       {socialLinks.map(
                         ({ key, url, icon: Icon, label, color }) => (
                           <Button
@@ -350,7 +324,7 @@ export function SettingsPage() {
               </Card>
 
               {/* Account Information */}
-              <Card withBorder p="sm">
+              <Card p="sm">
                 <Stack gap="sm">
                   <Title order={4} size="h5" fw={600}>
                     Account Information
@@ -396,7 +370,7 @@ export function SettingsPage() {
               </Card>
 
               {/* Security Settings */}
-              <Card withBorder p="sm">
+              <Card p="sm">
                 <Stack gap="sm">
                   <Title order={4} size="h5" fw={600}>
                     Security
@@ -437,7 +411,7 @@ export function SettingsPage() {
 
           <Tabs.Panel value="appearance" pt="xl">
             <Stack gap="sm">
-              <Card withBorder p="sm">
+              <Card p="sm">
                 <Stack gap="sm">
                   <Title order={4} size="h5" fw={600}>
                     Theme
@@ -479,7 +453,7 @@ export function SettingsPage() {
                 </Stack>
               </Card>
 
-              <Card withBorder p="sm">
+              <Card p="sm">
                 <Stack gap="sm">
                   <Title order={4} size="h5" fw={600}>
                     Display Preferences
@@ -514,7 +488,7 @@ export function SettingsPage() {
 
           <Tabs.Panel value="notifications" pt="xl">
             <Stack gap="sm">
-              <Card withBorder p="sm">
+              <Card p="sm">
                 <Stack gap="sm">
                   <Title order={4} size="h5" fw={600}>
                     Push Notifications
@@ -570,7 +544,7 @@ export function SettingsPage() {
                 </Stack>
               </Card>
 
-              <Card withBorder p="sm">
+              <Card p="sm">
                 <Stack gap="sm">
                   <Title order={4} size="h5" fw={600}>
                     Email Notifications
@@ -605,7 +579,7 @@ export function SettingsPage() {
 
           <Tabs.Panel value="privacy" pt="xl">
             <Stack gap="sm">
-              <Card withBorder p="sm">
+              <Card p="sm">
                 <Stack gap="sm">
                   <Title order={4} size="h5" fw={600}>
                     Profile Visibility
@@ -636,7 +610,7 @@ export function SettingsPage() {
                 </Stack>
               </Card>
 
-              <Card withBorder p="sm">
+              <Card p="sm">
                 <Stack gap="sm">
                   <Title order={4} size="h5" fw={600}>
                     Data & Privacy
@@ -667,7 +641,7 @@ export function SettingsPage() {
                 </Stack>
               </Card>
 
-              <Card withBorder p="sm">
+              <Card p="sm">
                 <Stack gap="sm">
                   <Title order={4} size="h5" fw={600}>
                     Account Actions
@@ -884,19 +858,7 @@ export function SettingsPage() {
             }
           />
 
-          <Divider
-            label="Social Media Links"
-            labelPosition="center"
-            styles={{
-              label: {
-                color: "var(--mantine-color-text)",
-                fontWeight: 600,
-              },
-              root: {
-                borderColor: "var(--mantine-color-gray-3)",
-              },
-            }}
-          />
+          <Divider label="Social Media Links" labelPosition="center" my="md" />
 
           <Grid>
             <Grid.Col span={6}>

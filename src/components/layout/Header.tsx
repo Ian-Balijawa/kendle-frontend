@@ -154,7 +154,7 @@ export function HeaderContent() {
                 size="lg"
                 radius="xl"
                 onClick={() => navigate("/statuses")}
-                  hiddenFrom="sm"
+                hiddenFrom="sm"
               >
                 <IconPlus size={20} />
               </ActionIcon>
@@ -169,7 +169,7 @@ export function HeaderContent() {
                     className="avatar-hover"
                   >
                     <Avatar
-                        src={avatarURL || "/user.png"}
+                      src={avatarURL || "/user.png"}
                       alt={user?.firstName}
                       size="md"
                       radius="xl"
@@ -178,7 +178,7 @@ export function HeaderContent() {
                         cursor: "pointer",
                       }}
                     >
-                        {user?.firstName?.charAt(0).toUpperCase()}
+                      {user?.firstName?.charAt(0).toUpperCase()}
                     </Avatar>
                   </UnstyledButton>
                 </Menu.Target>
@@ -186,8 +186,12 @@ export function HeaderContent() {
                 <Menu.Dropdown>
                   <Menu.Label>
                     <Group gap="sm">
-                        <Avatar src={avatarURL || "/user.png"} size="sm" radius="xl">
-                          {user?.firstName?.charAt(0).toUpperCase()}
+                      <Avatar
+                        src={avatarURL || "/user.png"}
+                        size="sm"
+                        radius="xl"
+                      >
+                        {user?.firstName?.charAt(0).toUpperCase()}
                       </Avatar>
                       <Stack gap={0}>
                         <Text size="sm" fw={600}>
@@ -232,7 +236,7 @@ export function HeaderContent() {
                 variant="subtle"
                 size="lg"
                 radius="xl"
-                  hiddenFrom="sm"
+                hiddenFrom="sm"
                 visibleFrom="xs"
               >
                 <IconMenu2 size={20} />
