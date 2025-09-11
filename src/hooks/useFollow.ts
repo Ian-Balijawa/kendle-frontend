@@ -240,6 +240,7 @@ export function useToggleFollow() {
     targetUserId: string,
     currentFollowStatus?: boolean,
   ) => {
+    console.log(currentFollowStatus);
     if (currentFollowStatus) {
       await unfollowMutation.mutateAsync(targetUserId);
     } else {

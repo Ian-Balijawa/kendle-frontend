@@ -11,6 +11,7 @@ import {
   Image,
   Menu,
   Modal,
+  ScrollArea,
   Stack,
   Text,
   Textarea,
@@ -454,7 +455,6 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                     style={{
                       cursor: "pointer",
                       transition: "transform 0.2s ease",
-                      borderRadius: "var(--mantine-radius-lg)",
                       overflow: "hidden",
                     }}
                     onClick={handlePostClick}
@@ -476,9 +476,6 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                         }
                         controls
                         playsInline
-                        style={{
-                          borderRadius: "var(--mantine-radius-lg)",
-                        }}
                       />
                     ) : (
                       <Image
@@ -523,7 +520,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                                 gap: "0.5rem",
                               }}
                             >
-                              {videos.slice(0, 2).map((media, index) => (
+                              {videos.map((media, index) => (
                                 <Box
                                   key={media.id || `video-${index}`}
                                   style={{
@@ -603,7 +600,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                               }}
                             >
                               <Masonry gutter="12px">
-                                {images.slice(0, 4).map((media, index) => (
+                                {images.map((media, index) => (
                                   <Box
                                     key={media.id || `image-${index}`}
                                     style={{
@@ -826,7 +823,6 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                   maxRows={3}
                   autosize
                   w="100%"
-                  radius="xl"
                   size="sm"
                   rightSection={
                     commentContent.trim() ? (
@@ -858,32 +854,27 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                   {commentsLoading ? (
                     <CommentSkeletonList count={2} />
                   ) : comments.length > 0 ? (
-                    <>
-                      {comments.slice(0, 3).map((comment: any) => (
+                      <ScrollArea
+                        h={400}
+                        type="scroll"
+                        scrollbarSize={6}
+                        styles={{
+                          scrollbar: {
+                            '&[data-orientation="vertical"] .mantine-ScrollArea-thumb':
+                            {
+                              backgroundColor: "var(--mantine-color-gray-5)",
+                            },
+                          },
+                        }}
+                      >
+                        {comments.map((comment: any) => (
                         <CommentCard
                           key={comment.id || `comment-${Math.random()}`}
                           comment={comment}
                           postId={post.id}
                         />
                       ))}
-                      {post?.commentsCount > 3 && (
-                        <Button
-                          variant="subtle"
-                          size="sm"
-                          onClick={handlePostClick}
-                          data-interactive="true"
-                          style={{
-                            alignSelf: "flex-start",
-                            color: "var(--mantine-color-gray-6)",
-                            fontWeight: 500,
-                          }}
-                          radius="md"
-                          leftSection={<IconMessageCircle size={14} />}
-                        >
-                          View all {post?.commentsCount} comments
-                        </Button>
-                      )}
-                    </>
+                      </ScrollArea>
                   ) : (
                     <Text size="sm" c="dimmed" ta="center" py="md">
                       No comments yet

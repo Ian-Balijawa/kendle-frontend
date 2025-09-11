@@ -17,6 +17,7 @@ import {
   ActionIcon,
   FileInput,
   Image,
+  Container,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import {
@@ -181,7 +182,7 @@ export function SettingsPage() {
   ].filter((link) => user?.[link.key as keyof User]);
 
   return (
-    <Box>
+    <Container size="xl" px="sm">
       <Stack gap="sm">
         <Box>
           <Title order={1} size="h2" fw={700} mb="xs">
@@ -282,8 +283,15 @@ export function SettingsPage() {
                     <Button
                       leftSection={<IconEdit size={16} />}
                       onClick={() => setEditModalOpen(true)}
-                      variant="light"
                       size="sm"
+                      style={{
+                        background:
+                          "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                        fontWeight: 600,
+                        fontSize: "12px",
+                        boxShadow:
+                          "0 4px 16px rgba(102, 126, 234, 0.3), 0 2px 4px rgba(0, 0, 0, 0.1)",
+                      }}
                     >
                       Edit Profile
                     </Button>
@@ -441,11 +449,18 @@ export function SettingsPage() {
                       </Box>
                     </Group>
                     <Button
-                      variant="light"
                       size="sm"
                       onClick={() =>
                         setTheme(theme === "light" ? "dark" : "light")
                       }
+                      style={{
+                        background:
+                          "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                        fontWeight: 600,
+                        fontSize: "12px",
+                        boxShadow:
+                          "0 4px 16px rgba(102, 126, 234, 0.3), 0 2px 4px rgba(0, 0, 0, 0.1)",
+                      }}
                     >
                       Switch to {theme === "dark" ? "Light" : "Dark"}
                     </Button>
@@ -1157,6 +1172,6 @@ export function SettingsPage() {
           </Group>
         </Stack>
       </Modal>
-    </Box>
+    </Container>
   );
 }

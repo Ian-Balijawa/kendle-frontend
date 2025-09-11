@@ -33,6 +33,7 @@ import {
 import { UpdateCommentRequest } from "../../services/api";
 import { useAuthStore } from "../../stores/authStore";
 import { Comment } from "../../types";
+import { getImageUrl } from "../../lib/stream-urls";
 
 interface CommentCardProps {
   comment: Comment;
@@ -163,7 +164,11 @@ export function CommentCard({ comment }: CommentCardProps) {
           <Stack gap="sm">
             <Group gap="sm">
               <Avatar
-                src={comment.author?.avatar}
+                src={
+                  comment.author.avatar
+                    ? getImageUrl(comment.author.avatar)
+                    : comment.author?.avatar
+                }
                 alt={
                   comment.author?.username?.charAt(0).toUpperCase() ||
                   comment.author?.firstName?.charAt(0).toUpperCase() ||
@@ -227,7 +232,11 @@ export function CommentCard({ comment }: CommentCardProps) {
         <Box>
           <Group align="flex-start" gap="sm">
             <Avatar
-              src={comment.author?.avatar}
+              src={
+                comment.author.avatar
+                  ? getImageUrl(comment.author.avatar)
+                  : comment.author?.avatar
+              }
               alt={
                 comment.author?.username?.charAt(0).toUpperCase() ||
                 comment.author?.firstName?.charAt(0).toUpperCase() ||

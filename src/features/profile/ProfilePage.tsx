@@ -14,6 +14,7 @@ import {
   rem,
   ActionIcon,
   Menu,
+  Container,
 } from "@mantine/core";
 import {
   IconBookmark,
@@ -346,7 +347,7 @@ export function ProfilePage() {
   const backgroundURL = `${import.meta.env.VITE_API_URL}/stream/image/${user.backgroundImage?.split("/").pop()}`;
 
   return (
-    <Box>
+    <Container size="xl" px="sm">
       {/* Hidden file inputs */}
       <input
         type="file"
@@ -373,6 +374,7 @@ export function ProfilePage() {
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
           position: "relative",
+          borderBottomLeftRadius: "2rem",
         }}
       >
         {/* Background image overlay for better text readability */}
@@ -384,6 +386,7 @@ export function ProfilePage() {
               left: 0,
               right: 0,
               bottom: 0,
+              borderBottomLeftRadius: "2rem",
               background: "rgba(0, 0, 0, 0.3)",
             }}
           />
@@ -446,7 +449,6 @@ export function ProfilePage() {
             radius="50%"
             style={{
               bottom: -70,
-              left: -10,
               border: "4px solid white",
               boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
             }}
@@ -483,7 +485,7 @@ export function ProfilePage() {
 
       <Box py="xl" pt={80}>
         <Group justify="space-between" align="flex-start" mb="lg">
-          <Box style={{ flex: 1 }}>
+          <Stack gap="xs" style={{ flex: 1 }}>
             <Group gap="sm" align="center" mb="xs">
               <Title order={1} size={rem(28)} fw={700}>
                 {user.firstName && user.lastName
@@ -515,7 +517,7 @@ export function ProfilePage() {
               )}
             </Group>
 
-            <Group gap="sm" mb="lg" align="center">
+            <Group align="center">
               <Text c="dimmed" size="lg" fw={500}>
                 @{user.username || user.phoneNumber || "unknown"}
               </Text>
@@ -537,33 +539,37 @@ export function ProfilePage() {
                 </Text>{" "}
                 following
               </Text>
+
+              <Group>
+                <IconCalendar size={18} color="var(--mantine-color-gray-6)" />
+                <Text size="sm" c="dimmed">
+                  Joined {formatDate(user.createdAt)}
+                </Text>
+              </Group>
             </Group>
 
             {user.bio && (
-              <Text
-                size="md"
-                style={{ lineHeight: 1.6, maxWidth: 600 }}
-                mb="lg"
-              >
+              <Text size="md" style={{ lineHeight: 1.6, maxWidth: 600 }}>
                 {user.bio}
               </Text>
             )}
-
-            <Group gap="xs" mb="lg">
-              <IconCalendar size={18} color="var(--mantine-color-gray-6)" />
-              <Text size="sm" c="dimmed">
-                Joined {formatDate(user.createdAt)}
-              </Text>
-            </Group>
-          </Box>
+          </Stack>
 
           <Group>
             {isOwnProfile ? (
               <Button
-                variant="light"
                 leftSection={<IconEdit size={18} />}
                 onClick={handleEditProfile}
                 radius="xl"
+                size="sm"
+                style={{
+                  background:
+                    "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                  fontWeight: 600,
+                  fontSize: "12px",
+                  boxShadow:
+                    "0 4px 16px rgba(102, 126, 234, 0.3), 0 2px 4px rgba(0, 0, 0, 0.1)",
+                }}
               >
                 Edit Profile
               </Button>
@@ -580,6 +586,7 @@ export function ProfilePage() {
                 onClick={handleFollow}
                 loading={followLoading}
                 radius="xl"
+                size="sm"
                 style={
                   followStatus?.isFollowing
                     ? {
@@ -612,7 +619,7 @@ export function ProfilePage() {
                   variant="light"
                   leftSection={<Icon size={16} />}
                   rightSection={<IconExternalLink size={14} />}
-                  size="sm"
+                  size="xs"
                   style={{
                     color: color,
                     borderColor: color + "30",
@@ -632,50 +639,17 @@ export function ProfilePage() {
         onChange={(value) => setActiveTab(value || "posts")}
         variant="pills"
       >
-        <Tabs.List
-          style={{
-            padding: "4px",
-            borderRadius: "16px",
-          }}
-        >
-          <Tabs.Tab
-            value="posts"
-            leftSection={<IconMessage size={16} />}
-            style={{
-              borderRadius: "12px",
-              fontWeight: 500,
-            }}
-          >
+        <Tabs.List>
+          <Tabs.Tab value="posts" leftSection={<IconMessage size={16} />}>
             Posts
           </Tabs.Tab>
-          <Tabs.Tab
-            value="media"
-            leftSection={<IconPhoto size={16} />}
-            style={{
-              borderRadius: "12px",
-              fontWeight: 500,
-            }}
-          >
+          <Tabs.Tab value="media" leftSection={<IconPhoto size={16} />}>
             Media
           </Tabs.Tab>
-          <Tabs.Tab
-            value="likes"
-            leftSection={<IconHeart size={16} />}
-            style={{
-              borderRadius: "12px",
-              fontWeight: 500,
-            }}
-          >
+          <Tabs.Tab value="likes" leftSection={<IconHeart size={16} />}>
             Likes
           </Tabs.Tab>
-          <Tabs.Tab
-            value="bookmarks"
-            leftSection={<IconBookmark size={16} />}
-            style={{
-              borderRadius: "12px",
-              fontWeight: 500,
-            }}
-          >
+          <Tabs.Tab value="bookmarks" leftSection={<IconBookmark size={16} />}>
             Bookmarks
           </Tabs.Tab>
         </Tabs.List>
@@ -896,6 +870,6 @@ export function ProfilePage() {
           </Stack>
         </Tabs.Panel>
       </Tabs>
-    </Box>
+    </Container>
   );
 }

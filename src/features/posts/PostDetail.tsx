@@ -861,7 +861,6 @@ export function PostDetail() {
                 placeholder="Write a comment..."
                 value={commentContent}
                 onChange={(e) => setCommentContent(e.currentTarget.value)}
-                radius="xl"
                 size="sm"
                 rightSection={
                   commentContent.trim() ? (
@@ -901,7 +900,7 @@ export function PostDetail() {
                 </Text>
 
                 <ScrollArea
-                  h={200}
+                  h={400}
                   type="scroll"
                   scrollbarSize={6}
                   styles={{

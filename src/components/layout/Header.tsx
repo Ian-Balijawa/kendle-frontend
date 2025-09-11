@@ -16,7 +16,6 @@ import {
   IconHome,
   IconLogout,
   IconMenu2,
-  IconPlus,
   IconSettings,
   IconUser,
 } from "@tabler/icons-react";
@@ -139,17 +138,6 @@ export function HeaderContent() {
           </Group>
         ) : (
           <Group gap="xs">
-            <ActionIcon
-              variant="gradient"
-              gradient={{ from: "blue", to: "cyan" }}
-              size="lg"
-              radius="xl"
-              onClick={() => navigate("/statuses")}
-              hiddenFrom="sm"
-            >
-              <IconPlus size={20} />
-            </ActionIcon>
-
             <Menu shadow="lg" width={220} position="bottom-end" radius="md">
               <Menu.Target>
                 <UnstyledButton

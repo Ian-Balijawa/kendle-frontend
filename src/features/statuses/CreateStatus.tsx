@@ -11,7 +11,6 @@ import {
   Text,
   Textarea,
   Avatar,
-  Card,
   Progress,
 } from "@mantine/core";
 import { IconPhoto, IconSend, IconX, IconUpload } from "@tabler/icons-react";
@@ -248,7 +247,7 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
 
       <Stack gap="sm" mt="md">
         {media.length > 0 && previewUrls.length > 0 && (
-          <Card p="sm" withBorder radius="md">
+          <>
             <Stack gap="sm">
               <Group justify="space-between" align="center">
                 <Text fw={500} size="sm">
@@ -332,18 +331,18 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
                 </Text>
               </Group>
             </Stack>
-          </Card>
+          </>
         )}
 
         {media.length === 0 && (
-          <Card p="sm" radius="md">
+          <>
             <Stack gap="sm" align="center">
               <Box
                 style={{
-                  width: 80,
-                  height: 80,
-                  borderRadius: "50%",
-                  backgroundColor: "var(--mantine-color-gray-1)",
+                  // width: 80,
+                  // height: 80,
+                  // borderRadius: "50%",
+                  // backgroundColor: "var(--mantine-color-gray-1)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -374,7 +373,7 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
                 </Button>
               </Group>
             </Stack>
-          </Card>
+          </>
         )}
 
         <Box>
@@ -388,12 +387,6 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
             minRows={3}
             maxRows={2}
             autosize
-            styles={{
-              input: {
-                borderRadius: 12,
-                fontSize: 14,
-              },
-            }}
           />
         </Box>
 

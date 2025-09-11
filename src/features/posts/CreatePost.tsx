@@ -7,16 +7,16 @@ import {
   Image,
   Modal,
   Stack,
-  Switch,
   Text,
   Textarea,
 } from "@mantine/core";
-import { IconPhoto, IconSend, IconX } from "@tabler/icons-react";
+import { IconPlus, IconSend, IconX } from "@tabler/icons-react";
 import { useRef, useState } from "react";
 import { useCreatePost } from "../../hooks/usePosts";
 import { CreatePostRequest } from "../../services/api";
 import { useAuthStore } from "../../stores/authStore";
 import { generateVideoThumbnails } from "@rajesh896/video-thumbnails-generator";
+import { getImageUrl } from "../../lib/stream-urls";
 
 interface CreatePostProps {
   opened: boolean;
@@ -32,14 +32,6 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
   const [media, setMedia] = useState<File[]>([]);
   const [thumbnail, setThumbnail] = useState<File[]>([]);
   const [isGeneratingThumbnails, setIsGeneratingThumbnails] = useState(false);
-
-  // Post settings
-  const [isPublic, setIsPublic] = useState(true);
-  const [allowComments, setAllowComments] = useState(true);
-  const [allowLikes, setAllowLikes] = useState(true);
-  const [allowShares, setAllowShares] = useState(true);
-  const [allowBookmarks, setAllowBookmarks] = useState(true);
-  const [allowReactions, setAllowReactions] = useState(true);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -213,12 +205,6 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
             ? "video"
             : "image"
           : "text",
-      isPublic,
-      allowComments,
-      allowLikes,
-      allowShares,
-      allowBookmarks,
-      allowReactions,
       media: media.length > 0 ? media : undefined,
       thumbnail: thumbnail.length > 0 ? thumbnail : undefined,
     };
@@ -274,7 +260,7 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
         {/* Author Header */}
         <Group gap="sm">
           <Avatar
-            src={user?.avatar}
+            src={(user?.avatar && getImageUrl(user?.avatar)) || user?.avatar}
             alt={user?.firstName || "User"}
             size={40}
             radius="xl"
@@ -293,7 +279,7 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
 
         {/* Main Content */}
         <Textarea
-          placeholder="What's on your mind? Use Enter for new lines..."
+          placeholder="Create a post..."
           size="sm"
           value={content}
           onChange={(e) => setContent(e.currentTarget.value)}
@@ -380,54 +366,6 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
           </Stack>
         )}
 
-        {/* Post Settings */}
-        <Stack gap="sm">
-          <Text size="sm" fw={500}>
-            Post Settings
-          </Text>
-          <Group grow>
-            <Switch
-              label="Public"
-              checked={isPublic}
-              size="sm"
-              onChange={(e) => setIsPublic(e.currentTarget.checked)}
-            />
-            <Switch
-              label="Allow Comments"
-              checked={allowComments}
-              size="sm"
-              onChange={(e) => setAllowComments(e.currentTarget.checked)}
-            />
-            <Switch
-              label="Allow Likes"
-              checked={allowLikes}
-              size="sm"
-              onChange={(e) => setAllowLikes(e.currentTarget.checked)}
-            />
-          </Group>
-          <Group grow>
-            <Switch
-              label="Allow Shares"
-              checked={allowShares}
-              size="sm"
-              onChange={(e) => setAllowShares(e.currentTarget.checked)}
-            />
-            <Switch
-              label="Allow Bookmarks"
-              checked={allowBookmarks}
-              size="sm"
-              onChange={(e) => setAllowBookmarks(e.currentTarget.checked)}
-            />
-            <Switch
-              label="Allow Reactions"
-              checked={allowReactions}
-              size="sm"
-              onChange={(e) => setAllowReactions(e.currentTarget.checked)}
-            />
-          </Group>
-        </Stack>
-
-        {/* Actions */}
         <Group justify="space-between">
           <Group gap="sm">
             <input
@@ -440,14 +378,16 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
               }
               style={{ display: "none" }}
             />
-            <ActionIcon
-              variant="light"
+            <Button
+              variant="outline"
               onClick={() => fileInputRef.current?.click()}
               disabled={media.length >= 10}
               title="Add photos or videos"
+              size="sm"
+              leftSection={<IconPlus size={16} />}
             >
-              <IconPhoto size={16} />
-            </ActionIcon>
+              Add media
+            </Button>
             {isGeneratingThumbnails && (
               <Text size="sm" c="dimmed">
                 Generating thumbnails...

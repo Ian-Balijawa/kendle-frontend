@@ -22,6 +22,7 @@ export function VerticalUserCard({
   const handleFollow = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (onFollow) {
+      console.log(user);
       onFollow(user.id, isFollowing);
     }
   };

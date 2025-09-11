@@ -157,7 +157,7 @@ export function HomePage() {
   const canGoPreviousCollection = currentCollectionIndex > 0;
 
   return (
-    <Container size="xl" px="md">
+    <Container size="xl" px="sm">
       {/* Header Section */}
       <Group justify="space-between" align="center" mb="md">
         <Badge
@@ -186,6 +186,13 @@ export function HomePage() {
               onClick={() => setCreatePostOpened(true)}
               radius="xl"
               size="sm"
+              style={{
+                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                fontWeight: 600,
+                fontSize: "12px",
+                boxShadow:
+                  "0 4px 16px rgba(102, 126, 234, 0.3), 0 2px 4px rgba(0, 0, 0, 0.1)",
+              }}
             >
               Create Post
             </Button>
