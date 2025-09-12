@@ -1,6 +1,7 @@
 import { Avatar, Box, Button, Center, Group, Stack, Text } from "@mantine/core";
 import { IconUserCheck, IconUserPlus } from "@tabler/icons-react";
 import { User } from "../../types";
+import { useAuthStore } from "../../stores/authStore";
 
 interface VerticalUserCardProps {
   user: User;
@@ -19,11 +20,13 @@ export function VerticalUserCard({
   onViewProfile,
   showActions = true,
 }: VerticalUserCardProps) {
+  const { user: currentUser } = useAuthStore();
+  const derivedIsFollowing = isFollowing || Boolean(user.followers?.includes(currentUser?.id || ""));
   const handleFollow = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (onFollow) {
       console.log(user);
-      onFollow(user.id, isFollowing);
+      onFollow(user.id, derivedIsFollowing);
     }
   };
 
@@ -141,27 +144,27 @@ export function VerticalUserCard({
             loading={followLoading}
             onClick={handleFollow}
             leftSection={
-              isFollowing ? (
+              derivedIsFollowing ? (
                 <IconUserCheck size={14} />
               ) : (
                 <IconUserPlus size={14} />
               )
             }
             style={{
-              background: isFollowing
+              background: derivedIsFollowing
                 ? "rgba(15, 23, 42, 0.05)"
                 : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-              color: isFollowing ? "#475569" : "white",
-              border: isFollowing ? "1px solid rgba(15, 23, 42, 0.1)" : "none",
+              color: derivedIsFollowing ? "#475569" : "white",
+              border: derivedIsFollowing ? "1px solid rgba(15, 23, 42, 0.1)" : "none",
               fontWeight: 600,
               fontSize: "12px",
               width: "100%",
-              boxShadow: isFollowing
+              boxShadow: derivedIsFollowing
                 ? "none"
                 : "0 4px 16px rgba(102, 126, 234, 0.3), 0 2px 4px rgba(0, 0, 0, 0.1)",
             }}
           >
-            {isFollowing ? "Following" : "Follow"}
+            {derivedIsFollowing ? "Following" : "Follow"}
           </Button>
         )}
       </Stack>

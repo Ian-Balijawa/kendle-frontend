@@ -13,7 +13,6 @@ import {
   Title,
   rem,
   ActionIcon,
-  Menu,
   Container,
 } from "@mantine/core";
 import {
@@ -33,7 +32,6 @@ import {
   IconUserPlus,
   IconCamera,
   IconTrash,
-  IconUpload,
 } from "@tabler/icons-react";
 import { useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
@@ -41,11 +39,14 @@ import {
   useUserPosts,
   useUserLikedPosts,
   useUserBookmarkedPosts,
+  useUserMediaPosts,
+  useMyMediaPosts,
 } from "../../hooks/usePosts";
 import { useUser, useUserProfile } from "../../hooks/useUser";
 import { useFollowStatus, useToggleFollow } from "../../hooks/useFollow";
 import { useAuthStore } from "../../stores/authStore";
 import { User } from "../../types/auth";
+import { Post, PostsResponse } from "../../types";
 import { PostCard } from "../posts/PostCard";
 import {
   useUploadAvatar,
@@ -86,25 +87,34 @@ export function ProfilePage() {
       limit: 10,
     },
   );
-
   const { data: likedPostsData, isLoading: likedPostsLoading } =
     useUserLikedPosts(profileUserId!, {
       limit: 10,
     });
-
   const { data: bookmarkedPostsData, isLoading: bookmarkedPostsLoading } =
     useUserBookmarkedPosts(profileUserId!, {
       limit: 10,
     });
+  // Media posts - prefer backend filtered media for accuracy and performance
+  const { data: myMediaData, isLoading: myMediaLoading } = isOwnProfile
+    ? useMyMediaPosts({ limit: 10 })
+    : { data: undefined, isLoading: false } as any;
+  const { data: userMediaData, isLoading: userMediaLoading } = !isOwnProfile
+    ? useUserMediaPosts(profileUserId!, { limit: 10 })
+    : { data: undefined, isLoading: false } as any;
 
   // Follow functionality - only for other users' profiles
   const { data: followStatus } = useFollowStatus(profileUserId!);
   const { toggleFollow, isLoading: followLoading } = useToggleFollow();
 
-  const posts = postsData?.pages.flatMap((page) => page.posts) || [];
-  const likedPosts = likedPostsData?.pages.flatMap((page) => page.posts) || [];
+  const posts = postsData?.pages.flatMap((page: PostsResponse) => page.posts) || [];
+  const likedPosts =
+    likedPostsData?.pages.flatMap((page: PostsResponse) => page.posts) || [];
   const bookmarkedPosts =
-    bookmarkedPostsData?.pages.flatMap((page) => page.posts) || [];
+    bookmarkedPostsData?.pages.flatMap((page: PostsResponse) => page.posts) || [];
+  const mediaPosts = (isOwnProfile
+    ? myMediaData?.pages.flatMap((page: PostsResponse) => page.posts)
+    : userMediaData?.pages.flatMap((page: PostsResponse) => page.posts)) || [];
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -140,14 +150,19 @@ export function ProfilePage() {
   ) => {
     const file = event.target.files?.[0];
     if (file) {
-      await uploadAvatar.mutateAsync(file);
-      // Reset the input value to allow selecting the same file again
-      event.target.value = "";
+      try {
+        await uploadAvatar.mutateAsync(file);
+      } catch (error) {
+        console.error("Failed to upload avatar:", error);
+      } finally {
+        // Reset the input value to allow selecting the same file again
+        event.target.value = "";
+      }
     }
   };
 
-  // Background image management handlers
-  const handleBackgroundButtonClick = () => {
+  // Background image management handlers - FIXED
+  const handleBackgroundUpload = () => {
     backgroundFileInputRef.current?.click();
   };
 
@@ -156,14 +171,23 @@ export function ProfilePage() {
   ) => {
     const file = event.target.files?.[0];
     if (file) {
-      await uploadBackgroundImage.mutateAsync(file);
-      // Reset the input value to allow selecting the same file again
-      event.target.value = "";
+      try {
+        await uploadBackgroundImage.mutateAsync(file);
+      } catch (error) {
+        console.error("Failed to upload background image:", error);
+      } finally {
+        // Reset the input value to allow selecting the same file again
+        event.target.value = "";
+      }
     }
   };
 
   const handleBackgroundDelete = async () => {
-    await deleteBackgroundImage.mutateAsync();
+    try {
+      await deleteBackgroundImage.mutateAsync();
+    } catch (error) {
+      console.error("Failed to delete background image:", error);
+    }
   };
 
   const socialLinks = [
@@ -392,53 +416,52 @@ export function ProfilePage() {
           />
         )}
 
-        {/* Background image edit button for own profile */}
+        {/* Background image edit buttons for own profile */}
         {isOwnProfile && (
-          <Box
+          <Group
+            gap="xs"
             style={{
               position: "absolute",
               top: 16,
               right: 16,
             }}
           >
-            <Menu shadow="md" width={200}>
-              <Menu.Target>
-                <ActionIcon
-                  variant="filled"
-                  color="dark"
-                  size="lg"
-                  radius="xl"
-                  style={{
-                    background: "rgba(0, 0, 0, 0.6)",
-                    backdropFilter: "blur(10px)",
-                  }}
-                  loading={
-                    uploadBackgroundImage.isPending ||
-                    deleteBackgroundImage.isPending
-                  }
-                >
-                  <IconCamera size={18} />
-                </ActionIcon>
-              </Menu.Target>
-              <Menu.Dropdown>
-                <Menu.Item
-                  leftSection={<IconUpload size={16} />}
-                  onClick={handleBackgroundButtonClick}
-                >
-                  Change Background
-                </Menu.Item>
-                {user.backgroundImage && (
-                  <Menu.Item
-                    leftSection={<IconTrash size={16} />}
-                    color="red"
-                    onClick={handleBackgroundDelete}
-                  >
-                    Remove Background
-                  </Menu.Item>
-                )}
-              </Menu.Dropdown>
-            </Menu>
-          </Box>
+            <ActionIcon
+              variant="filled"
+              color="dark"
+              size="lg"
+              radius="xl"
+              style={{
+                background: "rgba(0, 0, 0, 0.6)",
+                backdropFilter: "blur(10px)",
+                zIndex: 10000
+              }}
+              loading={
+                uploadBackgroundImage.isPending ||
+                deleteBackgroundImage.isPending
+              }
+              onClick={handleBackgroundUpload}
+            >
+              <IconCamera size={18} />
+            </ActionIcon>
+            {user.backgroundImage && (
+              <ActionIcon
+                variant="filled"
+                color="red"
+                size="lg"
+                radius="xl"
+                style={{
+                  background: "rgba(255, 0, 0, 0.6)",
+                  backdropFilter: "blur(10px)",
+                  zIndex: 10000
+                }}
+                loading={deleteBackgroundImage.isPending}
+                onClick={handleBackgroundDelete}
+              >
+                <IconTrash size={18} />
+              </ActionIcon>
+            )}
+          </Group>
         )}
 
         <Box style={{ position: "relative" }}>
@@ -539,7 +562,6 @@ export function ProfilePage() {
                 </Text>{" "}
                 following
               </Text>
-
               <Group>
                 <IconCalendar size={18} color="var(--mantine-color-gray-6)" />
                 <Text size="sm" c="dimmed">
@@ -590,14 +612,14 @@ export function ProfilePage() {
                 style={
                   followStatus?.isFollowing
                     ? {
-                        color: "var(--mantine-color-blue-6)",
-                        borderColor: "var(--mantine-color-blue-6)",
-                      }
+                      color: "var(--mantine-color-blue-6)",
+                      borderColor: "var(--mantine-color-blue-6)",
+                    }
                     : {
-                        background:
-                          "linear-gradient(135deg, var(--mantine-color-blue-6), var(--mantine-color-violet-6))",
-                        border: "none",
-                      }
+                      background:
+                        "linear-gradient(135deg, var(--mantine-color-blue-6), var(--mantine-color-violet-6))",
+                      border: "none",
+                    }
                 }
               >
                 {followStatus?.isFollowing ? "Following" : "Follow"}
@@ -718,8 +740,16 @@ export function ProfilePage() {
                   </Text>
                 </Stack>
               </Center>
-            ) : posts.filter((post) => post.media && post.media.length > 0)
-                .length === 0 ? (
+            ) : (isOwnProfile ? myMediaLoading : userMediaLoading) ? (
+              <Center py={60}>
+                <Stack align="center" gap="sm">
+                  <Loader size="lg" />
+                  <Text size="sm" c="dimmed" fw={500}>
+                    Loading media posts...
+                  </Text>
+                </Stack>
+              </Center>
+            ) : mediaPosts.length === 0 ? (
               <Card
                 p="sm"
                 style={{
@@ -756,9 +786,9 @@ export function ProfilePage() {
                 </Stack>
               </Card>
             ) : (
-              posts
-                .filter((post) => post.media && post.media.length > 0)
-                .map((post) => <PostCard key={post.id} post={post} />)
+                    mediaPosts.map((post: Post) => (
+                      <PostCard key={post.id} post={post} />
+                    ))
             )}
           </Stack>
         </Tabs.Panel>

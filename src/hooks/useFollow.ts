@@ -19,12 +19,20 @@ export const followKeys = {
 
 // Get follow status for a specific user
 export function useFollowStatus(targetUserId: string) {
-  const { user } = useAuthStore();
+  const { user: currentUser } = useAuthStore();
 
   return useQuery({
     queryKey: followKeys.statusForUser(targetUserId),
-    queryFn: () => apiService.getFollowStatus(targetUserId),
-    enabled: !!targetUserId && !!user && user.id !== targetUserId,
+    queryFn: async () => {
+      const targetUser = await apiService.getUser(targetUserId);
+      const isFollowing = Boolean(
+        targetUser.followers && currentUser
+          ? targetUser.followers.includes(currentUser.id)
+          : false,
+      );
+      return { isFollowing } as { isFollowing: boolean };
+    },
+    enabled: !!targetUserId && !!currentUser && currentUser.id !== targetUserId,
     staleTime: 30 * 1000, // 30 seconds
   });
 }

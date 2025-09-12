@@ -16,6 +16,9 @@ export interface User {
   isProfileComplete: boolean;
   createdAt: string;
   updatedAt: string;
+  // New relationship arrays from backend responses
+  followers?: string[];
+  followings?: string[];
   followersCount: number;
   followingCount: number;
   postsCount: number;

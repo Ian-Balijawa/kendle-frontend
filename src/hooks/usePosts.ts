@@ -20,10 +20,12 @@ export const postKeys = {
   details: () => [...postKeys.all, "detail"] as const,
   detail: (id: string) => [...postKeys.details(), id] as const,
   user: (userId: string) => [...postKeys.all, "user", userId] as const,
+  userMedia: (userId: string) => [...postKeys.user(userId), "media"] as const,
   liked: () => [...postKeys.all, "liked"] as const,
   disliked: () => [...postKeys.all, "disliked"] as const,
   bookmarked: () => [...postKeys.all, "bookmarked"] as const,
   me: () => [...postKeys.all, "me"] as const,
+  myMedia: () => [...postKeys.me(), "media"] as const,
   // Engagement query keys
   likers: (id: string) => [...postKeys.detail(id), "likers"] as const,
   dislikers: (id: string) => [...postKeys.detail(id), "dislikers"] as const,
@@ -200,6 +202,45 @@ export function useUserBookmarkedPosts(
     queryKey: [...postKeys.user(userId), "bookmarked", params],
     queryFn: ({ pageParam = 1 }) =>
       apiService.getUserBookmarkedPosts(userId, { ...params, page: pageParam }),
+    getNextPageParam: (lastPage: PostsResponse) => {
+      const totalPages = Math.ceil(lastPage.total / lastPage.limit);
+      if (lastPage.page < totalPages) {
+        return lastPage.page + 1;
+      }
+      return undefined;
+    },
+    initialPageParam: 1,
+  });
+}
+
+// Get user media posts (posts with images/videos only)
+export function useUserMediaPosts(
+  userId: string,
+  params: { page?: number; limit?: number } = {},
+) {
+  return useInfiniteQuery({
+    queryKey: [...postKeys.userMedia(userId), params],
+    queryFn: ({ pageParam = 1 }) =>
+      apiService.getUserMediaPosts(userId, { ...params, page: pageParam }),
+    getNextPageParam: (lastPage: PostsResponse) => {
+      const totalPages = Math.ceil(lastPage.total / lastPage.limit);
+      if (lastPage.page < totalPages) {
+        return lastPage.page + 1;
+      }
+      return undefined;
+    },
+    initialPageParam: 1,
+  });
+}
+
+// Get my media posts (current logged-in user's media only)
+export function useMyMediaPosts(
+  params: { page?: number; limit?: number } = {},
+) {
+  return useInfiniteQuery({
+    queryKey: [...postKeys.myMedia(), params],
+    queryFn: ({ pageParam = 1 }) =>
+      apiService.getMyMediaPosts({ ...params, page: pageParam }),
     getNextPageParam: (lastPage: PostsResponse) => {
       const totalPages = Math.ceil(lastPage.total / lastPage.limit);
       if (lastPage.page < totalPages) {

@@ -180,6 +180,10 @@ export interface Media {
   height?: number;
   format?: string;
   createdAt: string;
+  // Optional fields from media-only endpoints
+  streamingUrl?: string | null;
+  originalUrl?: string | null;
+  mediaType?: "image" | "video";
 }
 
 export interface Tag {

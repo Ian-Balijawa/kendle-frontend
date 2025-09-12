@@ -3,8 +3,8 @@ import { User } from "./auth";
 
 export interface UserProfile extends User {
   posts: Post[];
-  followers: User[];
-  following: User[];
+  followers: string[];
+  following: string[];
   isFollowing: boolean;
   isBlocked: boolean;
   isBlockedBy: boolean;

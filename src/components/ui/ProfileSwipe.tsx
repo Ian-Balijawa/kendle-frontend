@@ -12,6 +12,7 @@ import { Navigation, FreeMode, A11y } from "swiper/modules";
 import type { Swiper as SwiperType } from "swiper";
 import { useToggleFollow } from "../../hooks/useFollow";
 import { User } from "../../types";
+import { useAuthStore } from "../../stores/authStore";
 import { VerticalUserCard } from "./VerticalUserCard";
 
 // Import Swiper styles
@@ -34,6 +35,7 @@ export function ProfileSwipe({
 }: ProfileSwipeProps) {
   const navigate = useNavigate();
   const { toggleFollow, isLoading } = useToggleFollow();
+  const { user: currentUser } = useAuthStore();
   const swiperRef = useRef<SwiperType | null>(null);
   const [isBeginning, setIsBeginning] = useState(true);
   const [isEnd, setIsEnd] = useState(false);
@@ -282,6 +284,7 @@ export function ProfileSwipe({
             >
               <VerticalUserCard
                 user={user}
+                isFollowing={Boolean(user.followers?.includes(currentUser?.id || ""))}
                 onFollow={handleFollow}
                 onViewProfile={handleViewProfile}
                 followLoading={isLoading}
