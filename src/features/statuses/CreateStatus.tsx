@@ -313,7 +313,7 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
                           maxHeight: 200,
                           objectFit: "contain",
                         }}
-                        controls
+                          autoPlay
                       />
                     )}
                   </Box>

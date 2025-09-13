@@ -33,7 +33,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "timeago.js";
 import ReactPlayer from "react-player";
-import Masonry, { ResponsiveMasonry } from "react-responsive-masonry";
+// Custom masonry implementation will be added here
 import { CommentSkeletonList, PostEngagementButton } from "../../components/ui";
 import { useInfiniteComments, useCreateComment } from "../../hooks/useComments";
 import {
@@ -474,7 +474,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                             ? Math.min(post.media[0].height, 400)
                             : 300
                         }
-                        controls
+                        autoPlay
                         playsInline
                       />
                     ) : (
@@ -545,7 +545,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                                     src={getVideoStreamUrl(media.url)}
                                     width="100%"
                                     height={200}
-                                    controls
+                                    autoPlay
                                     light={
                                       media.thumbnailUrl
                                         ? getImageStreamUrl(media.thumbnailUrl)
@@ -591,84 +591,82 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                             </Box>
                           )}
 
-                          {/* Images in masonry layout */}
+                          {/* Images in grid layout */}
                           {images.length > 0 && (
-                            <ResponsiveMasonry
-                              columnsCountBreakPoints={{
-                                350: 1,
-                                750: 2,
-                                900: 3,
+                            <Box
+                              style={{
+                                display: "grid",
+                                gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+                                gap: "12px",
+                                width: "100%",
                               }}
                             >
-                              <Masonry gutter="12px">
-                                {images.map((media, index) => (
-                                  <Box
-                                    key={media.id || `image-${index}`}
+                              {images.map((media, index) => (
+                                <Box
+                                  key={media.id || `image-${index}`}
+                                  style={{
+                                    position: "relative",
+                                    cursor: "pointer",
+                                    transition: "transform 0.2s ease",
+                                    borderRadius: "var(--mantine-radius-md)",
+                                    overflow: "hidden",
+                                  }}
+                                  onClick={handlePostClick}
+                                  onMouseEnter={(e) => {
+                                    e.currentTarget.style.transform =
+                                      "scale(1.02)";
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    e.currentTarget.style.transform =
+                                      "scale(1)";
+                                  }}
+                                >
+                                  <Image
+                                    src={getImageStreamUrl(media.url)}
+                                    alt={media.filename || "Post media"}
+                                    radius="md"
+                                    fit="contain"
                                     style={{
-                                      position: "relative",
-                                      cursor: "pointer",
-                                      transition: "transform 0.2s ease",
-                                      borderRadius: "var(--mantine-radius-md)",
-                                      overflow: "hidden",
-                                      marginBottom: "12px",
+                                      width: "100%",
+                                      height: "auto",
+                                      objectFit: "cover",
+                                      display: "block",
                                     }}
-                                    onClick={handlePostClick}
-                                    onMouseEnter={(e) => {
-                                      e.currentTarget.style.transform =
-                                        "scale(1.02)";
+                                    onError={(e) => {
+                                      console.error(
+                                        "Failed to load image:",
+                                        getImageStreamUrl(media.url),
+                                      );
+                                      e.currentTarget.style.display = "none";
                                     }}
-                                    onMouseLeave={(e) => {
-                                      e.currentTarget.style.transform =
-                                        "scale(1)";
-                                    }}
-                                  >
-                                    <Image
-                                      src={getImageStreamUrl(media.url)}
-                                      alt={media.filename || "Post media"}
-                                      radius="md"
-                                      fit="contain"
-                                      style={{
-                                        width: "100%",
-                                        height: "auto",
-                                        objectFit: "cover",
-                                        display: "block",
-                                      }}
-                                      onError={(e) => {
-                                        console.error(
-                                          "Failed to load image:",
-                                          getImageStreamUrl(media.url),
-                                        );
-                                        e.currentTarget.style.display = "none";
-                                      }}
-                                    />
+                                  />
 
-                                    {/* More images indicator */}
-                                    {index === 3 && images.length > 4 && (
-                                      <Box
-                                        style={{
-                                          position: "absolute",
-                                          top: 0,
-                                          left: 0,
-                                          right: 0,
-                                          bottom: 0,
-                                          backgroundColor: "rgba(0, 0, 0, 0.7)",
-                                          display: "flex",
-                                          alignItems: "center",
-                                          justifyContent: "center",
-                                          borderRadius:
-                                            "var(--mantine-radius-md)",
-                                          zIndex: 3,
-                                        }}
-                                      >
-                                        <Text size="lg" fw={600} c="white">
-                                          +{images.length - 4}
-                                        </Text>
-                                      </Box>
-                                    )}
-                                  </Box>
-                                ))}
-                              </Masonry>
-                            </ResponsiveMasonry>
+                                  {/* More images indicator */}
+                                  {index === 3 && images.length > 4 && (
+                                    <Box
+                                      style={{
+                                        position: "absolute",
+                                        top: 0,
+                                        left: 0,
+                                        right: 0,
+                                        bottom: 0,
+                                        backgroundColor: "rgba(0, 0, 0, 0.7)",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        borderRadius:
+                                          "var(--mantine-radius-md)",
+                                        zIndex: 3,
+                                      }}
+                                    >
+                                      <Text size="lg" fw={600} c="white">
+                                        +{images.length - 4}
+                                      </Text>
+                                    </Box>
+                                  )}
+                                </Box>
+                              ))}
+                            </Box>
                           )}
                         </Stack>
                       );

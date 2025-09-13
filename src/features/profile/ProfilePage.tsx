@@ -39,20 +39,18 @@ import {
   useUserPosts,
   useUserLikedPosts,
   useUserBookmarkedPosts,
-  useUserMediaPosts,
-  useMyMediaPosts,
 } from "../../hooks/usePosts";
 import { useUser, useUserProfile } from "../../hooks/useUser";
 import { useFollowStatus, useToggleFollow } from "../../hooks/useFollow";
 import { useAuthStore } from "../../stores/authStore";
 import { User } from "../../types/auth";
-import { Post, PostsResponse } from "../../types";
 import { PostCard } from "../posts/PostCard";
 import {
   useUploadAvatar,
   useUploadBackgroundImage,
   useDeleteBackgroundImage,
-} from "../../hooks/useProfileImages";
+} from "../../hooks/useMedia";
+import { UserMediaGallery } from "../../components/ui/UserMediaGallery";
 
 export function ProfilePage() {
   const { userId } = useParams<{ userId?: string }>();
@@ -95,26 +93,15 @@ export function ProfilePage() {
     useUserBookmarkedPosts(profileUserId!, {
       limit: 10,
     });
-  // Media posts - prefer backend filtered media for accuracy and performance
-  const { data: myMediaData, isLoading: myMediaLoading } = isOwnProfile
-    ? useMyMediaPosts({ limit: 10 })
-    : { data: undefined, isLoading: false } as any;
-  const { data: userMediaData, isLoading: userMediaLoading } = !isOwnProfile
-    ? useUserMediaPosts(profileUserId!, { limit: 10 })
-    : { data: undefined, isLoading: false } as any;
 
   // Follow functionality - only for other users' profiles
   const { data: followStatus } = useFollowStatus(profileUserId!);
   const { toggleFollow, isLoading: followLoading } = useToggleFollow();
 
-  const posts = postsData?.pages.flatMap((page: PostsResponse) => page.posts) || [];
-  const likedPosts =
-    likedPostsData?.pages.flatMap((page: PostsResponse) => page.posts) || [];
+  const posts = postsData?.pages.flatMap((page) => page.posts) || [];
+  const likedPosts = likedPostsData?.pages.flatMap((page) => page.posts) || [];
   const bookmarkedPosts =
-    bookmarkedPostsData?.pages.flatMap((page: PostsResponse) => page.posts) || [];
-  const mediaPosts = (isOwnProfile
-    ? myMediaData?.pages.flatMap((page: PostsResponse) => page.posts)
-    : userMediaData?.pages.flatMap((page: PostsResponse) => page.posts)) || [];
+    bookmarkedPostsData?.pages.flatMap((page) => page.posts) || [];
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -730,67 +717,9 @@ export function ProfilePage() {
         </Tabs.Panel>
 
         <Tabs.Panel value="media" pt="xl">
-          <Stack gap="sm">
-            {postsLoading ? (
-              <Center py={60}>
-                <Stack align="center" gap="sm">
-                  <Loader size="lg" />
-                  <Text size="sm" c="dimmed" fw={500}>
-                    Loading media posts...
-                  </Text>
-                </Stack>
-              </Center>
-            ) : (isOwnProfile ? myMediaLoading : userMediaLoading) ? (
-              <Center py={60}>
-                <Stack align="center" gap="sm">
-                  <Loader size="lg" />
-                  <Text size="sm" c="dimmed" fw={500}>
-                    Loading media posts...
-                  </Text>
-                </Stack>
-              </Center>
-            ) : mediaPosts.length === 0 ? (
-              <Card
-                p="sm"
-                style={{
-                  border: "none",
-                }}
-              >
-                <Stack align="center" gap="sm">
-                  <Box
-                    style={{
-                      width: 80,
-                      height: 80,
-                      borderRadius: "50%",
-                      background: "var(--mantine-color-orange-1)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <IconPhoto
-                      size={32}
-                      color="var(--mantine-color-orange-6)"
-                    />
-                  </Box>
-                  <Stack align="center" gap="xs">
-                    <Text fw={600} size="lg">
-                      No media posts yet
-                    </Text>
-                    <Text c="dimmed" ta="center" size="sm">
-                      {isOwnProfile
-                        ? "Posts with media will appear here!"
-                        : "This user hasn't posted any media yet."}
-                    </Text>
-                  </Stack>
-                </Stack>
-              </Card>
-            ) : (
-                    mediaPosts.map((post: Post) => (
-                      <PostCard key={post.id} post={post} />
-                    ))
-            )}
-          </Stack>
+          <Box style={{ width: "100%", overflow: "hidden" }}>
+            <UserMediaGallery userId={profileUserId!} limit={20} />
+          </Box>
         </Tabs.Panel>
 
         <Tabs.Panel value="likes" pt="xl">

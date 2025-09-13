@@ -48,7 +48,7 @@ import {
   useDeleteAvatar,
   useUploadBackgroundImage,
   useDeleteBackgroundImage,
-} from "../../hooks/useProfileImages";
+} from "../../hooks/useMedia";
 
 export function SettingsPage() {
   const { user } = useAuthStore();

@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useInfiniteQuery } from "@tanstack/react-query";
 import { queryClient } from "../lib/queryClient";
 import { apiService } from "../services/api";
 import { useAuthStore } from "../stores/authStore";
@@ -186,5 +186,58 @@ export function useDeleteBackgroundImage() {
         updateUser(context.previousUser as any);
       }
     },
+  });
+}
+
+// User media query keys
+export const userMediaKeys = {
+  all: ["userMedia"] as const,
+  lists: () => [...userMediaKeys.all, "list"] as const,
+  list: (filters: { type?: string; userId?: string }) => [...userMediaKeys.lists(), { filters }] as const,
+};
+
+// Fetch user media hook (for current user)
+export function useUserMedia(params: { type?: string; limit?: number } = {}) {
+  return useInfiniteQuery({
+    queryKey: userMediaKeys.list(params),
+    queryFn: async ({ pageParam = 1 }) => {
+      return apiService.getUserMedia({
+        page: pageParam,
+        limit: params.limit || 20,
+        type: params.type,
+      });
+    },
+    getNextPageParam: (lastPage) => {
+      if (lastPage.page < lastPage.totalPages) {
+        return lastPage.page + 1;
+      }
+      return undefined;
+    },
+    initialPageParam: 1,
+  });
+}
+
+// Fetch user media by user ID hook (for other users)
+export function useUserMediaByUserId(
+  userId: string,
+  params: { type?: string; limit?: number } = {}
+) {
+  return useInfiniteQuery({
+    queryKey: userMediaKeys.list({ ...params, userId }),
+    queryFn: async ({ pageParam = 1 }) => {
+      return apiService.getUserMediaByUserId(userId, {
+        page: pageParam,
+        limit: params.limit || 20,
+        type: params.type,
+      });
+    },
+    getNextPageParam: (lastPage) => {
+      if (lastPage.page < lastPage.totalPages) {
+        return lastPage.page + 1;
+      }
+      return undefined;
+    },
+    initialPageParam: 1,
+    enabled: !!userId, // Only run query if userId is provided
   });
 }

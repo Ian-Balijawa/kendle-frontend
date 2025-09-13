@@ -278,7 +278,7 @@ export function StatusDetailsModal({
                 playing={isPlaying}
                 loop
                 playsInline
-                controls={false}
+                  autoPlay
                 style={{
                   objectFit: "contain",
                 }}

@@ -18,26 +18,10 @@ import {
   StatusesResponse,
   StatusReply,
   StatusRepliesResponse,
+  UserMediaItem,
   StatusAnalytics,
   PostEngagement,
 } from "../types";
-// Response type for media-only endpoint
-export interface MediaLibraryResponse {
-  media: {
-    id: string;
-    type: "image" | "video";
-    url: string;
-    thumbnailUrl?: string | null;
-    createdAt: string;
-    streamingUrl?: string | null;
-    originalUrl?: string | null;
-    mediaType?: "image" | "video";
-  }[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
-}
 
 // API request/response types based on the provided endpoints
 export interface CreatePostRequest {
@@ -1110,99 +1094,6 @@ class ApiService {
     return response.data.data;
   }
 
-  // Media-only helpers built on existing posts endpoints
-  async getUserMediaPosts(
-    userId: string,
-    params: { page?: number; limit?: number } = {},
-  ): Promise<PostsResponse> {
-    const postsResponse = await this.getUserPosts(userId, params);
-    const mediaPosts = postsResponse.posts.filter(
-      (post) => Array.isArray(post.media) && post.media.length > 0,
-    );
-    return {
-      ...postsResponse,
-      posts: mediaPosts,
-      total: mediaPosts.length, // keeps pagination local to this page slice
-    };
-  }
-
-  async getMyMediaPosts(
-    params: { page?: number; limit?: number } = {},
-  ): Promise<PostsResponse> {
-    // Prefer backend media-only endpoint when available
-    const searchParams = new URLSearchParams();
-    Object.entries(params).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        searchParams.append(key, String(value));
-      }
-    });
-
-    const response: AxiosResponse<ApiResponse<MediaLibraryResponse>> =
-      await this.api.get(`/posts/user/me/media?${searchParams.toString()}`);
-    const data = response.data.data;
-
-    // Convert media items into pseudo-posts so UI can reuse PostCard if needed
-    const posts: Post[] = data.media.map((m) => ({
-      id: m.id,
-      content: "",
-      location: undefined,
-      type: m.type,
-      status: "published",
-      isPublic: true,
-      allowComments: true,
-      allowLikes: true,
-      allowShares: true,
-      allowBookmarks: true,
-      allowReactions: true,
-      isRepost: false,
-      isQuote: false,
-      isArticle: false,
-      isStory: false,
-      likesCount: 0,
-      dislikesCount: 0,
-      commentsCount: 0,
-      sharesCount: 0,
-      bookmarksCount: 0,
-      viewsCount: 0,
-      createdAt: m.createdAt,
-      updatedAt: m.createdAt,
-      publishedAt: m.createdAt,
-      author: useAuthStore.getState().user as User,
-      media: [
-        {
-          id: m.id,
-          url: m.url,
-          type: m.type,
-          filename: m.id,
-          size: 0,
-          thumbnailUrl: m.thumbnailUrl || undefined,
-          createdAt: m.createdAt,
-          streamingUrl: m.streamingUrl,
-          originalUrl: m.originalUrl,
-          mediaType: m.mediaType,
-        },
-      ],
-      tags: [],
-      mentions: [],
-      hashtags: [],
-      likes: [],
-      comments: [],
-      shares: [],
-      isLiked: false,
-      isDisliked: false,
-      isShared: false,
-      isBookmarked: false,
-      _count: { likes: 0, dislikes: 0, comments: 0, shares: 0 },
-    }));
-
-    return {
-      posts,
-      total: data.total,
-      page: data.page,
-      limit: data.limit,
-    };
-  }
-
   // Post engagement API methods
   async getPostLikers(
     postId: string,
@@ -1540,6 +1431,64 @@ class ApiService {
     const response: AxiosResponse<ApiResponse<{ user: User }>> =
       await this.api.delete("/user/profile/background");
     return response.data.data.user;
+  }
+
+  // User Media API methods
+  async getUserMedia(
+    params: { page?: number; limit?: number; type?: string } = {},
+  ): Promise<{
+    media: UserMediaItem[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
+    const searchParams = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        searchParams.append(key, String(value));
+      }
+    });
+
+    const response: AxiosResponse<
+      ApiResponse<{
+        media: UserMediaItem[];
+        total: number;
+        page: number;
+        limit: number;
+        totalPages: number;
+      }>
+    > = await this.api.get(`/posts/user/me/media?${searchParams.toString()}`);
+    return response.data.data;
+  }
+
+  async getUserMediaByUserId(
+    userId: string,
+    params: { page?: number; limit?: number; type?: string } = {},
+  ): Promise<{
+    media: UserMediaItem[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
+    const searchParams = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        searchParams.append(key, String(value));
+      }
+    });
+
+    const response: AxiosResponse<
+      ApiResponse<{
+        media: UserMediaItem[];
+        total: number;
+        page: number;
+        limit: number;
+        totalPages: number;
+      }>
+    > = await this.api.get(`/posts/user/${userId}/media?${searchParams.toString()}`);
+    return response.data.data;
   }
 }
 

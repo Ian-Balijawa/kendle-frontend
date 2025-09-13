@@ -35,7 +35,7 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { format } from "timeago.js";
 import ReactPlayer from "react-player";
-import Masonry, { ResponsiveMasonry } from "react-responsive-masonry";
+// Custom masonry implementation will be added here
 import {
   CommentSkeletonList,
   PostDetailSkeleton,
@@ -481,7 +481,6 @@ export function PostDetail() {
                           : 400
                       }
                       playsInline
-                      controls
                       autoPlay
                     />
                   ) : (
@@ -554,7 +553,7 @@ export function PostDetail() {
                                     src={mediaVideoStreamUrl}
                                     width="100%"
                                     height={300}
-                                    controls
+                                    autoPlay
                                     light={
                                       media.thumbnailUrl
                                         ? `${import.meta.env.VITE_API_URL}/stream/image/${media.thumbnailUrl.split("/").pop()}`
@@ -601,89 +600,86 @@ export function PostDetail() {
                           </Box>
                         )}
 
-                        {/* Images in masonry layout */}
+                        {/* Images in grid layout */}
                         {images.length > 0 && (
-                          <ResponsiveMasonry
-                            columnsCountBreakPoints={{
-                              350: 1,
-                              750: 2,
-                              900: 3,
-                              1200: 4,
+                          <Box
+                            style={{
+                              display: "grid",
+                              gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                              gap: "20px",
+                              width: "100%",
                             }}
                           >
-                            <Masonry gutter="20px">
-                              {images.map((media, index) => {
-                                const mediaImageStreamUrl = `${import.meta.env.VITE_API_URL}/stream/image/${media.url.split("/").pop()}`;
+                            {images.map((media, index) => {
+                              const mediaImageStreamUrl = `${import.meta.env.VITE_API_URL}/stream/image/${media.url.split("/").pop()}`;
 
-                                return (
-                                  <Box
-                                    key={media.id || `image-${index}`}
+                              return (
+                                <Box
+                                  key={media.id || `image-${index}`}
+                                  style={{
+                                    position: "relative",
+                                    cursor: "pointer",
+                                    transition: "transform 0.2s ease",
+                                    borderRadius: "var(--mantine-radius-md)",
+                                    overflow: "hidden",
+                                  }}
+                                  onClick={() => navigate(`/post/${post.id}`)}
+                                  onMouseEnter={(e) => {
+                                    e.currentTarget.style.transform =
+                                      "scale(1.02)";
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    e.currentTarget.style.transform =
+                                      "scale(1)";
+                                  }}
+                                >
+                                  <Image
+                                    src={mediaImageStreamUrl}
+                                    alt={media.filename || "Post media"}
+                                    radius="md"
+                                    fit="contain"
                                     style={{
-                                      position: "relative",
-                                      cursor: "pointer",
-                                      transition: "transform 0.2s ease",
-                                      borderRadius: "var(--mantine-radius-md)",
-                                      overflow: "hidden",
-                                      marginBottom: "20px",
+                                      width: "100%",
+                                      height: "auto",
+                                      objectFit: "fill",
+                                      display: "block",
                                     }}
-                                    onClick={() => navigate(`/post/${post.id}`)}
-                                    onMouseEnter={(e) => {
-                                      e.currentTarget.style.transform =
-                                        "scale(1.02)";
+                                    onError={(e) => {
+                                      console.error(
+                                        "Failed to load image:",
+                                        mediaImageStreamUrl,
+                                      );
+                                      e.currentTarget.style.display = "none";
                                     }}
-                                    onMouseLeave={(e) => {
-                                      e.currentTarget.style.transform =
-                                        "scale(1)";
-                                    }}
-                                  >
-                                    <Image
-                                      src={mediaImageStreamUrl}
-                                      alt={media.filename || "Post media"}
-                                      radius="md"
-                                      fit="contain"
-                                      style={{
-                                        width: "100%",
-                                        height: "auto",
-                                        objectFit: "fill",
-                                        display: "block",
-                                      }}
-                                      onError={(e) => {
-                                        console.error(
-                                          "Failed to load image:",
-                                          mediaImageStreamUrl,
-                                        );
-                                        e.currentTarget.style.display = "none";
-                                      }}
-                                    />
+                                  />
 
-                                    {/* More images indicator */}
-                                    {index === 3 && images.length > 4 && (
-                                      <Box
-                                        style={{
-                                          position: "absolute",
-                                          top: 0,
-                                          left: 0,
-                                          right: 0,
-                                          bottom: 0,
-                                          backgroundColor: "rgba(0, 0, 0, 0.7)",
-                                          display: "flex",
-                                          alignItems: "center",
-                                          justifyContent: "center",
-                                          borderRadius:
-                                            "var(--mantine-radius-md)",
-                                          zIndex: 3,
-                                        }}
-                                      >
-                                        <Text size="xl" fw={600} c="white">
-                                          +{images.length - 4}
-                                        </Text>
-                                      </Box>
-                                    )}
-                                  </Box>
-                                );
-                              })}
-                            </Masonry>
-                          </ResponsiveMasonry>
+                                  {/* More images indicator */}
+                                  {index === 3 && images.length > 4 && (
+                                    <Box
+                                      style={{
+                                        position: "absolute",
+                                        top: 0,
+                                        left: 0,
+                                        right: 0,
+                                        bottom: 0,
+                                        backgroundColor: "rgba(0, 0, 0, 0.7)",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        borderRadius:
+                                          "var(--mantine-radius-md)",
+                                        zIndex: 3,
+                                      }}
+                                    >
+                                      <Text size="xl" fw={600} c="white">
+                                        +{images.length - 4}
+                                      </Text>
+                                    </Box>
+                                  )}
+                                </Box>
+                              );
+                            })}
+                          </Box>
                         )}
                       </Stack>
                     );

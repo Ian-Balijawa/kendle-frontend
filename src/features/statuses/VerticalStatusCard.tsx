@@ -174,7 +174,7 @@ export function VerticalStatusCard({
             muted
             loop
             playsInline
-            controls={false}
+              autoPlay
             style={{
               position: "absolute",
               top: 0,

@@ -180,10 +180,6 @@ export interface Media {
   height?: number;
   format?: string;
   createdAt: string;
-  // Optional fields from media-only endpoints
-  streamingUrl?: string | null;
-  originalUrl?: string | null;
-  mediaType?: "image" | "video";
 }
 
 export interface Tag {
@@ -223,4 +219,15 @@ export interface PostEngagement {
   reactionType?: "like" | "dislike" | null;
   bookmarkNote?: string | null;
   lastViewedAt?: string | null;
+}
+
+export interface UserMediaItem {
+  id: string;
+  type: "image" | "video";
+  url: string;
+  thumbnailUrl?: string | null;
+  createdAt: string;
+  streamingUrl: string;
+  originalUrl: string;
+  mediaType: "image" | "video";
 }
