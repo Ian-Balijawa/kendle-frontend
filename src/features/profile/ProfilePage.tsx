@@ -421,7 +421,7 @@ export function ProfilePage() {
               style={{
                 background: "rgba(0, 0, 0, 0.6)",
                 backdropFilter: "blur(10px)",
-                zIndex: 10000
+                zIndex: 10000,
               }}
               loading={
                 uploadBackgroundImage.isPending ||
@@ -440,7 +440,7 @@ export function ProfilePage() {
                 style={{
                   background: "rgba(255, 0, 0, 0.6)",
                   backdropFilter: "blur(10px)",
-                  zIndex: 10000
+                  zIndex: 10000,
                 }}
                 loading={deleteBackgroundImage.isPending}
                 onClick={handleBackgroundDelete}
@@ -599,14 +599,14 @@ export function ProfilePage() {
                 style={
                   followStatus?.isFollowing
                     ? {
-                      color: "var(--mantine-color-blue-6)",
-                      borderColor: "var(--mantine-color-blue-6)",
-                    }
+                        color: "var(--mantine-color-blue-6)",
+                        borderColor: "var(--mantine-color-blue-6)",
+                      }
                     : {
-                      background:
-                        "linear-gradient(135deg, var(--mantine-color-blue-6), var(--mantine-color-violet-6))",
-                      border: "none",
-                    }
+                        background:
+                          "linear-gradient(135deg, var(--mantine-color-blue-6), var(--mantine-color-violet-6))",
+                        border: "none",
+                      }
                 }
               >
                 {followStatus?.isFollowing ? "Following" : "Follow"}

@@ -1,6 +1,5 @@
 import { Avatar, Box, Image, Stack, Text } from "@mantine/core";
 import { IconPlus } from "@tabler/icons-react";
-import ReactPlayer from "react-player";
 import { StatusCollection } from "../../types";
 
 interface VerticalStatusCardProps {
@@ -166,15 +165,15 @@ export function VerticalStatusCard({
             }}
           />
         ) : (
-          <ReactPlayer
+          <video
+            controls
             src={`${import.meta.env.VITE_API_URL}/stream/video/${latestStatus.media[0].url.split("/").pop()}`}
             width="100%"
             height="100%"
-            playing={false}
             muted
             loop
             playsInline
-              autoPlay
+            autoPlay
             style={{
               position: "absolute",
               top: 0,

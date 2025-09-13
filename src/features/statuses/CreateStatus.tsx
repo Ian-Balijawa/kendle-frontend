@@ -307,13 +307,14 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
                       />
                     ) : (
                       <video
+                        controls
                         src={url}
                         style={{
                           width: "100%",
                           maxHeight: 200,
                           objectFit: "contain",
                         }}
-                          autoPlay
+                        autoPlay
                       />
                     )}
                   </Box>

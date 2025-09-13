@@ -32,7 +32,6 @@ import {
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "timeago.js";
-import ReactPlayer from "react-player";
 // Custom masonry implementation will be added here
 import { CommentSkeletonList, PostEngagementButton } from "../../components/ui";
 import { useInfiniteComments, useCreateComment } from "../../hooks/useComments";
@@ -466,7 +465,8 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                     }}
                   >
                     {post.media[0].type === "video" ? (
-                      <ReactPlayer
+                      <video
+                        controls
                         src={getVideoStreamUrl(post.media[0].url)}
                         width="100%"
                         height={
@@ -482,7 +482,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                         src={getImageStreamUrl(post.media[0].url)}
                         alt={post.media[0].filename || "Post media"}
                         radius="lg"
-                          fit="contain"
+                        fit="contain"
                         style={{
                           maxHeight: 400,
                           objectFit: "cover",
@@ -541,16 +541,12 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                                       "scale(1)";
                                   }}
                                 >
-                                  <ReactPlayer
+                                  <video
+                                    controls
                                     src={getVideoStreamUrl(media.url)}
                                     width="100%"
                                     height={200}
                                     autoPlay
-                                    light={
-                                      media.thumbnailUrl
-                                        ? getImageStreamUrl(media.thumbnailUrl)
-                                        : undefined
-                                    }
                                     playsInline
                                     style={{
                                       borderRadius: "var(--mantine-radius-md)",
@@ -596,7 +592,8 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                             <Box
                               style={{
                                 display: "grid",
-                                gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+                                gridTemplateColumns:
+                                  "repeat(auto-fit, minmax(150px, 1fr))",
                                 gap: "12px",
                                 width: "100%",
                               }}
@@ -854,27 +851,27 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                   {commentsLoading ? (
                     <CommentSkeletonList count={2} />
                   ) : comments.length > 0 ? (
-                      <ScrollArea
-                        h={400}
-                        type="scroll"
-                        scrollbarSize={6}
-                        styles={{
-                          scrollbar: {
-                            '&[data-orientation="vertical"] .mantine-ScrollArea-thumb':
+                    <ScrollArea
+                      h={400}
+                      type="scroll"
+                      scrollbarSize={6}
+                      styles={{
+                        scrollbar: {
+                          '&[data-orientation="vertical"] .mantine-ScrollArea-thumb':
                             {
                               backgroundColor: "var(--mantine-color-gray-5)",
                             },
-                          },
-                        }}
-                      >
-                        {comments.map((comment: any) => (
+                        },
+                      }}
+                    >
+                      {comments.map((comment: any) => (
                         <CommentCard
                           key={comment.id || `comment-${Math.random()}`}
                           comment={comment}
                           postId={post.id}
                         />
                       ))}
-                      </ScrollArea>
+                    </ScrollArea>
                   ) : (
                     <Text size="sm" c="dimmed" ta="center" py="md">
                       No comments yet

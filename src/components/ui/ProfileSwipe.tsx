@@ -284,7 +284,9 @@ export function ProfileSwipe({
             >
               <VerticalUserCard
                 user={user}
-                isFollowing={Boolean(user.followers?.includes(currentUser?.id || ""))}
+                isFollowing={Boolean(
+                  user.followers?.includes(currentUser?.id || ""),
+                )}
                 onFollow={handleFollow}
                 onViewProfile={handleViewProfile}
                 followLoading={isLoading}

@@ -193,7 +193,8 @@ export function useDeleteBackgroundImage() {
 export const userMediaKeys = {
   all: ["userMedia"] as const,
   lists: () => [...userMediaKeys.all, "list"] as const,
-  list: (filters: { type?: string; userId?: string }) => [...userMediaKeys.lists(), { filters }] as const,
+  list: (filters: { type?: string; userId?: string }) =>
+    [...userMediaKeys.lists(), { filters }] as const,
 };
 
 // Fetch user media hook (for current user)
@@ -220,7 +221,7 @@ export function useUserMedia(params: { type?: string; limit?: number } = {}) {
 // Fetch user media by user ID hook (for other users)
 export function useUserMediaByUserId(
   userId: string,
-  params: { type?: string; limit?: number } = {}
+  params: { type?: string; limit?: number } = {},
 ) {
   return useInfiniteQuery({
     queryKey: userMediaKeys.list({ ...params, userId }),

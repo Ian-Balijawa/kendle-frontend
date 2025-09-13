@@ -16,7 +16,6 @@ import {
   IconShare,
 } from "@tabler/icons-react";
 import { useEffect, useState, useRef } from "react";
-import ReactPlayer from "react-player";
 import { StatusCollection } from "../../types";
 
 interface StatusDetailsModalProps {
@@ -273,12 +272,12 @@ export function StatusDetailsModal({
                 }}
               />
             ) : (
-              <ReactPlayer
+              <video
+                controls
                 src={`${import.meta.env.VITE_API_URL}/stream/video/${currentStatus.media[0].url.split("/").pop()}`}
-                playing={isPlaying}
                 loop
                 playsInline
-                  autoPlay
+                autoPlay
                 style={{
                   objectFit: "contain",
                 }}

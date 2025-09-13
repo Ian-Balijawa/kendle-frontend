@@ -21,7 +21,8 @@ export function UserProfileCard({
   showActions = true,
 }: VerticalUserCardProps) {
   const { user: currentUser } = useAuthStore();
-  const derivedIsFollowing = isFollowing || Boolean(user.followers?.includes(currentUser?.id || ""));
+  const derivedIsFollowing =
+    isFollowing || Boolean(user.followers?.includes(currentUser?.id || ""));
   const handleFollow = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (onFollow) {
@@ -155,7 +156,9 @@ export function UserProfileCard({
                 ? "rgba(15, 23, 42, 0.05)"
                 : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
               color: derivedIsFollowing ? "#475569" : "white",
-              border: derivedIsFollowing ? "1px solid rgba(15, 23, 42, 0.1)" : "none",
+              border: derivedIsFollowing
+                ? "1px solid rgba(15, 23, 42, 0.1)"
+                : "none",
               fontWeight: 600,
               fontSize: "12px",
               width: "100%",

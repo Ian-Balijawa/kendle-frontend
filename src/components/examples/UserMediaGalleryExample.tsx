@@ -5,7 +5,9 @@ interface UserMediaGalleryExampleProps {
   userId: string;
 }
 
-export function UserMediaGalleryExample({ userId }: UserMediaGalleryExampleProps) {
+export function UserMediaGalleryExample({
+  userId,
+}: UserMediaGalleryExampleProps) {
   return (
     <Container size="xl" py="xl">
       <Stack gap="xl">
@@ -14,8 +16,9 @@ export function UserMediaGalleryExample({ userId }: UserMediaGalleryExampleProps
             User Media Gallery Example
           </Title>
           <Text c="dimmed" mb="lg">
-            This example demonstrates how to display another user's media using the UserMediaGallery component.
-            The component fetches media from the API endpoint: <code>/api/v1/posts/user/{userId}/media</code>
+            This example demonstrates how to display another user's media using
+            the UserMediaGallery component. The component fetches media from the
+            API endpoint: <code>/api/v1/posts/user/{userId}/media</code>
           </Text>
         </Box>
 

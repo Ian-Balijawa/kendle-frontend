@@ -1487,7 +1487,9 @@ class ApiService {
         limit: number;
         totalPages: number;
       }>
-    > = await this.api.get(`/posts/user/${userId}/media?${searchParams.toString()}`);
+    > = await this.api.get(
+      `/posts/user/${userId}/media?${searchParams.toString()}`,
+    );
     return response.data.data;
   }
 }

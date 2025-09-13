@@ -34,8 +34,6 @@ import {
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { format } from "timeago.js";
-import ReactPlayer from "react-player";
-// Custom masonry implementation will be added here
 import {
   CommentSkeletonList,
   PostDetailSkeleton,
@@ -472,7 +470,8 @@ export function PostDetail() {
               {post.media.length === 1 ? (
                 <>
                   {post.media[0].type === "video" ? (
-                    <ReactPlayer
+                    <video
+                      controls
                       src={videoStreamUrl}
                       width="100%"
                       height={
@@ -480,8 +479,6 @@ export function PostDetail() {
                           ? Math.min(post.media[0].height, 500)
                           : 400
                       }
-                      playsInline
-                      autoPlay
                     />
                   ) : (
                     <Image
@@ -549,17 +546,11 @@ export function PostDetail() {
                                       "scale(1)";
                                   }}
                                 >
-                                  <ReactPlayer
+                                  <video
+                                    controls
                                     src={mediaVideoStreamUrl}
                                     width="100%"
                                     height={300}
-                                    autoPlay
-                                    light={
-                                      media.thumbnailUrl
-                                        ? `${import.meta.env.VITE_API_URL}/stream/image/${media.thumbnailUrl.split("/").pop()}`
-                                        : undefined
-                                    }
-                                    playsInline
                                     style={{
                                       borderRadius: "var(--mantine-radius-md)",
                                     }}
@@ -605,7 +596,8 @@ export function PostDetail() {
                           <Box
                             style={{
                               display: "grid",
-                              gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                              gridTemplateColumns:
+                                "repeat(auto-fit, minmax(200px, 1fr))",
                               gap: "20px",
                               width: "100%",
                             }}
