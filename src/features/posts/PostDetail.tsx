@@ -489,6 +489,7 @@ export function PostDetail() {
                       src={imageStreamUrl}
                       alt={post.media[0].filename || "Post media"}
                       radius="lg"
+                        fit="contain"
                       style={{
                         maxHeight: 500,
                         objectFit: "contain",
@@ -639,6 +640,7 @@ export function PostDetail() {
                                       src={mediaImageStreamUrl}
                                       alt={media.filename || "Post media"}
                                       radius="md"
+                                      fit="contain"
                                       style={{
                                         width: "100%",
                                         height: "auto",

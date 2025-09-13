@@ -482,6 +482,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                         src={getImageStreamUrl(post.media[0].url)}
                         alt={post.media[0].filename || "Post media"}
                         radius="lg"
+                          fit="contain"
                         style={{
                           maxHeight: 400,
                           objectFit: "cover",
@@ -625,6 +626,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                                       src={getImageStreamUrl(media.url)}
                                       alt={media.filename || "Post media"}
                                       radius="md"
+                                      fit="contain"
                                       style={{
                                         width: "100%",
                                         height: "auto",

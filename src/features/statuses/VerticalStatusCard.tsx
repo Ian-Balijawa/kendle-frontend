@@ -49,13 +49,14 @@ export function VerticalStatusCard({
           <Image
             src={currentUserAvatar}
             alt="Background"
+            fit="contain"
             style={{
               position: "absolute",
               top: 0,
               left: 0,
               width: "100%",
               height: "100%",
-              objectFit: "cover",
+              objectFit: "contain",
               opacity: 0.3,
             }}
           />
@@ -147,13 +148,14 @@ export function VerticalStatusCard({
           <Image
             src={`${import.meta.env.VITE_API_URL}/stream/image/${latestStatus.media[0].url.split("/").pop()}`}
             alt="Status background"
+            fit="contain"
             style={{
               position: "absolute",
               top: 0,
               left: 0,
               width: "100%",
               height: "100%",
-              objectFit: "cover",
+              objectFit: "contain",
             }}
             onError={(e) => {
               console.error(
@@ -179,7 +181,7 @@ export function VerticalStatusCard({
               left: 0,
               width: "100%",
               height: "100%",
-              objectFit: "cover",
+              objectFit: "contain",
             }}
           />
         )

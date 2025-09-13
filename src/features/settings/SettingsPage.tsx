@@ -1063,6 +1063,7 @@ export function SettingsPage() {
                 alt="Preview"
                 height={100}
                 width={100}
+                fit="contain"
                 radius="md"
                 style={{ objectFit: "cover" }}
               />
@@ -1134,6 +1135,7 @@ export function SettingsPage() {
                 height={120}
                 width="100%"
                 radius="md"
+                fit="contain"
                 style={{ objectFit: "cover" }}
               />
             </Box>

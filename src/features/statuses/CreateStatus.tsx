@@ -302,8 +302,8 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
                       <Image
                         src={url}
                         alt={`Status preview ${index + 1}`}
-                        fit="cover"
-                        style={{ maxHeight: 200 }}
+                        fit="contain"
+                        style={{ maxHeight: 200, objectFit: "contain" }}
                       />
                     ) : (
                       <video
@@ -311,7 +311,7 @@ export function CreateStatus({ opened, onClose }: CreateStatusProps) {
                         style={{
                           width: "100%",
                           maxHeight: 200,
-                          objectFit: "cover",
+                          objectFit: "contain",
                         }}
                         controls
                       />

@@ -311,6 +311,7 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
                     height={100}
                     style={{ objectFit: "cover" }}
                     radius="md"
+                    fit="contain"
                   />
                   <ActionIcon
                     size="xs"

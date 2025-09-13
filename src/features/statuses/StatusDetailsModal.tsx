@@ -259,8 +259,10 @@ export function StatusDetailsModal({
               <Image
                 src={`${import.meta.env.VITE_API_URL}/stream/image/${currentStatus.media[0].url.split("/").pop()}`}
                 alt="Status"
+                fit="contain"
                 style={{
-                  objectFit: "cover",
+                  objectFit: "contain",
+                  fit: "contain",
                 }}
                 onError={(e) => {
                   console.error(
@@ -278,7 +280,7 @@ export function StatusDetailsModal({
                 playsInline
                 controls={false}
                 style={{
-                  objectFit: "cover",
+                  objectFit: "contain",
                 }}
                 onEnded={() => setIsPlaying(false)}
               />
