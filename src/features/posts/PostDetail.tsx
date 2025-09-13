@@ -38,6 +38,7 @@ import {
   CommentSkeletonList,
   PostDetailSkeleton,
   PostEngagementButton,
+  InstagramVideoRenderer,
 } from "../../components/ui";
 import { useCreateComment, useInfiniteComments } from "../../hooks/useComments";
 import {
@@ -470,22 +471,32 @@ export function PostDetail() {
               {post.media.length === 1 ? (
                 <>
                   {post.media[0].type === "video" ? (
-                    <video
-                      controls
-                      src={videoStreamUrl}
-                      width="100%"
-                      height={
-                        post.media[0].height
-                          ? Math.min(post.media[0].height, 500)
-                          : 400
-                      }
+                    <InstagramVideoRenderer
+                      videoUrl={videoStreamUrl}
+                      user={{
+                        username:
+                          post.author?.username ||
+                          post.author?.phoneNumber ||
+                          "Unknown User",
+                        profilePicture: avatarURL || "/user.png",
+                        isVerified: post.author?.isVerified || false,
+                      }}
+                      caption={post.content}
+                      autoPlay={false}
+                      muted={true}
+                      onVideoClick={() => navigate(`/post/${post.id}`)}
+                      showUserInfo={false}
+                      showFollowButton={false}
+                      aspectRatio="auto"
+                      maxWidth="100%"
+                      maxHeight="500px"
                     />
                   ) : (
                     <Image
                       src={imageStreamUrl}
                       alt={post.media[0].filename || "Post media"}
                       radius="lg"
-                        fit="contain"
+                      fit="contain"
                       style={{
                         maxHeight: 500,
                         objectFit: "contain",
@@ -546,14 +557,28 @@ export function PostDetail() {
                                       "scale(1)";
                                   }}
                                 >
-                                  <video
-                                    controls
-                                    src={mediaVideoStreamUrl}
-                                    width="100%"
-                                    height={300}
-                                    style={{
-                                      borderRadius: "var(--mantine-radius-md)",
+                                  <InstagramVideoRenderer
+                                    videoUrl={mediaVideoStreamUrl}
+                                    user={{
+                                      username:
+                                        post.author?.username ||
+                                        post.author?.phoneNumber ||
+                                        "Unknown User",
+                                      profilePicture: avatarURL || "/user.png",
+                                      isVerified:
+                                        post.author?.isVerified || false,
                                     }}
+                                    caption={post.content}
+                                    autoPlay={false}
+                                    muted={true}
+                                    onVideoClick={() =>
+                                      navigate(`/post/${post.id}`)
+                                    }
+                                    showUserInfo={false}
+                                    showFollowButton={false}
+                                    aspectRatio="auto"
+                                    maxWidth="100%"
+                                    maxHeight="300px"
                                   />
 
                                   {/* Video play indicator */}

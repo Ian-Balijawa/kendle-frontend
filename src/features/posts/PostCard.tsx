@@ -33,7 +33,11 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "timeago.js";
 // Custom masonry implementation will be added here
-import { CommentSkeletonList, PostEngagementButton } from "../../components/ui";
+import {
+  CommentSkeletonList,
+  PostEngagementButton,
+  InstagramVideoRenderer,
+} from "../../components/ui";
 import { useInfiniteComments, useCreateComment } from "../../hooks/useComments";
 import {
   useBookmarkPost,
@@ -465,17 +469,27 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                     }}
                   >
                     {post.media[0].type === "video" ? (
-                      <video
-                        controls
-                        src={getVideoStreamUrl(post.media[0].url)}
-                        width="100%"
-                        height={
-                          post.media[0].height
-                            ? Math.min(post.media[0].height, 400)
-                            : 300
+                      <InstagramVideoRenderer
+                        videoUrl={getVideoStreamUrl(post.media[0].url)}
+                        user={{
+                          username:
+                            post.author?.username ||
+                            post.author?.phoneNumber ||
+                            "Unknown User",
+                          profilePicture: avatarURL || "/user.png",
+                          isVerified: post.author?.isVerified || false,
+                        }}
+                        caption={post.content}
+                        autoPlay={false}
+                        muted={true}
+                        onVideoClick={() =>
+                          handlePostClick({} as React.MouseEvent)
                         }
-                        autoPlay
-                        playsInline
+                        showUserInfo={false}
+                        showFollowButton={false}
+                        aspectRatio="auto"
+                        maxWidth="100%"
+                        maxHeight="400px"
                       />
                     ) : (
                       <Image
@@ -541,16 +555,28 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                                       "scale(1)";
                                   }}
                                 >
-                                  <video
-                                    controls
-                                    src={getVideoStreamUrl(media.url)}
-                                    width="100%"
-                                    height={200}
-                                    autoPlay
-                                    playsInline
-                                    style={{
-                                      borderRadius: "var(--mantine-radius-md)",
+                                  <InstagramVideoRenderer
+                                    videoUrl={getVideoStreamUrl(media.url)}
+                                    user={{
+                                      username:
+                                        post.author?.username ||
+                                        post.author?.phoneNumber ||
+                                        "Unknown User",
+                                      profilePicture: avatarURL || "/user.png",
+                                      isVerified:
+                                        post.author?.isVerified || false,
                                     }}
+                                    caption={post.content}
+                                    autoPlay={false}
+                                    muted={true}
+                                    onVideoClick={() =>
+                                      handlePostClick({} as React.MouseEvent)
+                                    }
+                                    showUserInfo={false}
+                                    showFollowButton={false}
+                                    aspectRatio="auto"
+                                    maxWidth="100%"
+                                    maxHeight="200px"
                                   />
 
                                   {/* Video play indicator */}

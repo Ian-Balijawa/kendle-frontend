@@ -8,5 +8,7 @@ export { PostEngagementModal } from "./PostEngagementModal";
 export { PostSkeleton, PostSkeletonList } from "./PostSkeleton";
 export { PostEngagementIntegrationExample } from "../examples/PostEngagementIntegrationExample";
 export { UserMediaGalleryExample } from "../examples/UserMediaGalleryExample";
+export { InstagramVideoExample } from "../examples/InstagramVideoExample";
 export { ProfileSwipe } from "./ProfileSwipe";
 export { UserProfileCard as VerticalUserCard } from "./UserProfileCard";
+export { default as InstagramVideoRenderer } from "./InstagramVideoRenderer";

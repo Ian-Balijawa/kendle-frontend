@@ -1,7 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Box, Text, Avatar, Button, ActionIcon } from '@mantine/core';
-import { IconPlayerPlay, IconVolume, IconVolumeOff } from '@tabler/icons-react';
-import './InstagramVideoRenderer.css';
+import React, { useState, useRef, useEffect } from "react";
+import { Box, Text, Avatar, Button, ActionIcon } from "@mantine/core";
+import { IconPlayerPlay, IconVolume, IconVolumeOff } from "@tabler/icons-react";
+import "./InstagramVideoRenderer.css";
 
 interface UserInfo {
   username: string;
@@ -18,6 +18,9 @@ interface VideoRendererProps {
   onVideoClick?: () => void;
   showUserInfo?: boolean;
   showFollowButton?: boolean;
+  aspectRatio?: "portrait" | "landscape" | "square" | "auto";
+  maxWidth?: string | number;
+  maxHeight?: string | number;
 }
 
 const InstagramVideoRenderer: React.FC<VideoRendererProps> = ({
@@ -29,11 +32,17 @@ const InstagramVideoRenderer: React.FC<VideoRendererProps> = ({
   onVideoClick,
   showUserInfo = true,
   showFollowButton = false,
+  aspectRatio = "auto",
+  maxWidth = "100%",
+  maxHeight = "100%",
 }) => {
   const [isPlaying, setIsPlaying] = useState(autoPlay);
   const [isMuted, setIsMuted] = useState(muted);
   const [showCaption, setShowCaption] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
+  const [videoDimensions, setVideoDimensions] = useState<{
+    width: number;
+    height: number;
+  } | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -69,16 +78,51 @@ const InstagramVideoRenderer: React.FC<VideoRendererProps> = ({
     setShowCaption(!showCaption);
   };
 
-  const handleMouseEnter = () => {
-    setIsHovered(true);
+  const getAspectRatioClass = () => {
+    if (aspectRatio === "auto" && videoDimensions) {
+      const ratio = videoDimensions.width / videoDimensions.height;
+      if (ratio > 1.2) return "landscape";
+      if (ratio < 0.8) return "portrait";
+      return "square";
+    }
+    return aspectRatio;
   };
 
-  const handleMouseLeave = () => {
-    setIsHovered(false);
+  const getContainerStyle = () => {
+    const aspectRatioClass = getAspectRatioClass();
+    const baseStyle = {
+      maxWidth: typeof maxWidth === "number" ? `${maxWidth}px` : maxWidth,
+      maxHeight: typeof maxHeight === "number" ? `${maxHeight}px` : maxHeight,
+    };
+
+    if (aspectRatioClass === "landscape") {
+      return {
+        ...baseStyle,
+        aspectRatio: "16/9",
+        maxWidth: "600px",
+      };
+    } else if (aspectRatioClass === "portrait") {
+      return {
+        ...baseStyle,
+        aspectRatio: "9/16",
+        maxWidth: "400px",
+      };
+    } else if (aspectRatioClass === "square") {
+      return {
+        ...baseStyle,
+        aspectRatio: "1/1",
+        maxWidth: "400px",
+      };
+    }
+
+    return baseStyle;
   };
 
   return (
-    <Box className="video-container" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+    <Box
+      className={`video-container ${getAspectRatioClass()}`}
+      style={getContainerStyle()}
+    >
       <Box className="video-wrapper">
         <video
           ref={videoRef}
@@ -89,16 +133,21 @@ const InstagramVideoRenderer: React.FC<VideoRendererProps> = ({
           playsInline
           preload="metadata"
           onLoadedData={() => {
-            // Video loaded successfully
+            if (videoRef.current) {
+              setVideoDimensions({
+                width: videoRef.current.videoWidth,
+                height: videoRef.current.videoHeight,
+              });
+            }
           }}
           onError={(e) => {
-            console.error('Video failed to load:', e);
+            console.error("Video failed to load:", e);
           }}
         />
-        
+
         {/* Background blur overlay */}
         <Box className="background-blur" />
-        
+
         {/* Play button overlay */}
         {!isPlaying && (
           <Box className="play-button-overlay" onClick={togglePlay}>
@@ -109,8 +158,8 @@ const InstagramVideoRenderer: React.FC<VideoRendererProps> = ({
               color="white"
               className="play-button"
               style={{
-                background: 'rgba(0, 0, 0, 0.6)',
-                color: 'white',
+                background: "rgba(0, 0, 0, 0.6)",
+                color: "white",
                 width: 64,
                 height: 64,
               }}
@@ -162,9 +211,9 @@ const InstagramVideoRenderer: React.FC<VideoRendererProps> = ({
                     variant="outline"
                     className="follow-button"
                     style={{
-                      background: 'transparent',
-                      borderColor: 'rgba(255, 255, 255, 0.3)',
-                      color: 'white',
+                      background: "transparent",
+                      borderColor: "rgba(255, 255, 255, 0.3)",
+                      color: "white",
                     }}
                   >
                     Follow
@@ -180,8 +229,8 @@ const InstagramVideoRenderer: React.FC<VideoRendererProps> = ({
               className="mute-button"
               onClick={toggleMute}
               style={{
-                background: 'transparent',
-                color: 'white',
+                background: "transparent",
+                color: "white",
               }}
             >
               {isMuted ? <IconVolumeOff size={16} /> : <IconVolume size={16} />}
@@ -196,7 +245,12 @@ const InstagramVideoRenderer: React.FC<VideoRendererProps> = ({
               <Text className="caption-preview" size="sm" c="white">
                 {showCaption ? caption : `${caption.slice(0, 50)}...`}
                 {!showCaption && caption.length > 50 && (
-                  <Text component="span" className="more-text" c="dimmed" size="sm">
+                  <Text
+                    component="span"
+                    className="more-text"
+                    c="dimmed"
+                    size="sm"
+                  >
                     more
                   </Text>
                 )}

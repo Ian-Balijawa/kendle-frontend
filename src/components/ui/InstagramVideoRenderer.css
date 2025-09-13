@@ -1,0 +1,349 @@
+/* InstagramVideoRenderer.css */
+
+.video-container {
+  position: relative;
+  width: 100%;
+  background: #000;
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 0 auto;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.video-container:hover {
+  transform: scale(1.02);
+}
+
+/* Default portrait aspect ratio */
+.video-container:not(.landscape):not(.square):not(.auto) {
+  aspect-ratio: 9/16;
+  max-width: 400px;
+}
+
+/* Portrait videos */
+.video-container.portrait {
+  aspect-ratio: 9/16;
+  max-width: 400px;
+}
+
+/* Landscape videos */
+.video-container.landscape {
+  aspect-ratio: 16/9;
+  max-width: 600px;
+}
+
+/* Square videos */
+.video-container.square {
+  aspect-ratio: 1/1;
+  max-width: 400px;
+}
+
+/* Auto-detect videos */
+.video-container.auto {
+  aspect-ratio: 9/16;
+  max-width: 400px;
+}
+
+.video-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.video-element {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+/* Portrait videos - maintain aspect ratio with slight zoom for Instagram effect */
+.video-container.portrait .video-element {
+  width: 110%;
+  height: 100%;
+  left: -5%;
+}
+
+/* Landscape videos - fit properly */
+.video-container.landscape .video-element {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* Square videos - fit properly */
+.video-container.square .video-element {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Auto-detect videos - start with portrait styling */
+.video-container.auto .video-element {
+  width: 110%;
+  height: 100%;
+  left: -5%;
+}
+
+.background-blur {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: inherit;
+  filter: blur(30px);
+  opacity: 0.3;
+  z-index: 0;
+}
+
+.video-controls {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  background: transparent;
+}
+
+.play-button-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+.play-button {
+  width: 64px !important;
+  height: 64px !important;
+  background: rgba(0, 0, 0, 0.6) !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: white !important;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  border: none !important;
+}
+
+.play-button:hover {
+  transform: scale(1.1);
+  background: rgba(0, 0, 0, 0.8) !important;
+}
+
+.audio-indicator {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  z-index: 5;
+}
+
+.content-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 16px;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.8) 0%,
+    rgba(0, 0, 0, 0.4) 50%,
+    transparent 100%
+  );
+  z-index: 5;
+  color: white;
+}
+
+.user-info-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.profile-picture {
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+.username {
+  color: white !important;
+  text-decoration: none;
+}
+
+.separator {
+  color: rgba(255, 255, 255, 0.7) !important;
+  margin: 0 4px;
+}
+
+.follow-button {
+  background: transparent !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  color: white !important;
+  transition: all 0.2s ease;
+}
+
+.follow-button:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.mute-button {
+  background: transparent !important;
+  border: none !important;
+  color: white !important;
+  transition: background 0.2s ease;
+}
+
+.mute-button:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.caption-section {
+  margin-bottom: 12px;
+}
+
+.caption-text {
+  cursor: pointer;
+}
+
+.caption-preview {
+  line-height: 1.4;
+  color: white !important;
+  display: block;
+}
+
+.more-text {
+  color: rgba(255, 255, 255, 0.7) !important;
+  margin-left: 4px;
+}
+
+/* Mobile responsive */
+@media (max-width: 480px) {
+  .video-container {
+    max-width: 100%;
+    border-radius: 0;
+  }
+  
+  .video-container.portrait {
+    max-width: 100%;
+  }
+  
+  .video-container.landscape {
+    max-width: 100%;
+  }
+  
+  .video-container.square {
+    max-width: 100%;
+  }
+  
+  .content-overlay {
+    padding: 12px;
+  }
+  
+  .username {
+    font-size: 13px !important;
+  }
+  
+  .follow-button {
+    padding: 4px 12px !important;
+    font-size: 13px !important;
+  }
+  
+  .caption-preview {
+    font-size: 13px !important;
+  }
+}
+
+/* Tablet responsive */
+@media (max-width: 768px) {
+  .video-container.landscape {
+    max-width: 100%;
+  }
+  
+  .video-container.portrait {
+    max-width: 350px;
+  }
+  
+  .video-container.square {
+    max-width: 350px;
+  }
+}
+
+/* Dark theme support */
+@media (prefers-color-scheme: dark) {
+  .video-container {
+    background: #000;
+  }
+}
+
+/* Accessibility */
+.video-container:focus-within {
+  outline: 2px solid #4A90E2;
+  outline-offset: 2px;
+}
+
+.follow-button:focus,
+.mute-button:focus,
+.play-button:focus {
+  outline: 2px solid #4A90E2;
+  outline-offset: 2px;
+}
+
+/* Loading state */
+.video-element:not([src]) {
+  background: linear-gradient(
+    90deg,
+    #f0f0f0 25%,
+    #e0e0e0 50%,
+    #f0f0f0 75%
+  );
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Smooth transitions */
+* {
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.play-button-overlay.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
+
