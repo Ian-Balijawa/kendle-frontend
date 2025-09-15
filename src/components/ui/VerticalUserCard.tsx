@@ -43,8 +43,6 @@ export function VerticalUserCard({
     return num?.toString();
   };
 
-  const avatarURL = `${import.meta.env.VITE_API_URL}/stream/image/${user.avatar?.split("/").pop()}`;
-
   return (
     <Box
       style={{
@@ -81,7 +79,7 @@ export function VerticalUserCard({
         <Box pos="relative">
           <Center>
             <Avatar
-              src={avatarURL || "/user.png"}
+              src={user.avatar || "/user.png"}
               alt={user.firstName || user.username || "User"}
               size={60}
               m="xs"

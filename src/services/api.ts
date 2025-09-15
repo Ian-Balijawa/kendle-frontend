@@ -20,7 +20,6 @@ import {
   StatusRepliesResponse,
   UserMediaItem,
   StatusAnalytics,
-  PostEngagement,
 } from "../types";
 
 // API request/response types based on the provided endpoints
@@ -1161,12 +1160,6 @@ class ApiService {
     const response: AxiosResponse<ApiResponse<UsersResponse>> =
       await this.api.get(`/posts/${postId}/viewers?${searchParams.toString()}`);
     return response.data.data;
-  }
-
-  async getPostEngagement(postId: string): Promise<PostEngagement> {
-    const response: AxiosResponse<ApiResponse<{ engagement: PostEngagement }>> =
-      await this.api.get(`/posts/${postId}/engagement`);
-    return response.data.data.engagement;
   }
 
   async getSuggestedUsers(

@@ -148,8 +148,6 @@ export function SettingsPage() {
     setBackgroundModalOpen(false);
   };
 
-  const avatarURL = `${import.meta.env.VITE_API_URL}/stream/image/${user?.avatar?.split("/").pop()}`;
-
   const socialLinks = [
     {
       key: "whatsapp",
@@ -227,7 +225,7 @@ export function SettingsPage() {
                     <Group gap="sm">
                       <Box style={{ position: "relative" }}>
                         <Avatar
-                          src={avatarURL || "/user.png"}
+                          src={user?.avatar || "/user.png"}
                           alt={user?.firstName || user?.username || "User"}
                           size={80}
                           radius="50%"

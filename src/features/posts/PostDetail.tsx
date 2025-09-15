@@ -37,8 +37,7 @@ import { format } from "timeago.js";
 import {
   CommentSkeletonList,
   PostDetailSkeleton,
-  PostEngagementButton,
-  InstagramVideoRenderer,
+  VideoPlayer,
 } from "../../components/ui";
 import { useCreateComment, useInfiniteComments } from "../../hooks/useComments";
 import {
@@ -250,11 +249,6 @@ export function PostDetail() {
       );
     };
 
-    const videoStreamUrl = `${import.meta.env.VITE_API_URL}/stream/video/${post.media?.[0]?.url.split("/").pop()}`;
-    const imageStreamUrl = `${import.meta.env.VITE_API_URL}/stream/image/${post.media?.[0]?.url.split("/").pop()}`;
-
-    const avatarURL = `${import.meta.env.VITE_API_URL}/stream/image/${post.author?.avatar?.split("/").pop()}`;
-
     return (
       <Box mx="auto" p="sm">
         <Paper p="sm">
@@ -265,7 +259,7 @@ export function PostDetail() {
               onClick={handleAuthorClick}
             >
               <Avatar
-                src={avatarURL || "/user.png"}
+                src={user?.avatar || "/user.png"}
                 alt={
                   post?.author?.firstName || post?.author?.username || "User"
                 }
@@ -471,14 +465,14 @@ export function PostDetail() {
               {post.media.length === 1 ? (
                 <>
                   {post.media[0].type === "video" ? (
-                    <InstagramVideoRenderer
-                      videoUrl={videoStreamUrl}
+                    <VideoPlayer
+                      videoUrl={post.media[0].url}
                       user={{
                         username:
                           post.author?.username ||
                           post.author?.phoneNumber ||
                           "Unknown User",
-                        profilePicture: avatarURL || "/user.png",
+                        profilePicture: user?.avatar || "/user.png",
                         isVerified: post.author?.isVerified || false,
                       }}
                       caption={post.content}
@@ -493,7 +487,7 @@ export function PostDetail() {
                     />
                   ) : (
                     <Image
-                      src={imageStreamUrl}
+                      src={post.media[0].url}
                       alt={post.media[0].filename || "Post media"}
                       radius="lg"
                       fit="contain"
@@ -503,7 +497,6 @@ export function PostDetail() {
                         width: "100%",
                       }}
                       onError={(e) => {
-                        console.error("Failed to load image:", imageStreamUrl);
                         e.currentTarget.style.display = "none";
                       }}
                     />
@@ -535,8 +528,6 @@ export function PostDetail() {
                             }}
                           >
                             {videos.map((media, index) => {
-                              const mediaVideoStreamUrl = `${import.meta.env.VITE_API_URL}/stream/video/${media.url.split("/").pop()}`;
-
                               return (
                                 <Box
                                   key={media.id || `video-${index}`}
@@ -557,14 +548,15 @@ export function PostDetail() {
                                       "scale(1)";
                                   }}
                                 >
-                                  <InstagramVideoRenderer
-                                    videoUrl={mediaVideoStreamUrl}
+                                  <VideoPlayer
+                                    videoUrl={media.url}
                                     user={{
                                       username:
                                         post.author?.username ||
                                         post.author?.phoneNumber ||
                                         "Unknown User",
-                                      profilePicture: avatarURL || "/user.png",
+                                      profilePicture:
+                                        user?.avatar || "/user.png",
                                       isVerified:
                                         post.author?.isVerified || false,
                                     }}
@@ -628,8 +620,6 @@ export function PostDetail() {
                             }}
                           >
                             {images.map((media, index) => {
-                              const mediaImageStreamUrl = `${import.meta.env.VITE_API_URL}/stream/image/${media.url.split("/").pop()}`;
-
                               return (
                                 <Box
                                   key={media.id || `image-${index}`}
@@ -651,7 +641,7 @@ export function PostDetail() {
                                   }}
                                 >
                                   <Image
-                                    src={mediaImageStreamUrl}
+                                    src={media.url}
                                     alt={media.filename || "Post media"}
                                     radius="md"
                                     fit="contain"
@@ -664,7 +654,7 @@ export function PostDetail() {
                                     onError={(e) => {
                                       console.error(
                                         "Failed to load image:",
-                                        mediaImageStreamUrl,
+                                        media.url,
                                       );
                                       e.currentTarget.style.display = "none";
                                     }}
@@ -857,16 +847,6 @@ export function PostDetail() {
                 />
                 <Text fz="sm">{post.bookmarksCount}</Text>
               </Flex>
-            </Group>
-
-            <Group gap="sm" align="center">
-              <PostEngagementButton
-                postId={post.id}
-                likesCount={post.likesCount || 0}
-                dislikesCount={post.dislikesCount || 0}
-                bookmarksCount={post.bookmarksCount || 0}
-                viewsCount={post.viewsCount || 0}
-              />
             </Group>
           </Group>
 

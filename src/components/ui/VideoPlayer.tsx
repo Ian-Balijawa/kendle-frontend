@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Box, Text, Avatar, Button, ActionIcon } from "@mantine/core";
 import { IconPlayerPlay, IconVolume, IconVolumeOff } from "@tabler/icons-react";
-import "./InstagramVideoRenderer.css";
+import "./VideoPlayer.css";
 
 interface UserInfo {
   username: string;
@@ -9,7 +9,7 @@ interface UserInfo {
   isVerified?: boolean;
 }
 
-interface VideoRendererProps {
+interface VideoPlayerProps {
   videoUrl: string;
   user: UserInfo;
   caption: string;
@@ -23,7 +23,7 @@ interface VideoRendererProps {
   maxHeight?: string | number;
 }
 
-const InstagramVideoRenderer: React.FC<VideoRendererProps> = ({
+const VideoPlayer: React.FC<VideoPlayerProps> = ({
   videoUrl,
   user,
   caption,
@@ -263,4 +263,4 @@ const InstagramVideoRenderer: React.FC<VideoRendererProps> = ({
   );
 };
 
-export default InstagramVideoRenderer;
+export default VideoPlayer;

@@ -33,11 +33,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "timeago.js";
 // Custom masonry implementation will be added here
-import {
-  CommentSkeletonList,
-  PostEngagementButton,
-  InstagramVideoRenderer,
-} from "../../components/ui";
+import { CommentSkeletonList, VideoPlayer } from "../../components/ui";
 import { useInfiniteComments, useCreateComment } from "../../hooks/useComments";
 import {
   useBookmarkPost,
@@ -215,16 +211,6 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
       );
     };
 
-    const getVideoStreamUrl = (url: string) => {
-      return `${import.meta.env.VITE_API_URL}/stream/video/${url.split("/").pop()}`;
-    };
-
-    const getImageStreamUrl = (url: string) => {
-      return `${import.meta.env.VITE_API_URL}/stream/image/${url.split("/").pop()}`;
-    };
-
-    const avatarURL = `${import.meta.env.VITE_API_URL}/stream/image/${post.author?.avatar?.split("/").pop()}`;
-
     return (
       <>
         <Card
@@ -254,7 +240,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                 data-interactive="true"
               >
                 <Avatar
-                  src={avatarURL || "/user.png"}
+                  src={user?.avatar || "/user.png"}
                   alt={
                     post.author?.firstName || post.author?.username || "User"
                   }
@@ -469,14 +455,14 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                     }}
                   >
                     {post.media[0].type === "video" ? (
-                      <InstagramVideoRenderer
-                        videoUrl={getVideoStreamUrl(post.media[0].url)}
+                      <VideoPlayer
+                        videoUrl={post.media[0].url}
                         user={{
                           username:
                             post.author?.username ||
                             post.author?.phoneNumber ||
                             "Unknown User",
-                          profilePicture: avatarURL || "/user.png",
+                          profilePicture: user?.avatar || "/user.png",
                           isVerified: post.author?.isVerified || false,
                         }}
                         caption={post.content}
@@ -493,7 +479,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                       />
                     ) : (
                       <Image
-                        src={getImageStreamUrl(post.media[0].url)}
+                        src={post.media[0].url}
                         alt={post.media[0].filename || "Post media"}
                         radius="lg"
                         fit="contain"
@@ -505,7 +491,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                         onError={(e) => {
                           console.error(
                             "Failed to load image:",
-                            getImageStreamUrl(post.media?.[0]?.url || ""),
+                            post.media?.[0]?.url || "",
                           );
                           e.currentTarget.style.display = "none";
                         }}
@@ -555,14 +541,15 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                                       "scale(1)";
                                   }}
                                 >
-                                  <InstagramVideoRenderer
-                                    videoUrl={getVideoStreamUrl(media.url)}
+                                  <VideoPlayer
+                                    videoUrl={media.url}
                                     user={{
                                       username:
                                         post.author?.username ||
                                         post.author?.phoneNumber ||
                                         "Unknown User",
-                                      profilePicture: avatarURL || "/user.png",
+                                      profilePicture:
+                                        user?.avatar || "/user.png",
                                       isVerified:
                                         post.author?.isVerified || false,
                                     }}
@@ -645,7 +632,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                                   }}
                                 >
                                   <Image
-                                    src={getImageStreamUrl(media.url)}
+                                    src={media.url}
                                     alt={media.filename || "Post media"}
                                     radius="md"
                                     fit="contain"
@@ -658,7 +645,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                                     onError={(e) => {
                                       console.error(
                                         "Failed to load image:",
-                                        getImageStreamUrl(media.url),
+                                        media.url,
                                       );
                                       e.currentTarget.style.display = "none";
                                     }}
@@ -802,16 +789,6 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                   <IconBookmarks cursor="pointer" onClick={handleBookmark} />
                   <Text fz="sm">{post.bookmarksCount}</Text>
                 </Flex>
-              </Group>
-
-              <Group gap="sm" align="center">
-                <PostEngagementButton
-                  postId={post.id}
-                  likesCount={post.likesCount || 0}
-                  dislikesCount={post.dislikesCount || 0}
-                  bookmarksCount={post.bookmarksCount || 0}
-                  viewsCount={post.viewsCount || 0}
-                />
               </Group>
             </Group>
 

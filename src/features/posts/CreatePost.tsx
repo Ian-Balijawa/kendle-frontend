@@ -16,7 +16,6 @@ import { useCreatePost } from "../../hooks/usePosts";
 import { CreatePostRequest } from "../../services/api";
 import { useAuthStore } from "../../stores/authStore";
 import { generateVideoThumbnails } from "@rajesh896/video-thumbnails-generator";
-import { getImageUrl } from "../../lib/stream-urls";
 
 interface CreatePostProps {
   opened: boolean;
@@ -260,7 +259,7 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
         {/* Author Header */}
         <Group gap="sm">
           <Avatar
-            src={(user?.avatar && getImageUrl(user?.avatar)) || user?.avatar}
+            src={user?.avatar || user?.avatar}
             alt={user?.firstName || "User"}
             size={40}
             radius="xl"

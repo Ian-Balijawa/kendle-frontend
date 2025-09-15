@@ -211,23 +211,12 @@ export interface ShareRequest {
   platform?: string;
 }
 
-export interface PostEngagement {
-  hasLiked: boolean;
-  hasDisliked: boolean;
-  hasBookmarked: boolean;
-  hasViewed: boolean;
-  reactionType?: "like" | "dislike" | null;
-  bookmarkNote?: string | null;
-  lastViewedAt?: string | null;
-}
-
 export interface UserMediaItem {
   id: string;
   type: "image" | "video";
   url: string;
   thumbnailUrl?: string | null;
   createdAt: string;
-  streamingUrl: string;
   originalUrl: string;
   mediaType: "image" | "video";
 }

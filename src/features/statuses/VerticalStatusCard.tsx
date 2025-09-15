@@ -109,7 +109,7 @@ export function VerticalStatusCard({
   const hasUnviewed = collection.hasUnviewed;
   const hasMultipleStatuses = collection.statuses.length > 1;
 
-  const avatarURL = `${import.meta.env.VITE_API_URL}/stream/image/${collection.author.avatar?.split("/").pop()}`;
+  console.log(latestStatus)
 
   return (
     <Box
@@ -145,7 +145,7 @@ export function VerticalStatusCard({
       {latestStatus.media && latestStatus.media.length > 0 ? (
         latestStatus.media[0].mediaType === "image" ? (
           <Image
-            src={`${import.meta.env.VITE_API_URL}/stream/image/${latestStatus.media[0].url.split("/").pop()}`}
+            src={latestStatus.media[0].url}
             alt="Status background"
             fit="contain"
             style={{
@@ -167,7 +167,7 @@ export function VerticalStatusCard({
         ) : (
           <video
             controls
-            src={`${import.meta.env.VITE_API_URL}/stream/video/${latestStatus.media[0].url.split("/").pop()}`}
+              src={latestStatus.media[0].url}
             width="100%"
             height="100%"
             muted
@@ -218,27 +218,33 @@ export function VerticalStatusCard({
       />
 
       {/* Top avatar */}
-      <Box
-        style={{
-          position: "absolute",
-          top: "8px",
-          left: "8px",
-          zIndex: 3,
-        }}
-      >
-        <Avatar
-          src={avatarURL || "/user.png"}
-          alt={collection.author.firstName || "User"}
-          size={32}
-          radius="xl"
+      {latestStatus?.author?.avatar !== undefined ? (
+        <Box
           style={{
-            border: "2px solid white",
-            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.2)",
+            position: "absolute",
+            top: "8px",
+            left: "8px",
+            zIndex: 3,
           }}
         >
-          {(collection.author.firstName || "U").charAt(0)}
-        </Avatar>
-      </Box>
+          <Avatar
+            src={
+              latestStatus.author.avatar
+                ? latestStatus.author.avatar
+                : "/user.png"
+            }
+            alt={collection.author.firstName || "User"}
+            size={32}
+            radius="xl"
+            style={{
+              border: "2px solid white",
+              boxShadow: "0 2px 8px rgba(0, 0, 0, 0.2)",
+            }}
+          >
+            {(collection.author.firstName || "U").charAt(0)}
+          </Avatar>
+        </Box>
+      ) : null}
 
       {/* Unviewed indicator */}
       {hasUnviewed && (

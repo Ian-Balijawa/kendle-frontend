@@ -1,14 +1,9 @@
 export { CommentSkeleton, CommentSkeletonList } from "./CommentSkeleton";
 export { InfiniteScrollLoader } from "./InfiniteScrollLoader";
 export { LoadingButton } from "./LoadingButton";
-export { UserMediaGallery } from "./UserMediaGallery";
+export { MediaGallery } from "./MediaGallery";
 export { PostDetailSkeleton } from "./PostDetailSkeleton";
-export { PostEngagementButton } from "./PostEngagementButton";
-export { PostEngagementModal } from "./PostEngagementModal";
 export { PostSkeleton, PostSkeletonList } from "./PostSkeleton";
-export { PostEngagementIntegrationExample } from "../examples/PostEngagementIntegrationExample";
-export { UserMediaGalleryExample } from "../examples/UserMediaGalleryExample";
-export { InstagramVideoExample } from "../examples/InstagramVideoExample";
 export { ProfileSwipe } from "./ProfileSwipe";
 export { UserProfileCard as VerticalUserCard } from "./UserProfileCard";
-export { default as InstagramVideoRenderer } from "./InstagramVideoRenderer";
+export { default as VideoPlayer } from "./VideoPlayer";

@@ -50,7 +50,7 @@ import {
   useUploadBackgroundImage,
   useDeleteBackgroundImage,
 } from "../../hooks/useMedia";
-import { UserMediaGallery } from "../../components/ui/UserMediaGallery";
+import { MediaGallery } from "../../components/ui/MediaGallery";
 
 export function ProfilePage() {
   const { userId } = useParams<{ userId?: string }>();
@@ -354,9 +354,6 @@ export function ProfilePage() {
     );
   }
 
-  const avatarURL = `${import.meta.env.VITE_API_URL}/stream/image/${user.avatar?.split("/").pop()}`;
-  const backgroundURL = `${import.meta.env.VITE_API_URL}/stream/image/${user.backgroundImage?.split("/").pop()}`;
-
   return (
     <Container size="xl" px="sm">
       {/* Hidden file inputs */}
@@ -379,7 +376,7 @@ export function ProfilePage() {
         style={{
           height: 150,
           background: user.backgroundImage
-            ? `url(${backgroundURL})`
+            ? `url(${user.backgroundImage})`
             : "linear-gradient(135deg, var(--mantine-color-blue-6) 0%, var(--mantine-color-violet-6) 100%)",
           backgroundSize: "cover",
           backgroundPosition: "center",
@@ -453,7 +450,7 @@ export function ProfilePage() {
 
         <Box style={{ position: "relative" }}>
           <Avatar
-            src={avatarURL || "/user.png"}
+            src={user.avatar || "/user.png"}
             alt={user.firstName || user.username || "User"}
             size={120}
             radius="50%"
@@ -718,7 +715,7 @@ export function ProfilePage() {
 
         <Tabs.Panel value="media" pt="xl">
           <Box style={{ width: "100%", overflow: "hidden" }}>
-            <UserMediaGallery userId={profileUserId!} limit={20} />
+            <MediaGallery user={currentUser} userId={profileUserId!} limit={20} />
           </Box>
         </Tabs.Panel>
 

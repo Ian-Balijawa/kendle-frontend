@@ -256,7 +256,7 @@ export function StatusDetailsModal({
           {currentStatus.media && currentStatus.media.length > 0 ? (
             currentStatus.media[0].mediaType === "image" ? (
               <Image
-                src={`${import.meta.env.VITE_API_URL}/stream/image/${currentStatus.media[0].url.split("/").pop()}`}
+                src={currentStatus.media[0].url}
                 alt="Status"
                 fit="contain"
                 style={{
@@ -274,7 +274,7 @@ export function StatusDetailsModal({
             ) : (
               <video
                 controls
-                src={`${import.meta.env.VITE_API_URL}/stream/video/${currentStatus.media[0].url.split("/").pop()}`}
+                src={currentStatus.media[0].url}
                 loop
                 playsInline
                 autoPlay

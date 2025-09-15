@@ -46,8 +46,6 @@ export function HeaderContent() {
     return location.pathname.startsWith(path);
   };
 
-  const avatarURL = `${import.meta.env.VITE_API_URL}/stream/image/${user?.avatar?.split("/").pop()}`;
-
   return (
     <Group justify="space-between" h={60} gap="sm" px="lg">
       <Group gap="sm">
@@ -148,7 +146,7 @@ export function HeaderContent() {
                   className="avatar-hover"
                 >
                   <Avatar
-                    src={avatarURL || "/user.png"}
+                    src={user?.avatar || "/user.png"}
                     alt={user?.firstName}
                     size="md"
                     radius="xl"
@@ -166,7 +164,7 @@ export function HeaderContent() {
                 <Menu.Label>
                   <Group gap="sm">
                     <Avatar
-                      src={avatarURL || "/user.png"}
+                      src={user?.avatar || "/user.png"}
                       size="sm"
                       radius="xl"
                     >

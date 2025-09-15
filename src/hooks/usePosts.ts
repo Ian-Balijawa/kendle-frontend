@@ -946,12 +946,3 @@ export function usePostViewers(
     enabled: !!postId,
   });
 }
-
-export function usePostEngagement(postId: string) {
-  return useQuery({
-    queryKey: postKeys.engagement(postId),
-    queryFn: () => apiService.getPostEngagement(postId),
-    enabled: !!postId,
-    staleTime: 2 * 60 * 1000, // 2 minutes
-  });
-}
