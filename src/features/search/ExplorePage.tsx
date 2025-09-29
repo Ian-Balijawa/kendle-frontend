@@ -13,7 +13,6 @@ import {
   IconSearch,
   IconTrendingUp,
   IconUsers,
-  IconUserPlus,
 } from "@tabler/icons-react";
 import { useState } from "react";
 import { ProfileSwipe } from "../../components/ui";
@@ -137,27 +136,7 @@ export function ExplorePage() {
                 title="Discover Amazing People"
                 subtitle="Connect with creators and influencers in your community"
               />
-            ) : (
-              <Box
-                p="sm"
-                style={{
-                  border: "none",
-                }}
-              >
-                <Stack align="center" gap="sm">
-                  <IconUsers size={48} color="var(--mantine-color-cyan-6)" />
-                  <Stack align="center" gap="xs">
-                    <Text fw={600} size="lg">
-                      No users to discover
-                    </Text>
-                    <Text c="dimmed" ta="center" size="sm">
-                      More amazing people will appear here as they join the
-                      community!
-                    </Text>
-                  </Stack>
-                </Stack>
-              </Box>
-            )}
+            ) : null}
 
             {followingLoading ? (
               <Group justify="center" py="xl">
@@ -169,27 +148,7 @@ export function ExplorePage() {
                 title="Peole you're following"
                 subtitle="My followings"
               />
-            ) : (
-              <Box
-                p="sm"
-                style={{
-                  border: "none",
-                }}
-              >
-                <Stack align="center" gap="sm">
-                  <IconUsers size={48} color="var(--mantine-color-cyan-6)" />
-                  <Stack align="center" gap="xs">
-                    <Text fw={600} size="lg">
-                      You're following no users at the moment
-                    </Text>
-                    <Text c="dimmed" ta="center" size="sm">
-                      More amazing people will appear here as when you follow
-                      them.
-                    </Text>
-                  </Stack>
-                </Stack>
-              </Box>
-            )}
+            ) : null}
 
             {followersLoading ? (
               <Group justify="center" py="xl">
@@ -201,29 +160,7 @@ export function ExplorePage() {
                 title="Your follower"
                 subtitle="My followers"
               />
-            ) : (
-              <Box
-                p="sm"
-                style={{
-                  border: "none",
-                }}
-              >
-                <Stack align="center" gap="sm">
-                  <IconUserPlus
-                    size={48}
-                    color="var(--mantine-color-yellow-6)"
-                  />
-                  <Stack align="center" gap="xs">
-                    <Text fw={600} size="lg">
-                      No followers yet
-                    </Text>
-                    <Text c="dimmed" ta="center" size="sm">
-                      Share your profile to start building your community!
-                    </Text>
-                  </Stack>
-                </Stack>
-              </Box>
-            )}
+            ) : null}
           </Stack>
         </Tabs>
       </Stack>
