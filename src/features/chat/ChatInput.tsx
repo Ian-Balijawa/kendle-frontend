@@ -39,7 +39,7 @@ export function ChatInput({ conversationId }: ChatInputProps) {
   const [mounted, setMounted] = useState(false);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>();
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const { user } = useAuthStore();
   const sendMessage = useSendMessage();

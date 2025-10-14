@@ -51,7 +51,7 @@ export function HeaderContent() {
   const { unreadCount } = useUIStore();
   const { colorScheme, toggleColorScheme } = useMantineColorScheme();
   const [mounted, setMounted] = useState(false);
-  const [searchOpened, setSearchOpened] = useState(false);
+  const [, setSearchOpened] = useState(false);
 
   useEffect(() => {
     setMounted(true);

@@ -53,7 +53,6 @@ import { useAuthStore } from "../../stores/authStore";
 import { useUpdateProfile } from "../../hooks/useUser";
 import {
   useUploadAvatar,
-  useUploadBackgroundImage,
 } from "../../hooks/useMedia";
 
 interface ProfileFormData {
@@ -89,7 +88,7 @@ export function SettingsPage() {
   const [activeTab, setActiveTab] = useState("profile");
   const [mounted, setMounted] = useState(false);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
-  const [backgroundFile, setBackgroundFile] = useState<File | null>(null);
+  // const [backgroundFile, setBackgroundFile] = useState<File | null>(null);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -97,7 +96,7 @@ export function SettingsPage() {
   // Hooks
   const updateProfile = useUpdateProfile();
   const uploadAvatar = useUploadAvatar();
-  const uploadBackgroundImage = useUploadBackgroundImage();
+  // const uploadBackgroundImage = useUploadBackgroundImage();
 
   useEffect(() => {
     setMounted(true);
@@ -181,7 +180,7 @@ export function SettingsPage() {
   };
 
   // Handle security form submission
-  const handleSecuritySubmit = async (values: SecurityFormData) => {
+  const handleSecuritySubmit = async (_values: SecurityFormData) => {
     try {
       // TODO: Implement password change API
       notifications.show({
@@ -217,28 +216,6 @@ export function SettingsPage() {
       notifications.show({
         title: "Error",
         message: "Failed to update avatar",
-        color: "red",
-        icon: <IconX size={16} />,
-      });
-    }
-  };
-
-  // Handle background upload
-  const handleBackgroundUpload = async (file: File | null) => {
-    if (!file) return;
-
-    try {
-      await uploadBackgroundImage.mutateAsync(file);
-      notifications.show({
-        title: "Success",
-        message: "Background image updated successfully",
-        color: "green",
-        icon: <IconCheck size={16} />,
-      });
-    } catch (error) {
-      notifications.show({
-        title: "Error",
-        message: "Failed to update background image",
         color: "red",
         icon: <IconX size={16} />,
       });

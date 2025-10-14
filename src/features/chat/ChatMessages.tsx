@@ -22,7 +22,6 @@ import {
 import {
   useInfiniteMessages,
   useMarkConversationAsRead,
-  useAddMessageReaction,
 } from "../../hooks/useChat";
 import { useAuthStore } from "../../stores/authStore";
 import { useWebSocketIntegration } from "../../hooks/useWebSocket";
@@ -42,7 +41,7 @@ export function ChatMessages({ conversationId }: ChatMessagesProps) {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useInfiniteMessages(conversationId);
   const markAsRead = useMarkConversationAsRead();
-  const addReaction = useAddMessageReaction();
+  // const addReaction = useAddMessageReaction();
   const { joinConversation, leaveConversation } = useWebSocketIntegration();
 
   useEffect(() => {
@@ -152,7 +151,7 @@ export function ChatMessages({ conversationId }: ChatMessagesProps) {
     );
   };
 
-  const renderMessage = (message: Message, index: number) => {
+  const renderMessage = (message: Message, _index: number) => {
     const isOwn = isOwnMessage(message);
     const showAvatar = !isOwn;
 

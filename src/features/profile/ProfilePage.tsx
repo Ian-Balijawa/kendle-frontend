@@ -57,7 +57,7 @@ export function ProfilePage() {
   const { user: currentUser, isAuthenticated } = useAuthStore();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("posts");
-  const [mounted, setMounted] = useState(false);
+  const [, setMounted] = useState(false);
 
   // File input refs for direct access
   const avatarFileInputRef = useRef<HTMLInputElement>(null);
