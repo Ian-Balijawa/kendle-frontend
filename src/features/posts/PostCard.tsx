@@ -240,7 +240,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                 data-interactive="true"
               >
                 <Avatar
-                  src={user?.avatar || "/user.png"}
+                  src={post?.author?.avatar || "/user.png"}
                   alt={
                     post.author?.firstName || post.author?.username || "User"
                   }

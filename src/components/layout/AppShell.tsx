@@ -3,82 +3,163 @@ import {
   Container,
   AppShell as MantineAppShell,
   ScrollArea,
+  Transition,
+  Paper,
 } from "@mantine/core";
 import { Outlet } from "react-router-dom";
 import { FooterContent } from "./Footer";
 import { HeaderContent } from "./Header";
 import { FloatingChatWidget } from "../../features/chat/FloatingChatWidget";
+import { useState, useEffect } from "react";
+import { useMantineColorScheme } from "@mantine/core";
 
 export function AppShell() {
-  return (
-    <MantineAppShell
-      header={{ height: 60 }}
-      footer={{ height: 60 }}
-      padding={0}
-      styles={{
-        main: {
-          minHeight: "calc(100vh - 60px)",
-          paddingBottom: "60px",
-        },
-      }}
-    >
-      <MantineAppShell.Header withBorder={false}>
-        <HeaderContent />
-      </MantineAppShell.Header>
+  const [mounted, setMounted] = useState(false);
+  const { colorScheme } = useMantineColorScheme();
 
-      <MantineAppShell.Main>
-        <ScrollArea
-          style={{ height: "100%" }}
-          scrollbarSize={4}
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  return (
+    <Transition
+      mounted={mounted}
+      transition="fade"
+      duration={300}
+      timingFunction="ease"
+    >
+      {(styles) => (
+        <MantineAppShell
+          header={{ height: 60 }}
+          footer={{ height: 60 }}
+          padding={0}
+          style={{
+            ...styles,
+            backgroundColor:
+              colorScheme === "dark"
+                ? "var(--mantine-color-dark-8)"
+                : "var(--mantine-color-gray-0)",
+          }}
           styles={{
-            scrollbar: {
-              '&[data-orientation="vertical"] .mantine-ScrollArea-thumb': {
-                borderRadius: "8px",
-              },
+            main: {
+              minHeight: "calc(100vh - 60px)",
+              paddingBottom: "60px",
+              position: "relative",
+              overflow: "hidden",
             },
           }}
         >
-          <Container size="sm" p={0}>
+          <MantineAppShell.Header
+            withBorder={false}
+            style={{
+              position: "sticky",
+              top: 0,
+              zIndex: 1000,
+              backdropFilter: "blur(10px)",
+            }}
+          >
+            <HeaderContent />
+          </MantineAppShell.Header>
+
+          <MantineAppShell.Main>
+            {/* Background Pattern */}
             <Box
               style={{
-                position: "relative",
-                zIndex: 1,
+                position: "fixed",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                zIndex: -1,
+                opacity: colorScheme === "dark" ? 0.03 : 0.02,
+                backgroundImage: `
+                  radial-gradient(circle at 25% 25%, rgba(34, 139, 230, 0.1) 0%, transparent 50%),
+                  radial-gradient(circle at 75% 75%, rgba(34, 197, 94, 0.1) 0%, transparent 50%),
+                  linear-gradient(45deg, transparent 30%, rgba(34, 139, 230, 0.05) 50%, transparent 70%)
+                `,
+              }}
+            />
+
+            <ScrollArea
+              style={{ height: "100%" }}
+              scrollbarSize={6}
+              styles={{
+                scrollbar: {
+                  '&[data-orientation="vertical"]': {
+                    backgroundColor: "transparent",
+                  },
+                  '&[data-orientation="vertical"] .mantine-ScrollArea-thumb': {
+                    borderRadius: "12px",
+                    backgroundColor:
+                      colorScheme === "dark"
+                        ? "rgba(255, 255, 255, 0.2)"
+                        : "rgba(0, 0, 0, 0.2)",
+                    transition: "all 0.2s ease",
+                  },
+                  '&[data-orientation="vertical"] .mantine-ScrollArea-thumb:hover':
+                    {
+                      backgroundColor:
+                        colorScheme === "dark"
+                          ? "rgba(255, 255, 255, 0.3)"
+                          : "rgba(0, 0, 0, 0.3)",
+                    },
+                },
               }}
             >
-              <Outlet />
-            </Box>
-          </Container>
+              <Container
+                size="sm"
+                p={0}
+                style={{
+                  position: "relative",
+                  minHeight: "calc(100vh - 120px)",
+                }}
+              >
+                <Paper
+                  shadow="xs"
+                  radius="lg"
+                  style={{
+                    position: "relative",
+                    zIndex: 1,
+                    minHeight: "calc(100vh - 120px)",
+                    backgroundColor:
+                      colorScheme === "dark"
+                        ? "rgba(26, 27, 30, 0.8)"
+                        : "rgba(255, 255, 255, 0.8)",
+                    backdropFilter: "blur(10px)",
+                    border: `1px solid ${
+                      colorScheme === "dark"
+                        ? "rgba(255, 255, 255, 0.1)"
+                        : "rgba(0, 0, 0, 0.05)"
+                    }`,
+                    margin: "16px 0",
+                    overflow: "hidden",
+                  }}
+                >
+                  <Outlet />
+                </Paper>
+              </Container>
 
-          <FloatingChatWidget />
+              <FloatingChatWidget />
+            </ScrollArea>
+          </MantineAppShell.Main>
 
-          <Box
+          <MantineAppShell.Footer
+            hiddenFrom="sm"
             style={{
+              border: "none",
+              backgroundColor: "transparent",
               position: "fixed",
-              top: 0,
+              bottom: 0,
               left: 0,
               right: 0,
-              bottom: 0,
-              pointerEvents: "none",
-              zIndex: 0,
+              zIndex: 1000,
+              padding: 0,
             }}
-          />
-        </ScrollArea>
-      </MantineAppShell.Main>
-
-      <MantineAppShell.Footer
-        hiddenFrom="sm"
-        style={{
-          border: "none",
-          backgroundColor: "transparent",
-          position: "fixed",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          zIndex: 1000,
-        }}
-      >
-        <FooterContent />
-      </MantineAppShell.Footer>
-    </MantineAppShell>
+          >
+            <FooterContent />
+          </MantineAppShell.Footer>
+        </MantineAppShell>
+      )}
+    </Transition>
   );
 }

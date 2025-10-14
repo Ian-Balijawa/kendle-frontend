@@ -33,7 +33,7 @@ import {
   IconCamera,
   IconTrash,
 } from "@tabler/icons-react";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   useUserPosts,
@@ -57,6 +57,7 @@ export function ProfilePage() {
   const { user: currentUser, isAuthenticated } = useAuthStore();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("posts");
+  const [mounted, setMounted] = useState(false);
 
   // File input refs for direct access
   const avatarFileInputRef = useRef<HTMLInputElement>(null);
@@ -66,6 +67,10 @@ export function ProfilePage() {
   const uploadAvatar = useUploadAvatar();
   const uploadBackgroundImage = useUploadBackgroundImage();
   const deleteBackgroundImage = useDeleteBackgroundImage();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Determine if this is the current user's own profile
   const isOwnProfile = !userId || userId === currentUser?.id;
@@ -715,7 +720,11 @@ export function ProfilePage() {
 
         <Tabs.Panel value="media" pt="xl">
           <Box style={{ width: "100%", overflow: "hidden" }}>
-            <MediaGallery user={currentUser} userId={profileUserId!} limit={20} />
+            <MediaGallery
+              user={currentUser}
+              userId={profileUserId!}
+              limit={20}
+            />
           </Box>
         </Tabs.Panel>
 

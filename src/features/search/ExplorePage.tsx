@@ -9,11 +9,7 @@ import {
   TextInput,
   Title,
 } from "@mantine/core";
-import {
-  IconSearch,
-  IconTrendingUp,
-  IconUsers,
-} from "@tabler/icons-react";
+import { IconSearch, IconTrendingUp, IconUsers } from "@tabler/icons-react";
 import { useState } from "react";
 import { ProfileSwipe } from "../../components/ui";
 import {

@@ -36,7 +36,7 @@ interface MediaGalleryProps {
   userId: string;
   type?: "image" | "video";
   limit?: number;
-  user: User | null
+  user: User | null;
 }
 
 interface MediaItemProps {
@@ -110,17 +110,24 @@ interface MediaModalProps {
   media: UserMediaItem | null;
   allMedia: UserMediaItem[];
   opened: boolean;
-  user: User | null
+  user: User | null;
   onClose: () => void;
 }
 
-function MediaModal({ media, allMedia, opened, onClose, user }: MediaModalProps) {
+function MediaModal({
+  media,
+  allMedia,
+  opened,
+  onClose,
+  user,
+}: MediaModalProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   if (!media || !opened) return null;
 
   const currentMedia = allMedia[currentIndex] || media;
-  const isVideo = currentMedia.type === "video" || currentMedia.mediaType === "video";
+  const isVideo =
+    currentMedia.type === "video" || currentMedia.mediaType === "video";
 
   const handlePrevious = () => {
     setCurrentIndex((prev) => (prev > 0 ? prev - 1 : allMedia.length - 1));
@@ -204,7 +211,11 @@ function MediaModal({ media, allMedia, opened, onClose, user }: MediaModalProps)
               videoUrl={currentMedia.url}
               caption={currentMedia.type}
               autoPlay
-              user={{ profilePicture: user?.avatar ?? "", username: user?.username ?? "", isVerified: user?.isVerified }}
+              user={{
+                profilePicture: user?.avatar ?? "",
+                username: user?.username ?? "",
+                isVerified: user?.isVerified,
+              }}
             />
           ) : (
             <Image
@@ -240,19 +251,32 @@ function MediaModal({ media, allMedia, opened, onClose, user }: MediaModalProps)
   );
 }
 
-export function MediaGallery({ userId, type, limit = 20, user }: MediaGalleryProps) {
-  const [selectedMedia, setSelectedMedia] = useState<UserMediaItem | null>(null);
+export function MediaGallery({
+  userId,
+  type,
+  limit = 20,
+  user,
+}: MediaGalleryProps) {
+  const [selectedMedia, setSelectedMedia] = useState<UserMediaItem | null>(
+    null,
+  );
   const [modalOpened, setModalOpened] = useState(false);
 
-  const { data, isLoading, isError } = useUserMediaByUserId(userId, { type, limit });
+  const { data, isLoading, isError } = useUserMediaByUserId(userId, {
+    type,
+    limit,
+  });
   const allMedia = data?.pages.flatMap((page) => page.media) || [];
 
-  const handleMediaClick = useCallback((media: UserMediaItem) => {
-    const index = allMedia.findIndex((item) => item.id === media.id);
-    setCurrentIndex(index !== -1 ? index : 0);
-    setSelectedMedia(media);
-    setModalOpened(true);
-  }, [allMedia]);
+  const handleMediaClick = useCallback(
+    (media: UserMediaItem) => {
+      const index = allMedia.findIndex((item) => item.id === media.id);
+      setCurrentIndex(index !== -1 ? index : 0);
+      setSelectedMedia(media);
+      setModalOpened(true);
+    },
+    [allMedia],
+  );
 
   const [_currentIndex, setCurrentIndex] = useState(0);
 
@@ -343,7 +367,9 @@ export function MediaGallery({ userId, type, limit = 20, user }: MediaGalleryPro
         onClose={() => {
           setModalOpened(false);
           setSelectedMedia(null);
-        }} user={user} />
+        }}
+        user={user}
+      />
     </>
   );
 }

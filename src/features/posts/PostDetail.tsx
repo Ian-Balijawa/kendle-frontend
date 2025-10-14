@@ -259,7 +259,7 @@ export function PostDetail() {
               onClick={handleAuthorClick}
             >
               <Avatar
-                src={user?.avatar || "/user.png"}
+                src={post?.author?.avatar || "/user.png"}
                 alt={
                   post?.author?.firstName || post?.author?.username || "User"
                 }

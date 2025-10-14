@@ -6,6 +6,9 @@ import {
   Paper,
   Text,
   Transition,
+  ThemeIcon,
+  Tooltip,
+  Center,
 } from "@mantine/core";
 import {
   IconCompass,
@@ -13,6 +16,7 @@ import {
   IconMessageCircle,
   IconPlus,
   IconUser,
+  IconSparkles,
 } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -77,184 +81,190 @@ export function FooterContent() {
       <Transition
         mounted={mounted}
         transition="slide-up"
-        duration={200}
-        timingFunction="ease"
+        duration={300}
+        timingFunction="cubic-bezier(0.4, 0, 0.2, 1)"
       >
         {(styles) => (
-          <Box
-            style={{
-              ...styles,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: "4px",
-              cursor: "pointer",
-              padding: "8px 12px",
-              borderRadius: "16px",
-              minWidth: "60px",
-              position: "relative",
-              transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-              backgroundColor: isCurrentActive
-                ? "var(--mantine-color-blue-0)"
-                : "transparent",
-              transform: isCurrentActive ? "translateY(-2px)" : "translateY(0)",
-              opacity: canAccess ? 1 : 0.4,
-            }}
-            onClick={() => handleNavigation(item.path)}
+          <Tooltip
+            label={item.label}
+            position="top"
+            withArrow
+            transitionProps={{ duration: 200 }}
           >
-            {/* Create button special styling */}
-            {item.isCreate ? (
-              <Box
-                style={{
-                  background: isCurrentActive
-                    ? "linear-gradient(135deg, var(--mantine-color-blue-6) 0%, var(--mantine-color-cyan-6) 100%)"
-                    : "linear-gradient(135deg, var(--mantine-color-blue-5) 0%, var(--mantine-color-cyan-5) 100%)",
-                  borderRadius: "50%",
-                  width: 44,
-                  height: 44,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  boxShadow: isCurrentActive
-                    ? "0 8px 20px rgba(59, 130, 246, 0.3)"
-                    : "0 4px 12px rgba(59, 130, 246, 0.2)",
-                  transform: isCurrentActive ? "scale(1.05)" : "scale(1)",
-                  transition: "all 0.3s ease",
-                }}
-              >
-                <item.icon size={22} color="white" stroke={2} />
-              </Box>
-            ) : (
-              <Box style={{ position: "relative" }}>
+            <Box
+              style={{
+                ...styles,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: "4px",
+                cursor: "pointer",
+                padding: "12px 8px",
+                borderRadius: "16px",
+                minWidth: "60px",
+                position: "relative",
+                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                backgroundColor: isCurrentActive
+                  ? "var(--mantine-color-blue-0)"
+                  : "transparent",
+                transform: isCurrentActive
+                  ? "translateY(-2px)"
+                  : "translateY(0)",
+                boxShadow: isCurrentActive
+                  ? "0 4px 12px rgba(34, 139, 230, 0.2)"
+                  : "none",
+              }}
+              onClick={() => handleNavigation(item.path)}
+            >
+              {item.isCreate ? (
+                <ThemeIcon
+                  size="lg"
+                  radius="xl"
+                  variant="gradient"
+                  gradient={{ from: "blue", to: "cyan" }}
+                  style={{
+                    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                    transform: isCurrentActive ? "scale(1.1)" : "scale(1)",
+                    boxShadow: "0 4px 12px rgba(34, 139, 230, 0.3)",
+                  }}
+                >
+                  <item.icon size={20} stroke={2} />
+                </ThemeIcon>
+              ) : (
                 <ActionIcon
                   variant={isCurrentActive ? "filled" : "subtle"}
                   color={isCurrentActive ? "blue" : "gray"}
                   size="lg"
                   radius="xl"
+                  disabled={!canAccess}
                   style={{
-                    transition: "all 0.3s ease",
-                    transform: isCurrentActive ? "scale(1.1)" : "scale(1)",
+                    position: "relative",
+                    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                    transform: isCurrentActive ? "scale(1.05)" : "scale(1)",
                     backgroundColor: isCurrentActive
                       ? "var(--mantine-color-blue-6)"
                       : "transparent",
                   }}
                 >
-                  <item.icon
-                    size={20}
-                    stroke={isCurrentActive ? 2 : 1.5}
-                    color={
-                      isCurrentActive ? "white" : "var(--mantine-color-gray-6)"
-                    }
-                  />
+                  <item.icon size={20} stroke={1.5} />
+                  {showUnread && (
+                    <Indicator
+                      size={16}
+                      color="red"
+                      position="top-end"
+                      offset={2}
+                      label={unreadCount > 99 ? "99+" : unreadCount}
+                      styles={{
+                        indicator: {
+                          border: "2px solid white",
+                          fontSize: "10px",
+                          fontWeight: 600,
+                          animation: "pulse 2s infinite",
+                        },
+                      }}
+                    />
+                  )}
                 </ActionIcon>
+              )}
 
-                {/* Unread indicator */}
-                {showUnread && (
-                  <Indicator
-                    size={18}
-                    color="red"
-                    position="top-end"
-                    offset={2}
-                    label={unreadCount > 99 ? "99+" : unreadCount}
-                    styles={{
-                      indicator: {
-                        border: "2px solid white",
-                        fontSize: "9px",
-                        fontWeight: 700,
-                        minWidth: 18,
-                        height: 18,
-                      },
-                    }}
-                  />
-                )}
-              </Box>
-            )}
-
-            {/* Label */}
-            <Text
-              size="xs"
-              fw={isCurrentActive ? 600 : 500}
-              style={{
-                color: isCurrentActive
-                  ? "var(--mantine-color-blue-6)"
-                  : "var(--mantine-color-gray-6)",
-                fontSize: "10px",
-                lineHeight: 1.2,
-                textAlign: "center",
-                transition: "color 0.3s ease",
-                marginTop: item.isCreate ? "2px" : "0",
-              }}
-            >
-              {item.label}
-            </Text>
-
-            {/* Active indicator dot */}
-            {isCurrentActive && !item.isCreate && (
-              <Box
+              <Text
+                size="xs"
+                fw={isCurrentActive ? 600 : 500}
+                c={isCurrentActive ? "blue" : "dimmed"}
                 style={{
-                  position: "absolute",
-                  bottom: "-2px",
-                  width: "4px",
-                  height: "4px",
-                  borderRadius: "50%",
-                  backgroundColor: "var(--mantine-color-blue-6)",
-                  transition: "all 0.3s ease",
+                  transition: "all 0.2s ease",
+                  opacity: isCurrentActive ? 1 : 0.8,
                 }}
-              />
-            )}
-          </Box>
+              >
+                {item.label}
+              </Text>
+
+              {isCurrentActive && (
+                <Box
+                  style={{
+                    position: "absolute",
+                    bottom: "2px",
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    width: "4px",
+                    height: "4px",
+                    borderRadius: "50%",
+                    backgroundColor: "var(--mantine-color-blue-6)",
+                    animation: "pulse 2s infinite",
+                  }}
+                />
+              )}
+            </Box>
+          </Tooltip>
         )}
       </Transition>
     );
   };
 
   return (
-    <Paper
-      shadow="lg"
-      style={{
-        borderRadius: 0,
-        background: "rgba(255, 255, 255, 0.95)",
-        backdropFilter: "blur(20px)",
-        borderTop: "1px solid var(--mantine-color-gray-1)",
-      }}
+    <Transition
+      mounted={mounted}
+      transition="slide-up"
+      duration={300}
+      timingFunction="ease"
     >
-      <Box
-        style={{
-          height: 60,
-          position: "relative",
-        }}
-      >
-        {/* Navigation Items */}
-        <Group
-          justify="space-around"
-          h="100%"
-          gap={0}
-          px="sm"
+      {(styles) => (
+        <Paper
+          shadow="lg"
+          radius="xl"
           style={{
-            position: "relative",
-            zIndex: 1,
+            ...styles,
+            margin: "12px",
+            backgroundColor: "rgba(255, 255, 255, 0.95)",
+            backdropFilter: "blur(10px)",
+            border: "1px solid var(--mantine-color-gray-2)",
           }}
         >
-          {mobileNavItems.map((item) => (
-            <Box key={item.path}>{getItemContent(item)}</Box>
-          ))}
-        </Group>
+          <Group
+            justify="space-around"
+            align="center"
+            p="xs"
+            style={{
+              minHeight: "60px",
+            }}
+          >
+            {mobileNavItems.map((item) => (
+              <Center key={item.path} style={{ flex: 1 }}>
+                {getItemContent(item)}
+              </Center>
+            ))}
+          </Group>
 
-        {/* Background gradient for active item */}
-        <Box
-          style={{
-            position: "absolute",
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: "2px",
-            background:
-              "linear-gradient(90deg, transparent 0%, var(--mantine-color-blue-6) 50%, transparent 100%)",
-            opacity: mobileNavItems.some((item) => isActive(item.path)) ? 1 : 0,
-            transition: "opacity 0.3s ease",
-          }}
-        />
-      </Box>
-    </Paper>
+          {/* Floating Create Button Enhancement */}
+          {isAuthenticated && (
+            <Box
+              style={{
+                position: "absolute",
+                top: "-20px",
+                left: "50%",
+                transform: "translateX(-50%)",
+                zIndex: 10,
+              }}
+            >
+              <ThemeIcon
+                size="xl"
+                radius="xl"
+                variant="gradient"
+                gradient={{ from: "blue", to: "cyan" }}
+                style={{
+                  cursor: "pointer",
+                  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                  boxShadow: "0 8px 24px rgba(34, 139, 230, 0.4)",
+                  border: "3px solid white",
+                }}
+                onClick={() => navigate("/statuses")}
+              >
+                <IconSparkles size={24} stroke={2} />
+              </ThemeIcon>
+            </Box>
+          )}
+        </Paper>
+      )}
+    </Transition>
   );
 }

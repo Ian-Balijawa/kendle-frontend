@@ -1,6 +1,19 @@
 import { useState, useRef, useEffect } from "react";
-import { Box, Paper, Group, Text, ActionIcon } from "@mantine/core";
-import { IconMinus, IconX, IconMaximize } from "@tabler/icons-react";
+import {
+  Box,
+  Paper,
+  Group,
+  Text,
+  ActionIcon,
+  Transition,
+  Avatar,
+  Tooltip,
+} from "@mantine/core";
+import {
+  IconMinus,
+  IconX,
+  IconGripVertical,
+} from "@tabler/icons-react";
 import { useFloatingChatStore } from "../../stores/chatStore";
 import { useConversation } from "../../hooks/useChat";
 import { useAuthStore } from "../../stores/authStore";
@@ -20,6 +33,8 @@ export function ChatWindow({
   size,
   zIndex,
 }: ChatWindowProps) {
+  const [mounted, setMounted] = useState(false);
+
   const {
     minimizeChatWindow,
     closeChatWindow,
@@ -36,6 +51,10 @@ export function ChatWindow({
   const windowRef = useRef<HTMLDivElement>(null);
 
   const participant = conversation?.participants.find((p) => p.id !== user?.id);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Handle window dragging
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -123,98 +142,182 @@ export function ChatWindow({
   if (!conversation) return null;
 
   return (
-    <Paper
-      ref={windowRef}
-      shadow="lg"
-      style={{
-        position: "fixed",
-        left: position.x,
-        top: position.y,
-        width: size.width,
-        height: size.height,
-        zIndex,
-        display: "flex",
-        flexDirection: "column",
-        cursor: isDragging ? "grabbing" : "default",
-        userSelect: "none",
-      }}
-      onMouseDown={handleMouseDown}
+    <Transition
+      mounted={mounted}
+      transition="scale"
+      duration={200}
+      timingFunction="ease-out"
     >
-      {/* Header */}
-      <Group
-        justify="space-between"
-        p="xs"
-        style={{
-          borderBottom: "1px solid var(--mantine-color-gray-3)",
-          backgroundColor: "var(--mantine-color-gray-0)",
-          cursor: "grab",
-        }}
-        data-drag-handle
-      >
-        <Group gap="xs">
-          <Text size="sm" fw={500} truncate>
-            {conversation.name || participant?.firstName || "Chat"}
-          </Text>
-          {participant?.isOnline && (
+      {(styles) => (
+        <Paper
+          ref={windowRef}
+          shadow="xl"
+          radius="lg"
+          style={{
+            ...styles,
+            position: "fixed",
+            left: position.x,
+            top: position.y,
+            width: size.width,
+            height: size.height,
+            zIndex,
+            display: "flex",
+            flexDirection: "column",
+            cursor: isDragging ? "grabbing" : "default",
+            userSelect: "none",
+            background: "rgba(255, 255, 255, 0.95)",
+            backdropFilter: "blur(20px)",
+            border: "1px solid rgba(255, 255, 255, 0.2)",
+            overflow: "hidden",
+            transition: "all 0.2s ease",
+            transform: isDragging ? "scale(1.02)" : "scale(1)",
+          }}
+          onMouseDown={handleMouseDown}
+        >
+          {/* Header */}
+          <Group
+            justify="space-between"
+            p="md"
+            style={{
+              background:
+                "linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%)",
+              borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
+              cursor: "grab",
+              minHeight: 60,
+            }}
+            data-drag-handle
+          >
+            <Group gap="sm">
+              <Avatar
+                src={participant?.avatar}
+                size="sm"
+                radius="xl"
+                style={{
+                  border: "2px solid rgba(255, 255, 255, 0.3)",
+                }}
+              >
+                {participant?.firstName?.[0]}
+              </Avatar>
+
+              <Box>
+                <Text size="sm" fw={600} c="gray.8" truncate>
+                  {conversation.name || participant?.firstName || "Chat"}
+                </Text>
+                {participant?.isOnline && (
+                  <Group gap={4} align="center">
+                    <Box
+                      style={{
+                        width: 6,
+                        height: 6,
+                        borderRadius: "50%",
+                        backgroundColor: "var(--mantine-color-green-5)",
+                        animation: "pulse 2s infinite",
+                      }}
+                    />
+                    <Text size="xs" c="green.6" fw={500}>
+                      Online
+                    </Text>
+                  </Group>
+                )}
+              </Box>
+            </Group>
+
+            <Group gap={2}>
+              <Tooltip label="Minimize" position="bottom">
+                <ActionIcon
+                  size="sm"
+                  variant="subtle"
+                  color="gray"
+                  radius="md"
+                  onClick={() => minimizeChatWindow(conversationId)}
+                  style={{
+                    transition: "all 0.2s ease",
+                    "&:hover": {
+                      backgroundColor: "rgba(0, 0, 0, 0.1)",
+                      transform: "scale(1.1)",
+                    },
+                  }}
+                >
+                  <IconMinus size={14} />
+                </ActionIcon>
+              </Tooltip>
+
+              <Tooltip label="Close" position="bottom">
+                <ActionIcon
+                  size="sm"
+                  variant="subtle"
+                  color="red"
+                  radius="md"
+                  onClick={() => closeChatWindow(conversationId)}
+                  style={{
+                    transition: "all 0.2s ease",
+                    "&:hover": {
+                      backgroundColor: "rgba(239, 68, 68, 0.1)",
+                      transform: "scale(1.1)",
+                    },
+                  }}
+                >
+                  <IconX size={14} />
+                </ActionIcon>
+              </Tooltip>
+            </Group>
+          </Group>
+
+          {/* Messages Area */}
+          <Box
+            style={{
+              flex: 1,
+              overflow: "hidden",
+              background: "rgba(248, 250, 252, 0.5)",
+            }}
+          >
+            <ChatMessages conversationId={conversationId} />
+          </Box>
+
+          {/* Input Area */}
+          <Box
+            p="md"
+            style={{
+              borderTop: "1px solid rgba(255, 255, 255, 0.1)",
+              background: "rgba(255, 255, 255, 0.8)",
+              backdropFilter: "blur(10px)",
+            }}
+          >
+            <ChatInput conversationId={conversationId} />
+          </Box>
+
+          {/* Resize Handle */}
+          <Tooltip label="Resize" position="top-end">
             <Box
               style={{
-                width: 8,
-                height: 8,
-                borderRadius: "50%",
-                backgroundColor: "var(--mantine-color-green-5)",
+                position: "absolute",
+                bottom: 4,
+                right: 4,
+                width: 20,
+                height: 20,
+                cursor: "nw-resize",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                borderRadius: "4px",
+                backgroundColor: "rgba(0, 0, 0, 0.1)",
+                transition: "all 0.2s ease",
+                opacity: 0.6,
+                "&:hover": {
+                  opacity: 1,
+                  backgroundColor: "rgba(0, 0, 0, 0.2)",
+                },
               }}
-            />
-          )}
-        </Group>
-
-        <Group gap={4}>
-          <ActionIcon
-            size="sm"
-            variant="subtle"
-            onClick={() => minimizeChatWindow(conversationId)}
-          >
-            <IconMinus size={14} />
-          </ActionIcon>
-          <ActionIcon
-            size="sm"
-            variant="subtle"
-            onClick={() => closeChatWindow(conversationId)}
-          >
-            <IconX size={14} />
-          </ActionIcon>
-        </Group>
-      </Group>
-
-      {/* Messages Area */}
-      <Box style={{ flex: 1, overflow: "hidden" }}>
-        <ChatMessages conversationId={conversationId} />
-      </Box>
-
-      {/* Input Area */}
-      <Box
-        p="xs"
-        style={{ borderTop: "1px solid var(--mantine-color-gray-3)" }}
-      >
-        <ChatInput conversationId={conversationId} />
-      </Box>
-
-      {/* Resize Handle */}
-      <Box
-        style={{
-          position: "absolute",
-          bottom: 0,
-          right: 0,
-          width: 20,
-          height: 20,
-          cursor: "nw-resize",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-        onMouseDown={handleResizeMouseDown}
-      >
-        <IconMaximize size={12} style={{ opacity: 0.5 }} />
-      </Box>
-    </Paper>
+              onMouseDown={handleResizeMouseDown}
+            >
+              <IconGripVertical
+                size={12}
+                style={{ transform: "rotate(45deg)" }}
+              />
+            </Box>
+          </Tooltip>
+        </Paper>
+      )}
+    </Transition>
   );
 }

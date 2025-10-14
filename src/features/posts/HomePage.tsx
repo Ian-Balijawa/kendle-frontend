@@ -6,8 +6,12 @@ import {
   Card,
   Container,
   Group,
+  Paper,
   Stack,
   Text,
+  Title,
+  Transition,
+  Center,
 } from "@mantine/core";
 import { useIntersection } from "@mantine/hooks";
 import {
@@ -15,8 +19,11 @@ import {
   IconRefresh,
   IconSparkles,
   IconTrendingUp,
+  IconHeart,
+  IconUsers,
+  IconFlame,
 } from "@tabler/icons-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { InfiniteScrollLoader, PostSkeletonList } from "../../components/ui";
 import { ProfileSwipe } from "../../components/ui/ProfileSwipe";
 import { useInfinitePosts } from "../../hooks/usePosts";
@@ -38,6 +45,7 @@ export function HomePage() {
   const [currentStatusIndex, setCurrentStatusIndex] = useState(0);
   const [viewModalOpened, setViewModalOpened] = useState(false);
   const [currentCollectionIndex, setCurrentCollectionIndex] = useState(0);
+  const [mounted, setMounted] = useState(false);
 
   // Use infinite posts query
   const {
@@ -65,6 +73,11 @@ export function HomePage() {
   const { ref, entry } = useIntersection({
     threshold: 1,
   });
+
+  // Trigger animation on mount
+  useEffect(() => {
+    setTimeout(() => setMounted(true), 100);
+  }, []);
 
   // Fetch next page when intersection is observed
   if (entry?.isIntersecting && hasNextPage && !isFetchingNextPage) {
@@ -157,163 +170,366 @@ export function HomePage() {
   const canGoPreviousCollection = currentCollectionIndex > 0;
 
   return (
-    <Container size="xl" px="sm">
-      {/* Header Section */}
-      <Group justify="space-between" align="center" mb="md">
-        <Badge
-          leftSection={<IconTrendingUp size={12} />}
-          variant="outline"
-          size="sm"
-          radius="xl"
-        >
-          Trending
-        </Badge>
-
-        <Group gap="xs">
-          <ActionIcon
-            variant="subtle"
-            color="gray"
-            size="lg"
-            radius="xl"
-            onClick={() => refetch()}
+    <Container size="xl" px="sm" style={{ position: "relative" }}>
+      {/* Enhanced Header Section */}
+      <Transition mounted={mounted} transition="fade-down" duration={400}>
+        {(styles) => (
+          <Paper
+            style={{
+              ...styles,
+              background: "rgba(255, 255, 255, 0.9)",
+              backdropFilter: "blur(12px)",
+              border: "1px solid rgba(255, 255, 255, 0.3)",
+              borderRadius: "var(--mantine-radius-xl)",
+              padding: "var(--mantine-spacing-md)",
+              marginBottom: "var(--mantine-spacing-lg)",
+              boxShadow: "0 8px 32px rgba(0, 0, 0, 0.08)",
+            }}
           >
-            <IconRefresh size={18} />
-          </ActionIcon>
+            <Group justify="space-between" align="center">
+              <Group gap="md">
+                <Box
+                  style={{
+                    width: "40px",
+                    height: "40px",
+                    borderRadius: "12px",
+                    background:
+                      "linear-gradient(135deg, var(--mantine-color-primary-6), var(--mantine-color-primary-8))",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    boxShadow: "0 4px 12px rgba(14, 165, 233, 0.3)",
+                  }}
+                >
+                  <IconFlame size={20} color="white" />
+                </Box>
+                <Stack gap={0}>
+                  <Title order={3} size="h4" fw={700} c="dark.8">
+                    Discover
+                  </Title>
+                  <Group gap="xs">
+                    <Badge
+                      leftSection={<IconTrendingUp size={12} />}
+                      variant="light"
+                      color="primary"
+                      size="sm"
+                      radius="xl"
+                    >
+                      Trending
+                    </Badge>
+                    <Badge
+                      leftSection={<IconHeart size={12} />}
+                      variant="light"
+                      color="red"
+                      size="sm"
+                      radius="xl"
+                    >
+                      Popular
+                    </Badge>
+                  </Group>
+                </Stack>
+              </Group>
 
-          {isAuthenticated && (
-            <Button
-              leftSection={<IconPlus size={16} />}
-              onClick={() => setCreatePostOpened(true)}
-              radius="xl"
-              size="sm"
-              style={{
-                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                fontWeight: 600,
-                fontSize: "12px",
-                boxShadow:
-                  "0 4px 16px rgba(102, 126, 234, 0.3), 0 2px 4px rgba(0, 0, 0, 0.1)",
-              }}
-            >
-              Create Post
-            </Button>
-          )}
-        </Group>
-      </Group>
+              <Group gap="xs">
+                <ActionIcon
+                  variant="light"
+                  color="gray"
+                  size="lg"
+                  radius="xl"
+                  onClick={() => refetch()}
+                  style={{
+                    transition: "all 0.2s ease",
+                    "&:hover": {
+                      transform: "rotate(180deg)",
+                    },
+                  }}
+                >
+                  <IconRefresh size={18} />
+                </ActionIcon>
+
+                {isAuthenticated && (
+                  <Button
+                    leftSection={<IconPlus size={16} />}
+                    onClick={() => setCreatePostOpened(true)}
+                    radius="xl"
+                    size="md"
+                    styles={{
+                      root: {
+                        background:
+                          "linear-gradient(135deg, var(--mantine-color-primary-6), var(--mantine-color-primary-8))",
+                        border: "none",
+                        fontWeight: 600,
+                        transition: "all 0.2s ease",
+                        "&:hover": {
+                          background:
+                            "linear-gradient(135deg, var(--mantine-color-primary-7), var(--mantine-color-primary-9))",
+                          transform: "translateY(-2px)",
+                          boxShadow: "0 8px 25px rgba(14, 165, 233, 0.4)",
+                        },
+                      },
+                    }}
+                  >
+                    Create Post
+                  </Button>
+                )}
+              </Group>
+            </Group>
+          </Paper>
+        )}
+      </Transition>
 
       {/* Status Stories Section */}
-      <Box my="md">
-        {isAuthenticated && (
-          <StatusStories
-            collections={statusCollections}
-            currentUserAvatar={user?.avatar}
-            onCreateStatus={handleCreateStatus}
-            onStatusClick={handleStatusClick}
-          />
+      <Transition mounted={mounted} transition="slide-up" duration={500}>
+        {(styles) => (
+          <Box style={styles} mb="lg">
+            {isAuthenticated && (
+              <StatusStories
+                collections={statusCollections}
+                currentUserAvatar={user?.avatar}
+                onCreateStatus={handleCreateStatus}
+                onStatusClick={handleStatusClick}
+              />
+            )}
+          </Box>
         )}
-      </Box>
+      </Transition>
 
+      {/* Suggested Users Section */}
       {isAuthenticated &&
         suggestedUsers &&
         suggestedUsers.suggestions.length > 0 && (
-          <ProfileSwipe users={suggestedUsers.suggestions} />
+          <Transition mounted={mounted} transition="slide-up" duration={500}>
+            {(styles) => (
+              <Box style={styles} mb="lg">
+                <Paper
+                  p="md"
+                  radius="xl"
+                  style={{
+                    background: "rgba(255, 255, 255, 0.8)",
+                    backdropFilter: "blur(12px)",
+                    border: "1px solid rgba(255, 255, 255, 0.3)",
+                    boxShadow: "0 4px 20px rgba(0, 0, 0, 0.06)",
+                  }}
+                >
+                  <Group mb="sm" gap="xs">
+                    <IconUsers
+                      size={20}
+                      color="var(--mantine-color-primary-6)"
+                    />
+                    <Text fw={600} size="md" c="dark.7">
+                      People you might know
+                    </Text>
+                  </Group>
+                  <ProfileSwipe users={suggestedUsers.suggestions} />
+                </Paper>
+              </Box>
+            )}
+          </Transition>
         )}
 
       {/* Content Section */}
-      <Stack gap="sm">
+      <Stack gap="lg">
         {/* Error State */}
         {isError && (
-          <Card
-            radius="lg"
-            p="sm"
-            style={{
-              background:
-                "linear-gradient(135deg, var(--mantine-color-red-0) 0%, var(--mantine-color-red-1) 100%)",
-              border: "1px solid var(--mantine-color-red-2)",
-            }}
-          >
-            <Stack align="center" gap="sm">
-              <Text size="lg" fw={600} c="red.7">
-                Oops! Something went wrong
-              </Text>
-              <Text c="red.6" ta="center" size="sm">
-                {error?.message || "We couldn't load the posts right now."}
-              </Text>
-              <Button
-                variant="light"
-                color="red"
-                radius="xl"
-                onClick={() => refetch()}
+          <Transition mounted={isError} transition="fade-up" duration={400}>
+            {(styles) => (
+              <Card
+                style={{
+                  ...styles,
+                  background:
+                    "linear-gradient(135deg, var(--mantine-color-red-0) 0%, var(--mantine-color-red-1) 100%)",
+                  border: "1px solid var(--mantine-color-red-2)",
+                  borderRadius: "var(--mantine-radius-xl)",
+                  padding: "var(--mantine-spacing-xl)",
+                }}
               >
-                Try Again
-              </Button>
-            </Stack>
-          </Card>
+                <Center>
+                  <Stack align="center" gap="md">
+                    <Box
+                      style={{
+                        width: "60px",
+                        height: "60px",
+                        borderRadius: "50%",
+                        background: "var(--mantine-color-red-1)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <IconSparkles
+                        size={28}
+                        color="var(--mantine-color-red-6)"
+                      />
+                    </Box>
+                    <Stack gap="xs" align="center">
+                      <Title order={4} c="red.7" fw={600}>
+                        Oops! Something went wrong
+                      </Title>
+                      <Text c="red.6" ta="center" size="sm" maw={400}>
+                        {error?.message ||
+                          "We couldn't load the posts right now. Please try again."}
+                      </Text>
+                    </Stack>
+                    <Button
+                      variant="light"
+                      color="red"
+                      radius="xl"
+                      onClick={() => refetch()}
+                      leftSection={<IconRefresh size={16} />}
+                    >
+                      Try Again
+                    </Button>
+                  </Stack>
+                </Center>
+              </Card>
+            )}
+          </Transition>
         )}
 
         {/* Loading State */}
-        {isLoading && <PostSkeletonList count={5} />}
+        {isLoading && (
+          <Transition mounted={isLoading} transition="fade-up" duration={300}>
+            {(styles) => (
+              <Box style={styles}>
+                <PostSkeletonList count={5} />
+              </Box>
+            )}
+          </Transition>
+        )}
 
         {/* Empty State */}
         {!isLoading && posts.length === 0 && !isError && (
-          <Card
-            radius="lg"
-            p="sm"
-            style={{
-              background:
-                "linear-gradient(135deg, var(--mantine-color-blue-0) 0%, var(--mantine-color-cyan-1) 100%)",
-              border: "1px solid var(--mantine-color-blue-2)",
-              textAlign: "center",
-            }}
+          <Transition
+            mounted={!isLoading && posts.length === 0}
+            transition="fade-up"
+            duration={500}
           >
-            <Stack align="center" gap="sm" py="xl">
-              <IconSparkles size={48} color="var(--mantine-color-blue-6)" />
-              <div>
-                <Text size="xl" fw={600} c="blue.8" mb="xs">
-                  Welcome to Kendle!
-                </Text>
-                <Text c="blue.6" size="sm">
-                  Be the first to share something amazing with our community.
-                </Text>
-              </div>
-              {isAuthenticated && (
-                <Button
-                  leftSection={<IconPlus size={16} />}
-                  onClick={() => setCreatePostOpened(true)}
-                  radius="xl"
-                  variant="gradient"
-                  gradient={{ from: "blue", to: "cyan" }}
-                  size="md"
-                >
-                  Share Your First Post
-                </Button>
-              )}
-            </Stack>
-          </Card>
+            {(styles) => (
+              <Card
+                style={{
+                  ...styles,
+                  background:
+                    "linear-gradient(135deg, var(--mantine-color-primary-0) 0%, var(--mantine-color-cyan-1) 100%)",
+                  border: "1px solid var(--mantine-color-primary-2)",
+                  borderRadius: "var(--mantine-radius-xl)",
+                  padding: "var(--mantine-spacing-xl)",
+                }}
+              >
+                <Center>
+                  <Stack align="center" gap="xl" py="xl">
+                    <Box
+                      style={{
+                        width: "80px",
+                        height: "80px",
+                        borderRadius: "50%",
+                        background:
+                          "linear-gradient(135deg, var(--mantine-color-primary-6), var(--mantine-color-cyan-6))",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        boxShadow: "0 8px 32px rgba(14, 165, 233, 0.3)",
+                        animation: "pulse 2s ease-in-out infinite",
+                      }}
+                    >
+                      <IconSparkles size={40} color="white" />
+                    </Box>
+                    <Stack gap="sm" align="center">
+                      <Title order={2} c="primary.8" fw={700} ta="center">
+                        Welcome to Kendle!
+                      </Title>
+                      <Text c="primary.6" size="lg" ta="center" maw={500}>
+                        Be the first to share something amazing with our
+                        community. Your story matters!
+                      </Text>
+                    </Stack>
+                    {isAuthenticated && (
+                      <Button
+                        leftSection={<IconPlus size={18} />}
+                        onClick={() => setCreatePostOpened(true)}
+                        radius="xl"
+                        size="lg"
+                        styles={{
+                          root: {
+                            background:
+                              "linear-gradient(135deg, var(--mantine-color-primary-6), var(--mantine-color-cyan-6))",
+                            border: "none",
+                            fontWeight: 600,
+                            fontSize: "16px",
+                            height: "48px",
+                            paddingLeft: "24px",
+                            paddingRight: "24px",
+                            transition: "all 0.2s ease",
+                            "&:hover": {
+                              transform: "translateY(-2px)",
+                              boxShadow: "0 12px 32px rgba(14, 165, 233, 0.4)",
+                            },
+                          },
+                        }}
+                      >
+                        Share Your First Post
+                      </Button>
+                    )}
+                  </Stack>
+                </Center>
+              </Card>
+            )}
+          </Transition>
         )}
 
         {/* Posts List */}
         {!isLoading && posts.length > 0 && (
-          <>
-            {posts.map((post, index) => (
-              <PostCard
-                key={`post-${post.id}-${index}`}
-                post={post}
-                isFirst={index === 0}
-              />
-            ))}
+          <Transition
+            mounted={!isLoading && posts.length > 0}
+            transition="fade-up"
+            duration={400}
+          >
+            {(styles) => (
+              <Stack gap="lg" style={styles}>
+                {posts.map((post, index) => (
+                  <Transition
+                    key={`post-${post.id}-${index}`}
+                    mounted={true}
+                    transition="slide-up"
+                    duration={300}
+                  >
+                    {(transitionStyles) => (
+                      <Box style={transitionStyles}>
+                        <PostCard post={post} isFirst={index === 0} />
+                      </Box>
+                    )}
+                  </Transition>
+                ))}
 
-            {/* Infinite scroll trigger */}
-            {hasNextPage && (
-              <div ref={ref}>
-                {isFetchingNextPage && (
-                  <InfiniteScrollLoader count={2} variant="posts" />
+                {/* Infinite scroll trigger */}
+                {hasNextPage && (
+                  <div ref={ref}>
+                    {isFetchingNextPage && (
+                      <InfiniteScrollLoader count={2} variant="posts" />
+                    )}
+                  </div>
                 )}
-              </div>
-            )}
 
-            {/* End of feed */}
-            {!hasNextPage && posts.length > 0 && null}
-          </>
+                {/* End of feed indicator */}
+                {!hasNextPage && posts.length > 0 && (
+                  <Paper
+                    p="md"
+                    radius="xl"
+                    style={{
+                      background: "rgba(255, 255, 255, 0.6)",
+                      backdropFilter: "blur(8px)",
+                      border: "1px solid rgba(255, 255, 255, 0.3)",
+                      textAlign: "center",
+                    }}
+                  >
+                    <Text size="sm" c="dimmed" fw={500}>
+                      🎉 You've reached the end! Come back later for more
+                      amazing content.
+                    </Text>
+                  </Paper>
+                )}
+              </Stack>
+            )}
+          </Transition>
         )}
       </Stack>
 

@@ -1,4 +1,10 @@
-import { Avatar, Box, Image, Stack, Text } from "@mantine/core";
+import {
+  Avatar,
+  Box,
+  Image,
+  Stack,
+  Text,
+} from "@mantine/core";
 import { IconPlus } from "@tabler/icons-react";
 import { StatusCollection } from "../../types";
 
@@ -109,7 +115,7 @@ export function VerticalStatusCard({
   const hasUnviewed = collection.hasUnviewed;
   const hasMultipleStatuses = collection.statuses.length > 1;
 
-  console.log(latestStatus)
+  console.log(latestStatus);
 
   return (
     <Box
@@ -167,7 +173,7 @@ export function VerticalStatusCard({
         ) : (
           <video
             controls
-              src={latestStatus.media[0].url}
+            src={latestStatus.media[0].url}
             width="100%"
             height="100%"
             muted

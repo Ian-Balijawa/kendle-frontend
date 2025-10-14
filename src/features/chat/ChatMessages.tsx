@@ -8,7 +8,17 @@ import {
   Stack,
   Tooltip,
   Badge,
+  Paper,
+  Transition,
+  ActionIcon,
+  Center,
 } from "@mantine/core";
+import {
+  IconCheck,
+  IconChecks,
+  IconClock,
+  IconMoodSmile,
+} from "@tabler/icons-react";
 import {
   useInfiniteMessages,
   useMarkConversationAsRead,
@@ -18,7 +28,6 @@ import { useAuthStore } from "../../stores/authStore";
 import { useWebSocketIntegration } from "../../hooks/useWebSocket";
 import { Message } from "../../types";
 import { TypingIndicator } from "./TypingIndicator";
-import { MessageContextMenu } from "./MessageContextMenu";
 
 interface ChatMessagesProps {
   conversationId: string;
@@ -28,11 +37,17 @@ export function ChatMessages({ conversationId }: ChatMessagesProps) {
   const { user } = useAuthStore();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [hoveredMessage, setHoveredMessage] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useInfiniteMessages(conversationId);
   const markAsRead = useMarkConversationAsRead();
   const addReaction = useAddMessageReaction();
   const { joinConversation, leaveConversation } = useWebSocketIntegration();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Auto-scroll to bottom on new messages
   useEffect(() => {
@@ -91,7 +106,18 @@ export function ChatMessages({ conversationId }: ChatMessagesProps) {
             <Badge
               size="xs"
               variant="light"
-              style={{ cursor: "pointer" }}
+              radius="xl"
+              style={{
+                cursor: "pointer",
+                background: "rgba(99, 102, 241, 0.1)",
+                color: "var(--mantine-color-indigo-6)",
+                border: "1px solid rgba(99, 102, 241, 0.2)",
+                transition: "all 0.2s ease",
+                "&:hover": {
+                  background: "rgba(99, 102, 241, 0.2)",
+                  transform: "scale(1.05)",
+                },
+              }}
               onClick={() => {
                 // TODO: Add/remove reaction functionality
                 console.log("Toggle reaction:", emoji);
@@ -105,171 +131,222 @@ export function ChatMessages({ conversationId }: ChatMessagesProps) {
     );
   };
 
-  const handleReact = (message: Message, emoji: string) => {
-    addReaction.mutate({
-      id: message.id,
-      data: { emoji, messageId: message.id },
-    });
-  };
-
-  const renderMessage = (message: Message, index: number) => {
-    const prevMessage = allMessages[index + 1];
-    const showAvatar =
-      !prevMessage || prevMessage.senderId !== message.senderId;
-    const showTimestamp =
-      !prevMessage ||
-      new Date(message.createdAt).getTime() -
-        new Date(prevMessage.createdAt).getTime() >
-        5 * 60 * 1000; // 5 minutes
+  const renderMessageStatus = (message: Message) => {
+    if (!isOwnMessage(message)) return null;
 
     return (
-      <Box
-        key={message.id}
-        style={{
-          display: "flex",
-          justifyContent: isOwnMessage(message) ? "flex-end" : "flex-start",
-          marginBottom: showTimestamp ? 16 : 4,
-        }}
-        onMouseEnter={() => setHoveredMessage(message.id)}
-        onMouseLeave={() => setHoveredMessage(null)}
-      >
-        <Group
-          gap="xs"
-          style={{
-            maxWidth: "70%",
-            alignItems: "flex-end",
-          }}
-        >
-          {/* Avatar for other user's messages */}
-          {!isOwnMessage(message) && showAvatar && (
-            <Avatar
-              size="sm"
-              src={message.sender?.avatar}
-              alt={message.sender?.firstName}
-            >
-              {message.sender?.firstName?.charAt(0) || "U"}
-            </Avatar>
-          )}
-
-          {/* Message content */}
-          <Stack gap={4} style={{ minWidth: 0 }}>
-            <Box
-              style={{
-                backgroundColor: isOwnMessage(message)
-                  ? "var(--mantine-color-primary-6)"
-                  : "var(--mantine-color-gray-2)",
-                color: isOwnMessage(message) ? "white" : "inherit",
-                padding: "8px 12px",
-                borderRadius: 16,
-                maxWidth: "100%",
-                wordBreak: "break-word",
-                position: "relative",
-                cursor: "pointer",
-              }}
-            >
-              <Text size="sm" style={{ lineHeight: 1.4 }}>
-                {message.content}
-              </Text>
-
-              {/* Message reactions */}
-              {renderReactions(message)}
-
-              {/* Context menu on hover */}
-              {hoveredMessage === message.id && (
-                <Box
-                  style={{
-                    position: "absolute",
-                    top: -8,
-                    right: -8,
-                    backgroundColor: "var(--mantine-color-white)",
-                    borderRadius: 4,
-                    boxShadow: "0 2px 8px var(--mantine-color-shadow)",
-                  }}
-                >
-                  <MessageContextMenu message={message} onReact={handleReact} />
-                </Box>
-              )}
-            </Box>
-
-            {/* Message status and timestamp */}
-            <Group
-              gap={4}
-              justify={isOwnMessage(message) ? "flex-end" : "flex-start"}
-            >
-              {isOwnMessage(message) && (
-                <Text size="xs" c="dimmed">
-                  {message.status === "sending" && "⏳"}
-                  {message.status === "delivered" && "✓"}
-                  {message.status === "read" && "✓✓"}
-                  {message.status === "failed" && "❌"}
-                </Text>
-              )}
-
-              {showTimestamp && (
-                <Text size="xs" c="dimmed">
-                  {formatTime(message.createdAt)}
-                </Text>
-              )}
-            </Group>
-          </Stack>
-
-          {/* Avatar for own messages */}
-          {isOwnMessage(message) && showAvatar && (
-            <Avatar size="sm" src={user?.avatar} alt={user?.firstName}>
-              {user?.firstName?.charAt(0) || "U"}
-            </Avatar>
-          )}
-        </Group>
+      <Box style={{ display: "flex", alignItems: "center", gap: 2 }}>
+        {message.status === "sending" && (
+          <IconClock size={12} color="var(--mantine-color-gray-5)" />
+        )}
+        {message.status === "delivered" && (
+          <IconChecks size={12} color="var(--mantine-color-gray-5)" />
+        )}
+        {message.status === "read" && (
+          <IconChecks size={12} color="var(--mantine-color-blue-5)" />
+        )}
+        {message.status === "failed" && (
+          <IconCheck size={12} color="var(--mantine-color-red-5)" />
+        )}
       </Box>
     );
   };
 
-  return (
-    <ScrollArea
-      ref={scrollRef}
-      h="100%"
-      scrollbarSize={4}
-      style={{
-        padding: "12px",
-      }}
-    >
-      <Stack gap={0}>
-        {/* Load more button */}
-        {hasNextPage && (
+  const renderMessage = (message: Message, index: number) => {
+    const isOwn = isOwnMessage(message);
+    const showAvatar = !isOwn;
+
+    return (
+      <Transition
+        key={message.id}
+        mounted={mounted}
+        transition="fade-up"
+        duration={300}
+        timingFunction="ease-out"
+      >
+        {(styles) => (
           <Box
-            style={{
-              textAlign: "center",
-              padding: "8px",
-              cursor: "pointer",
-            }}
-            onClick={() => fetchNextPage()}
+            style={styles}
+            mb="sm"
+            onMouseEnter={() => setHoveredMessage(message.id)}
+            onMouseLeave={() => setHoveredMessage(null)}
           >
-            <Text size="xs" c="dimmed">
-              {isFetchingNextPage ? "Loading..." : "Load more messages"}
+            <Group
+              align="flex-end"
+              gap="xs"
+              justify={isOwn ? "flex-end" : "flex-start"}
+              wrap="nowrap"
+            >
+              {showAvatar && (
+                <Avatar
+                  src={message.sender?.avatar}
+                  size="sm"
+                  radius="xl"
+                  style={{
+                    border: "2px solid rgba(255, 255, 255, 0.8)",
+                    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+                  }}
+                >
+                  {message.sender?.firstName?.[0]}
+                </Avatar>
+              )}
+
+              <Stack gap={2} style={{ maxWidth: "70%", minWidth: "120px" }}>
+                <Paper
+                  p="sm"
+                  radius="xl"
+                  style={{
+                    background: isOwn
+                      ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+                      : "rgba(255, 255, 255, 0.9)",
+                    color: isOwn ? "white" : "var(--mantine-color-gray-8)",
+                    border: isOwn ? "none" : "1px solid rgba(0, 0, 0, 0.1)",
+                    backdropFilter: "blur(10px)",
+                    boxShadow: isOwn
+                      ? "0 4px 16px rgba(102, 126, 234, 0.3)"
+                      : "0 2px 8px rgba(0, 0, 0, 0.1)",
+                    position: "relative",
+                    transform:
+                      hoveredMessage === message.id
+                        ? "scale(1.02)"
+                        : "scale(1)",
+                    transition: "all 0.2s ease",
+                  }}
+                >
+                  {message.messageType === "text" && (
+                    <Text
+                      size="sm"
+                      style={{ lineHeight: 1.4, wordBreak: "break-word" }}
+                    >
+                      {message.content}
+                    </Text>
+                  )}
+
+                  {message.messageType === "image" && (
+                    <Box>
+                      <img
+                        src={message.mediaUrl}
+                        alt="Shared image"
+                        style={{
+                          maxWidth: "100%",
+                          borderRadius: "8px",
+                          marginBottom: message.content ? "8px" : 0,
+                        }}
+                      />
+                      {message.content && (
+                        <Text size="sm" style={{ lineHeight: 1.4 }}>
+                          {message.content}
+                        </Text>
+                      )}
+                    </Box>
+                  )}
+
+                  {renderReactions(message)}
+                </Paper>
+
+                <Group
+                  gap={4}
+                  justify={isOwn ? "flex-end" : "flex-start"}
+                  style={{ opacity: hoveredMessage === message.id ? 1 : 0.6 }}
+                >
+                  <Text size="xs" c="dimmed">
+                    {formatTime(message.createdAt)}
+                  </Text>
+                  {renderMessageStatus(message)}
+
+                  {hoveredMessage === message.id && (
+                    <ActionIcon
+                      size="xs"
+                      variant="subtle"
+                      color="gray"
+                      radius="xl"
+                      onClick={() => {
+                        // TODO: Add emoji reaction
+                        console.log("Add reaction to message:", message.id);
+                      }}
+                    >
+                      <IconMoodSmile size={12} />
+                    </ActionIcon>
+                  )}
+                </Group>
+              </Stack>
+            </Group>
+          </Box>
+        )}
+      </Transition>
+    );
+  };
+
+  if (!data || allMessages.length === 0) {
+    return (
+      <Box p="md" style={{ height: "100%" }}>
+        <Center style={{ height: "100%" }}>
+          <Stack align="center" gap="sm">
+            <Box
+              style={{
+                width: 60,
+                height: 60,
+                borderRadius: "50%",
+                background:
+                  "linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.1))",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <IconMoodSmile size={24} color="var(--mantine-color-indigo-5)" />
+            </Box>
+            <Text size="sm" c="dimmed" ta="center">
+              Start a conversation by sending a message
             </Text>
-          </Box>
-        )}
+          </Stack>
+        </Center>
+      </Box>
+    );
+  }
 
-        {/* Messages */}
-        {allMessages.length === 0 ? (
-          <Box
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              height: "100%",
-              color: "var(--mantine-color-gray-6)",
-            }}
-          >
-            <Text size="sm">No messages yet. Start a conversation!</Text>
-          </Box>
-        ) : (
-          allMessages.map((message, index) => renderMessage(message, index))
-        )}
+  return (
+    <Box style={{ height: "100%", display: "flex", flexDirection: "column" }}>
+      <ScrollArea
+        ref={scrollRef}
+        style={{ flex: 1 }}
+        scrollbarSize={6}
+        scrollHideDelay={1000}
+      >
+        <Box p="md">
+          {/* Load more messages button */}
+          {hasNextPage && (
+            <Center mb="md">
+              <ActionIcon
+                variant="light"
+                color="blue"
+                size="lg"
+                radius="xl"
+                loading={isFetchingNextPage}
+                onClick={() => fetchNextPage()}
+                style={{
+                  background: "rgba(99, 102, 241, 0.1)",
+                  "&:hover": {
+                    background: "rgba(99, 102, 241, 0.2)",
+                  },
+                }}
+              >
+                <Text size="xs" fw={500}>
+                  Load more
+                </Text>
+              </ActionIcon>
+            </Center>
+          )}
 
-        {/* Typing indicator */}
-        <TypingIndicator conversationId={conversationId} />
-      </Stack>
-    </ScrollArea>
+          {/* Messages */}
+          <Stack gap="xs">
+            {allMessages.map((message, index) => renderMessage(message, index))}
+          </Stack>
+
+          {/* Typing indicator */}
+          <TypingIndicator conversationId={conversationId} />
+        </Box>
+      </ScrollArea>
+    </Box>
   );
 }

@@ -1,4 +1,7 @@
-import { ActionIcon, Box } from "@mantine/core";
+import {
+  ActionIcon,
+  Box,
+} from "@mantine/core";
 import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
 import { useRef, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
