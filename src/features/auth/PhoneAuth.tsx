@@ -125,13 +125,8 @@ export function PhoneAuth() {
             <Paper
               style={{
                 ...styles,
-                background: "rgba(255, 255, 255, 0.95)",
-                backdropFilter: "blur(20px)",
-                border: "1px solid rgba(255, 255, 255, 0.3)",
                 borderRadius: "var(--mantine-radius-xl)",
                 padding: "var(--mantine-spacing-xl)",
-                boxShadow:
-                  "0 20px 40px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.05)",
                 position: "relative",
                 overflow: "hidden",
               }}
@@ -149,7 +144,6 @@ export function PhoneAuth() {
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      boxShadow: "0 8px 20px rgba(14, 165, 233, 0.3)",
                     }}
                   >
                     <IconSparkles size={28} color="white" />
@@ -163,17 +157,17 @@ export function PhoneAuth() {
                     >
                       Kendle
                     </Title>
-                    <Text size="sm" c="dimmed" fw={500}>
+                    <Text size="sm" fw={500}>
                       Connect & Share
                     </Text>
                   </Stack>
                 </Group>
 
                 <Stack gap="xs" align="center">
-                  <Title order={2} size="h3" ta="center" fw={700} c="dark.8">
+                  <Title order={2} size="h3" ta="center" fw={700}>
                     Welcome back
                   </Title>
-                  <Text size="md" c="dimmed" ta="center" maw={300}>
+                  <Text size="md" ta="center" maw={300}>
                     Enter your phone number to continue to your account
                   </Text>
                 </Stack>
@@ -224,8 +218,7 @@ export function PhoneAuth() {
                         border: "2px solid var(--mantine-color-gray-2)",
                         transition: "all 0.2s ease",
                         "&:focus": {
-                          borderColor: "var(--mantine-color-primary-5)",
-                          boxShadow: "0 0 0 3px rgba(14, 165, 233, 0.1)",
+                          borderColor: "var(--mantine-color-primary-5)",  
                           transform: "translateY(-1px)",
                         },
                         "&:hover": {
@@ -259,7 +252,6 @@ export function PhoneAuth() {
                           background:
                             "linear-gradient(135deg, var(--mantine-color-primary-7), var(--mantine-color-primary-8))",
                           transform: "translateY(-2px)",
-                          boxShadow: "0 8px 25px rgba(14, 165, 233, 0.3)",
                         },
                         "&:active": {
                           transform: "translateY(0)",
@@ -278,11 +270,10 @@ export function PhoneAuth() {
               </form>
 
               {/* Footer */}
-              <Text size="xs" c="dimmed" ta="center" mt="xl" lh={1.5}>
+              <Text size="xs" ta="center" mt="xl" lh={1.5}>
                 By continuing, you agree to our{" "}
                 <Text
                   component="span"
-                  c="primary.6"
                   fw={500}
                   style={{ cursor: "pointer" }}
                 >
@@ -291,7 +282,6 @@ export function PhoneAuth() {
                 and{" "}
                 <Text
                   component="span"
-                  c="primary.6"
                   fw={500}
                   style={{ cursor: "pointer" }}
                 >

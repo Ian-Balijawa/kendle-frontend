@@ -177,13 +177,11 @@ export function HomePage() {
           <Paper
             style={{
               ...styles,
-              background: "rgba(255, 255, 255, 0.9)",
               backdropFilter: "blur(12px)",
-              border: "1px solid rgba(255, 255, 255, 0.3)",
               borderRadius: "var(--mantine-radius-xl)",
               padding: "var(--mantine-spacing-md)",
+              marginTop: "var(--mantine-spacing-lg)",
               marginBottom: "var(--mantine-spacing-lg)",
-              boxShadow: "0 8px 32px rgba(0, 0, 0, 0.08)",
             }}
           >
             <Group justify="space-between" align="center">
@@ -198,13 +196,12 @@ export function HomePage() {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    boxShadow: "0 4px 12px rgba(14, 165, 233, 0.3)",
                   }}
                 >
                   <IconFlame size={20} color="white" />
                 </Box>
                 <Stack gap={0}>
-                  <Title order={3} size="h4" fw={700} c="dark.8">
+                  <Title order={3} size="h4" fw={700}>
                     Discover
                   </Title>
                   <Group gap="xs">
@@ -300,28 +297,8 @@ export function HomePage() {
         suggestedUsers.suggestions.length > 0 && (
           <Transition mounted={mounted} transition="slide-up" duration={500}>
             {(styles) => (
-              <Box style={styles} mb="lg">
-                <Paper
-                  p="md"
-                  radius="xl"
-                  style={{
-                    background: "rgba(255, 255, 255, 0.8)",
-                    backdropFilter: "blur(12px)",
-                    border: "1px solid rgba(255, 255, 255, 0.3)",
-                    boxShadow: "0 4px 20px rgba(0, 0, 0, 0.06)",
-                  }}
-                >
-                  <Group mb="sm" gap="xs">
-                    <IconUsers
-                      size={20}
-                      color="var(--mantine-color-primary-6)"
-                    />
-                    <Text fw={600} size="md" c="dark.7">
-                      People you might know
-                    </Text>
-                  </Group>
-                  <ProfileSwipe users={suggestedUsers.suggestions} />
-                </Paper>
+            <Box style={styles} mb="lg">
+              <ProfileSwipe users={suggestedUsers.suggestions} />
               </Box>
             )}
           </Transition>
@@ -507,25 +484,6 @@ export function HomePage() {
                       <InfiniteScrollLoader count={2} variant="posts" />
                     )}
                   </div>
-                )}
-
-                {/* End of feed indicator */}
-                {!hasNextPage && posts.length > 0 && (
-                  <Paper
-                    p="md"
-                    radius="xl"
-                    style={{
-                      background: "rgba(255, 255, 255, 0.6)",
-                      backdropFilter: "blur(8px)",
-                      border: "1px solid rgba(255, 255, 255, 0.3)",
-                      textAlign: "center",
-                    }}
-                  >
-                    <Text size="sm" c="dimmed" fw={500}>
-                      🎉 You've reached the end! Come back later for more
-                      amazing content.
-                    </Text>
-                  </Paper>
                 )}
               </Stack>
             )}

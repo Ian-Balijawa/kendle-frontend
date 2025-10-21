@@ -157,12 +157,8 @@ export function ChatInput({ conversationId }: ChatInputProps) {
         <Paper
           style={{
             ...styles,
-            background: "rgba(255, 255, 255, 0.95)",
-            backdropFilter: "blur(10px)",
-            border: "1px solid rgba(0, 0, 0, 0.1)",
             borderRadius: "16px 16px 0 0",
             padding: "16px",
-            boxShadow: "0 -4px 20px rgba(0, 0, 0, 0.1)",
           }}
         >
           {/* File preview */}
@@ -172,27 +168,23 @@ export function ChatInput({ conversationId }: ChatInputProps) {
                 p="sm"
                 radius="md"
                 style={{
-                  background: "rgba(99, 102, 241, 0.1)",
-                  border: "1px solid rgba(99, 102, 241, 0.2)",
                 }}
               >
                 <Group justify="space-between" align="center">
                   <Group gap="xs">
                     <IconPhoto
                       size={16}
-                      color="var(--mantine-color-indigo-6)"
                     />
                     <Text size="sm" fw={500}>
                       {selectedFile.name}
                     </Text>
-                    <Text size="xs" c="dimmed">
+                    <Text size="xs">
                       ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
                     </Text>
                   </Group>
                   <ActionIcon
                     size="sm"
                     variant="subtle"
-                    color="red"
                     onClick={removeFile}
                   >
                     <IconX size={14} />
@@ -204,7 +196,6 @@ export function ChatInput({ conversationId }: ChatInputProps) {
                     value={uploadProgress}
                     size="xs"
                     mt="xs"
-                    color="indigo"
                     radius="xl"
                   />
                 )}
@@ -226,16 +217,9 @@ export function ChatInput({ conversationId }: ChatInputProps) {
                   <ActionIcon
                     size="lg"
                     variant="light"
-                    color="gray"
                     radius="xl"
                     onClick={() => setAttachmentOpen(!attachmentOpen)}
                     style={{
-                      background: "rgba(99, 102, 241, 0.1)",
-                      "&:hover": {
-                        background: "rgba(99, 102, 241, 0.2)",
-                        transform: "scale(1.05)",
-                      },
-                      transition: "all 0.2s ease",
                     }}
                   >
                     <IconPaperclip size={18} />
@@ -252,7 +236,7 @@ export function ChatInput({ conversationId }: ChatInputProps) {
                     size="sm"
                     radius="md"
                   />
-                  <Text size="xs" c="dimmed" ta="center">
+                  <Text size="xs" ta="center">
                     Max file size: 10MB
                   </Text>
                 </Stack>
@@ -281,18 +265,11 @@ export function ChatInput({ conversationId }: ChatInputProps) {
                 size="md"
                 styles={{
                   input: {
-                    border: "2px solid rgba(99, 102, 241, 0.2)",
-                    background: "rgba(255, 255, 255, 0.8)",
-                    backdropFilter: "blur(10px)",
                     fontSize: "14px",
                     lineHeight: "1.4",
                     padding: "12px 16px",
                     "&:focus": {
                       borderColor: "var(--mantine-color-indigo-5)",
-                      boxShadow: "0 0 0 3px rgba(99, 102, 241, 0.1)",
-                    },
-                    "&::placeholder": {
-                      color: "var(--mantine-color-gray-5)",
                     },
                   },
                 }}

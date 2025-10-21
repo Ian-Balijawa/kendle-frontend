@@ -22,7 +22,7 @@ export const useUIStore = create<UIStore>()(
   devtools(
     persist(
       subscribeWithSelector((set) => ({
-        theme: "light",
+        theme: "dark",
         notifications: [],
         unreadCount: 0,
 

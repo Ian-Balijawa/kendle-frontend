@@ -84,11 +84,6 @@ export function ProfileSwipe({
       <Card
         radius="24"
         p="sm"
-        style={{
-          background: "rgba(255, 255, 255, 0.6)",
-          backdropFilter: "blur(20px)",
-          border: "1px solid rgba(255, 255, 255, 0.2)",
-        }}
       >
         <Stack align="center" gap="sm" py="xl">
           <Box

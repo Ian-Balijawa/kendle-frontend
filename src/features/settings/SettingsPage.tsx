@@ -14,7 +14,6 @@ import {
   Transition,
   Divider,
   Switch,
-  PasswordInput,
   Tabs,
   Alert,
   ThemeIcon,
@@ -68,12 +67,6 @@ interface ProfileFormData {
   whatsapp: string;
 }
 
-interface SecurityFormData {
-  currentPassword: string;
-  newPassword: string;
-  confirmPassword: string;
-}
-
 interface NotificationSettings {
   emailNotifications: boolean;
   pushNotifications: boolean;
@@ -88,15 +81,8 @@ export function SettingsPage() {
   const [activeTab, setActiveTab] = useState("profile");
   const [mounted, setMounted] = useState(false);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
-  // const [backgroundFile, setBackgroundFile] = useState<File | null>(null);
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-  // Hooks
   const updateProfile = useUpdateProfile();
   const uploadAvatar = useUploadAvatar();
-  // const uploadBackgroundImage = useUploadBackgroundImage();
 
   useEffect(() => {
     setMounted(true);
@@ -131,22 +117,6 @@ export function SettingsPage() {
     },
   });
 
-  // Security form
-  const securityForm = useForm<SecurityFormData>({
-    initialValues: {
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: "",
-    },
-    validate: {
-      currentPassword: (value) =>
-        value.length < 1 ? "Current password is required" : null,
-      newPassword: (value) =>
-        value.length < 8 ? "Password must be at least 8 characters" : null,
-      confirmPassword: (value, values) =>
-        value !== values.newPassword ? "Passwords do not match" : null,
-    },
-  });
 
   // Notification settings
   const [notificationSettings, setNotificationSettings] =
@@ -179,28 +149,6 @@ export function SettingsPage() {
     }
   };
 
-  // Handle security form submission
-  const handleSecuritySubmit = async (_values: SecurityFormData) => {
-    try {
-      // TODO: Implement password change API
-      notifications.show({
-        title: "Success",
-        message: "Password updated successfully",
-        color: "green",
-        icon: <IconCheck size={16} />,
-      });
-      securityForm.reset();
-    } catch (error) {
-      notifications.show({
-        title: "Error",
-        message: "Failed to update password",
-        color: "red",
-        icon: <IconX size={16} />,
-      });
-    }
-  };
-
-  // Handle avatar upload
   const handleAvatarUpload = async (file: File | null) => {
     if (!file) return;
 
@@ -222,7 +170,6 @@ export function SettingsPage() {
     }
   };
 
-  // Handle logout
   const handleLogout = () => {
     logout();
     notifications.show({
@@ -247,7 +194,6 @@ export function SettingsPage() {
       {(styles) => (
         <Container size="lg" py="xl" style={styles}>
           <Stack gap="xl">
-            {/* Header */}
             <Paper
               radius="xl"
               p="xl"
@@ -274,50 +220,24 @@ export function SettingsPage() {
               </Group>
             </Paper>
 
-            {/* Settings Tabs */}
             <Paper
               radius="xl"
-              p="xl"
+              p="md"
               style={{
-                background: "rgba(255, 255, 255, 0.9)",
-                backdropFilter: "blur(10px)",
-                border: "1px solid rgba(0, 0, 0, 0.1)",
-                boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
+                background:
+                  "linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.1))",
+                border: "1px solid rgba(99, 102, 241, 0.2)",
               }}
             >
-              <Tabs
-                value={activeTab}
-                onChange={(value) => setActiveTab(value || "profile")}
-                variant="pills"
-                radius="xl"
-              >
+              <Tabs value={activeTab} onChange={(value) => setActiveTab(value || "profile")} variant="pills" radius="xl">
                 <Tabs.List grow>
-                  <Tabs.Tab
-                    value="profile"
-                    leftSection={<IconUser size={16} />}
-                    style={{ borderRadius: "12px", fontWeight: 500 }}
-                  >
+                  <Tabs.Tab value="profile" leftSection={<IconUser size={16} />} style={{ borderRadius: "12px", fontWeight: 500 }}>
                     Profile
                   </Tabs.Tab>
-                  <Tabs.Tab
-                    value="security"
-                    leftSection={<IconLock size={16} />}
-                    style={{ borderRadius: "12px", fontWeight: 500 }}
-                  >
+                  <Tabs.Tab value="security" leftSection={<IconLock size={16} />} style={{ borderRadius: "12px", fontWeight: 500 }}>
                     Security
                   </Tabs.Tab>
-                  <Tabs.Tab
-                    value="notifications"
-                    leftSection={<IconBell size={16} />}
-                    style={{ borderRadius: "12px", fontWeight: 500 }}
-                  >
-                    Notifications
-                  </Tabs.Tab>
-                  <Tabs.Tab
-                    value="appearance"
-                    leftSection={<IconPalette size={16} />}
-                    style={{ borderRadius: "12px", fontWeight: 500 }}
-                  >
+                  <Tabs.Tab value="appearance" leftSection={<IconPalette size={16} />} style={{ borderRadius: "12px", fontWeight: 500 }}>
                     Appearance
                   </Tabs.Tab>
                 </Tabs.List>
@@ -516,57 +436,6 @@ export function SettingsPage() {
                       enabling two-factor authentication.
                     </Alert>
 
-                    <form
-                      onSubmit={securityForm.onSubmit(handleSecuritySubmit)}
-                    >
-                      <Card radius="lg" p="lg" withBorder>
-                        <Stack gap="md">
-                          <Group>
-                            <IconLock size={20} />
-                            <Text fw={600}>Change Password</Text>
-                          </Group>
-
-                          <PasswordInput
-                            label="Current Password"
-                            placeholder="Enter your current password"
-                            visible={showCurrentPassword}
-                            onVisibilityChange={setShowCurrentPassword}
-                            radius="md"
-                            {...securityForm.getInputProps("currentPassword")}
-                          />
-
-                          <PasswordInput
-                            label="New Password"
-                            placeholder="Enter your new password"
-                            visible={showNewPassword}
-                            onVisibilityChange={setShowNewPassword}
-                            radius="md"
-                            {...securityForm.getInputProps("newPassword")}
-                          />
-
-                          <PasswordInput
-                            label="Confirm New Password"
-                            placeholder="Confirm your new password"
-                            visible={showConfirmPassword}
-                            onVisibilityChange={setShowConfirmPassword}
-                            radius="md"
-                            {...securityForm.getInputProps("confirmPassword")}
-                          />
-
-                          <Group justify="flex-end" mt="md">
-                            <Button
-                              type="submit"
-                              leftSection={<IconLock size={16} />}
-                              radius="xl"
-                            >
-                              Update Password
-                            </Button>
-                          </Group>
-                        </Stack>
-                      </Card>
-                    </form>
-
-                    {/* Account Actions */}
                     <Card radius="lg" p="lg" withBorder>
                       <Stack gap="md">
                         <Group>
@@ -577,7 +446,7 @@ export function SettingsPage() {
                         <Group justify="space-between">
                           <Stack gap={4}>
                             <Text fw={500}>Two-Factor Authentication</Text>
-                            <Text size="sm" c="dimmed">
+                            <Text size="sm">
                               Add an extra layer of security to your account
                             </Text>
                           </Stack>
@@ -593,7 +462,7 @@ export function SettingsPage() {
                             <Text fw={500} c="red">
                               Delete Account
                             </Text>
-                            <Text size="sm" c="dimmed">
+                            <Text size="sm">
                               Permanently delete your account and all data
                             </Text>
                           </Stack>
@@ -620,7 +489,7 @@ export function SettingsPage() {
                           <Group justify="space-between">
                             <Stack gap={4}>
                               <Text fw={500}>Email Notifications</Text>
-                              <Text size="sm" c="dimmed">
+                              <Text size="sm">
                                 Receive notifications via email
                               </Text>
                             </Stack>
@@ -640,7 +509,7 @@ export function SettingsPage() {
                           <Group justify="space-between">
                             <Stack gap={4}>
                               <Text fw={500}>Push Notifications</Text>
-                              <Text size="sm" c="dimmed">
+                              <Text size="sm">
                                 Receive push notifications on your device
                               </Text>
                             </Stack>
@@ -659,14 +528,14 @@ export function SettingsPage() {
 
                           <Divider />
 
-                          <Text fw={600} size="sm" tt="uppercase" c="dimmed">
+                          <Text fw={600} size="sm" tt="uppercase">
                             Activity Notifications
                           </Text>
 
                           <Group justify="space-between">
                             <Stack gap={4}>
                               <Text fw={500}>Messages</Text>
-                              <Text size="sm" c="dimmed">
+                              <Text size="sm">
                                 New messages and chat notifications
                               </Text>
                             </Stack>
@@ -688,7 +557,7 @@ export function SettingsPage() {
                           <Group justify="space-between">
                             <Stack gap={4}>
                               <Text fw={500}>Follows</Text>
-                              <Text size="sm" c="dimmed">
+                              <Text size="sm">
                                 When someone follows you
                               </Text>
                             </Stack>
@@ -708,7 +577,7 @@ export function SettingsPage() {
                           <Group justify="space-between">
                             <Stack gap={4}>
                               <Text fw={500}>Likes</Text>
-                              <Text size="sm" c="dimmed">
+                              <Text size="sm">
                                 When someone likes your posts
                               </Text>
                             </Stack>
@@ -728,7 +597,7 @@ export function SettingsPage() {
                           <Group justify="space-between">
                             <Stack gap={4}>
                               <Text fw={500}>Comments</Text>
-                              <Text size="sm" c="dimmed">
+                              <Text size="sm">
                                 When someone comments on your posts
                               </Text>
                             </Stack>
@@ -766,7 +635,7 @@ export function SettingsPage() {
                           <Group justify="space-between">
                             <Stack gap={4}>
                               <Text fw={500}>Color Scheme</Text>
-                              <Text size="sm" c="dimmed">
+                              <Text size="sm">
                                 Choose your preferred color scheme
                               </Text>
                             </Stack>
@@ -784,7 +653,7 @@ export function SettingsPage() {
                           <Group justify="space-between">
                             <Stack gap={4}>
                               <Text fw={500}>Primary Color</Text>
-                              <Text size="sm" c="dimmed">
+                              <Text size="sm">
                                 Customize your accent color
                               </Text>
                             </Stack>
@@ -799,7 +668,7 @@ export function SettingsPage() {
                           <Group justify="space-between">
                             <Stack gap={4}>
                               <Text fw={500}>Font Size</Text>
-                              <Text size="sm" c="dimmed">
+                              <Text size="sm">
                                 Adjust text size for better readability
                               </Text>
                             </Stack>
@@ -825,29 +694,26 @@ export function SettingsPage() {
               </Tabs>
             </Paper>
 
-            {/* Logout Section */}
             <Paper
               radius="xl"
               p="xl"
               style={{
-                background: "rgba(255, 0, 0, 0.05)",
-                border: "1px solid rgba(255, 0, 0, 0.2)",
-                boxShadow: "0 8px 32px rgba(255, 0, 0, 0.1)",
+                background:
+                  "linear-gradient(135deg, rgba(255, 0, 0, 0.05), rgba(255, 0, 0, 0.1))",
               }}
             >
               <Group justify="space-between">
                 <Stack gap={4}>
-                  <Text fw={600} c="red">
+                  <Text fw={600}>
                     Sign Out
                   </Text>
-                  <Text size="sm" c="dimmed">
+                  <Text size="sm">
                     Sign out of your account on this device
                   </Text>
                 </Stack>
                 <Button
                   leftSection={<IconLogout size={16} />}
                   variant="light"
-                  color="red"
                   radius="xl"
                   onClick={handleLogout}
                 >

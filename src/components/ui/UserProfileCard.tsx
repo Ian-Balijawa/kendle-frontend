@@ -52,8 +52,6 @@ export function UserProfileCard({
         borderRadius: "12px",
         overflow: "hidden",
         cursor: "pointer",
-        background: "rgba(255, 255, 255, 0.95)",
-        border: "1px solid rgba(255, 255, 255, 0.2)",
       }}
       p="sm"
       onClick={handleViewProfile}
@@ -85,13 +83,10 @@ export function UserProfileCard({
               m="xs"
               radius="50%"
               style={{
-                border: "3px solid rgba(255, 255, 255, 0.8)",
-                boxShadow:
-                  "0 8px 24px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(255, 255, 255, 0.05)",
                 background: "linear-gradient(135deg, #f8fafc, #e2e8f0)",
               }}
             >
-              <Text size="lg" fw={700} c="gray.6" mt="xs">
+              <Text size="lg" fw={700} mt="xs">
                 {user.firstName?.charAt(0).toUpperCase() ||
                   user.username?.charAt(0)}
                 {user.lastName?.charAt(0).toUpperCase() ||
@@ -99,7 +94,7 @@ export function UserProfileCard({
               </Text>
             </Avatar>
           </Center>
-          <Text size="sm" c="gray.8" ta="center" mb={"xs"}>
+          <Text size="sm" ta="center" mb={"xs"}>
             @{user.username}
           </Text>
         </Box>
@@ -111,10 +106,10 @@ export function UserProfileCard({
         >
           <Group justify="center">
             <Box ta="center">
-              <Text size="sm" fw={700} c="gray.8" lh={1}>
+              <Text size="sm" fw={700} lh={1}>
                 {formatNumber(user.followersCount || 0)}
               </Text>
-              <Text size="xs" c="gray.5" fw={500} style={{ fontSize: "10px" }}>
+              <Text size="xs" fw={500} style={{ fontSize: "10px" }}>
                 Followers
               </Text>
             </Box>
@@ -127,10 +122,10 @@ export function UserProfileCard({
               }}
             />
             <Box ta="center">
-              <Text size="sm" fw={700} c="gray.8" lh={1}>
+              <Text size="sm" fw={700} lh={1}>
                 {formatNumber(user.followingCount || 0)}
               </Text>
-              <Text size="xs" c="gray.5" fw={500} style={{ fontSize: "10px" }}>
+              <Text size="xs" fw={500} style={{ fontSize: "10px" }}>
                 Following
               </Text>
             </Box>
@@ -151,18 +146,12 @@ export function UserProfileCard({
             }
             style={{
               background: derivedIsFollowing
-                ? "rgba(15, 23, 42, 0.05)"
-                : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-              color: derivedIsFollowing ? "#475569" : "white",
-              border: derivedIsFollowing
-                ? "1px solid rgba(15, 23, 42, 0.1)"
+                ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
                 : "none",
+              color: derivedIsFollowing ? "white" : "white",
               fontWeight: 600,
               fontSize: "12px",
-              width: "100%",
-              boxShadow: derivedIsFollowing
-                ? "none"
-                : "0 4px 16px rgba(102, 126, 234, 0.3), 0 2px 4px rgba(0, 0, 0, 0.1)",
+              width: "100%", 
             }}
           >
             {derivedIsFollowing ? "Unfollow" : "Follow"}

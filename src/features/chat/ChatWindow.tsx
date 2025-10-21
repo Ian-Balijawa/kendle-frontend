@@ -165,9 +165,6 @@ export function ChatWindow({
             flexDirection: "column",
             cursor: isDragging ? "grabbing" : "default",
             userSelect: "none",
-            background: "rgba(255, 255, 255, 0.95)",
-            backdropFilter: "blur(20px)",
-            border: "1px solid rgba(255, 255, 255, 0.2)",
             overflow: "hidden",
             transition: "all 0.2s ease",
             transform: isDragging ? "scale(1.02)" : "scale(1)",
@@ -179,9 +176,6 @@ export function ChatWindow({
             justify="space-between"
             p="md"
             style={{
-              background:
-                "linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%)",
-              borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
               cursor: "grab",
               minHeight: 60,
             }}
@@ -193,14 +187,13 @@ export function ChatWindow({
                 size="sm"
                 radius="xl"
                 style={{
-                  border: "2px solid rgba(255, 255, 255, 0.3)",
                 }}
               >
                 {participant?.firstName?.[0]}
               </Avatar>
 
               <Box>
-                <Text size="sm" fw={600} c="gray.8" truncate>
+                <Text size="sm" fw={600} truncate>
                   {conversation.name || participant?.firstName || "Chat"}
                 </Text>
                 {participant?.isOnline && (
@@ -210,11 +203,10 @@ export function ChatWindow({
                         width: 6,
                         height: 6,
                         borderRadius: "50%",
-                        backgroundColor: "var(--mantine-color-green-5)",
                         animation: "pulse 2s infinite",
                       }}
                     />
-                    <Text size="xs" c="green.6" fw={500}>
+                    <Text size="xs" fw={500}>
                       Online
                     </Text>
                   </Group>
@@ -227,13 +219,11 @@ export function ChatWindow({
                 <ActionIcon
                   size="sm"
                   variant="subtle"
-                  color="gray"
                   radius="md"
                   onClick={() => minimizeChatWindow(conversationId)}
                   style={{
                     transition: "all 0.2s ease",
                     "&:hover": {
-                      backgroundColor: "rgba(0, 0, 0, 0.1)",
                       transform: "scale(1.1)",
                     },
                   }}
@@ -246,13 +236,11 @@ export function ChatWindow({
                 <ActionIcon
                   size="sm"
                   variant="subtle"
-                  color="red"
                   radius="md"
                   onClick={() => closeChatWindow(conversationId)}
                   style={{
                     transition: "all 0.2s ease",
                     "&:hover": {
-                      backgroundColor: "rgba(239, 68, 68, 0.1)",
                       transform: "scale(1.1)",
                     },
                   }}
@@ -268,7 +256,6 @@ export function ChatWindow({
             style={{
               flex: 1,
               overflow: "hidden",
-              background: "rgba(248, 250, 252, 0.5)",
             }}
           >
             <ChatMessages conversationId={conversationId} />
@@ -278,9 +265,6 @@ export function ChatWindow({
           <Box
             p="md"
             style={{
-              borderTop: "1px solid rgba(255, 255, 255, 0.1)",
-              background: "rgba(255, 255, 255, 0.8)",
-              backdropFilter: "blur(10px)",
             }}
           >
             <ChatInput conversationId={conversationId} />
@@ -300,12 +284,10 @@ export function ChatWindow({
                 alignItems: "center",
                 justifyContent: "center",
                 borderRadius: "4px",
-                backgroundColor: "rgba(0, 0, 0, 0.1)",
                 transition: "all 0.2s ease",
                 opacity: 0.6,
                 "&:hover": {
                   opacity: 1,
-                  backgroundColor: "rgba(0, 0, 0, 0.2)",
                 },
               }}
               onMouseDown={handleResizeMouseDown}

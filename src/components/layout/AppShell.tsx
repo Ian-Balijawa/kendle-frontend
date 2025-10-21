@@ -58,7 +58,16 @@ export function AppShell() {
               backdropFilter: "blur(10px)",
             }}
           >
-            <HeaderContent />
+            <Container
+              size="sm"
+              p={0}
+              style={{
+                position: "relative",
+                minHeight: "60px",
+              }}
+            >
+              <HeaderContent />
+            </Container>
           </MantineAppShell.Header>
 
           <MantineAppShell.Main>
@@ -115,7 +124,6 @@ export function AppShell() {
                 }}
               >
                 <Paper
-                  shadow="xs"
                   radius="lg"
                   style={{
                     position: "relative",
@@ -130,8 +138,7 @@ export function AppShell() {
                       colorScheme === "dark"
                         ? "rgba(255, 255, 255, 0.1)"
                         : "rgba(0, 0, 0, 0.05)"
-                    }`,
-                    margin: "16px 0",
+                      }`,
                     overflow: "hidden",
                   }}
                 >

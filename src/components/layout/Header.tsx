@@ -10,7 +10,6 @@ import {
   Text,
   Tooltip,
   UnstyledButton,
-  Paper,
   Transition,
   Badge,
   Divider,
@@ -72,25 +71,9 @@ export function HeaderContent() {
   return (
     <Transition
       mounted={mounted}
-      transition="slide-down"
-      duration={300}
-      timingFunction="ease"
     >
-      {(styles) => (
-        <Paper
-          shadow="sm"
-          style={{
-            ...styles,
-            borderRadius: 0,
-            borderBottom: `1px solid var(--mantine-color-gray-2)`,
-            backgroundColor:
-              colorScheme === "dark"
-                ? "var(--mantine-color-dark-7)"
-                : "var(--mantine-color-white)",
-          }}
-        >
-          <Group justify="space-between" h={60} gap="sm" px="lg">
-            {/* Logo and Navigation */}
+      {() => (
+        <Group justify="space-between" h={60} gap="sm">
             <Group gap="sm">
               <UnstyledButton
                 onClick={() => navigate("/")}
@@ -436,8 +419,7 @@ export function HeaderContent() {
                 </Group>
               )}
             </Group>
-          </Group>
-        </Paper>
+        </Group>
       )}
     </Transition>
   );

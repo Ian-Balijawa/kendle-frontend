@@ -202,14 +202,9 @@ export function OTPVerification() {
           {(styles) => (
             <Paper
               style={{
-                ...styles,
-                background: "rgba(255, 255, 255, 0.95)",
-                backdropFilter: "blur(20px)",
-                border: "1px solid rgba(255, 255, 255, 0.3)",
+                ...styles,  
                 borderRadius: "var(--mantine-radius-xl)",
                 padding: "var(--mantine-spacing-xl)",
-                boxShadow:
-                  "0 20px 40px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.05)",
                 position: "relative",
                 overflow: "hidden",
               }}
@@ -257,12 +252,12 @@ export function OTPVerification() {
                 </Group>
 
                 <Stack gap="xs" align="center">
-                  <Title order={2} size="h3" ta="center" fw={700} c="dark.8">
+                  <Title order={2} size="h3" ta="center" fw={700}>
                     Enter verification code
                   </Title>
                   <Text size="md" c="dimmed" ta="center" maw={320}>
                     We've sent a 5-digit code to{" "}
-                    <Text component="span" fw={600} c="dark.6">
+                    <Text component="span" fw={600}>
                       {phoneNumber}
                     </Text>
                   </Text>
