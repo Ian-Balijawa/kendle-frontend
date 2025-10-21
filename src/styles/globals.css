@@ -1,6 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap");
 
-/* CSS Reset and Base Styles */
 *,
 *::before,
 *::after {
@@ -36,8 +35,7 @@ body {
   text-rendering: optimizeLegibility;
   font-feature-settings: "kern" 1;
   font-variant-ligatures: common-ligatures;
-
-  /* Enhanced gradient background */
+  
   background:
     radial-gradient(
       ellipse at 20% 30%,
@@ -68,7 +66,6 @@ body {
   position: relative;
 }
 
-/* Enhanced Scrollbar Styling */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -101,13 +98,11 @@ body {
   background: transparent;
 }
 
-/* Firefox scrollbar */
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--mantine-color-primary-5) rgba(0, 0, 0, 0.05);
 }
 
-/* Global Transitions and Animations */
 * {
   transition:
     color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
@@ -117,14 +112,12 @@ body {
     transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Enhanced Focus Styles */
 *:focus-visible {
   outline: 2px solid var(--mantine-color-primary-6);
   outline-offset: 2px;
   border-radius: var(--mantine-radius-sm);
 }
 
-/* Reduced Motion Support */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -136,7 +129,6 @@ body {
   }
 }
 
-/* Modern Animation Keyframes */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -251,7 +243,6 @@ body {
   }
 }
 
-/* Utility Animation Classes */
 .animate-fade-in {
   animation: fadeIn 0.3s ease-out;
 }
@@ -288,7 +279,6 @@ body {
   animation: spin 1s linear infinite;
 }
 
-/* Modern Utility Classes */
 .text-gradient {
   background: linear-gradient(
     135deg,

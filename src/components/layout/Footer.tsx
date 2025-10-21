@@ -235,7 +235,6 @@ export function FooterContent() {
             ))}
           </Group>
 
-          {/* Floating Create Button Enhancement */}
           {isAuthenticated && (
             <Box
               style={{

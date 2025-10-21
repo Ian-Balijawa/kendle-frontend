@@ -88,7 +88,6 @@ export function SettingsPage() {
     setMounted(true);
   }, []);
 
-  // Profile form
   const profileForm = useForm<ProfileFormData>({
     initialValues: {
       firstName: user?.firstName || "",
@@ -118,7 +117,6 @@ export function SettingsPage() {
   });
 
 
-  // Notification settings
   const [notificationSettings, setNotificationSettings] =
     useState<NotificationSettings>({
       emailNotifications: true,
@@ -129,7 +127,6 @@ export function SettingsPage() {
       commentNotifications: true,
     });
 
-  // Handle profile form submission
   const handleProfileSubmit = async (values: ProfileFormData) => {
     try {
       await updateProfile.mutateAsync(values);
@@ -242,11 +239,9 @@ export function SettingsPage() {
                   </Tabs.Tab>
                 </Tabs.List>
 
-                {/* Profile Tab */}
                 <Tabs.Panel value="profile" pt="xl">
                   <form onSubmit={profileForm.onSubmit(handleProfileSubmit)}>
                     <Stack gap="xl">
-                      {/* Avatar Section */}
                       <Card radius="lg" p="lg" withBorder>
                         <Stack gap="md">
                           <Group>
@@ -288,7 +283,6 @@ export function SettingsPage() {
                         </Stack>
                       </Card>
 
-                      {/* Basic Information */}
                       <Card radius="lg" p="lg" withBorder>
                         <Stack gap="md">
                           <Group>
@@ -337,7 +331,6 @@ export function SettingsPage() {
                         </Stack>
                       </Card>
 
-                      {/* Contact Information */}
                       <Card radius="lg" p="lg" withBorder>
                         <Stack gap="md">
                           <Group>
@@ -363,7 +356,6 @@ export function SettingsPage() {
                         </Stack>
                       </Card>
 
-                      {/* Social Links */}
                       <Card radius="lg" p="lg" withBorder>
                         <Stack gap="md">
                           <Group>
@@ -407,7 +399,6 @@ export function SettingsPage() {
                         </Stack>
                       </Card>
 
-                      {/* Save Button */}
                       <Group justify="flex-end">
                         <Button
                           type="submit"
@@ -423,7 +414,6 @@ export function SettingsPage() {
                   </form>
                 </Tabs.Panel>
 
-                {/* Security Tab */}
                 <Tabs.Panel value="security" pt="xl">
                   <Stack gap="xl">
                     <Alert
@@ -475,7 +465,6 @@ export function SettingsPage() {
                   </Stack>
                 </Tabs.Panel>
 
-                {/* Notifications Tab */}
                 <Tabs.Panel value="notifications" pt="xl">
                   <Stack gap="xl">
                     <Card radius="lg" p="lg" withBorder>
@@ -621,7 +610,6 @@ export function SettingsPage() {
                   </Stack>
                 </Tabs.Panel>
 
-                {/* Appearance Tab */}
                 <Tabs.Panel value="appearance" pt="xl">
                   <Stack gap="xl">
                     <Card radius="lg" p="lg" withBorder>

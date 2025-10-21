@@ -41,13 +41,11 @@ interface CommentCardProps {
 
 export function CommentCard({ comment }: CommentCardProps) {
   try {
-    // Defensive programming - check if comment exists
     if (!comment || !comment.id) {
       console.error("CommentCard: Invalid comment data", comment);
       return null;
     }
 
-    // Check if author exists
     if (!comment.author) {
       console.error("CommentCard: Missing author data for comment", comment.id);
       return null;
@@ -250,7 +248,6 @@ export function CommentCard({ comment }: CommentCardProps) {
             </Avatar>
 
             <Box style={{ flex: 1, minWidth: 0 }}>
-              {/* Facebook-style Comment Header */}
               <Group
                 gap="xs"
                 align="center"
@@ -312,7 +309,6 @@ export function CommentCard({ comment }: CommentCardProps) {
                   )}
                 </Group>
 
-                {/* Menu Button */}
                 {isAuthenticated && (
                   <Menu
                     shadow="lg"
@@ -368,7 +364,6 @@ export function CommentCard({ comment }: CommentCardProps) {
                 )}
               </Group>
 
-              {/* Comment Content */}
               <Box mb="xs">
                 {(comment.content || "").split("\n").map((line, index) => (
                   <Text

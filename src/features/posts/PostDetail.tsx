@@ -573,7 +573,6 @@ export function PostDetail() {
                                     maxHeight="300px"
                                   />
 
-                                  {/* Video play indicator */}
                                   <Box
                                     style={{
                                       position: "absolute",
@@ -608,7 +607,6 @@ export function PostDetail() {
                           </Box>
                         )}
 
-                        {/* Images in grid layout */}
                         {images.length > 0 && (
                           <Box
                             style={{
@@ -660,7 +658,6 @@ export function PostDetail() {
                                     }}
                                   />
 
-                                  {/* More images indicator */}
                                   {index === 3 && images.length > 4 && (
                                     <Box
                                       style={{
@@ -696,7 +693,6 @@ export function PostDetail() {
             </Box>
           )}
 
-          {/* Tags */}
           {post?.tags && post?.tags?.length > 0 && (
             <Group gap="xs" mb="sm">
               {post?.tags?.map((tag: any) => (
@@ -714,7 +710,6 @@ export function PostDetail() {
             </Group>
           )}
 
-          {/* Legacy hashtags for backward compatibility */}
           {post?.hashtags && post?.hashtags?.length > 0 && (
             <Group gap="xs" mb="sm">
               {post?.hashtags?.map((hashtag: string) => (
@@ -732,7 +727,6 @@ export function PostDetail() {
             </Group>
           )}
 
-          {/* Mentions */}
           {post?.mentions && post?.mentions?.length > 0 && (
             <Group gap="xs" mb="sm">
               {post?.mentions?.map((mention: any) => (
@@ -750,7 +744,6 @@ export function PostDetail() {
             </Group>
           )}
 
-          {/* Location */}
           {post?.location && (
             <Group gap="xs" mb="sm">
               <IconMapPin size={16} color="var(--mantine-color-blue-6)" />

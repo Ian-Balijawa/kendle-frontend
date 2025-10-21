@@ -59,11 +59,9 @@ export function ProfilePage() {
   const [activeTab, setActiveTab] = useState("posts");
   const [, setMounted] = useState(false);
 
-  // File input refs for direct access
   const avatarFileInputRef = useRef<HTMLInputElement>(null);
   const backgroundFileInputRef = useRef<HTMLInputElement>(null);
 
-  // Image management hooks
   const uploadAvatar = useUploadAvatar();
   const uploadBackgroundImage = useUploadBackgroundImage();
   const deleteBackgroundImage = useDeleteBackgroundImage();
@@ -72,18 +70,15 @@ export function ProfilePage() {
     setMounted(true);
   }, []);
 
-  // Determine if this is the current user's own profile
   const isOwnProfile = !userId || userId === currentUser?.id;
   const profileUserId = userId || currentUser?.id;
 
-  // Fetch user data - use different hooks based on whether it's own profile or another user's
   const {
     data: user,
     isLoading: userLoading,
     error: userError,
   } = isOwnProfile ? useUserProfile() : useUser(profileUserId!);
 
-  // Only fetch posts and follow data if we have a valid profileUserId
   const { data: postsData, isLoading: postsLoading } = useUserPosts(
     profileUserId!,
     {
@@ -99,7 +94,6 @@ export function ProfilePage() {
       limit: 10,
     });
 
-  // Follow functionality - only for other users' profiles
   const { data: followStatus } = useFollowStatus(profileUserId!);
   const { toggleFollow, isLoading: followLoading } = useToggleFollow();
 
@@ -132,7 +126,6 @@ export function ProfilePage() {
     navigate("/settings");
   };
 
-  // Avatar management handlers
   const handleAvatarButtonClick = () => {
     avatarFileInputRef.current?.click();
   };
@@ -146,14 +139,12 @@ export function ProfilePage() {
         await uploadAvatar.mutateAsync(file);
       } catch (error) {
         console.error("Failed to upload avatar:", error);
-      } finally {
-        // Reset the input value to allow selecting the same file again
+      } finally {   
         event.target.value = "";
       }
     }
   };
 
-  // Background image management handlers - FIXED
   const handleBackgroundUpload = () => {
     backgroundFileInputRef.current?.click();
   };
@@ -167,8 +158,7 @@ export function ProfilePage() {
         await uploadBackgroundImage.mutateAsync(file);
       } catch (error) {
         console.error("Failed to upload background image:", error);
-      } finally {
-        // Reset the input value to allow selecting the same file again
+      } finally {     
         event.target.value = "";
       }
     }
@@ -213,7 +203,6 @@ export function ProfilePage() {
     },
   ].filter((link) => user?.[link.key as keyof User]);
 
-  // Handle unauthenticated users trying to view profiles
   if (!isAuthenticated && !isOwnProfile) {
     return (
       <Box>
@@ -255,7 +244,6 @@ export function ProfilePage() {
     );
   }
 
-  // Handle missing profileUserId
   if (!profileUserId) {
     return (
       <Box>
@@ -361,7 +349,6 @@ export function ProfilePage() {
 
   return (
     <Container size="xl" px="sm">
-      {/* Hidden file inputs */}
       <input
         type="file"
         ref={avatarFileInputRef}
@@ -390,7 +377,6 @@ export function ProfilePage() {
           borderBottomLeftRadius: "2rem",
         }}
       >
-        {/* Background image overlay for better text readability */}
         {user.backgroundImage && (
           <Box
             style={{
@@ -405,7 +391,6 @@ export function ProfilePage() {
           />
         )}
 
-        {/* Background image edit buttons for own profile */}
         {isOwnProfile && (
           <Group
             gap="xs"
@@ -472,7 +457,6 @@ export function ProfilePage() {
             </Text>
           </Avatar>
 
-          {/* Avatar edit button for own profile */}
           {isOwnProfile && (
             <ActionIcon
               variant="filled"

@@ -26,7 +26,6 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
   const { user } = useAuthStore();
   const createPostMutation = useCreatePost();
 
-  // Main form state
   const [content, setContent] = useState("");
   const [media, setMedia] = useState<File[]>([]);
   const [thumbnail, setThumbnail] = useState<File[]>([]);
@@ -36,7 +35,6 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
 
   const isSubmitting = createPostMutation.isPending;
 
-  // Helper function to convert base64 to File
   const base64ToFile = (
     base64String: string,
     filename: string,
@@ -51,7 +49,6 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
     return new File([byteArray], filename, { type: mimeType });
   };
 
-  // Media handling
   const handleMediaUpload = async (files: File[] | null) => {
     if (!files) return;
 
@@ -86,7 +83,6 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
         file.type.toLowerCase(),
       );
 
-      // Fallback: check file extension if MIME type is not detected
       const fileExtension = file.name.toLowerCase().split(".").pop();
       const supportedImageExtensions = ["jpg", "jpeg", "png", "gif", "webp"];
       const supportedVideoExtensions = ["mp4", "avi", "mov", "wmv", "webm"];
@@ -103,7 +99,7 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
         isValidVideoType ||
         isValidImageExtension ||
         isValidVideoExtension;
-      const isValidSize = file.size <= 100 * 1024 * 1024; // 100MB limit
+      const isValidSize = file.size <= 100 * 1024 * 1024;
 
       if (!isValidType) {
         console.error(
@@ -132,9 +128,8 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
     });
 
     if (validFiles.length > 0) {
-      setMedia((prev) => [...prev, ...validFiles].slice(0, 10)); // Max 10 files
+      setMedia((prev) => [...prev, ...validFiles].slice(0, 10));
 
-      // Generate thumbnails for video files
       const videoFiles = validFiles.filter(
         (file) =>
           file.type.startsWith("video/") ||
@@ -183,19 +178,16 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
 
   const removeMediaAndThumbnail = (index: number) => {
     setMedia((prev) => prev.filter((_, i) => i !== index));
-    // Also remove corresponding thumbnail if it exists
     if (index < thumbnail.length) {
       setThumbnail((prev) => prev.filter((_, i) => i !== index));
     }
   };
 
-  // Form submission
   const handleSubmit = async () => {
     if (!content.trim() && media.length === 0) {
       return;
     }
 
-    // Create the post data
     const postData: CreatePostRequest = {
       content: content.trim(),
       type:
@@ -210,7 +202,6 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
 
     createPostMutation.mutate(postData, {
       onSuccess: () => {
-        // Reset form
         setContent("");
         setMedia([]);
         setThumbnail([]);
@@ -225,7 +216,6 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
   const handleClose = () => {
     if (content.trim() || media.length > 0) {
       if (window.confirm("Are you sure you want to discard this post?")) {
-        // Reset all state
         setContent("");
         setMedia([]);
         setThumbnail([]);
@@ -256,7 +246,6 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
       }}
     >
       <Stack gap="sm">
-        {/* Author Header */}
         <Group gap="sm">
           <Avatar
             src={user?.avatar || user?.avatar}
@@ -276,7 +265,6 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
           </Box>
         </Group>
 
-        {/* Main Content */}
         <Textarea
           placeholder="Create a post..."
           size="sm"
@@ -294,7 +282,6 @@ export function CreatePost({ opened, onClose }: CreatePostProps) {
           }}
         />
 
-        {/* Media Preview */}
         {media.length > 0 && (
           <Stack gap="xs">
             <Text size="sm" fw={500}>

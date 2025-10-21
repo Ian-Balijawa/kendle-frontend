@@ -387,7 +387,6 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
               )}
             </Group>
 
-            {/* Post Type and Status Indicators */}
             <Group gap="xs" mb="sm">
               <Badge
                 size="xs"
@@ -486,8 +485,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                     )}
                   </Box>
                 ) : (
-                  <Box>
-                    {/* Separate videos and images */}
+                    <Box>
                     {(() => {
                       const videos = post.media.filter(
                         (media) => media.type === "video",
@@ -498,7 +496,6 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
 
                       return (
                         <Stack gap="sm">
-                          {/* Videos in regular grid */}
                           {videos.length > 0 && (
                             <Box
                               style={{
@@ -553,7 +550,6 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                                     maxHeight="200px"
                                   />
 
-                                  {/* Video play indicator */}
                                   <Box
                                     style={{
                                       position: "absolute",
@@ -587,7 +583,6 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                             </Box>
                           )}
 
-                          {/* Images in grid layout */}
                           {images.length > 0 && (
                             <Box
                               style={{
@@ -638,7 +633,6 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                                     }}
                                   />
 
-                                  {/* More images indicator */}
                                   {index === 3 && images.length > 4 && (
                                     <Box
                                       style={{
@@ -673,7 +667,6 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
               </>
             )}
 
-            {/* Tags */}
             {post?.tags && post?.tags?.length > 0 && (
               <Group gap="xs" mb="sm">
                 {post?.tags?.map((tag: any) => (
@@ -691,7 +684,6 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
               </Group>
             )}
 
-            {/* Legacy hashtags for backward compatibility */}
             {post?.hashtags && post?.hashtags?.length > 0 && (
               <Group gap="xs" mb="sm">
                 {post?.hashtags?.map((hashtag: string) => (
@@ -709,7 +701,6 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
               </Group>
             )}
 
-            {/* Mentions */}
             {post?.mentions && post?.mentions?.length > 0 && (
               <Group gap="xs" mb="sm">
                 {post?.mentions?.map((mention: any) => (
@@ -727,7 +718,6 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
               </Group>
             )}
 
-            {/* Location */}
             {post?.location && (
               <Group gap="xs" mb="sm">
                 <IconMapPin size={14} color="var(--mantine-color-blue-6)" />
@@ -743,7 +733,6 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                   <IconHeart
                     cursor="pointer"
                     onClick={handleLike}
-                    // color={"blue"}
                     fillOpacity={"blue"}
                   />
                   <Text fz="sm">{post.likesCount}</Text>

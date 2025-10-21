@@ -46,7 +46,6 @@ export function HomePage() {
   const [currentCollectionIndex, setCurrentCollectionIndex] = useState(0);
   const [mounted, setMounted] = useState(false);
 
-  // Use infinite posts query
   const {
     data,
     fetchNextPage,
@@ -58,39 +57,31 @@ export function HomePage() {
     refetch,
   } = useInfinitePosts({ limit: 10, sortBy: "createdAt", sortOrder: "desc" });
 
-  // Get suggested users for discovery
   const { data: suggestedUsers } = useSuggestedUsers(10);
 
-  // Get statuses
   const { data: statusData } = useInfiniteStatuses({
     limit: 20,
     sortBy: "createdAt",
     sortOrder: "desc",
   });
 
-  // Intersection observer for infinite scroll
   const { ref, entry } = useIntersection({
     threshold: 1,
   });
 
-  // Trigger animation on mount
   useEffect(() => {
     setTimeout(() => setMounted(true), 100);
   }, []);
 
-  // Fetch next page when intersection is observed
   if (entry?.isIntersecting && hasNextPage && !isFetchingNextPage) {
     fetchNextPage();
   }
 
-  // Flatten all posts from all pages
   const posts = data?.pages.flatMap((page) => page.posts) || [];
 
-  // Get grouped statuses from all pages (server already groups them)
   const statusCollections =
     statusData?.pages.flatMap((page) => page.groupedStatuses) || [];
 
-  // Sort collections by last updated (fallback to first status's createdAt)
   statusCollections.sort((a, b) => {
     const aLastUpdated =
       a.lastUpdated || a.statuses[0]?.createdAt || new Date().toISOString();
@@ -99,7 +90,6 @@ export function HomePage() {
     return new Date(bLastUpdated).getTime() - new Date(aLastUpdated).getTime();
   });
 
-  // Sort statuses within each collection by creation date (newest first)
   statusCollections.forEach((collection) => {
     collection.statuses.sort(
       (a, b) =>
@@ -107,7 +97,6 @@ export function HomePage() {
     );
   });
 
-  // Status handlers
   const handleCreateStatus = () => {
     if (!isAuthenticated) {
       return;
@@ -170,7 +159,6 @@ export function HomePage() {
 
   return (
     <Container size="xl" px="sm" style={{ position: "relative" }} pb="sm">
-      {/* Enhanced Header Section */}
       <Transition mounted={mounted} transition="fade-down" duration={400}>
         {(styles) => (
           <Paper
@@ -269,7 +257,6 @@ export function HomePage() {
         )}
       </Transition>
 
-      {/* Status Stories Section */}
       <Transition mounted={mounted} transition="slide-up" duration={500}>
         {(styles) => (
           <Box style={styles} mb="lg">
@@ -285,7 +272,6 @@ export function HomePage() {
         )}
       </Transition>
 
-      {/* Suggested Users Section */}
       {isAuthenticated &&
         suggestedUsers &&
         suggestedUsers.suggestions.length > 0 && (
@@ -298,9 +284,7 @@ export function HomePage() {
           </Transition>
         )}
 
-      {/* Content Section */}
       <Stack gap="lg">
-        {/* Error State */}
         {isError && (
           <Transition mounted={isError} transition="fade-up" duration={400}>
             {(styles) => (
@@ -357,7 +341,6 @@ export function HomePage() {
           </Transition>
         )}
 
-        {/* Loading State */}
         {isLoading && (
           <Transition mounted={isLoading} transition="fade-up" duration={300}>
             {(styles) => (
@@ -368,7 +351,6 @@ export function HomePage() {
           </Transition>
         )}
 
-        {/* Empty State */}
         {!isLoading && posts.length === 0 && !isError && (
           <Transition
             mounted={!isLoading && posts.length === 0}
@@ -447,14 +429,12 @@ export function HomePage() {
           </Transition>
         )}
 
-        {/* Posts List */}
         {!isLoading && posts.length > 0 && (
           <Stack gap="lg">
                 {posts.map((post, index) => (
                   <PostCard key={`post-${post.id}-${index}`} post={post} isFirst={index === 0} />
                 ))}
 
-                {/* Infinite scroll trigger */}
                 {hasNextPage && (
                   <div ref={ref}>
                     {isFetchingNextPage && (
@@ -466,19 +446,16 @@ export function HomePage() {
         )}
       </Stack>
 
-      {/* Create Post Modal */}
       <CreatePost
         opened={createPostOpened}
         onClose={() => setCreatePostOpened(false)}
       />
 
-      {/* Create Status Modal */}
       <CreateStatus
         opened={createStatusOpened}
         onClose={() => setCreateStatusOpened(false)}
       />
 
-      {/* Status Details Modal */}
       <StatusDetailsModal
         opened={viewModalOpened}
         onClose={() => setViewModalOpened(false)}

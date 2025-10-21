@@ -71,7 +71,6 @@ export function AppShell() {
           </MantineAppShell.Header>
 
           <MantineAppShell.Main>
-            {/* Background Pattern */}
             <Box
               style={{
                 position: "fixed",
