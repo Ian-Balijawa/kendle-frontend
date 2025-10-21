@@ -28,7 +28,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   user,
   caption,
   autoPlay = false,
-  muted = true,
+  muted = false,
   onVideoClick,
   showUserInfo = true,
   showFollowButton = false,

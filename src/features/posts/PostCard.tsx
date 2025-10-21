@@ -214,22 +214,9 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
     return (
       <>
         <Card
-          style={{
-            transition: "all 0.2s ease",
-            marginBottom: isFirst ? "0.5rem" : "0",
-            cursor: "pointer",
-            borderRadius: "var(--mantine-radius-lg)",
-            boxShadow: "var(--mantine-shadow-xl)",
-          }}
+          radius="0"
+          withBorder={false}
           onClick={handlePostClick}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.boxShadow = "var(--mantine-shadow-md)";
-            e.currentTarget.style.transform = "translateY(-1px)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.boxShadow = "var(--mantine-shadow-sm)";
-            e.currentTarget.style.transform = "translateY(0)";
-          }}
         >
           <Stack gap="sm">
             <Group justify="space-between" align="flex-start">
@@ -467,7 +454,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                         }}
                         caption={post.content}
                         autoPlay={false}
-                        muted={true}
+                        muted={false}
                         onVideoClick={() =>
                           handlePostClick({} as React.MouseEvent)
                         }
@@ -555,7 +542,7 @@ export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
                                     }}
                                     caption={post.content}
                                     autoPlay={false}
-                                    muted={true}
+                                    muted={false}
                                     onVideoClick={() =>
                                       handlePostClick({} as React.MouseEvent)
                                     }

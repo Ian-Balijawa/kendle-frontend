@@ -89,65 +89,52 @@ export function AppShell() {
               }}
             />
 
-            <ScrollArea
-              style={{ height: "100%" }}
-              scrollbarSize={6}
-              styles={{
-                scrollbar: {
-                  '&[data-orientation="vertical"]': {
-                    backgroundColor: "transparent",
-                  },
-                  '&[data-orientation="vertical"] .mantine-ScrollArea-thumb': {
-                    borderRadius: "12px",
-                    backgroundColor:
-                      colorScheme === "dark"
-                        ? "rgba(255, 255, 255, 0.2)"
-                        : "rgba(0, 0, 0, 0.2)",
-                    transition: "all 0.2s ease",
-                  },
-                  '&[data-orientation="vertical"] .mantine-ScrollArea-thumb:hover':
+            <Container
+              size="sm"
+              p={0}
+              style={{
+                position: "relative",
+                minHeight: "calc(100vh - 120px)",
+              }}
+            >
+
+              <ScrollArea
+                style={{ height: "100%" }}
+                scrollbarSize={6}
+                styles={{
+                  scrollbar: {
+                    '&[data-orientation="vertical"]': {
+                      backgroundColor: "transparent",
+                    },
+                    '&[data-orientation="vertical"] .mantine-ScrollArea-thumb': {
+                      borderRadius: "12px",
+                      backgroundColor:
+                        colorScheme === "dark"
+                          ? "rgba(255, 255, 255, 0.2)"
+                          : "rgba(0, 0, 0, 0.2)",
+                      transition: "all 0.2s ease",
+                    },
+                    '&[data-orientation="vertical"] .mantine-ScrollArea-thumb:hover':
                     {
                       backgroundColor:
                         colorScheme === "dark"
                           ? "rgba(255, 255, 255, 0.3)"
                           : "rgba(0, 0, 0, 0.3)",
                     },
-                },
-              }}
-            >
-              <Container
-                size="sm"
-                p={0}
-                style={{
-                  position: "relative",
-                  minHeight: "calc(100vh - 120px)",
+                  },
                 }}
               >
                 <Paper
-                  radius="lg"
-                  style={{
-                    position: "relative",
-                    zIndex: 1,
-                    minHeight: "calc(100vh - 120px)",
-                    backgroundColor:
-                      colorScheme === "dark"
-                        ? "rgba(26, 27, 30, 0.8)"
-                        : "rgba(255, 255, 255, 0.8)",
-                    backdropFilter: "blur(10px)",
-                    border: `1px solid ${
-                      colorScheme === "dark"
-                        ? "rgba(255, 255, 255, 0.1)"
-                        : "rgba(0, 0, 0, 0.05)"
-                      }`,
-                    overflow: "hidden",
-                  }}
+                  radius="0"
+                  pb="sm"
                 >
                   <Outlet />
-                </Paper>
-              </Container>
 
-              <FloatingChatWidget />
-            </ScrollArea>
+                  <FloatingChatWidget />
+                </Paper>
+              </ScrollArea>
+            </Container>
+
           </MantineAppShell.Main>
 
           <MantineAppShell.Footer

@@ -106,10 +106,10 @@ export function VerticalUserCard({
         >
           <Group justify="center">
             <Box ta="center">
-              <Text size="sm" fw={700} lh={1}>
+              <Text size="sm" fw={700} c="gray.8" lh={1}>
                 {formatNumber(user.followersCount || 0)}
               </Text>
-              <Text size="xs" fw={500} style={{ fontSize: "10px" }}>
+              <Text size="xs" c="gray.5" fw={500} style={{ fontSize: "10px" }}>
                 Followers
               </Text>
             </Box>
@@ -122,10 +122,10 @@ export function VerticalUserCard({
               }}
             />
             <Box ta="center">
-              <Text size="sm" fw={700} lh={1}>
+              <Text size="sm" fw={700} c="gray.8" lh={1}>
                 {formatNumber(user.followingCount || 0)}
               </Text>
-              <Text size="xs" fw={500} style={{ fontSize: "10px" }}>
+              <Text size="xs" c="gray.5" fw={500} style={{ fontSize: "10px" }}>
                 Following
               </Text>
             </Box>
@@ -146,12 +146,18 @@ export function VerticalUserCard({
             }
             style={{
               background: derivedIsFollowing
-                ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+                ? "rgba(15, 23, 42, 0.05)"
                 : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-              color: derivedIsFollowing ? "white" : "white",
+              color: derivedIsFollowing ? "#475569" : "white",
+              border: derivedIsFollowing
+                ? "1px solid rgba(15, 23, 42, 0.1)"
+                : "none",
               fontWeight: 600,
               fontSize: "12px",
-              width: "100%", 
+              width: "100%",
+              boxShadow: derivedIsFollowing
+                ? "none"
+                : "0 4px 16px rgba(102, 126, 234, 0.3), 0 2px 4px rgba(0, 0, 0, 0.1)",
             }}
           >
             {derivedIsFollowing ? "Following" : "Follow"}

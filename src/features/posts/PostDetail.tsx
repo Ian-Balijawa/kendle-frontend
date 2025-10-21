@@ -477,7 +477,7 @@ export function PostDetail() {
                       }}
                       caption={post.content}
                       autoPlay={false}
-                      muted={true}
+                      muted={false}
                       onVideoClick={() => navigate(`/post/${post.id}`)}
                       showUserInfo={false}
                       showFollowButton={false}
@@ -562,7 +562,7 @@ export function PostDetail() {
                                     }}
                                     caption={post.content}
                                     autoPlay={false}
-                                    muted={true}
+                                    muted={false}
                                     onVideoClick={() =>
                                       navigate(`/post/${post.id}`)
                                     }

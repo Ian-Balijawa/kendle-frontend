@@ -1,6 +1,5 @@
 import {
   Box,
-  Container,
   Group,
   Loader,
   Stack,
@@ -48,8 +47,7 @@ export function ExplorePage() {
   });
 
   return (
-    <Container size="xl" px="sm">
-      <Stack gap="sm">
+    <Stack gap="sm" p="sm">
         <Box>
           <Title order={1} size="h2">
             Explore
@@ -121,7 +119,8 @@ export function ExplorePage() {
             </Stack>
           </Tabs.Panel>
 
-          <Stack my="md">
+        <Tabs.Panel value="people" pt="md">
+          <Stack gap="sm">
             {usersLoading ? (
               <Group justify="center" py="xl">
                 <Loader size="lg" />
@@ -158,8 +157,8 @@ export function ExplorePage() {
               />
             ) : null}
           </Stack>
+        </Tabs.Panel>
         </Tabs>
-      </Stack>
-    </Container>
+    </Stack>
   );
 }

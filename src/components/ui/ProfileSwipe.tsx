@@ -84,6 +84,7 @@ export function ProfileSwipe({
       <Card
         radius="24"
         p="sm"
+        withBorder={false}
       >
         <Stack align="center" gap="sm" py="xl">
           <Box
@@ -91,8 +92,7 @@ export function ProfileSwipe({
               width: 96,
               height: 96,
               borderRadius: "50%",
-              background:
-                "linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.05))",
+              border: "1px solid var(--mantine-color-gray-2)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -108,8 +108,6 @@ export function ProfileSwipe({
                 width: "20px",
                 height: "20px",
                 borderRadius: "50%",
-                background:
-                  "linear-gradient(135deg, rgba(240, 147, 251, 0.3), rgba(102, 126, 234, 0.2))",
                 filter: "blur(4px)",
               }}
             />

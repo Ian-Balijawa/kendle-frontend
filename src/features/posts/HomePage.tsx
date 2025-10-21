@@ -20,7 +20,6 @@ import {
   IconSparkles,
   IconTrendingUp,
   IconHeart,
-  IconUsers,
   IconFlame,
 } from "@tabler/icons-react";
 import { useState, useEffect } from "react";
@@ -170,21 +169,16 @@ export function HomePage() {
   const canGoPreviousCollection = currentCollectionIndex > 0;
 
   return (
-    <Container size="xl" px="sm" style={{ position: "relative" }}>
+    <Container size="xl" px="sm" style={{ position: "relative" }} pb="sm">
       {/* Enhanced Header Section */}
       <Transition mounted={mounted} transition="fade-down" duration={400}>
         {(styles) => (
           <Paper
             style={{
               ...styles,
-              backdropFilter: "blur(12px)",
-              borderRadius: "var(--mantine-radius-xl)",
-              padding: "var(--mantine-spacing-md)",
-              marginTop: "var(--mantine-spacing-lg)",
-              marginBottom: "var(--mantine-spacing-lg)",
             }}
           >
-            <Group justify="space-between" align="center">
+            <Group justify="space-between" py="sm" align="center">
               <Group gap="md">
                 <Box
                   style={{
@@ -455,26 +449,9 @@ export function HomePage() {
 
         {/* Posts List */}
         {!isLoading && posts.length > 0 && (
-          <Transition
-            mounted={!isLoading && posts.length > 0}
-            transition="fade-up"
-            duration={400}
-          >
-            {(styles) => (
-              <Stack gap="lg" style={styles}>
+          <Stack gap="lg">
                 {posts.map((post, index) => (
-                  <Transition
-                    key={`post-${post.id}-${index}`}
-                    mounted={true}
-                    transition="slide-up"
-                    duration={300}
-                  >
-                    {(transitionStyles) => (
-                      <Box style={transitionStyles}>
-                        <PostCard post={post} isFirst={index === 0} />
-                      </Box>
-                    )}
-                  </Transition>
+                  <PostCard key={`post-${post.id}-${index}`} post={post} isFirst={index === 0} />
                 ))}
 
                 {/* Infinite scroll trigger */}
@@ -485,9 +462,7 @@ export function HomePage() {
                     )}
                   </div>
                 )}
-              </Stack>
-            )}
-          </Transition>
+          </Stack>
         )}
       </Stack>
 
