@@ -17,7 +17,6 @@ export const followKeys = {
   suggestions: () => [...followKeys.all, "suggestions"] as const,
 };
 
-// Get follow status for a specific user
 export function useFollowStatus(targetUserId: string) {
   const { user: currentUser } = useAuthStore();
 
@@ -37,7 +36,6 @@ export function useFollowStatus(targetUserId: string) {
   });
 }
 
-// Get followers for a user
 export function useFollowers(userId: string, page = 1, limit = 20) {
   return useQuery({
     queryKey: [...followKeys.followersForUser(userId), page, limit],
@@ -47,7 +45,6 @@ export function useFollowers(userId: string, page = 1, limit = 20) {
   });
 }
 
-// Get following for a user
 export function useFollowing(userId: string, page = 1, limit = 20) {
   return useQuery({
     queryKey: [...followKeys.followingForUser(userId), page, limit],
@@ -57,7 +54,6 @@ export function useFollowing(userId: string, page = 1, limit = 20) {
   });
 }
 
-// Get suggested users
 export function useSuggestedUsers(limit = 10) {
   return useQuery({
     queryKey: [...followKeys.suggestions(), limit],
@@ -71,7 +67,6 @@ export function useSuggestedUsers(limit = 10) {
   });
 }
 
-// Get suggested users as a simple array (for easier usage in components)
 export function useSuggestedUsersList(limit = 10) {
   return useQuery({
     queryKey: [...followKeys.suggestions(), limit],
@@ -82,7 +77,6 @@ export function useSuggestedUsersList(limit = 10) {
   });
 }
 
-// Follow user mutation
 export function useFollowUser() {
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
@@ -90,17 +84,14 @@ export function useFollowUser() {
   return useMutation({
     mutationFn: (targetUserId: string) => apiService.followUser(targetUserId),
     onMutate: async (targetUserId) => {
-      // Cancel any outgoing refetches
       await queryClient.cancelQueries({
         queryKey: followKeys.statusForUser(targetUserId),
       });
 
-      // Snapshot the previous value
       const previousStatus = queryClient.getQueryData(
         followKeys.statusForUser(targetUserId),
       );
 
-      // Optimistically update the follow status
       queryClient.setQueryData(followKeys.statusForUser(targetUserId), {
         isFollowing: true,
         followRelationship: {
@@ -111,7 +102,6 @@ export function useFollowUser() {
         },
       });
 
-      // Update user profile cache if it exists
       const userProfile = queryClient.getQueryData([
         "users",
         "profile",
@@ -126,7 +116,6 @@ export function useFollowUser() {
       return { previousStatus };
     },
     onError: (_error, targetUserId, context) => {
-      // Revert the optimistic update
       if (context?.previousStatus) {
         queryClient.setQueryData(
           followKeys.statusForUser(targetUserId),
@@ -134,7 +123,6 @@ export function useFollowUser() {
         );
       }
 
-      // Revert user profile count
       const userProfile = queryClient.getQueryData([
         "users",
         "profile",
@@ -147,7 +135,6 @@ export function useFollowUser() {
       }
     },
     onSuccess: (_data, targetUserId) => {
-      // Invalidate related queries
       queryClient.invalidateQueries({
         queryKey: followKeys.statusForUser(targetUserId),
       });
@@ -163,7 +150,6 @@ export function useFollowUser() {
   });
 }
 
-// Unfollow user mutation
 export function useUnfollowUser() {
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
@@ -171,23 +157,19 @@ export function useUnfollowUser() {
   return useMutation({
     mutationFn: (targetUserId: string) => apiService.unfollowUser(targetUserId),
     onMutate: async (targetUserId) => {
-      // Cancel any outgoing refetches
       await queryClient.cancelQueries({
         queryKey: followKeys.statusForUser(targetUserId),
       });
 
-      // Snapshot the previous value
       const previousStatus = queryClient.getQueryData(
         followKeys.statusForUser(targetUserId),
       );
 
-      // Optimistically update the follow status
       queryClient.setQueryData(followKeys.statusForUser(targetUserId), {
         isFollowing: false,
         followRelationship: undefined,
       });
 
-      // Update user profile cache if it exists
       const userProfile = queryClient.getQueryData([
         "users",
         "profile",
@@ -202,7 +184,6 @@ export function useUnfollowUser() {
       return { previousStatus };
     },
     onError: (_error, targetUserId, context) => {
-      // Revert the optimistic update
       if (context?.previousStatus) {
         queryClient.setQueryData(
           followKeys.statusForUser(targetUserId),
@@ -210,7 +191,6 @@ export function useUnfollowUser() {
         );
       }
 
-      // Revert user profile count
       const userProfile = queryClient.getQueryData([
         "users",
         "profile",
@@ -223,7 +203,6 @@ export function useUnfollowUser() {
       }
     },
     onSuccess: (_data, targetUserId) => {
-      // Invalidate related queries
       queryClient.invalidateQueries({
         queryKey: followKeys.statusForUser(targetUserId),
       });
@@ -239,7 +218,6 @@ export function useUnfollowUser() {
   });
 }
 
-// Toggle follow/unfollow
 export function useToggleFollow() {
   const followMutation = useFollowUser();
   const unfollowMutation = useUnfollowUser();

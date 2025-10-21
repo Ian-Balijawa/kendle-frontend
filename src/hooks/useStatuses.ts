@@ -17,7 +17,6 @@ import {
   StatusRepliesResponse,
 } from "../types";
 
-// Query keys
 export const statusKeys = {
   all: ["statuses"] as const,
   lists: () => [...statusKeys.all, "list"] as const,
@@ -32,7 +31,6 @@ export const statusKeys = {
     [...statusKeys.all, "analytics", statusId] as const,
 };
 
-// Get statuses with infinite scroll
 export function useInfiniteStatuses(params: GetStatusesParams = {}) {
   return useInfiniteQuery({
     queryKey: statusKeys.list(params),
@@ -46,11 +44,9 @@ export function useInfiniteStatuses(params: GetStatusesParams = {}) {
       return undefined;
     },
     initialPageParam: 1,
-    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }
 
-// Get single status
 export function useStatus(id: string) {
   return useQuery({
     queryKey: statusKeys.detail(id),
@@ -59,7 +55,6 @@ export function useStatus(id: string) {
   });
 }
 
-// Get user statuses
 export function useUserStatuses(
   userId: string,
   params: { page?: number; limit?: number } = {},
@@ -79,7 +74,6 @@ export function useUserStatuses(
   });
 }
 
-// Get my statuses
 export function useMyStatuses(params: { page?: number; limit?: number } = {}) {
   return useInfiniteQuery({
     queryKey: [...statusKeys.me(), params],
@@ -96,7 +90,6 @@ export function useMyStatuses(params: { page?: number; limit?: number } = {}) {
   });
 }
 
-// Get status replies
 export function useStatusReplies(
   statusId: string,
   params: { page?: number; limit?: number } = {},
@@ -116,22 +109,18 @@ export function useStatusReplies(
   });
 }
 
-// Get status analytics
 export function useStatusAnalytics(statusId: string) {
   return useQuery({
     queryKey: statusKeys.analytics(statusId),
     queryFn: () => apiService.getStatusAnalytics(statusId),
-    staleTime: 10 * 60 * 1000, // 10 minutes
   });
 }
 
-// Create status mutation
 export function useCreateStatus() {
   const { user } = useAuthStore();
 
   return useMutation({
     mutationFn: (data: CreateStatusData) => {
-      // Convert CreateStatusData to CreateStatusRequest
       const requestData: CreateStatusRequest = {
         content: data.content,
         type: data.type,
@@ -151,10 +140,8 @@ export function useCreateStatus() {
       return apiService.createStatus(requestData);
     },
     onMutate: async (newStatus) => {
-      // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: statusKeys.lists() });
 
-      // Create optimistic status
       const optimisticStatus: Status = {
         id: `temp-${Date.now()}`,
         content: newStatus.content,
@@ -237,7 +224,6 @@ export function useCreateStatus() {
             },
       };
 
-      // Optimistically update the cache
       queryClient.setQueriesData(
         { queryKey: statusKeys.lists() },
         (old: any) => {
@@ -247,17 +233,14 @@ export function useCreateStatus() {
             ...old,
             pages: old.pages.map((page: StatusesResponse, index: number) => {
               if (index === 0) {
-                // Find or create collection for the optimistic status
                 const existingCollection = page.groupedStatuses.find(
                   (collection) =>
                     collection.author.id === optimisticStatus.author.id,
                 );
 
                 if (existingCollection) {
-                  // Add to existing collection
                   existingCollection.statuses.unshift(optimisticStatus);
                 } else {
-                  // Create new collection
                   page.groupedStatuses.unshift({
                     author: optimisticStatus.author,
                     statuses: [optimisticStatus],
@@ -280,7 +263,6 @@ export function useCreateStatus() {
       return { optimisticStatus };
     },
     onError: (_, __, context) => {
-      // Revert the optimistic update
       if (context?.optimisticStatus) {
         queryClient.setQueriesData(
           { queryKey: statusKeys.lists() },
@@ -291,7 +273,6 @@ export function useCreateStatus() {
               ...old,
               pages: old.pages.map((page: StatusesResponse, index: number) => {
                 if (index === 0) {
-                  // Remove the optimistic status from its collection
                   page.groupedStatuses.forEach((collection) => {
                     collection.statuses = collection.statuses.filter(
                       (status: Status) =>
@@ -299,7 +280,6 @@ export function useCreateStatus() {
                     );
                   });
 
-                  // Remove empty collections
                   page.groupedStatuses = page.groupedStatuses.filter(
                     (collection) => collection.statuses.length > 0,
                   );
@@ -317,7 +297,6 @@ export function useCreateStatus() {
       }
     },
     onSuccess: (newStatus, _, context) => {
-      // Replace the optimistic status with the real one
       if (context?.optimisticStatus) {
         queryClient.setQueriesData(
           { queryKey: statusKeys.lists() },
@@ -328,7 +307,6 @@ export function useCreateStatus() {
               ...old,
               pages: old.pages.map((page: StatusesResponse, index: number) => {
                 if (index === 0) {
-                  // Replace the optimistic status with the real one in its collection
                   page.groupedStatuses.forEach((collection) => {
                     collection.statuses = collection.statuses.map(
                       (status: Status) =>
@@ -347,27 +325,22 @@ export function useCreateStatus() {
         );
       }
 
-      // Invalidate and refetch
       queryClient.invalidateQueries({ queryKey: statusKeys.lists() });
       queryClient.invalidateQueries({ queryKey: statusKeys.me() });
     },
   });
 }
 
-// Update status mutation
 export function useUpdateStatus() {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateStatusRequest }) =>
       apiService.updateStatus(id, data),
     onMutate: async ({ id, data }) => {
-      // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: statusKeys.detail(id) });
       await queryClient.cancelQueries({ queryKey: statusKeys.lists() });
 
-      // Snapshot the previous value
       const previousStatus = queryClient.getQueryData(statusKeys.detail(id));
 
-      // Optimistically update the single status
       queryClient.setQueryData(
         statusKeys.detail(id),
         (old: Status | undefined) => {
@@ -380,7 +353,6 @@ export function useUpdateStatus() {
         },
       );
 
-      // Optimistically update in lists
       queryClient.setQueriesData(
         { queryKey: statusKeys.lists() },
         (old: any) => {
@@ -410,34 +382,28 @@ export function useUpdateStatus() {
       return { previousStatus };
     },
     onError: (_, { id }, context) => {
-      // Revert the optimistic updates
       if (context?.previousStatus) {
         queryClient.setQueryData(statusKeys.detail(id), context.previousStatus);
       }
       queryClient.invalidateQueries({ queryKey: statusKeys.lists() });
     },
     onSuccess: (updatedStatus, { id }) => {
-      // Update the cache with the server response
       queryClient.setQueryData(statusKeys.detail(id), updatedStatus);
       queryClient.invalidateQueries({ queryKey: statusKeys.lists() });
     },
   });
 }
 
-// Delete status mutation
 export function useDeleteStatus() {
   return useMutation({
     mutationFn: (id: string) => apiService.deleteStatus(id),
     onMutate: async (id) => {
-      // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: statusKeys.lists() });
 
-      // Snapshot the previous value
       const previousData = queryClient.getQueriesData({
         queryKey: statusKeys.lists(),
       });
 
-      // Optimistically remove the status from all lists
       queryClient.setQueriesData(
         { queryKey: statusKeys.lists() },
         (old: any) => {
@@ -446,14 +412,12 @@ export function useDeleteStatus() {
           return {
             ...old,
             pages: old.pages.map((page: StatusesResponse) => {
-              // Remove the status from all collections
               page.groupedStatuses.forEach((collection) => {
                 collection.statuses = collection.statuses.filter(
                   (status: Status) => status.id !== id,
                 );
               });
 
-              // Remove empty collections
               page.groupedStatuses = page.groupedStatuses.filter(
                 (collection) => collection.statuses.length > 0,
               );
@@ -470,7 +434,6 @@ export function useDeleteStatus() {
       return { previousData };
     },
     onError: (_, __, context) => {
-      // Revert the optimistic updates
       if (context?.previousData) {
         context.previousData.forEach(([queryKey, data]) => {
           queryClient.setQueryData(queryKey, data);
@@ -478,24 +441,20 @@ export function useDeleteStatus() {
       }
     },
     onSuccess: (_, id) => {
-      // Remove the status detail from cache
       queryClient.removeQueries({ queryKey: statusKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: statusKeys.lists() });
     },
   });
 }
 
-// React to status mutation
 export function useReactToStatus() {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: StatusReactionRequest }) =>
       apiService.reactToStatus(id, data),
     onMutate: async ({ id, data }) => {
-      // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: statusKeys.detail(id) });
       await queryClient.cancelQueries({ queryKey: statusKeys.lists() });
 
-      // Optimistically update
       const updateStatus = (status: Status) => ({
         ...status,
         isReacted: true,
@@ -512,7 +471,6 @@ export function useReactToStatus() {
         ],
       });
 
-      // Update single status
       queryClient.setQueryData(
         statusKeys.detail(id),
         (old: Status | undefined) => {
@@ -521,7 +479,6 @@ export function useReactToStatus() {
         },
       );
 
-      // Update in lists
       queryClient.setQueriesData(
         { queryKey: statusKeys.lists() },
         (old: any) => {
@@ -543,23 +500,19 @@ export function useReactToStatus() {
       );
     },
     onError: (_, { id }) => {
-      // Revert the optimistic updates
       queryClient.invalidateQueries({ queryKey: statusKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: statusKeys.lists() });
     },
   });
 }
 
-// Remove status reaction mutation
 export function useRemoveStatusReaction() {
   return useMutation({
     mutationFn: (id: string) => apiService.removeStatusReaction(id),
     onMutate: async (id) => {
-      // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: statusKeys.detail(id) });
       await queryClient.cancelQueries({ queryKey: statusKeys.lists() });
 
-      // Optimistically update
       const updateStatus = (status: Status) => ({
         ...status,
         isReacted: false,
@@ -569,7 +522,6 @@ export function useRemoveStatusReaction() {
         ),
       });
 
-      // Update single status
       queryClient.setQueryData(
         statusKeys.detail(id),
         (old: Status | undefined) => {
@@ -578,7 +530,6 @@ export function useRemoveStatusReaction() {
         },
       );
 
-      // Update in lists
       queryClient.setQueriesData(
         { queryKey: statusKeys.lists() },
         (old: any) => {
@@ -600,24 +551,20 @@ export function useRemoveStatusReaction() {
       );
     },
     onError: (_, id) => {
-      // Revert the optimistic updates
       queryClient.invalidateQueries({ queryKey: statusKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: statusKeys.lists() });
     },
   });
 }
 
-// Reply to status mutation
 export function useReplyToStatus() {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: StatusReplyRequest }) =>
       apiService.replyToStatus(id, data),
     onMutate: async ({ id, data }) => {
-      // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: statusKeys.detail(id) });
       await queryClient.cancelQueries({ queryKey: statusKeys.replies(id) });
 
-      // Create optimistic reply
       const optimisticReply: StatusReply = {
         id: `temp-reply-${Date.now()}`,
         author: useAuthStore.getState().user!,
@@ -646,7 +593,6 @@ export function useReplyToStatus() {
         updatedAt: new Date().toISOString(),
       };
 
-      // Optimistically update the status
       queryClient.setQueryData(
         statusKeys.detail(id),
         (old: Status | undefined) => {
@@ -660,7 +606,6 @@ export function useReplyToStatus() {
         },
       );
 
-      // Optimistically update replies list
       queryClient.setQueriesData(
         { queryKey: statusKeys.replies(id) },
         (old: any) => {
@@ -687,7 +632,6 @@ export function useReplyToStatus() {
       return { optimisticReply };
     },
     onError: (_, { id }, context) => {
-      // Revert the optimistic updates
       if (context?.optimisticReply) {
         queryClient.setQueryData(
           statusKeys.detail(id),
@@ -734,7 +678,6 @@ export function useReplyToStatus() {
       }
     },
     onSuccess: (newReply, { id }, context) => {
-      // Replace the optimistic reply with the real one
       if (context?.optimisticReply) {
         queryClient.setQueryData(
           statusKeys.detail(id),
@@ -776,7 +719,6 @@ export function useReplyToStatus() {
         );
       }
 
-      // Invalidate and refetch
       queryClient.invalidateQueries({ queryKey: statusKeys.replies(id) });
     },
   });

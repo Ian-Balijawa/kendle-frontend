@@ -8,7 +8,6 @@ import {
 import { useAuthStore } from "../stores/authStore";
 import { User } from "../types";
 
-// Query keys
 export const userKeys = {
   all: ["users"] as const,
   profile: () => [...userKeys.all, "profile"] as const,
@@ -18,7 +17,6 @@ export const userKeys = {
     [...userKeys.all, "username", username] as const,
 };
 
-// Get current user profile
 export function useUserProfile() {
   const { isAuthenticated } = useAuthStore();
 
@@ -31,7 +29,6 @@ export function useUserProfile() {
   });
 }
 
-// Get user by ID
 export function useUser(id: string) {
   return useQuery({
     queryKey: userKeys.detail(id),
@@ -41,7 +38,6 @@ export function useUser(id: string) {
   });
 }
 
-// Get user by username
 export function useUserByUsername(username: string) {
   return useQuery({
     queryKey: userKeys.username(username),
@@ -51,7 +47,6 @@ export function useUserByUsername(username: string) {
   });
 }
 
-// Update user profile mutation
 export function useUpdateProfile() {
   const { user, updateUser } = useAuthStore();
 
@@ -59,13 +54,10 @@ export function useUpdateProfile() {
     mutationFn: (data: UpdateProfileRequest) =>
       apiService.updateUserProfile(data),
     onMutate: async (updateData) => {
-      // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: userKeys.profile() });
 
-      // Snapshot the previous value
       const previousUser = queryClient.getQueryData(userKeys.profile());
 
-      // Optimistically update the user profile
       if (user) {
         const updatedUser: User = {
           ...user,
@@ -77,10 +69,8 @@ export function useUpdateProfile() {
         queryClient.setQueryData(userKeys.profile(), updatedUser);
         updateUser(updatedUser);
 
-        // Also update in user detail cache if it exists
         queryClient.setQueryData(userKeys.detail(user.id), updatedUser);
 
-        // Update in username cache if username is being updated
         if (updateData.username) {
           queryClient.setQueryData(
             userKeys.username(updateData.username),
@@ -92,18 +82,15 @@ export function useUpdateProfile() {
       return { previousUser };
     },
     onError: (_error: any, _variables, context) => {
-      // Revert the optimistic update
       if (context?.previousUser) {
         queryClient.setQueryData(userKeys.profile(), context.previousUser);
         updateUser(context.previousUser as User);
       }
     },
     onSuccess: (updatedUser) => {
-      // Update with the server response
       queryClient.setQueryData(userKeys.profile(), updatedUser);
       updateUser(updatedUser);
 
-      // Update related caches
       queryClient.setQueryData(userKeys.detail(updatedUser.id), updatedUser);
       if (updatedUser.username) {
         queryClient.setQueryData(
@@ -112,13 +99,11 @@ export function useUpdateProfile() {
         );
       }
 
-      // Invalidate related queries
       queryClient.invalidateQueries({ queryKey: userKeys.all });
     },
   });
 }
 
-// Complete user profile mutation
 export function useCompleteUserProfile() {
   const { user, updateUser } = useAuthStore();
 
@@ -126,13 +111,10 @@ export function useCompleteUserProfile() {
     mutationFn: (data: UserProfileCompleteRequest) =>
       apiService.completeUserProfile(data),
     onMutate: async (profileData) => {
-      // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: userKeys.profile() });
 
-      // Snapshot the previous value
       const previousUser = queryClient.getQueryData(userKeys.profile());
 
-      // Optimistically update the user profile
       if (user) {
         const updatedUser: User = {
           ...user,
@@ -150,25 +132,21 @@ export function useCompleteUserProfile() {
         queryClient.setQueryData(userKeys.profile(), updatedUser);
         updateUser(updatedUser);
 
-        // Also update in user detail cache
         queryClient.setQueryData(userKeys.detail(user.id), updatedUser);
       }
 
       return { previousUser };
     },
     onError: (_error: any, _variables, context) => {
-      // Revert the optimistic update
       if (context?.previousUser) {
         queryClient.setQueryData(userKeys.profile(), context.previousUser);
         updateUser(context.previousUser as User);
       }
     },
     onSuccess: (updatedUser) => {
-      // Update with the server response
       queryClient.setQueryData(userKeys.profile(), updatedUser);
       updateUser(updatedUser);
 
-      // Update related caches
       queryClient.setQueryData(userKeys.detail(updatedUser.id), updatedUser);
       if (updatedUser.username) {
         queryClient.setQueryData(
@@ -177,7 +155,6 @@ export function useCompleteUserProfile() {
         );
       }
 
-      // Invalidate related queries
       queryClient.invalidateQueries({ queryKey: userKeys.all });
     },
   });

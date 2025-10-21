@@ -11,14 +11,12 @@ import {
 import { useAuthStore } from "../stores/authStore";
 import { AuthResponse, User } from "../types";
 
-// Query keys
 export const authKeys = {
   all: ["auth"] as const,
   me: () => [...authKeys.all, "me"] as const,
   user: () => [...authKeys.all, "user"] as const,
 };
 
-// Get current authenticated user
 export function useCurrentUser() {
   const { isAuthenticated } = useAuthStore();
 
@@ -31,7 +29,6 @@ export function useCurrentUser() {
   });
 }
 
-// Send OTP mutation
 export function useSendOTP() {
   const { setOTPSent, setPhoneNumber, setLoading, setError } = useAuthStore();
 
@@ -55,7 +52,6 @@ export function useSendOTP() {
   });
 }
 
-// Verify OTP mutation
 export function useVerifyOTP() {
   const { setLoading, setError, setAuthData } = useAuthStore();
 
@@ -66,10 +62,8 @@ export function useVerifyOTP() {
       setError(null);
     },
     onSuccess: (response: AuthResponse) => {
-      // Update auth store with user data and access token
       setAuthData(response.user, response.accessToken);
 
-      // Cache the user data
       queryClient.setQueryData(authKeys.me(), response.user);
 
       setLoading(false);
@@ -86,7 +80,6 @@ export function useVerifyOTP() {
   });
 }
 
-// Resend OTP mutation
 export function useResendOTP() {
   const { setLoading, setError } = useAuthStore();
 
@@ -110,7 +103,6 @@ export function useResendOTP() {
   });
 }
 
-// Login mutation
 export function useLogin() {
   const { setLoading, setError, setAuthData } = useAuthStore();
 
@@ -121,10 +113,8 @@ export function useLogin() {
       setError(null);
     },
     onSuccess: (response: AuthResponse) => {
-      // Update auth store with user data and access token
       setAuthData(response.user, response.accessToken);
 
-      // Cache the user data
       queryClient.setQueryData(authKeys.me(), response.user);
 
       setLoading(false);
@@ -139,7 +129,6 @@ export function useLogin() {
   });
 }
 
-// Complete profile mutation
 export function useCompleteProfile() {
   const { user, token, setLoading, setError, setAuthData } = useAuthStore();
 
@@ -150,13 +139,10 @@ export function useCompleteProfile() {
       setLoading(true);
       setError(null);
 
-      // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: authKeys.me() });
 
-      // Snapshot the previous value
       const previousUser = queryClient.getQueryData(authKeys.me());
 
-      // Optimistically update the user profile
       if (user) {
         const updatedUser: User = {
           ...user,
@@ -178,7 +164,6 @@ export function useCompleteProfile() {
       return { previousUser };
     },
     onError: (_error: any, _variables, context) => {
-      // Revert the optimistic update
       if (context?.previousUser) {
         queryClient.setQueryData(authKeys.me(), context.previousUser);
         setAuthData(context.previousUser as User, token || "");
@@ -192,7 +177,6 @@ export function useCompleteProfile() {
       setLoading(false);
     },
     onSuccess: (updatedUser) => {
-      // Update with the server response
       queryClient.setQueryData(authKeys.me(), updatedUser);
       setAuthData(updatedUser, token || "");
       setLoading(false);

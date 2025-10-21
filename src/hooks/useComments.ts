@@ -10,7 +10,6 @@ import { useAuthStore } from "../stores/authStore";
 import { postKeys } from "./usePosts";
 import { queryClient } from "../lib/queryClient";
 
-// Query keys
 export const commentKeys = {
   all: ["comments"] as const,
   lists: () => [...commentKeys.all, "list"] as const,
@@ -26,7 +25,6 @@ export const commentKeys = {
   stats: (postId: string) => [...commentKeys.all, "stats", postId] as const,
 };
 
-// Get comments for a post with infinite scroll
 export function useInfiniteComments(
   postId: string,
   params: GetCommentsParams = {},
@@ -47,7 +45,6 @@ export function useInfiniteComments(
   });
 }
 
-// Get comments for a post (regular pagination)
 export function useComments(postId: string, params: GetCommentsParams = {}) {
   return useQuery({
     queryKey: commentKeys.list(postId, params),
@@ -56,7 +53,6 @@ export function useComments(postId: string, params: GetCommentsParams = {}) {
   });
 }
 
-// Get single comment
 export function useComment(id: string) {
   return useQuery({
     queryKey: commentKeys.detail(id),
@@ -65,7 +61,6 @@ export function useComment(id: string) {
   });
 }
 
-// Get my comments
 export function useMyComments(params: { page?: number; limit?: number } = {}) {
   return useInfiniteQuery({
     queryKey: [...commentKeys.me(), params],
@@ -82,7 +77,6 @@ export function useMyComments(params: { page?: number; limit?: number } = {}) {
   });
 }
 
-// Get user comments
 export function useUserComments(
   userId: string,
   params: { page?: number; limit?: number } = {},
@@ -102,7 +96,6 @@ export function useUserComments(
   });
 }
 
-// Get liked comments
 export function useLikedComments(
   params: { page?: number; limit?: number } = {},
 ) {
@@ -121,7 +114,6 @@ export function useLikedComments(
   });
 }
 
-// Search comments
 export function useSearchComments(params: {
   q: string;
   postId?: string;
@@ -144,7 +136,6 @@ export function useSearchComments(params: {
   });
 }
 
-// Get comment stats
 export function useCommentStats(postId: string) {
   return useQuery({
     queryKey: commentKeys.stats(postId),
@@ -153,7 +144,6 @@ export function useCommentStats(postId: string) {
   });
 }
 
-// Create comment mutation
 export function useCreateComment() {
   const { user } = useAuthStore();
 
@@ -166,12 +156,10 @@ export function useCreateComment() {
       data: CreateCommentRequest;
     }) => apiService.createComment(postId, data),
     onMutate: async ({ postId, data }) => {
-      // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: commentKeys.list(postId) });
       await queryClient.cancelQueries({ queryKey: postKeys.detail(postId) });
       await queryClient.cancelQueries({ queryKey: postKeys.lists() });
 
-      // Create optimistic comment
       const optimisticComment: Comment = {
         id: `temp-${Date.now()}`,
         content: data.content,
@@ -204,7 +192,6 @@ export function useCreateComment() {
         pollOptions: null,
         pollEndDate: null,
         pollResults: null,
-        // Legacy fields for backward compatibility
         replies: [],
         likes: [],
         isLiked: false,
@@ -216,7 +203,6 @@ export function useCreateComment() {
         },
       };
 
-      // Get all comment queries for this post and update them
       const allCommentQueries = queryClient.getQueriesData({
         queryKey: commentKeys.lists(),
       });
@@ -226,7 +212,6 @@ export function useCreateComment() {
           queryClient.setQueryData(queryKey, (old: any) => {
             if (!old) return old;
 
-            // Handle infinite query
             if (old.pages) {
               return {
                 ...old,
@@ -245,7 +230,6 @@ export function useCreateComment() {
               };
             }
 
-            // Handle regular query
             return {
               ...old,
               comments: [optimisticComment, ...old.comments],
@@ -255,7 +239,6 @@ export function useCreateComment() {
         }
       });
 
-      // Optimistically update post comment count
       queryClient.setQueryData(postKeys.detail(postId), (old: any) => {
         if (!old) return old;
         return {
@@ -268,7 +251,6 @@ export function useCreateComment() {
         };
       });
 
-      // Update post in lists
       queryClient.setQueriesData({ queryKey: postKeys.lists() }, (old: any) => {
         if (!old) return old;
 
@@ -295,7 +277,6 @@ export function useCreateComment() {
       return { optimisticComment };
     },
     onError: (_err, { postId }, context) => {
-      // Revert the optimistic updates
       if (context?.optimisticComment) {
         const allCommentQueries = queryClient.getQueriesData({
           queryKey: commentKeys.lists(),
@@ -306,7 +287,6 @@ export function useCreateComment() {
             queryClient.setQueryData(queryKey, (old: any) => {
               if (!old) return old;
 
-              // Handle infinite query
               if (old.pages) {
                 return {
                   ...old,
@@ -356,7 +336,6 @@ export function useCreateComment() {
       }
     },
     onSuccess: (newComment, { postId }, context) => {
-      // Replace the optimistic comment with the real one
       if (context?.optimisticComment) {
         const allCommentQueries = queryClient.getQueriesData({
           queryKey: commentKeys.lists(),
@@ -389,7 +368,6 @@ export function useCreateComment() {
                 };
               }
 
-              // Handle regular query
               return {
                 ...old,
                 comments: old.comments.map((comment: Comment) =>
@@ -403,7 +381,6 @@ export function useCreateComment() {
         });
       }
 
-      // Invalidate and refetch
       queryClient.invalidateQueries({ queryKey: commentKeys.lists() });
       queryClient.invalidateQueries({ queryKey: postKeys.detail(postId) });
       queryClient.invalidateQueries({ queryKey: postKeys.lists() });
@@ -412,19 +389,15 @@ export function useCreateComment() {
   });
 }
 
-// Update comment mutation
 export function useUpdateComment() {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateCommentRequest }) =>
       apiService.updateComment(id, data),
     onMutate: async ({ id, data }) => {
-      // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: commentKeys.detail(id) });
 
-      // Snapshot the previous value
       const previousComment = queryClient.getQueryData(commentKeys.detail(id));
 
-      // Optimistically update the single comment
       queryClient.setQueryData(
         commentKeys.detail(id),
         (old: Comment | undefined) => {
@@ -437,13 +410,11 @@ export function useUpdateComment() {
         },
       );
 
-      // Optimistically update in comments lists
       queryClient.setQueriesData(
         { queryKey: commentKeys.lists() },
         (old: any) => {
           if (!old) return old;
 
-          // Handle infinite query
           if (old.pages) {
             return {
               ...old,
@@ -462,7 +433,6 @@ export function useUpdateComment() {
             };
           }
 
-          // Handle regular query
           return {
             ...old,
             comments: old.comments.map((comment: Comment) =>
@@ -477,7 +447,6 @@ export function useUpdateComment() {
       return { previousComment };
     },
     onError: (_err, { id }, context) => {
-      // Revert the optimistic updates
       if (context?.previousComment) {
         queryClient.setQueryData(
           commentKeys.detail(id),
@@ -487,22 +456,18 @@ export function useUpdateComment() {
       queryClient.invalidateQueries({ queryKey: commentKeys.lists() });
     },
     onSuccess: (updatedComment, { id }) => {
-      // Update the cache with the server response
       queryClient.setQueryData(commentKeys.detail(id), updatedComment);
       queryClient.invalidateQueries({ queryKey: commentKeys.lists() });
     },
   });
 }
 
-// Delete comment mutation
 export function useDeleteComment() {
   return useMutation({
     mutationFn: (id: string) => apiService.deleteComment(id),
     onMutate: async (id) => {
-      // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: commentKeys.lists() });
 
-      // Find the comment to get its postId
       let postId: string | null = null;
       const commentQueries = queryClient.getQueriesData({
         queryKey: commentKeys.lists(),
@@ -524,18 +489,15 @@ export function useDeleteComment() {
         }
       }
 
-      // Snapshot the previous value
       const previousData = queryClient.getQueriesData({
         queryKey: commentKeys.lists(),
       });
 
-      // Optimistically remove the comment from all lists
       queryClient.setQueriesData(
         { queryKey: commentKeys.lists() },
         (old: any) => {
           if (!old) return old;
 
-          // Handle infinite query
           if (old.pages) {
             return {
               ...old,
@@ -549,7 +511,6 @@ export function useDeleteComment() {
             };
           }
 
-          // Handle regular query
           return {
             ...old,
             comments: old.comments.filter(
@@ -560,7 +521,6 @@ export function useDeleteComment() {
         },
       );
 
-      // Update post comment count if we found the postId
       if (postId) {
         queryClient.setQueryData(postKeys.detail(postId), (old: any) => {
           if (!old) return old;
@@ -574,7 +534,6 @@ export function useDeleteComment() {
           };
         });
 
-        // Update post in lists
         queryClient.setQueriesData(
           { queryKey: postKeys.lists() },
           (old: any) => {
@@ -608,7 +567,6 @@ export function useDeleteComment() {
       return { previousData, postId };
     },
     onError: (_err, _id, context) => {
-      // Revert the optimistic updates
       if (context?.previousData) {
         context.previousData.forEach(([queryKey, data]) => {
           queryClient.setQueryData(queryKey, data);
@@ -623,7 +581,6 @@ export function useDeleteComment() {
       }
     },
     onSuccess: (_, id, context) => {
-      // Remove the comment detail from cache
       queryClient.removeQueries({ queryKey: commentKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: commentKeys.lists() });
 
@@ -637,7 +594,6 @@ export function useDeleteComment() {
   });
 }
 
-// React to comment mutation
 export function useReactToComment() {
   return useMutation({
     mutationFn: ({
@@ -648,16 +604,13 @@ export function useReactToComment() {
       data: { reactionType: "like" | "dislike" };
     }) => apiService.reactToComment(id, data),
     onMutate: async ({ id, data }) => {
-      // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: commentKeys.detail(id) });
       await queryClient.cancelQueries({ queryKey: commentKeys.lists() });
 
-      // Optimistically update
       const updateComment = (comment: Comment) => {
         const isLike = data.reactionType === "like";
         const isDislike = data.reactionType === "dislike";
 
-        // Remove existing reaction if any
         let newLikesCount = comment.likesCount;
         let newDislikesCount = comment.dislikesCount;
         let newIsLiked = comment.isLiked;
@@ -697,7 +650,6 @@ export function useReactToComment() {
         };
       };
 
-      // Update single comment
       queryClient.setQueryData(
         commentKeys.detail(id),
         (old: Comment | undefined) => {
@@ -706,13 +658,11 @@ export function useReactToComment() {
         },
       );
 
-      // Update in lists
       queryClient.setQueriesData(
         { queryKey: commentKeys.lists() },
         (old: any) => {
           if (!old) return old;
 
-          // Handle infinite query
           if (old.pages) {
             return {
               ...old,
@@ -725,7 +675,6 @@ export function useReactToComment() {
             };
           }
 
-          // Handle regular query
           return {
             ...old,
             comments: old.comments.map((comment: Comment) =>
@@ -736,23 +685,19 @@ export function useReactToComment() {
       );
     },
     onError: (_err, { id }) => {
-      // Revert the optimistic updates
       queryClient.invalidateQueries({ queryKey: commentKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: commentKeys.lists() });
     },
   });
 }
 
-// Remove reaction from comment mutation
 export function useRemoveReaction() {
   return useMutation({
     mutationFn: (id: string) => apiService.removeCommentReaction(id),
     onMutate: async (id) => {
-      // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: commentKeys.detail(id) });
       await queryClient.cancelQueries({ queryKey: commentKeys.lists() });
 
-      // Optimistically update
       const updateComment = (comment: Comment) => ({
         ...comment,
         isLiked: false,
@@ -774,7 +719,6 @@ export function useRemoveReaction() {
         },
       });
 
-      // Update single comment
       queryClient.setQueryData(
         commentKeys.detail(id),
         (old: Comment | undefined) => {
@@ -783,13 +727,11 @@ export function useRemoveReaction() {
         },
       );
 
-      // Update in lists
       queryClient.setQueriesData(
         { queryKey: commentKeys.lists() },
         (old: any) => {
           if (!old) return old;
 
-          // Handle infinite query
           if (old.pages) {
             return {
               ...old,
@@ -802,7 +744,6 @@ export function useRemoveReaction() {
             };
           }
 
-          // Handle regular query
           return {
             ...old,
             comments: old.comments.map((comment: Comment) =>
@@ -813,14 +754,12 @@ export function useRemoveReaction() {
       );
     },
     onError: (_err, id) => {
-      // Revert the optimistic updates
       queryClient.invalidateQueries({ queryKey: commentKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: commentKeys.lists() });
     },
   });
 }
 
-// Hide comment mutation (admin/moderator only)
 export function useHideComment() {
   return useMutation({
     mutationFn: ({ id, reason }: { id: string; reason?: string }) =>
@@ -832,7 +771,6 @@ export function useHideComment() {
   });
 }
 
-// Unhide comment mutation (admin/moderator only)
 export function useUnhideComment() {
   return useMutation({
     mutationFn: (id: string) => apiService.unhideComment(id),

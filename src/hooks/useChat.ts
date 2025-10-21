@@ -12,7 +12,6 @@ import { Conversation, Message } from "../types";
 import { useAuthStore } from "../stores/authStore";
 import { queryClient } from "../lib/queryClient";
 
-// Query keys
 export const chatKeys = {
   all: ["chat"] as const,
   conversations: () => [...chatKeys.all, "conversations"] as const,
@@ -24,7 +23,6 @@ export const chatKeys = {
   unreadCount: () => [...chatKeys.all, "unreadCount"] as const,
 };
 
-// Get all conversations
 export function useConversations() {
   const { isAuthenticated } = useAuthStore();
 
@@ -32,12 +30,11 @@ export function useConversations() {
     queryKey: chatKeys.conversations(),
     queryFn: () => apiService.getConversations(),
     enabled: isAuthenticated,
-    staleTime: 2 * 60 * 1000, // 2 minutes
+    staleTime: 2 * 60 * 1000,
     refetchOnWindowFocus: true,
   });
 }
 
-// Get single conversation
 export function useConversation(id: string) {
   return useQuery({
     queryKey: chatKeys.conversation(id),
@@ -47,7 +44,6 @@ export function useConversation(id: string) {
   });
 }
 
-// Get messages for a conversation with infinite scroll
 export function useInfiniteMessages(
   conversationId: string,
   params: GetMessagesParams = {},
@@ -57,24 +53,21 @@ export function useInfiniteMessages(
     queryFn: ({ pageParam = 0 }) =>
       apiService.getMessages(conversationId, { ...params, offset: pageParam }),
     getNextPageParam: (lastPage: Message[], allPages) => {
-      // If we got fewer messages than the limit, we've reached the end
       const limit = params.limit || 20;
       if (lastPage.length < limit) {
         return undefined;
       }
-      // Return the offset for the next page
       return allPages.length * limit;
     },
     initialPageParam: 0,
-    staleTime: 1 * 60 * 1000, // 1 minute
+    staleTime: 1 * 60 * 1000,
     select: (data) => ({
       ...data,
-      pages: data.pages.map((page) => page.reverse()), // Reverse each page to show newest first
+      pages: data.pages.map((page) => page.reverse()),
     }),
   });
 }
 
-// Get unread count
 export function useUnreadCount() {
   const { isAuthenticated } = useAuthStore();
 
@@ -82,27 +75,24 @@ export function useUnreadCount() {
     queryKey: chatKeys.unreadCount(),
     queryFn: () => apiService.getUnreadCount(),
     enabled: isAuthenticated,
-    staleTime: 30 * 1000, // 30 seconds
-    refetchInterval: 60 * 1000, // Refetch every minute
+    staleTime: 30 * 1000,
+    refetchInterval: 60 * 1000,
   });
 }
 
-// Create conversation mutation
 export function useCreateConversation() {
   return useMutation({
     mutationFn: (data: CreateConversationRequest) =>
       apiService.createConversation(data),
     onMutate: async (newConversation) => {
-      // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: chatKeys.conversations() });
 
-      // Create optimistic conversation
       const optimisticConversation: Conversation = {
         id: `temp-${Date.now()}`,
         type: newConversation.participantIds.length > 1 ? "group" : "direct",
         name: newConversation.name,
         description: newConversation.description,
-        participants: [], // Would be populated with actual user data
+        participants: [],
         unreadCount: 0,
         isArchived: false,
         isMuted: false,
@@ -111,7 +101,6 @@ export function useCreateConversation() {
         updatedAt: new Date().toISOString(),
       };
 
-      // Optimistically update the cache
       queryClient.setQueryData(
         chatKeys.conversations(),
         (old: Conversation[] | undefined) => {
@@ -123,7 +112,6 @@ export function useCreateConversation() {
       return { optimisticConversation };
     },
     onError: (_err, _newConversation, context) => {
-      // Revert the optimistic update
       if (context?.optimisticConversation) {
         queryClient.setQueryData(
           chatKeys.conversations(),
@@ -137,7 +125,6 @@ export function useCreateConversation() {
       }
     },
     onSuccess: (newConversation, _variables, context) => {
-      // Replace the optimistic conversation with the real one
       if (context?.optimisticConversation) {
         queryClient.setQueryData(
           chatKeys.conversations(),
@@ -152,13 +139,11 @@ export function useCreateConversation() {
         );
       }
 
-      // Invalidate and refetch
       queryClient.invalidateQueries({ queryKey: chatKeys.conversations() });
     },
   });
 }
 
-// Update conversation mutation
 export function useUpdateConversation() {
   return useMutation({
     mutationFn: ({
@@ -169,16 +154,13 @@ export function useUpdateConversation() {
       data: UpdateConversationRequest;
     }) => apiService.updateConversation(id, data),
     onMutate: async ({ id, data }) => {
-      // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: chatKeys.conversation(id) });
       await queryClient.cancelQueries({ queryKey: chatKeys.conversations() });
 
-      // Snapshot the previous value
       const previousConversation = queryClient.getQueryData(
         chatKeys.conversation(id),
       );
 
-      // Optimistically update the single conversation
       queryClient.setQueryData(
         chatKeys.conversation(id),
         (old: Conversation | undefined) => {
@@ -191,7 +173,6 @@ export function useUpdateConversation() {
         },
       );
 
-      // Optimistically update in conversations list
       queryClient.setQueryData(
         chatKeys.conversations(),
         (old: Conversation[] | undefined) => {
@@ -207,7 +188,6 @@ export function useUpdateConversation() {
       return { previousConversation };
     },
     onError: (_err, { id }, context) => {
-      // Revert the optimistic updates
       if (context?.previousConversation) {
         queryClient.setQueryData(
           chatKeys.conversation(id),
@@ -217,14 +197,12 @@ export function useUpdateConversation() {
       queryClient.invalidateQueries({ queryKey: chatKeys.conversations() });
     },
     onSuccess: (updatedConversation, { id }) => {
-      // Update the cache with the server response
       queryClient.setQueryData(chatKeys.conversation(id), updatedConversation);
       queryClient.invalidateQueries({ queryKey: chatKeys.conversations() });
     },
   });
 }
 
-// Send message mutation
 export function useSendMessage() {
   const { user } = useAuthStore();
 
@@ -237,13 +215,11 @@ export function useSendMessage() {
       data: SendMessageRequest;
     }) => apiService.sendMessage(conversationId, data),
     onMutate: async ({ conversationId, data }) => {
-      // Cancel any outgoing refetches
       await queryClient.cancelQueries({
         queryKey: chatKeys.messagesList(conversationId),
       });
       await queryClient.cancelQueries({ queryKey: chatKeys.conversations() });
 
-      // Create optimistic message
       const optimisticMessage: Message = {
         id: `temp-${Date.now()}`,
         content: data.content,
@@ -262,7 +238,6 @@ export function useSendMessage() {
         updatedAt: new Date().toISOString(),
       };
 
-      // Optimistically update messages list
       queryClient.setQueriesData(
         { queryKey: chatKeys.messagesList(conversationId) },
         (old: any) => {
@@ -280,7 +255,6 @@ export function useSendMessage() {
         },
       );
 
-      // Update conversation's last message
       queryClient.setQueryData(
         chatKeys.conversations(),
         (old: Conversation[] | undefined) => {
@@ -300,7 +274,6 @@ export function useSendMessage() {
       return { optimisticMessage };
     },
     onError: (_err, { conversationId }, context) => {
-      // Update the optimistic message status to failed
       if (context?.optimisticMessage) {
         queryClient.setQueriesData(
           { queryKey: chatKeys.messagesList(conversationId) },
@@ -322,7 +295,6 @@ export function useSendMessage() {
       }
     },
     onSuccess: (newMessage, { conversationId }, context) => {
-      // Replace the optimistic message with the real one
       if (context?.optimisticMessage) {
         queryClient.setQueriesData(
           { queryKey: chatKeys.messagesList(conversationId) },
@@ -341,7 +313,6 @@ export function useSendMessage() {
         );
       }
 
-      // Update conversation's last message
       queryClient.setQueryData(
         chatKeys.conversations(),
         (old: Conversation[] | undefined) => {
@@ -358,24 +329,20 @@ export function useSendMessage() {
         },
       );
 
-      // Invalidate and refetch
       queryClient.invalidateQueries({ queryKey: chatKeys.conversations() });
       queryClient.invalidateQueries({ queryKey: chatKeys.unreadCount() });
     },
   });
 }
 
-// Update message mutation
 export function useUpdateMessage() {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateMessageRequest }) =>
       apiService.updateMessage(id, data),
     onMutate: async ({ id, data }) => {
-      // Find and update the message optimistically
       queryClient.setQueriesData({ queryKey: chatKeys.all }, (old: any) => {
         if (!old) return old;
 
-        // Handle infinite query structure
         if (old.pages) {
           return {
             ...old,
@@ -399,11 +366,9 @@ export function useUpdateMessage() {
       });
     },
     onError: (_err, _id) => {
-      // Invalidate all message queries to revert changes
       queryClient.invalidateQueries({ queryKey: chatKeys.all });
     },
-    onSuccess: (updatedMessage) => {
-      // Update the cache with the server response
+    onSuccess: (updatedMessage) => {          
       queryClient.setQueriesData({ queryKey: chatKeys.all }, (old: any) => {
         if (!old) return old;
 
@@ -424,12 +389,10 @@ export function useUpdateMessage() {
   });
 }
 
-// Delete message mutation
 export function useDeleteMessage() {
   return useMutation({
     mutationFn: (id: string) => apiService.deleteMessage(id),
     onMutate: async (id) => {
-      // Find the message to get its conversation ID
       let conversationId: string | null = null;
       const messageQueries = queryClient.getQueriesData({
         queryKey: chatKeys.all,
@@ -453,7 +416,6 @@ export function useDeleteMessage() {
         }
       }
 
-      // Optimistically remove the message
       queryClient.setQueriesData({ queryKey: chatKeys.all }, (old: any) => {
         if (!old) return old;
 
@@ -472,11 +434,9 @@ export function useDeleteMessage() {
       return { conversationId };
     },
     onError: (_err, _id, _context) => {
-      // Revert the optimistic update
       queryClient.invalidateQueries({ queryKey: chatKeys.all });
     },
     onSuccess: (_, _id, context) => {
-      // Invalidate related queries
       if (context?.conversationId) {
         queryClient.invalidateQueries({
           queryKey: chatKeys.messages(context.conversationId),
@@ -487,12 +447,10 @@ export function useDeleteMessage() {
   });
 }
 
-// Mark message as read mutation
 export function useMarkMessageAsRead() {
   return useMutation({
     mutationFn: (id: string) => apiService.markMessageAsRead(id),
     onMutate: async (id) => {
-      // Optimistically update message read status
       queryClient.setQueriesData({ queryKey: chatKeys.all }, (old: any) => {
         if (!old) return old;
 
@@ -518,22 +476,18 @@ export function useMarkMessageAsRead() {
       });
     },
     onError: (_err, _id, _context) => {
-      // Revert the optimistic update
       queryClient.invalidateQueries({ queryKey: chatKeys.all });
     },
     onSuccess: () => {
-      // Update unread count only - don't invalidate conversations to prevent loops
       queryClient.invalidateQueries({ queryKey: chatKeys.unreadCount() });
     },
   });
 }
 
-// Mark conversation as read mutation
 export function useMarkConversationAsRead() {
   return useMutation({
     mutationFn: (id: string) => apiService.markConversationAsRead(id),
     onMutate: async (id) => {
-      // Optimistically update conversation unread count
       queryClient.setQueryData(
         chatKeys.conversations(),
         (old: Conversation[] | undefined) => {
@@ -544,7 +498,6 @@ export function useMarkConversationAsRead() {
         },
       );
 
-      // Mark all messages in the conversation as read
       queryClient.setQueriesData(
         { queryKey: chatKeys.messages(id) },
         (old: any) => {
@@ -569,19 +522,16 @@ export function useMarkConversationAsRead() {
       );
     },
     onError: (_err, id, _context) => {
-      // Revert the optimistic updates
       queryClient.invalidateQueries({ queryKey: chatKeys.conversation(id) });
       queryClient.invalidateQueries({ queryKey: chatKeys.conversations() });
       queryClient.invalidateQueries({ queryKey: chatKeys.messages(id) });
     },
     onSuccess: () => {
-      // Update unread count - but don't invalidate conversations to prevent loops
       queryClient.invalidateQueries({ queryKey: chatKeys.unreadCount() });
     },
   });
 }
 
-// Add message reaction mutation
 export function useAddMessageReaction() {
   const { user } = useAuthStore();
 
@@ -589,7 +539,6 @@ export function useAddMessageReaction() {
     mutationFn: ({ id, data }: { id: string; data: AddReactionRequest }) =>
       apiService.addMessageReaction(id, data),
     onMutate: async ({ id, data }) => {
-      // Create optimistic reaction
       const optimisticReaction = {
         id: `temp-${Date.now()}`,
         userId: user!.id,
@@ -599,7 +548,6 @@ export function useAddMessageReaction() {
         user: user!,
       };
 
-      // Optimistically update message reactions
       queryClient.setQueriesData({ queryKey: chatKeys.all }, (old: any) => {
         if (!old) return old;
 
@@ -625,7 +573,6 @@ export function useAddMessageReaction() {
       return { optimisticReaction };
     },
     onError: (_err, { id }, context) => {
-      // Remove the optimistic reaction
       if (context?.optimisticReaction) {
         queryClient.setQueriesData({ queryKey: chatKeys.all }, (old: any) => {
           if (!old) return old;
@@ -655,13 +602,11 @@ export function useAddMessageReaction() {
   });
 }
 
-// Find or create direct conversation mutation
 export function useFindOrCreateDirectConversation() {
   return useMutation({
     mutationFn: (participantId: string) =>
       apiService.findOrCreateDirectConversation(participantId),
     onSuccess: (conversation) => {
-      // Add the conversation to the cache if it's new
       queryClient.setQueryData(
         chatKeys.conversations(),
         (old: Conversation[] | undefined) => {
@@ -678,7 +623,6 @@ export function useFindOrCreateDirectConversation() {
         },
       );
 
-      // Cache the individual conversation
       queryClient.setQueryData(
         chatKeys.conversation(conversation.id),
         conversation,
