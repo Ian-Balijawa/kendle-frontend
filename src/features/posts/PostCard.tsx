@@ -51,10 +51,9 @@ import { CommentCard } from "./CommentCard";
 interface PostCardProps {
   post: Post;
   onUpdate?: (post: Post) => void;
-  isFirst?: boolean;
 }
 
-export function PostCard({ post, onUpdate, isFirst = false }: PostCardProps) {
+export function PostCard({ post, onUpdate }: PostCardProps) {
   try {
     const navigate = useNavigate();
     const { user, isAuthenticated } = useAuthStore();

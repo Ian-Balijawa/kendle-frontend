@@ -19,8 +19,6 @@ import { AuthGuard } from "./features/auth/AuthGuard";
 import { OTPVerification } from "./features/auth/OTPVerification";
 import { PhoneAuth } from "./features/auth/PhoneAuth";
 import { ProfileCompletion } from "./features/auth/ProfileCompletion";
-
-import { NotificationsPage } from "./features/notifications/NotificationsPage";
 import { HomePage } from "./features/posts/HomePage";
 import { PostDetail } from "./features/posts/PostDetail";
 import { ProfilePage } from "./features/profile/ProfilePage";
@@ -100,7 +98,6 @@ function AppContent() {
         >
           <Route index element={<HomePage />} />
           <Route path="explore" element={<ExplorePage />} />
-          <Route path="notifications" element={<NotificationsPage />} />
           <Route path="settings" element={<SettingsPage />} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="profile/:userId" element={<ProfilePage />} />

@@ -431,8 +431,8 @@ export function HomePage() {
 
         {!isLoading && posts.length > 0 && (
           <Stack gap="lg">
-                {posts.map((post, index) => (
-                  <PostCard key={`post-${post.id}-${index}`} post={post} isFirst={index === 0} />
+            {posts.map((post) => (
+              <PostCard key={post.id} post={post} />
                 ))}
 
                 {hasNextPage && (

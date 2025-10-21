@@ -24,7 +24,6 @@ import {
   IconSettings,
   IconUser,
   IconSearch,
-  IconBell,
   IconMessage,
   IconHeart,
   IconBookmark,
@@ -226,20 +225,6 @@ export function HeaderContent() {
                 </Group>
               ) : (
                 <Group gap="xs">
-                  {/* Notifications */}
-                  <Tooltip label="Notifications" position="bottom" withArrow>
-                    <ActionIcon
-                      variant="subtle"
-                      size="lg"
-                      radius="xl"
-                      onClick={() => navigate("/notifications")}
-                      style={{
-                        transition: "all 0.2s ease",
-                      }}
-                    >
-                      <IconBell size={20} stroke={1.5} />
-                    </ActionIcon>
-                  </Tooltip>
 
                   {/* Messages */}
                   <Tooltip label="Messages" position="bottom" withArrow>

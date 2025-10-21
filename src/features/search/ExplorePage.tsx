@@ -90,8 +90,8 @@ export function ExplorePage() {
                 </Group>
               ) : trendingPosts?.pages[0]?.posts?.length &&
                 trendingPosts.pages[0].posts.length > 0 ? (
-                trendingPosts.pages[0].posts.map((post, index) => (
-                  <PostCard key={post.id} post={post} isFirst={index === 0} />
+                  trendingPosts.pages[0].posts.map((post) => (
+                    <PostCard key={post.id} post={post} />
                 ))
               ) : (
                 <Box
