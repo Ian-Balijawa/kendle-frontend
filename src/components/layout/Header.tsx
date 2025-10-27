@@ -40,6 +40,7 @@ import { useMantineColorScheme } from "@mantine/core";
 const navigationItems = [
   { label: "Home", icon: IconHome, path: "/" },
   { label: "Explore", icon: IconCompass, path: "/explore" },
+  { label: "Messages", icon: IconMessage, path: "/messages" },
 ];
 
 export function HeaderContent() {
@@ -97,7 +98,7 @@ export function HeaderContent() {
                 {navigationItems.map((item) => {
                   const isCurrentActive = isActive(item.path);
                   const needsAuth =
-                    item.path.includes("chat") ||
+                    item.path.includes("messages") ||
                     item.path.includes("statuses");
                   const canAccess = !needsAuth || isAuthenticated;
 
@@ -130,7 +131,7 @@ export function HeaderContent() {
                         }}
                       >
                         <item.icon size={20} stroke={1.5} />
-                        {item.path === "/chat" &&
+                        {item.path === "/messages" &&
                           unreadCount > 0 &&
                           isAuthenticated && (
                             <Indicator
@@ -232,7 +233,7 @@ export function HeaderContent() {
                       variant="subtle"
                       size="lg"
                       radius="xl"
-                      onClick={() => navigate("/chat")}
+                      onClick={() => navigate("/messages")}
                       style={{
                         position: "relative",
                         transition: "all 0.2s ease",

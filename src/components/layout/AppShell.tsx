@@ -9,7 +9,6 @@ import {
 import { Outlet } from "react-router-dom";
 import { FooterContent } from "./Footer";
 import { HeaderContent } from "./Header";
-import { FloatingChatWidget } from "../../features/chat/FloatingChatWidget";
 import { useState, useEffect } from "react";
 import { useMantineColorScheme } from "@mantine/core";
 
@@ -128,8 +127,6 @@ export function AppShell() {
                   pb="sm"
                 >
                   <Outlet />
-
-                  <FloatingChatWidget />
                 </Paper>
               </ScrollArea>
             </Container>

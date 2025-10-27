@@ -14,6 +14,7 @@ import { useUIStore } from "./stores/uiStore";
 import { theme } from "./theme";
 
 import { AppShell } from "./components/layout/AppShell";
+import { ChatDemo } from "./components/ChatDemo";
 
 import { AuthGuard } from "./features/auth/AuthGuard";
 import { OTPVerification } from "./features/auth/OTPVerification";
@@ -29,6 +30,7 @@ import "./styles/globals.css";
 
 function AppContent() {
   const { isAuthenticated, user } = useAuthStore();
+
 
   return (
     <Router>
@@ -98,6 +100,8 @@ function AppContent() {
         >
           <Route index element={<HomePage />} />
           <Route path="explore" element={<ExplorePage />} />
+          <Route path="messages" element={<ChatDemo />} />
+          <Route path="chat-demo" element={<ChatDemo />} />
           <Route path="settings" element={<SettingsPage />} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="profile/:userId" element={<ProfilePage />} />

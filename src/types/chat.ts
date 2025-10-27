@@ -1,10 +1,55 @@
-import { User } from "./auth";
+// TypeScript interfaces for the chat client
+// Copy these types to your React frontend project
+
+export enum MessageType {
+  TEXT = 'text',
+  IMAGE = 'image',
+  VIDEO = 'video',
+  AUDIO = 'audio',
+  FILE = 'file',
+  LOCATION = 'location',
+}
+
+export enum MessageStatus {
+  SENT = 'sent',
+  DELIVERED = 'delivered',
+  READ = 'read',
+  FAILED = 'failed',
+}
+
+export enum ConversationType {
+  DIRECT = 'direct',
+  GROUP = 'group',
+}
+
+export interface User {
+  id: string;
+  phoneNumber: string;
+  username: string;
+  firstName: string;
+  lastName: string;
+  avatar?: string;
+  isVerified: boolean;
+  isProfileComplete: boolean;
+  createdAt: string;
+  updatedAt: string;
+  followersCount: number;
+  followingCount: number;
+  postsCount: number;
+}
+
+export interface MessageReaction {
+  id: string;
+  emoji: string;
+  userId: string;
+  createdAt: string;
+}
 
 export interface Message {
   id: string;
   content: string;
-  messageType: "text" | "image" | "video" | "audio" | "file";
-  status: "sending" | "delivered" | "read" | "failed";
+  messageType: MessageType;
+  status: MessageStatus;
   senderId: string;
   receiverId: string;
   conversationId: string;
@@ -15,35 +60,15 @@ export interface Message {
   readAt?: string;
   deliveredAt?: string;
   replyToId?: string;
-  metadata?: any;
+  metadata?: Record<string, any>;
   reactions: MessageReaction[];
   createdAt: string;
   updatedAt: string;
-  // Sender information for display
-  sender?: User;
-  // Legacy fields for backward compatibility
-  mediaUrl?: string;
-  mediaSize?: number;
-  mediaFileName?: string;
-  replyToMessage?: {
-    id: string;
-    content: string;
-    senderId: string;
-  };
-}
-
-export interface MessageReaction {
-  id: string;
-  userId: string;
-  messageId: string;
-  emoji: string;
-  createdAt: string;
-  user?: User; // Include user info for display
 }
 
 export interface Conversation {
   id: string;
-  type: "direct" | "group";
+  type: ConversationType;
   name?: string;
   avatar?: string;
   description?: string;
@@ -55,127 +80,118 @@ export interface Conversation {
   isPinned: boolean;
   createdAt: string;
   updatedAt: string;
-  // Typing indicators
-  typingUsers?: string[];
 }
 
-// API Request/Response types
-export interface CreateConversationRequest {
-  participantIds: string[];
-  name?: string;
-  description?: string;
-}
-
-export interface UpdateConversationRequest {
-  isArchived?: boolean;
-  isMuted?: boolean;
-  isPinned?: boolean;
-  name?: string;
-  description?: string;
-}
-
-export interface SendMessageRequest {
-  content: string;
-  receiverId: string;
-  conversationId: string;
-  messageType?: "text" | "image" | "video" | "audio" | "file";
-  replyToId?: string;
-  metadata?: any;
-}
-
-export interface UpdateMessageRequest {
-  content: string;
-}
-
-export interface AddReactionRequest {
-  emoji: string;
-  messageId: string;
-}
-
-export interface GetMessagesParams {
-  limit?: number;
-  offset?: number;
-}
-
-export interface UnreadCountResponse {
-  count: number;
-}
-
-export interface CreateMessageData {
-  content: string;
-  receiverId: string;
-  conversationId: string;
-  messageType?: "text" | "image" | "video" | "audio" | "file";
-  replyToId?: string;
-  metadata?: any;
-  // Legacy fields for backward compatibility
-  mediaFile?: File;
-  replyToMessageId?: string;
-}
-
-export interface TypingIndicator {
-  userId: string;
-  conversationId: string;
-  isTyping: boolean;
-  timestamp: string;
-}
-
-export interface OnlineStatus {
-  userId: string;
-  isOnline: boolean;
-  lastSeen: string;
-}
-
-// WebSocket Event Types
-export type WebSocketEventType =
-  | "message_sent"
-  | "message_received"
-  | "message_read"
-  | "message_delivered"
-  | "typing_start"
-  | "typing_stop"
-  | "user_online"
-  | "user_offline"
-  | "conversation_created"
-  | "message_reaction_added"
-  | "message_reaction_removed"
-  | "message_edited"
-  | "message_deleted"
-  | "conversation_joined"
-  | "conversation_left";
-
-export interface WebSocketEvent {
-  type: WebSocketEventType;
+// WebSocket event types
+export interface WebSocketMessage {
+  type: string;
   data: any;
   timestamp: string;
 }
 
-export interface MessageDeliveryStatus {
+export interface MessageReceivedEvent extends WebSocketMessage {
+  type: 'message_received';
+  data: Message;
+}
+
+export interface MessageDeliveredEvent extends WebSocketMessage {
+  type: 'message_delivered';
+  data: {
+    messageId: string;
+    conversationId: string;
+  };
+}
+
+export interface MessageReadEvent extends WebSocketMessage {
+  type: 'message_read';
+  data: {
+    messageId: string;
+    userId: string;
+  };
+}
+
+export interface TypingStartEvent extends WebSocketMessage {
+  type: 'typing_start';
+  data: {
+    userId: string;
+    conversationId: string;
+  };
+}
+
+export interface TypingStopEvent extends WebSocketMessage {
+  type: 'typing_stop';
+  data: {
+    userId: string;
+    conversationId: string;
+  };
+}
+
+export interface UserOnlineEvent extends WebSocketMessage {
+  type: 'user_online';
+  data: {
+    userId: string;
+  };
+}
+
+export interface UserOfflineEvent extends WebSocketMessage {
+  type: 'user_offline';
+  data: {
+    userId: string;
+  };
+}
+
+export interface ConversationCreatedEvent extends WebSocketMessage {
+  type: 'conversation_created';
+  data: Conversation;
+}
+
+export interface ErrorEvent extends WebSocketMessage {
+  type: 'error';
+  data: {
+    message: string;
+  };
+}
+
+// Client-side message sending types
+export interface SendMessageData {
+  content: string;
+  receiverId: string;
+  conversationId: string;
+  messageType?: MessageType;
+  replyToId?: string;
+  metadata?: Record<string, any>;
+}
+
+export interface TypingIndicatorData {
+  conversationId: string;
+  isTyping: boolean;
+}
+
+export interface MarkMessageAsReadData {
   messageId: string;
-  status: "sending" | "delivered" | "read" | "failed";
-  timestamp: string;
+  conversationId: string;
 }
 
-export interface ChatSettings {
-  soundEnabled: boolean;
-  notificationsEnabled: boolean;
-  showOnlineStatus: boolean;
-  showReadReceipts: boolean;
-  showTypingIndicator: boolean;
+// Hook state types
+export interface ChatState {
+  isConnected: boolean;
+  isConnecting: boolean;
+  error: string | null;
+  conversations: Conversation[];
+  currentConversation: Conversation | null;
+  messages: Message[];
+  typingUsers: Set<string>;
+  onlineUsers: Set<string>;
 }
 
-// Enhanced types for better UI experience
-export interface ConversationWithMetadata extends Conversation {
-  isOnline?: boolean;
-  lastSeen?: string;
-  typingUsers?: string[];
-  unreadMessages?: Message[];
-}
-
-export interface MessageWithMetadata extends Message {
-  sender?: User;
-  isGroupedWithPrevious?: boolean;
-  isGroupedWithNext?: boolean;
-  showTimestamp?: boolean;
-  showAvatar?: boolean;
+export interface ChatActions {
+  connect: (token: string) => void;
+  disconnect: () => void;
+  sendMessage: (data: SendMessageData) => Promise<void>;
+  markMessageAsRead: (data: MarkMessageAsReadData) => Promise<void>;
+  setTyping: (data: TypingIndicatorData) => Promise<void>;
+  joinConversation: (conversationId: string) => Promise<void>;
+  leaveConversation: (conversationId: string) => Promise<void>;
+  setCurrentConversation: (conversation: Conversation | null) => void;
+  loadMessages: (conversationId: string, limit?: number, offset?: number) => Promise<Message[]>;
 }
