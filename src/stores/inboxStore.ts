@@ -1,20 +1,24 @@
 import { create } from "zustand";
 import { persist, subscribeWithSelector } from "zustand/middleware";
 import { devtools } from "zustand/middleware";
-import { chatService } from "../services/websocketService";
 import { ChatSettings, OnlineStatus, TypingIndicator } from "../types/chat";
+
+// Extended typing indicator with userId for local state management
+interface ExtendedTypingIndicator extends TypingIndicator {
+  userId: string;
+}
 
 interface InboxStore {
   // State - simplified to work alongside React Query
   selectedConversationId: string | null;
-  typingIndicators: TypingIndicator[];
+  typingIndicators: ExtendedTypingIndicator[];
   onlineStatuses: Record<string, OnlineStatus>;
   isConnected: boolean;
   chatSettings: ChatSettings;
 
   // Actions
   setSelectedConversationId: (id: string | null) => void;
-  setTypingIndicator: (indicator: TypingIndicator) => void;
+  setTypingIndicator: (indicator: ExtendedTypingIndicator) => void;
   removeTypingIndicator: (userId: string, conversationId: string) => void;
   setOnlineStatus: (status: OnlineStatus) => void;
   setConnected: (connected: boolean) => void;
@@ -22,7 +26,7 @@ interface InboxStore {
   sendTypingIndicator: (conversationId: string, isTyping: boolean) => void;
 
   // Utility methods
-  getTypingUsers: (conversationId: string) => TypingIndicator[];
+  getTypingUsers: (conversationId: string) => ExtendedTypingIndicator[];
   isUserOnline: (userId: string) => boolean;
   getUserLastSeen: (userId: string) => string | null;
 }
@@ -118,8 +122,10 @@ export const useInboxStore = create<InboxStore>()(
         },
 
         sendTypingIndicator: (conversationId, isTyping) => {
+          // Note: Typing indicator should be sent via WebSocket using useChatCombined hook
+          // This is just a stub now that websocketService has been removed
           if (get().chatSettings.showTypingIndicator) {
-            chatService.sendTypingIndicator(conversationId, isTyping);
+            console.log('Typing indicator:', { conversationId, isTyping });
           }
         },
 
