@@ -6,8 +6,6 @@ import {
   AuthResponse,
   Comment,
   CommentsResponse,
-  Conversation,
-  Message,
   Notification,
   Post,
   PostsResponse,
@@ -21,6 +19,7 @@ import {
   UserMediaItem,
   StatusAnalytics,
 } from "../types";
+import { ConversationResponse, MessageResponse } from "../types/chat";
 
 // API request/response types based on the provided endpoints
 export interface CreatePostRequest {
@@ -765,22 +764,22 @@ class ApiService {
   }
 
   // Chat API methods
-  async getConversations(): Promise<Conversation[]> {
-    const response: AxiosResponse<ApiResponse<Conversation[]>> =
+  async getConversations(): Promise<ConversationResponse[]> {
+    const response: AxiosResponse<ApiResponse<ConversationResponse[]>> =
       await this.api.get("/chat/conversations");
     return response.data.data;
   }
 
-  async getConversation(id: string): Promise<Conversation> {
-    const response: AxiosResponse<ApiResponse<Conversation>> =
+  async getConversation(id: string): Promise<ConversationResponse> {
+    const response: AxiosResponse<ApiResponse<ConversationResponse>> =
       await this.api.get(`/chat/conversations/${id}`);
     return response.data.data;
   }
 
   async createConversation(
     data: CreateConversationRequest,
-  ): Promise<Conversation> {
-    const response: AxiosResponse<ApiResponse<Conversation>> =
+  ): Promise<ConversationResponse> {
+    const response: AxiosResponse<ApiResponse<ConversationResponse>> =
       await this.api.post("/chat/conversations", data);
     return response.data.data;
   }
@@ -788,8 +787,8 @@ class ApiService {
   async updateConversation(
     id: string,
     data: UpdateConversationRequest,
-  ): Promise<Conversation> {
-    const response: AxiosResponse<ApiResponse<Conversation>> =
+  ): Promise<ConversationResponse> {
+    const response: AxiosResponse<ApiResponse<ConversationResponse>> =
       await this.api.put(`/chat/conversations/${id}`, data);
     return response.data.data;
   }
@@ -797,7 +796,7 @@ class ApiService {
   async getMessages(
     conversationId: string,
     params: GetMessagesParams = {},
-  ): Promise<Message[]> {
+  ): Promise<MessageResponse[]> {
     const searchParams = new URLSearchParams();
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
@@ -805,7 +804,7 @@ class ApiService {
       }
     });
 
-    const response: AxiosResponse<ApiResponse<Message[]>> = await this.api.get(
+    const response: AxiosResponse<ApiResponse<MessageResponse[]>> = await this.api.get(
       `/chat/conversations/${conversationId}/messages?${searchParams.toString()}`,
     );
     return response.data.data;
@@ -814,8 +813,8 @@ class ApiService {
   async sendMessage(
     conversationId: string,
     data: SendMessageRequest,
-  ): Promise<Message> {
-    const response: AxiosResponse<ApiResponse<Message>> = await this.api.post(
+  ): Promise<MessageResponse> {
+    const response: AxiosResponse<ApiResponse<MessageResponse>> = await this.api.post(
       `/chat/conversations/${conversationId}/messages`,
       data,
     );
@@ -825,8 +824,8 @@ class ApiService {
   async updateMessage(
     id: string,
     data: UpdateMessageRequest,
-  ): Promise<Message> {
-    const response: AxiosResponse<ApiResponse<Message>> = await this.api.put(
+  ): Promise<MessageResponse> {
+    const response: AxiosResponse<ApiResponse<MessageResponse>> = await this.api.put(
       `/chat/messages/${id}`,
       data,
     );
@@ -837,8 +836,8 @@ class ApiService {
     await this.api.delete(`/chat/messages/${id}`);
   }
 
-  async markMessageAsRead(id: string): Promise<Message> {
-    const response: AxiosResponse<ApiResponse<Message>> = await this.api.put(
+  async markMessageAsRead(id: string): Promise<MessageResponse> {
+    const response: AxiosResponse<ApiResponse<MessageResponse>> = await this.api.put(
       `/chat/messages/${id}/read`,
     );
     return response.data.data;
@@ -863,8 +862,8 @@ class ApiService {
 
   async findOrCreateDirectConversation(
     participantId: string,
-  ): Promise<Conversation> {
-    const response: AxiosResponse<ApiResponse<Conversation>> =
+  ): Promise<ConversationResponse> {
+    const response: AxiosResponse<ApiResponse<ConversationResponse>> =
       await this.api.post("/chat/conversations/direct", {
         participantId,
       });

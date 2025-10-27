@@ -1,23 +1,29 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { useChatApi } from './useChatApi';
+import { useChatApi, chatKeys } from './useChatApi';
 import { useChatSocket } from './useChatSocket';
-import { chatKeys } from './useChatApi';
 import { SendMessageData } from '../types/chat';
-import { useAuthStore } from '../stores/authStore';
+
+interface UseChatCombinedOptions {
+  token: string;
+  serverUrl?: string;
+  autoConnect?: boolean;
+}
 
 // Combined hook that uses both API and WebSocket functionality
-export const useChatCombined = () => {
+export const useChatCombined = (options: UseChatCombinedOptions = { token: '', autoConnect: false }) => {
+  const { token, serverUrl = import.meta.env.VITE_WS_URL || 'http://localhost:8084', autoConnect = false } = options;
   const [isInitialized, setIsInitialized] = useState(false);
   const queryClient = useQueryClient();
-  const { token } = useAuthStore();
 
-  // API Hook for REST operations (no config needed with new implementation)
+  // API Hook for REST operations
   const api = useChatApi();
 
   // WebSocket Hook for real-time operations
   const socket = useChatSocket({
-    serverUrl: import.meta.env.VITE_API_URL || 'http://localhost:8084',
+    serverUrl,
+    token: token as string,
+    autoConnect,
     onError: (error) => {
       console.error('WebSocket error:', error);
     },
@@ -36,13 +42,13 @@ export const useChatCombined = () => {
   });
 
   // Initialize the chat system
-  const initialize = useCallback(async () => {
+  const initialize = useCallback(() => {
     if (!token) {
       throw new Error('Token is required for initialization');
     }
 
     try {
-      // Connect to WebSocket first
+      // Connect to WebSocket
       socket.connect(token);
 
       // The API hooks will automatically load data when components mount
@@ -52,7 +58,7 @@ export const useChatCombined = () => {
       console.error('Failed to initialize chat:', error);
       throw error;
     }
-  }, [token, socket]);
+  }, [socket, token]);
 
   // Send message using the best available method
   const sendMessage = useCallback(async (data: SendMessageData) => {
@@ -60,12 +66,12 @@ export const useChatCombined = () => {
     if (socket.isConnected) {
       return socket.sendMessage(data);
     } else {
-      // Convert to API format
+      // Fallback to API
       const apiData = {
         content: data.content,
         receiverId: data.receiverId,
         conversationId: data.conversationId,
-        messageType: data.messageType as "text" | "image" | "video" | "audio" | "file",
+        messageType: data.messageType,
         replyToId: data.replyToId,
         metadata: data.metadata,
       };
@@ -109,12 +115,12 @@ export const useChatCombined = () => {
     setIsInitialized(false);
   }, [socket]);
 
-  // Auto-initialize when token is available
+  // Auto-initialize when token is available and autoConnect is enabled
   useEffect(() => {
-    if (token && !isInitialized) {
-      initialize().catch(console.error);
+    if (autoConnect && token && !isInitialized) {
+      initialize();
     }
-  }, [token, isInitialized, initialize]);
+  }, [autoConnect, token, isInitialized, initialize]);
 
   return {
     // State

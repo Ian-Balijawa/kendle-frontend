@@ -20,7 +20,6 @@ export const ChatDemo: React.FC = () => {
         initialize,
         cleanup,
         sendMessage,
-        markMessageAsRead,
         setTyping,
         joinConversation,
         leaveConversation,
@@ -32,7 +31,7 @@ export const ChatDemo: React.FC = () => {
         } else if (isLoading) {
             setStatus('🔄 Connecting...');
         } else if (error) {
-            setStatus(`❌ Error: ${error}`);
+            setStatus(`❌ Error: ${(error as Error)?.message || 'Unknown error'}`);
         } else {
             setStatus('❌ Not connected');
         }
@@ -95,7 +94,7 @@ export const ChatDemo: React.FC = () => {
 
                         {error && (
                             <Alert color="red" title="Connection Error">
-                                {error}
+                                {(error as Error)?.message || 'Unknown error'}
                             </Alert>
                         )}
 

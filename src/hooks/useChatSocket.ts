@@ -6,7 +6,7 @@ import {
     Message,
     Conversation,
     SendMessageData,
-    TypingIndicatorData,
+    TypingIndicator,
     MarkMessageAsReadData,
     MessageReceivedEvent,
     MessageDeliveredEvent,
@@ -16,14 +16,13 @@ import {
     UserOnlineEvent,
     UserOfflineEvent,
     ConversationCreatedEvent,
+    ConnectedEvent,
     ErrorEvent,
-    MessageType,
-    MessageStatus,
 } from '../types/chat';
-import { useAuthStore } from '../stores/authStore';
 
 interface UseChatSocketOptions {
     serverUrl: string;
+    token: string;
     autoConnect?: boolean;
     onError?: (error: string) => void;
     onMessageReceived?: (message: Message) => void;
@@ -32,9 +31,7 @@ interface UseChatSocketOptions {
 }
 
 export const useChatSocket = (options: UseChatSocketOptions) => {
-    const { serverUrl, autoConnect = false, onError, onMessageReceived, onUserOnline, onUserOffline } = options;
-
-    const { token } = useAuthStore();
+    const { serverUrl, token, autoConnect = false, onError, onMessageReceived, onUserOnline, onUserOffline } = options;
 
     const socketRef = useRef<Socket | null>(null);
     const [state, setState] = useState<ChatState>({
@@ -62,12 +59,15 @@ export const useChatSocket = (options: UseChatSocketOptions) => {
 
         try {
             const socket = io(serverUrl, {
-                extraHeaders: {
+                auth: {
                     token: token,
                 },
                 transports: ['websocket', 'polling'],
                 timeout: 10000,
                 forceNew: true,
+                reconnection: true,
+                reconnectionAttempts: 5,
+                reconnectionDelay: 1000,
             });
 
             socketRef.current = socket;
@@ -81,6 +81,10 @@ export const useChatSocket = (options: UseChatSocketOptions) => {
                     isConnecting: false,
                     error: null
                 }));
+            });
+
+            socket.on('connected', (event: ConnectedEvent) => {
+                console.log('Server confirmed connection:', event.data);
             });
 
             socket.on('disconnect', (reason) => {
@@ -123,7 +127,7 @@ export const useChatSocket = (options: UseChatSocketOptions) => {
                     ...prev,
                     messages: prev.messages.map(msg =>
                         msg.id === event.data.messageId
-                            ? { ...msg, status: MessageStatus.DELIVERED, isDelivered: true }
+                            ? { ...msg, status: "delivered", isDelivered: true }
                             : msg
                     ),
                 }));
@@ -135,7 +139,7 @@ export const useChatSocket = (options: UseChatSocketOptions) => {
                     ...prev,
                     messages: prev.messages.map(msg =>
                         msg.id === event.data.messageId
-                            ? { ...msg, status: MessageStatus.READ, isRead: true, readAt: new Date().toISOString() }
+                            ? { ...msg, status: "read", isRead: true, readAt: new Date().toISOString() }
                             : msg
                     ),
                 }));
@@ -212,7 +216,7 @@ export const useChatSocket = (options: UseChatSocketOptions) => {
             }));
             onError?.(errorMessage);
         }
-    }, [serverUrl, onError, onMessageReceived, onUserOnline, onUserOffline]);
+    }, [serverUrl, token, onError, onMessageReceived, onUserOnline, onUserOffline]);
 
     // Disconnect from the WebSocket server
     const disconnect = useCallback(() => {
@@ -237,7 +241,7 @@ export const useChatSocket = (options: UseChatSocketOptions) => {
             content: data.content,
             receiverId: data.receiverId,
             conversationId: data.conversationId,
-            messageType: data.messageType || MessageType.TEXT,
+            messageType: data.messageType || "text",
             replyToId: data.replyToId,
             metadata: data.metadata,
         };
@@ -271,7 +275,7 @@ export const useChatSocket = (options: UseChatSocketOptions) => {
     }, []);
 
     // Set typing indicator
-    const setTyping = useCallback(async (data: TypingIndicatorData) => {
+    const setTyping = useCallback(async (data: TypingIndicator) => {
         if (!socketRef.current?.connected) {
             throw new Error('Not connected to chat server');
         }
@@ -340,11 +344,10 @@ export const useChatSocket = (options: UseChatSocketOptions) => {
 
     // Auto-connect if enabled
     useEffect(() => {
-        if (autoConnect && !socketRef.current) {
-            // You would need to provide a token here
-            // connect('your-jwt-token');
+        if (autoConnect && token) {
+            connect();
         }
-    }, [autoConnect, connect]);
+    }, [autoConnect, token, connect]);
 
     // Cleanup on unmount
     useEffect(() => {
