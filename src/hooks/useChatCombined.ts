@@ -3,6 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useChatApi, chatKeys } from './useChatApi';
 import { useChatSocket } from './useChatSocket';
 import { SendMessageData } from '../types/chat';
+import { SendMessageRequest } from '../services/api';
 
 interface UseChatCombinedOptions {
   token: string;
@@ -42,14 +43,14 @@ export const useChatCombined = (options: UseChatCombinedOptions = { token: '', a
   });
 
   // Initialize the chat system
-  const initialize = useCallback(() => {
+  const initialize = useCallback(async () => {
     if (!token) {
       throw new Error('Token is required for initialization');
     }
 
     try {
       // Connect to WebSocket
-      socket.connect(token);
+      socket.connect();
 
       // The API hooks will automatically load data when components mount
       // No need to manually call API methods since React Query handles this
@@ -75,7 +76,7 @@ export const useChatCombined = (options: UseChatCombinedOptions = { token: '', a
         replyToId: data.replyToId,
         metadata: data.metadata,
       };
-      return api.sendMessage({ conversationId: data.conversationId, data: apiData });
+      return api.sendMessage({ conversationId: data.conversationId, data: apiData as SendMessageRequest });
     }
   }, [socket, api]);
 

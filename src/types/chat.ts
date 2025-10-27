@@ -197,7 +197,7 @@ export interface OnlineStatus {
 }
 
 export interface ChatActions {
-  connect: (token: string) => void;
+  connect: () => Promise<void>;
   disconnect: () => void;
   sendMessage: (data: SendMessageData) => Promise<void>;
   markMessageAsRead: (data: MarkMessageAsReadData) => Promise<void>;

@@ -1,159 +1,16 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  MessageResponse,
+  PaginationParams,
+} from "../types/chat";
+import {
+  apiService,
   CreateConversationRequest,
   UpdateConversationRequest,
   SendMessageRequest,
   UpdateMessageRequest,
   AddReactionRequest,
-  MessageResponse,
-  ConversationResponse,
-  PaginationParams,
-} from "../types/chat";
-
-// Mock API service - replace with your actual API service
-const API_BASE_URL = import.meta.env.VITE_WS_URL || 'http://localhost:8084/api';
-
-const apiService = {
-  // Conversation operations
-  getConversations: async (): Promise<ConversationResponse[]> => {
-    const response = await fetch(`${API_BASE_URL}/chat/conversations`, {
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-    });
-    if (!response.ok) throw new Error('Failed to fetch conversations');
-    return response.json();
-  },
-
-  getConversation: async (id: string): Promise<ConversationResponse> => {
-    const response = await fetch(`${API_BASE_URL}/chat/conversations/${id}`, {
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-    });
-    if (!response.ok) throw new Error('Failed to fetch conversation');
-    return response.json();
-  },
-
-  createConversation: async (data: CreateConversationRequest): Promise<ConversationResponse> => {
-    const response = await fetch(`${API_BASE_URL}/chat/conversations`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      },
-      body: JSON.stringify(data)
-    });
-    if (!response.ok) throw new Error('Failed to create conversation');
-    return response.json();
-  },
-
-  updateConversation: async (id: string, data: UpdateConversationRequest): Promise<ConversationResponse> => {
-    const response = await fetch(`${API_BASE_URL}/chat/conversations/${id}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      },
-      body: JSON.stringify(data)
-    });
-    if (!response.ok) throw new Error('Failed to update conversation');
-    return response.json();
-  },
-
-  findOrCreateDirectConversation: async (participantId: string): Promise<ConversationResponse> => {
-    const response = await fetch(`${API_BASE_URL}/chat/conversations/direct`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      },
-      body: JSON.stringify({ participantId })
-    });
-    if (!response.ok) throw new Error('Failed to create direct conversation');
-    return response.json();
-  },
-
-  // Message operations
-  getMessages: async (conversationId: string, params: PaginationParams = {}): Promise<MessageResponse[]> => {
-    const searchParams = new URLSearchParams();
-    if (params.limit) searchParams.append('limit', params.limit.toString());
-    if (params.offset) searchParams.append('offset', params.offset.toString());
-
-    const response = await fetch(`${API_BASE_URL}/chat/conversations/${conversationId}/messages?${searchParams}`, {
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-    });
-    if (!response.ok) throw new Error('Failed to fetch messages');
-    return response.json();
-  },
-
-  sendMessage: async (conversationId: string, data: SendMessageRequest): Promise<MessageResponse> => {
-    const response = await fetch(`${API_BASE_URL}/chat/conversations/${conversationId}/messages`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      },
-      body: JSON.stringify(data)
-    });
-    if (!response.ok) throw new Error('Failed to send message');
-    return response.json();
-  },
-
-  updateMessage: async (messageId: string, data: UpdateMessageRequest): Promise<MessageResponse> => {
-    const response = await fetch(`${API_BASE_URL}/chat/messages/${messageId}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      },
-      body: JSON.stringify(data)
-    });
-    if (!response.ok) throw new Error('Failed to update message');
-    return response.json();
-  },
-
-  deleteMessage: async (messageId: string): Promise<void> => {
-    const response = await fetch(`${API_BASE_URL}/chat/messages/${messageId}`, {
-      method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-    });
-    if (!response.ok) throw new Error('Failed to delete message');
-  },
-
-  markMessageAsRead: async (messageId: string): Promise<MessageResponse> => {
-    const response = await fetch(`${API_BASE_URL}/chat/messages/${messageId}/read`, {
-      method: 'PATCH',
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-    });
-    if (!response.ok) throw new Error('Failed to mark message as read');
-    return response.json();
-  },
-
-  markConversationAsRead: async (conversationId: string): Promise<void> => {
-    const response = await fetch(`${API_BASE_URL}/chat/conversations/${conversationId}/read`, {
-      method: 'PATCH',
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-    });
-    if (!response.ok) throw new Error('Failed to mark conversation as read');
-  },
-
-  addMessageReaction: async (messageId: string, data: AddReactionRequest): Promise<void> => {
-    const response = await fetch(`${API_BASE_URL}/chat/messages/${messageId}/reactions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      },
-      body: JSON.stringify(data)
-    });
-    if (!response.ok) throw new Error('Failed to add reaction');
-  },
-
-  getUnreadCount: async (): Promise<{ count: number }> => {
-    const response = await fetch(`${API_BASE_URL}/chat/unread-count`, {
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-    });
-    if (!response.ok) throw new Error('Failed to fetch unread count');
-    return response.json();
-  },
-};
+} from "../services/api";
 
 // Query keys for chat operations
 export const chatKeys = {
