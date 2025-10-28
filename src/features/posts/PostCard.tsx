@@ -396,7 +396,7 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
                     : post.type === "image"
                       ? "green"
                       : post.type === "video"
-                        ? "purple"
+                        ? "teal"
                         : "gray"
                 }
                 radius="sm"
@@ -719,8 +719,8 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
 
             {post?.location && (
               <Group gap="xs" mb="sm">
-                <IconMapPin size={14} color="var(--mantine-color-blue-6)" />
-                <Text size="xs" c="blue.6">
+                <IconMapPin size={14} color="var(--mantine-color-colors-6)" />
+                <Text size="xs" c="colors.6">
                   {post.location}
                 </Text>
               </Group>
@@ -772,11 +772,11 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
                 p="sm"
                 mb="sm"
                 style={{
-                  background: "var(--mantine-color-blue-0)",
+                  background: "var(--mantine-color-colors-0)",
                   borderRadius: "var(--mantine-radius-lg)",
                 }}
               >
-                <Text size="sm" c="blue.7" ta="center" fw={500}>
+                <Text size="sm" c="colors.7" ta="center" fw={500}>
                   Sign in to interact with posts
                 </Text>
               </Box>
@@ -804,7 +804,7 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
                       <ActionIcon
                         onClick={handleComment}
                         loading={isCommenting}
-                        color="blue"
+                        color="colors"
                         variant="filled"
                         radius="xl"
                       >
@@ -908,7 +908,7 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
                 loading={isSubmitting}
                 radius="xl"
                 variant="gradient"
-                gradient={{ from: "blue", to: "cyan" }}
+                gradient={{ from: "colors", to: "colors" }}
               >
                 Save Changes
               </Button>

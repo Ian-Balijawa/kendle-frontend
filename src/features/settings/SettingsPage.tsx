@@ -206,7 +206,7 @@ export function SettingsPage() {
                   size={60}
                   radius="xl"
                   variant="gradient"
-                  gradient={{ from: "blue", to: "purple" }}
+                  gradient={{ from: "blue", to: "teal" }}
                 >
                   <IconSettings size={30} />
                 </ThemeIcon>

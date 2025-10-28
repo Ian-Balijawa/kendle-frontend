@@ -1,56 +1,64 @@
-import { Component, ReactNode } from "react";
-import { Box, Text, Button, Stack } from "@mantine/core";
-import { IconAlertCircle, IconRefresh } from "@tabler/icons-react";
+import React from 'react';
+import { Alert, Stack, Text, Button } from '@mantine/core';
+import { IconAlertCircle, IconRefresh } from '@tabler/icons-react';
 
-interface Props {
-    children: ReactNode;
-    fallback?: ReactNode;
-}
-
-interface State {
+interface ErrorBoundaryState {
     hasError: boolean;
     error?: Error;
 }
 
-export class ErrorBoundary extends Component<Props, State> {
-    constructor(props: Props) {
+interface ErrorBoundaryProps {
+    children: React.ReactNode;
+    fallback?: React.ComponentType<{ error: Error; resetError: () => void }>;
+}
+
+export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+    constructor(props: ErrorBoundaryProps) {
         super(props);
         this.state = { hasError: false };
     }
 
-    static getDerivedStateFromError(error: Error): State {
+    static getDerivedStateFromError(error: Error): ErrorBoundaryState {
         return { hasError: true, error };
     }
 
-    componentDidCatch(error: Error, errorInfo: any) {
-        console.error("ErrorBoundary caught an error:", error, errorInfo);
+    componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+        console.error('ErrorBoundary caught an error:', error, errorInfo);
     }
+
+    resetError = () => {
+        this.setState({ hasError: false, error: undefined });
+    };
 
     render() {
         if (this.state.hasError) {
             if (this.props.fallback) {
-                return this.props.fallback;
+                const FallbackComponent = this.props.fallback;
+                return <FallbackComponent error={this.state.error!} resetError={this.resetError} />;
             }
 
             return (
-                <Box p="xl" style={{ minHeight: "200px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <Stack align="center" gap="md">
-                        <IconAlertCircle size={48} color="var(--mantine-color-red-6)" />
-                        <Text size="lg" fw={600} ta="center">
-                            Something went wrong
-                        </Text>
-                        <Text size="sm" c="dimmed" ta="center" maw={400}>
-                            {this.state.error?.message || "An unexpected error occurred. Please try refreshing the page."}
-                        </Text>
-                        <Button
-                            variant="light"
-                            leftSection={<IconRefresh size={16} />}
-                            onClick={() => window.location.reload()}
-                        >
-                            Refresh Page
-                        </Button>
-                    </Stack>
-                </Box>
+            <Alert
+                icon={<IconAlertCircle size={16} />}
+                title="Something went wrong"
+                color="red"
+                variant="light"
+                style={{ margin: '20px' }}
+            >
+                <Stack gap="sm">
+                    <Text size="sm">
+                        {this.state.error?.message || 'An unexpected error occurred'}
+                    </Text>
+                    <Button
+                        leftSection={<IconRefresh size={16} />}
+                        onClick={this.resetError}
+                        size="sm"
+                        variant="light"
+                    >
+                        Try again
+                    </Button>
+                </Stack>
+                </Alert>
             );
         }
 

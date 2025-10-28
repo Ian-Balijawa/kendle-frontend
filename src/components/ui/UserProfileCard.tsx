@@ -64,7 +64,7 @@ export function UserProfileCard({
           right: 0,
           height: "55%",
           background:
-            "linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)",
+            "linear-gradient(135deg, var(--mantine-color-primary-6) 0%, var(--mantine-color-green-6) 50%, var(--mantine-color-violet-6) 100%)",
           opacity: 0.1,
         }}
       />
@@ -146,7 +146,7 @@ export function UserProfileCard({
             }
             style={{
               background: derivedIsFollowing
-                ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+                ? "linear-gradient(135deg, var(--mantine-color-primary-6) 0%,var(--mantine-color-green-6) 100%)"
                 : "none",
               color: derivedIsFollowing ? "white" : "white",
               fontWeight: 600,

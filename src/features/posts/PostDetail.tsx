@@ -382,7 +382,7 @@ export function PostDetail() {
                   : post.type === "image"
                     ? "green"
                     : post.type === "video"
-                      ? "purple"
+                      ? "teal"
                       : "gray"
               }
               radius="sm"
@@ -403,7 +403,7 @@ export function PostDetail() {
               </Badge>
             )}
             {post.scheduledAt && (
-              <Badge size="sm" variant="light" color="purple" radius="sm">
+              <Badge size="sm" variant="light" color="teal" radius="sm">
                 Scheduled
               </Badge>
             )}
@@ -746,8 +746,8 @@ export function PostDetail() {
 
           {post?.location && (
             <Group gap="xs" mb="sm">
-              <IconMapPin size={16} color="var(--mantine-color-blue-6)" />
-              <Text size="sm" c="blue.6">
+              <IconMapPin size={16} color="var(--mantine-color-colors-6)" />
+              <Text size="sm" c="colors.6">
                 {post.location}
               </Text>
             </Group>
@@ -871,11 +871,11 @@ export function PostDetail() {
                 p="sm"
                 mb="sm"
                 style={{
-                  background: "var(--mantine-color-blue-0)",
+                  background: "var(--mantine-color-colors-0)",
                   borderRadius: "var(--mantine-radius-lg)",
                 }}
               >
-                <Text size="sm" c="blue.7" ta="center" fw={500}>
+                  <Text size="sm" c="colors.7" ta="center" fw={500}>
                   Sign in to comment on this post
                 </Text>
               </Box>

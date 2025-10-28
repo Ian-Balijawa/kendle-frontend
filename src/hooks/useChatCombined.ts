@@ -59,7 +59,8 @@ export const useChatCombined = (options: UseChatCombinedOptions = { token: '', a
       console.error('Failed to initialize chat:', error);
       throw error;
     }
-  }, [socket, token]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token]);
 
   // Send message using the best available method
   const sendMessage = useCallback(async (data: SendMessageData) => {
@@ -78,7 +79,8 @@ export const useChatCombined = (options: UseChatCombinedOptions = { token: '', a
       };
       return api.sendMessage({ conversationId: data.conversationId, data: apiData as SendMessageRequest });
     }
-  }, [socket, api]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Mark message as read using the best available method
   const markMessageAsRead = useCallback(async (messageId: string, conversationId: string) => {
@@ -87,41 +89,47 @@ export const useChatCombined = (options: UseChatCombinedOptions = { token: '', a
     } else {
       return api.markMessageAsRead(messageId);
     }
-  }, [socket, api]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Set typing indicator (WebSocket only)
   const setTyping = useCallback(async (conversationId: string, isTyping: boolean) => {
     if (socket.isConnected) {
       return socket.setTyping({ conversationId, isTyping });
     }
-  }, [socket]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Join conversation (WebSocket only)
   const joinConversation = useCallback(async (conversationId: string) => {
     if (socket.isConnected) {
       return socket.joinConversation(conversationId);
     }
-  }, [socket]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Leave conversation (WebSocket only)
   const leaveConversation = useCallback(async (conversationId: string) => {
     if (socket.isConnected) {
       return socket.leaveConversation(conversationId);
     }
-  }, [socket]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Cleanup function
   const cleanup = useCallback(() => {
     socket.disconnect();
     setIsInitialized(false);
-  }, [socket]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Auto-initialize when token is available and autoConnect is enabled
   useEffect(() => {
     if (autoConnect && token && !isInitialized) {
       initialize();
     }
-  }, [autoConnect, token, isInitialized, initialize]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoConnect, token, isInitialized]);
 
   return {
     // State

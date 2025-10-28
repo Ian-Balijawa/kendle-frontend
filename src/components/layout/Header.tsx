@@ -40,7 +40,7 @@ import { useMantineColorScheme } from "@mantine/core";
 const navigationItems = [
   { label: "Home", icon: IconHome, path: "/" },
   { label: "Explore", icon: IconCompass, path: "/explore" },
-  { label: "Messages", icon: IconMessage, path: "/messages" },
+  { label: "Messages", icon: IconMessage, path: "/inbox" },
 ];
 
 export function HeaderContent() {
@@ -98,7 +98,7 @@ export function HeaderContent() {
                 {navigationItems.map((item) => {
                   const isCurrentActive = isActive(item.path);
                   const needsAuth =
-                    item.path.includes("messages") ||
+                    item.path.includes("inbox") ||
                     item.path.includes("statuses");
                   const canAccess = !needsAuth || isAuthenticated;
 
@@ -131,7 +131,7 @@ export function HeaderContent() {
                         }}
                       >
                         <item.icon size={20} stroke={1.5} />
-                        {item.path === "/messages" &&
+                        {item.path === "/inbox" &&
                           unreadCount > 0 &&
                           isAuthenticated && (
                             <Indicator
@@ -233,7 +233,7 @@ export function HeaderContent() {
                       variant="subtle"
                       size="lg"
                       radius="xl"
-                      onClick={() => navigate("/messages")}
+                      onClick={() => navigate("/inbox")}
                       style={{
                         position: "relative",
                         transition: "all 0.2s ease",
@@ -280,7 +280,7 @@ export function HeaderContent() {
                           size="md"
                           radius="xl"
                           style={{
-                            border: "2px solid var(--mantine-color-blue-2)",
+                            border: "2px solid var(--mantine-color-colors-2)",
                             cursor: "pointer",
                             transition: "all 0.2s ease",
                           }}

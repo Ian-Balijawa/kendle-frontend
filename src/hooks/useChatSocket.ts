@@ -216,7 +216,8 @@ export const useChatSocket = (options: UseChatSocketOptions) => {
             }));
             onError?.(errorMessage);
         }
-    }, [serverUrl, token, onError, onMessageReceived, onUserOnline, onUserOffline]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [serverUrl, token]);
 
     // Disconnect from the WebSocket server
     const disconnect = useCallback(() => {
@@ -347,7 +348,8 @@ export const useChatSocket = (options: UseChatSocketOptions) => {
         if (autoConnect && token) {
             connect();
         }
-    }, [autoConnect, token, connect]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [autoConnect, token]);
 
     // Cleanup on unmount
     useEffect(() => {

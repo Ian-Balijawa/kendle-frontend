@@ -1,7 +1,6 @@
-import { MantineProvider } from "@mantine/core";
+
 import { Notifications } from "@mantine/notifications";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { useEffect } from "react";
 import {
   Navigate,
   Route,
@@ -10,11 +9,8 @@ import {
 } from "react-router-dom";
 import { queryClient } from "./lib/queryClient";
 import { useAuthStore } from "./stores/authStore";
-import { useUIStore } from "./stores/uiStore";
-import { theme } from "./theme";
 
 import { AppShell } from "./components/layout/AppShell";
-import { ChatDemo } from "./components/ChatDemo";
 
 import { AuthGuard } from "./features/auth/AuthGuard";
 import { OTPVerification } from "./features/auth/OTPVerification";
@@ -25,8 +21,10 @@ import { PostDetail } from "./features/posts/PostDetail";
 import { ProfilePage } from "./features/profile/ProfilePage";
 import { ExplorePage } from "./features/search/ExplorePage";
 import { SettingsPage } from "./features/settings";
+import { InboxPage } from "./features/inbox";
 
 import "./styles/globals.css";
+import { createTheme, MantineColorsTuple, MantineProvider } from "@mantine/core";
 
 function AppContent() {
   const { isAuthenticated, user } = useAuthStore();
@@ -100,8 +98,7 @@ function AppContent() {
         >
           <Route index element={<HomePage />} />
           <Route path="explore" element={<ExplorePage />} />
-          <Route path="messages" element={<ChatDemo />} />
-          <Route path="chat-demo" element={<ChatDemo />} />
+          <Route path="inbox" element={<InboxPage />} />
           <Route path="settings" element={<SettingsPage />} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="profile/:userId" element={<ProfilePage />} />
@@ -116,24 +113,33 @@ function AppContent() {
 }
 
 function App() {
-  const { theme: currentTheme, initializeTheme } = useUIStore();
 
-  useEffect(() => {
-    initializeTheme();
-  }, [initializeTheme]);
+  const colors: MantineColorsTuple = [
+    '#ecefff',
+    '#d5dafb',
+    '#a9b1f1',
+    '#7a87e9',
+    '#5362e1',
+    '#3a4bdd',
+    '#2c40dc',
+    '#1f32c4',
+    '#182cb0',
+    '#0a259c'
+  ];
 
+  const theme = createTheme({
+    colors: {
+      colors,
+    }
+  });
   return (
-    <QueryClientProvider client={queryClient}>
-      <MantineProvider
-        key={currentTheme}
-        theme={theme}
-        defaultColorScheme={currentTheme}
-      >
+    <MantineProvider theme={theme}>
+      <QueryClientProvider client={queryClient}>
         <Notifications position="top-right" />
         <AppContent />
-      </MantineProvider>
-    </QueryClientProvider>
-  );
+      </QueryClientProvider>
+    </MantineProvider>
+  )
 }
 
 export default App;

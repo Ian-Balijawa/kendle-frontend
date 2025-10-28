@@ -174,7 +174,7 @@ export function HomePage() {
                     height: "40px",
                     borderRadius: "12px",
                     background:
-                      "linear-gradient(135deg, var(--mantine-color-primary-6), var(--mantine-color-primary-8))",
+                      "linear-gradient(135deg, var(--mantine-color-colors-6), var(--mantine-color-colors-8))",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -190,7 +190,7 @@ export function HomePage() {
                     <Badge
                       leftSection={<IconTrendingUp size={12} />}
                       variant="light"
-                      color="primary"
+                      color="colors"
                       size="sm"
                       radius="xl"
                     >
@@ -217,10 +217,6 @@ export function HomePage() {
                   radius="xl"
                   onClick={() => refetch()}
                   style={{
-                    transition: "all 0.2s ease",
-                    "&:hover": {
-                      transform: "rotate(180deg)",
-                    },
                   }}
                 >
                   <IconRefresh size={18} />
@@ -235,15 +231,12 @@ export function HomePage() {
                     styles={{
                       root: {
                         background:
-                          "linear-gradient(135deg, var(--mantine-color-primary-6), var(--mantine-color-primary-8))",
+                          "linear-gradient(135deg, var(--mantine-color-colors-6), var(--mantine-color-colors-8))",
                         border: "none",
                         fontWeight: 600,
-                        transition: "all 0.2s ease",
                         "&:hover": {
                           background:
-                            "linear-gradient(135deg, var(--mantine-color-primary-7), var(--mantine-color-primary-9))",
-                          transform: "translateY(-2px)",
-                          boxShadow: "0 8px 25px rgba(14, 165, 233, 0.4)",
+                            "linear-gradient(135deg, var(--mantine-color-colors-7), var(--mantine-color-colors-9))",
                         },
                       },
                     }}
@@ -362,8 +355,8 @@ export function HomePage() {
                 style={{
                   ...styles,
                   background:
-                    "linear-gradient(135deg, var(--mantine-color-primary-0) 0%, var(--mantine-color-cyan-1) 100%)",
-                  border: "1px solid var(--mantine-color-primary-2)",
+                    "linear-gradient(135deg, var(--mantine-color-colors-0) 0%, var(--mantine-color-colors-1) 100%)",
+                  border: "1px solid var(--mantine-color-colors-2)",
                   borderRadius: "var(--mantine-radius-xl)",
                   padding: "var(--mantine-spacing-xl)",
                 }}
@@ -376,21 +369,19 @@ export function HomePage() {
                         height: "80px",
                         borderRadius: "50%",
                         background:
-                          "linear-gradient(135deg, var(--mantine-color-primary-6), var(--mantine-color-cyan-6))",
+                          "linear-gradient(135deg, var(--mantine-color-colors-6), var(--mantine-color-colors-8))",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        boxShadow: "0 8px 32px rgba(14, 165, 233, 0.3)",
-                        animation: "pulse 2s ease-in-out infinite",
                       }}
                     >
                       <IconSparkles size={40} color="white" />
                     </Box>
                     <Stack gap="sm" align="center">
-                      <Title order={2} c="primary.8" fw={700} ta="center">
+                      <Title order={2} c="colors.8" fw={700} ta="center">
                         Welcome to Kendle!
                       </Title>
-                      <Text c="primary.6" size="lg" ta="center" maw={500}>
+                      <Text c="colors.6" size="lg" ta="center" maw={500}>
                         Be the first to share something amazing with our
                         community. Your story matters!
                       </Text>
@@ -404,18 +395,13 @@ export function HomePage() {
                         styles={{
                           root: {
                             background:
-                              "linear-gradient(135deg, var(--mantine-color-primary-6), var(--mantine-color-cyan-6))",
+                              "linear-gradient(135deg, var(--mantine-color-colors-6), var(--mantine-color-colors-8))",
                             border: "none",
                             fontWeight: 600,
                             fontSize: "16px",
                             height: "48px",
                             paddingLeft: "24px",
                             paddingRight: "24px",
-                            transition: "all 0.2s ease",
-                            "&:hover": {
-                              transform: "translateY(-2px)",
-                              boxShadow: "0 12px 32px rgba(14, 165, 233, 0.4)",
-                            },
                           },
                         }}
                       >

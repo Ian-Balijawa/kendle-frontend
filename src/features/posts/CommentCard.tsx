@@ -154,8 +154,8 @@ export function CommentCard({ comment }: CommentCardProps) {
           radius="lg"
           p="sm"
           style={{
-            borderColor: "var(--mantine-color-blue-4)",
-            backgroundColor: "var(--mantine-color-blue-1)",
+            borderColor: "var(--mantine-color-colors-4)",
+            backgroundColor: "var(--mantine-color-colors-1)",
           }}
         >
           <Stack gap="sm">

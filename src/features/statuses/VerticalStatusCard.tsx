@@ -49,24 +49,6 @@ export function VerticalStatusCard({
           e.currentTarget.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.15)";
         }}
       >
-        {/* Background image if user has avatar */}
-        {currentUserAvatar && (
-          <Image
-            src={currentUserAvatar}
-            alt="Background"
-            fit="contain"
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              width: "100%",
-              height: "100%",
-              objectFit: "contain",
-              opacity: 0.3,
-            }}
-          />
-        )}
-
         {/* Overlay gradient */}
         <Box
           style={{
@@ -76,7 +58,7 @@ export function VerticalStatusCard({
             right: 0,
             bottom: 0,
             background:
-              "linear-gradient(135deg, rgba(102, 126, 234, 0.8) 0%, rgba(118, 75, 162, 0.8) 100%)",
+              "linear-gradient(135deg, var(--mantine-color-primary-6) 0%,var(--mantine-color-green-6) 100%)",
           }}
         />
 

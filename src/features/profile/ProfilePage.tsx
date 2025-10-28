@@ -51,6 +51,7 @@ import {
   useDeleteBackgroundImage,
 } from "../../hooks/useMedia";
 import { MediaGallery } from "../../components/ui/MediaGallery";
+import { useFindOrCreateDirectConversation } from "../../hooks/useChatApi";
 
 export function ProfilePage() {
   const { userId } = useParams<{ userId?: string }>();
@@ -96,6 +97,7 @@ export function ProfilePage() {
 
   const { data: followStatus } = useFollowStatus(profileUserId!);
   const { toggleFollow, isLoading: followLoading } = useToggleFollow();
+  const findOrCreateConversation = useFindOrCreateDirectConversation();
 
   const posts = postsData?.pages.flatMap((page) => page.posts) || [];
   const likedPosts = likedPostsData?.pages.flatMap((page) => page.posts) || [];
@@ -124,6 +126,18 @@ export function ProfilePage() {
 
   const handleEditProfile = () => {
     navigate("/settings");
+  };
+
+  const handleMessage = async () => {
+    if (!profileUserId || isOwnProfile) return;
+    try {
+      await findOrCreateConversation.mutateAsync(profileUserId);
+      navigate("/inbox");
+      // Optionally, you can pass the conversation ID as a query param or state
+      // navigate(`/inbox?conversation=${conversation.id}`);
+    } catch (error) {
+      console.error("Failed to create conversation:", error);
+    }
   };
 
   const handleAvatarButtonClick = () => {
@@ -185,7 +199,7 @@ export function ProfilePage() {
       url: user?.twitterLink,
       icon: IconBrandTwitter,
       label: "Twitter",
-      color: "var(--mantine-color-blue-5)",
+      color: "var(--mantine-color-colors-5)",
     },
     {
       key: "instagramLink",
@@ -369,7 +383,7 @@ export function ProfilePage() {
           height: 150,
           background: user.backgroundImage
             ? `url(${user.backgroundImage})`
-            : "linear-gradient(135deg, var(--mantine-color-blue-6) 0%, var(--mantine-color-violet-6) 100%)",
+            : "linear-gradient(135deg, var(--mantine-color-colors-6) 0%, var(--mantine-color-colors-8) 100%)",
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
@@ -497,7 +511,7 @@ export function ProfilePage() {
                   size="lg"
                   style={{
                     background:
-                      "linear-gradient(135deg, var(--mantine-color-blue-5), var(--mantine-color-blue-6))",
+                      "linear-gradient(135deg, var(--mantine-color-colors-5), var(--mantine-color-colors-6))",
                     color: "white",
                     border: "none",
                   }}
@@ -569,34 +583,50 @@ export function ProfilePage() {
                 Edit Profile
               </Button>
             ) : (
-              <Button
-                variant={followStatus?.isFollowing ? "light" : "filled"}
-                leftSection={
-                  followStatus?.isFollowing ? (
-                    <IconUserCheck size={18} />
-                  ) : (
-                    <IconUserPlus size={18} />
-                  )
-                }
-                onClick={handleFollow}
-                loading={followLoading}
-                radius="xl"
-                size="sm"
-                style={
-                  followStatus?.isFollowing
-                    ? {
-                        color: "var(--mantine-color-blue-6)",
-                        borderColor: "var(--mantine-color-blue-6)",
-                      }
-                    : {
-                        background:
-                          "linear-gradient(135deg, var(--mantine-color-blue-6), var(--mantine-color-violet-6))",
-                        border: "none",
-                      }
-                }
-              >
-                {followStatus?.isFollowing ? "Following" : "Follow"}
-              </Button>
+                <>
+                  <Button
+                    variant="outline"
+                    leftSection={<IconMessage size={18} />}
+                    onClick={handleMessage}
+                    loading={findOrCreateConversation.isPending}
+                    radius="xl"
+                    size="sm"
+                    style={{
+                      borderColor: "var(--mantine-color-colors-6)",
+                      color: "var(--mantine-color-primary-6)",
+                    }}
+                  >
+                    Message
+                  </Button>
+                  <Button
+                    variant={followStatus?.isFollowing ? "light" : "filled"}
+                    leftSection={
+                      followStatus?.isFollowing ? (
+                        <IconUserCheck size={18} />
+                      ) : (
+                        <IconUserPlus size={18} />
+                      )
+                    }
+                    onClick={handleFollow}
+                    loading={followLoading}
+                    radius="xl"
+                    size="sm"
+                    style={
+                      followStatus?.isFollowing
+                        ? {
+                          color: "var(--mantine-color-primary-6)",
+                          borderColor: "var(--mantine-color-colors-6)",
+                        }
+                        : {
+                          background:
+                            "linear-gradient(135deg, var(--mantine-color-primary-6) 0%, var(--mantine-color-green-6) 100%)",
+                          border: "none",
+                        }
+                    }
+                  >
+                    {followStatus?.isFollowing ? "Following" : "Follow"}
+                  </Button>
+                </>
             )}
           </Group>
         </Group>

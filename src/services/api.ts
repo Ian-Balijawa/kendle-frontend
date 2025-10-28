@@ -332,6 +332,55 @@ export interface UnreadCountResponse {
   count: number;
 }
 
+// Search request/response types
+export interface SearchParams {
+  q: string;
+  type?: "all" | "users" | "posts";
+  page?: number;
+  limit?: number;
+  sortBy?: "relevance" | "created_at" | "updated_at" | "popularity";
+}
+
+export interface SearchResponse {
+  users: User[];
+  posts: Post[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  hasMore: boolean;
+  searchType: string;
+  query: string;
+}
+
+export interface UserSearchParams {
+  q: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface UserSearchResponse {
+  users: User[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface PostSearchParams {
+  q: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface PostSearchResponse {
+  posts: Post[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 class ApiService {
   private api: AxiosInstance;
 
@@ -1482,6 +1531,46 @@ class ApiService {
     > = await this.api.get(
       `/posts/user/${userId}/media?${searchParams.toString()}`,
     );
+    return response.data.data;
+  }
+
+  // Search API methods
+  async search(params: SearchParams): Promise<SearchResponse> {
+    const searchParams = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        searchParams.append(key, String(value));
+      }
+    });
+
+    const response: AxiosResponse<ApiResponse<SearchResponse>> =
+      await this.api.get(`/search?${searchParams.toString()}`);
+    return response.data.data;
+  }
+
+  async searchUsers(params: UserSearchParams): Promise<UserSearchResponse> {
+    const searchParams = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        searchParams.append(key, String(value));
+      }
+    });
+
+    const response: AxiosResponse<ApiResponse<UserSearchResponse>> =
+      await this.api.get(`/user/search?${searchParams.toString()}`);
+    return response.data.data;
+  }
+
+  async searchPosts(params: PostSearchParams): Promise<PostSearchResponse> {
+    const searchParams = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        searchParams.append(key, String(value));
+      }
+    });
+
+    const response: AxiosResponse<ApiResponse<PostSearchResponse>> =
+      await this.api.get(`/posts/search?${searchParams.toString()}`);
     return response.data.data;
   }
 }
