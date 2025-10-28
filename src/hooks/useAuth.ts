@@ -24,7 +24,7 @@ export function useCurrentUser() {
     queryKey: authKeys.me(),
     queryFn: () => apiService.getCurrentUser(),
     enabled: isAuthenticated,
-    staleTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 10 * 60 * 1000,
     retry: 1,
   });
 }
